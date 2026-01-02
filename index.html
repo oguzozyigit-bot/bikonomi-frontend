@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>CAYNANA – Almadan önce sor</title>
+  <title>CAYNANA.AI – Yeni Nesil</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -14,12 +14,10 @@
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; }
     .soft-shadow { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); }
-    /* Kart hover efektini morumsu bir gölgeyle güncelledik */
     .card-hover:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(79, 70, 229, 0.15); }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Animasyonu yeni renklere (Turkuaz/Mor) uydurduk */
     @keyframes pulse-ring {
       0% { box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.5); }
       70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
@@ -27,7 +25,6 @@
     }
     .avatar-glow { animation: pulse-ring 2.5s infinite; }
 
-    /* Gradyan Metin Efekti */
     .text-gradient {
         background: linear-gradient(to right, #0d9488, #4f46e5);
         -webkit-background-clip: text;
@@ -38,7 +35,7 @@
 
 <body class="text-slate-900 min-h-screen flex flex-col bg-slate-50/50">
 
-<header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-100 supports-[backdrop-filter]:bg-white/60">
+<header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 border-b border-slate-100">
   <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2 group">
       <div class="w-9 h-9 bg-gradient-to-tr from-teal-500 to-indigo-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-indigo-200 group-hover:scale-110 transition">
@@ -46,9 +43,6 @@
       </div>
       <span class="text-xl font-extrabold tracking-tight text-slate-900">CAYNANA</span>
     </a>
-    <button class="hidden md:block text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition">
-      <i class="fa-solid fa-sparkles mr-1"></i> Favorilerim
-    </button>
   </div>
 </header>
 
@@ -59,8 +53,14 @@
     <div class="mb-8 flex justify-center relative">
         <div class="w-32 h-32 rounded-full bg-white p-1 shadow-2xl flex items-center justify-center relative z-10 avatar-glow">
              <div class="w-full h-full rounded-full bg-slate-100 flex items-center justify-center overflow-hidden relative">
-                <i class="fa-solid fa-user-astronaut text-5xl text-slate-300 absolute"></i>
-                </div>
+                
+                <i class="fa-solid fa-user-astronaut text-5xl text-slate-300 absolute z-0"></i>
+                
+                <img src="caynana-avatar.png" 
+                     onerror="this.style.display='none'"
+                     class="w-full h-full object-cover relative z-10" 
+                     alt="Caynana Avatar">
+             </div>
              
              <div class="absolute bottom-1 right-1 bg-gradient-to-r from-teal-500 to-cyan-500 border-4 border-white w-9 h-9 rounded-full flex items-center justify-center text-white text-sm shadow-md z-20">
                <i class="fa-solid fa-check"></i>
@@ -97,7 +97,6 @@
            <i class="fa-solid fa-circle-notch fa-spin text-teal-500"></i>
            <span id="ticker">Caynana piyasayı tarıyor...</span>
         </div>
-        
         <div id="err" class="hidden text-sm font-semibold text-rose-600 bg-rose-50 px-5 py-3 rounded-xl border border-rose-100 flex items-center gap-2 shadow-sm">
            <i class="fa-solid fa-bug"></i>
            <span id="errMsg"></span>
@@ -112,13 +111,8 @@
         <h2 class="text-xl font-bold text-slate-900">Günün Popüler Sorguları</h2>
         <p class="text-sm text-slate-500 font-medium mt-1">Son 24 saatte en çok bunlar soruldu</p>
       </div>
-      <button onclick="loadTrending(true)" class="w-10 h-10 rounded-full bg-white text-slate-500 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600 transition flex items-center justify-center shadow-sm">
-          <i class="fa-solid fa-rotate"></i>
-      </button>
     </div>
-
-    <div id="trendingGrid" class="flex gap-5 overflow-x-auto pb-10 pt-4 snap-x hide-scrollbar px-2">
-       </div>
+    <div id="trendingGrid" class="flex gap-5 overflow-x-auto pb-10 pt-4 snap-x hide-scrollbar px-2"></div>
   </section>
 
   <section id="resultsSection" class="max-w-7xl mx-auto px-5 pb-32 hidden pt-8 border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white">
@@ -127,236 +121,107 @@
             <i class="fa-solid fa-wand-magic-sparkles"></i>
         </div>
         <h2 class="text-4xl font-extrabold text-slate-900 mb-3">Rapor Hazır!</h2>
-        <p class="text-lg text-slate-500 max-w-2xl mx-auto">Caynana senin için 5 farklı senaryoyu değerlendirdi. İşte sonuçlar:</p>
+        <p class="text-lg text-slate-500 max-w-2xl mx-auto">Caynana senin için değerlendirdi:</p>
     </div>
-
-    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8">
-      </div>
+    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8"></div>
   </section>
 
 </main>
 
-<footer class="bg-white border-t border-slate-100 py-10 text-center text-sm text-slate-400 mt-auto">
-  <div class="flex justify-center gap-6 mb-6 opacity-40 grayscale hover:grayscale-0 transition duration-500">
-      <i class="fa-brands fa-amazon text-3xl hover:text-[#FF9900]"></i>
-      <i class="fa-brands fa-google text-3xl hover:text-[#4285F4]"></i>
-      <i class="fa-brands fa-shopify text-3xl hover:text-[#96bf48]"></i>
-  </div>
-  <p class="font-medium">&copy; 2026 CAYNANA AI. Tüm hakları saklıdır.</p>
-</footer>
-
 <script>
   const API_BASE = "https://bikonomi-api-1.onrender.com"; 
 
-  const tickerLines = [
-    "Fiyat geçmişine bakıyorum...",
-    "Kullanıcı yorumlarını yapay zeka ile okuyorum...",
-    "Satıcı güvenilir mi, risk analizi yapıyorum...",
-    "Gizli indirimleri kontrol ediyorum...",
-    "En mantıklı seçeneği hesaplıyorum..."
-  ];
-  let tickerIdx = 0;
-  let tickerTimer = null;
+  const tickerLines = ["Fiyat geçmişine bakıyorum...", "Yorumları okuyorum...", "Risk analizi yapıyorum...", "Gizli indirim var mı?", "Hesaplıyorum..."];
+  let tickerIdx = 0, tickerTimer = null;
 
   function startTicker() {
-    const el = document.getElementById("ticker");
-    el.textContent = tickerLines[0];
-    tickerIdx = 0;
+    const el = document.getElementById("ticker"); el.textContent = tickerLines[0]; tickerIdx = 0;
     if (tickerTimer) clearInterval(tickerTimer);
-    tickerTimer = setInterval(() => {
-      tickerIdx = (tickerIdx + 1) % tickerLines.length;
-      el.textContent = tickerLines[tickerIdx];
-    }, 2000);
+    tickerTimer = setInterval(() => { tickerIdx = (tickerIdx + 1) % tickerLines.length; el.textContent = tickerLines[tickerIdx]; }, 2000);
   }
-
-  function stopTicker() {
-    if (tickerTimer) clearInterval(tickerTimer);
-    tickerTimer = null;
-  }
-
+  function stopTicker() { if (tickerTimer) clearInterval(tickerTimer); tickerTimer = null; }
+  
   function showErr(msg) {
-    const el = document.getElementById("err");
-    const msgEl = document.getElementById("errMsg");
-    el.classList.remove("hidden");
-    msgEl.textContent = msg;
-    setTimeout(() => { el.classList.add("hidden"); }, 5000);
+    const el = document.getElementById("err"); document.getElementById("errMsg").textContent = msg;
+    el.classList.remove("hidden"); setTimeout(() => { el.classList.add("hidden"); }, 5000);
   }
+  function clearErr() { document.getElementById("err").classList.add("hidden"); }
+  function safeUrl(path) { return API_BASE ? API_BASE.replace(/\/$/, "") + path : path; }
 
-  function clearErr() {
-    document.getElementById("err").classList.add("hidden");
-  }
-
-  function safeUrl(path) {
-    if (!API_BASE) return path;
-    return API_BASE.replace(/\/$/, "") + path;
-  }
-
-  // TRENDING (Renkler güncellendi)
-  async function loadTrending(force = false) {
-    const demoData = [
-      { title: "Apple AirPods Pro 2", count: 142, icon: "fa-headphones-simple" },
-      { title: "Philips Airfryer XXL", count: 98, icon: "fa-utensils" },
-      { title: "Roborock S8 Süpürge", count: 85, icon: "fa-robot" },
-      { title: "Stanley Termos 1.3L", count: 76, icon: "fa-mug-hot" },
-      { title: "Dyson V15 Detect", count: 64, icon: "fa-broom-ball" },
+  // TRENDING
+  function loadTrending() {
+    const data = [
+      { t: "Apple AirPods Pro 2", c: 142, i: "fa-headphones-simple" },
+      { t: "Philips Airfryer XXL", c: 98, i: "fa-utensils" },
+      { t: "Roborock S8", c: 85, i: "fa-robot" },
+      { t: "Stanley Termos", c: 76, i: "fa-mug-hot" },
+      { t: "Dyson V15", c: 64, i: "fa-broom-ball" }
     ];
-
-    const grid = document.getElementById("trendingGrid");
-    grid.innerHTML = "";
-
-    demoData.forEach((item, idx) => {
-        const card = document.createElement("div");
-        // Kart kenarlıkları ve ikon renkleri turkuaz/indigo oldu
-        card.className = "min-w-[200px] bg-white rounded-3xl border border-slate-100 p-5 flex flex-col justify-between soft-shadow card-hover transition cursor-pointer select-none snap-start group relative overflow-hidden";
-        card.innerHTML = `
+    const grid = document.getElementById("trendingGrid"); grid.innerHTML = "";
+    data.forEach(item => {
+        const d = document.createElement("div");
+        d.className = "min-w-[200px] bg-white rounded-3xl border border-slate-100 p-5 flex flex-col justify-between soft-shadow card-hover transition cursor-pointer select-none snap-start group relative overflow-hidden";
+        d.innerHTML = `
             <div class="absolute inset-0 bg-gradient-to-tr from-teal-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition duration-500"></div>
             <div class="h-32 bg-slate-50/80 rounded-2xl mb-4 overflow-hidden flex items-center justify-center text-slate-300 text-5xl relative z-10 group-hover:text-indigo-400 transition-colors">
-                <i class="fa-solid ${item.icon} transform group-hover:scale-110 transition duration-500"></i>
+                <i class="fa-solid ${item.i} transform group-hover:scale-110 transition duration-500"></i>
             </div>
             <div class="relative z-10">
-                <h4 class="font-bold text-slate-900 leading-snug mb-3 line-clamp-2">${item.title}</h4>
+                <h4 class="font-bold text-slate-900 leading-snug mb-3 line-clamp-2">${item.t}</h4>
                 <div class="text-[11px] font-bold text-teal-700 bg-teal-50 inline-block px-2.5 py-1.5 rounded-lg border border-teal-100">
-                    <i class="fa-solid fa-arrow-trend-up mr-1"></i> ${item.count} analiz
+                    <i class="fa-solid fa-arrow-trend-up mr-1"></i> ${item.c} analiz
                 </div>
-            </div>
-        `;
-        card.onclick = () => {
-            document.getElementById("q").value = item.title;
-            runAnalyze();
-        };
-        grid.appendChild(card);
+            </div>`;
+        d.onclick = () => { document.getElementById("q").value = item.t; runAnalyze(); };
+        grid.appendChild(d);
     });
   }
 
-  // ANALYZE
+  // ANALYZE & RESULTS
   async function runAnalyze() {
     clearErr();
     const q = document.getElementById("q").value.trim();
-    if (!q) { showErr("Boşluğa mı bakayım? Bir link yapıştır :)"); return; }
-
-    document.getElementById("statusLine").classList.remove("hidden");
-    startTicker();
+    if (!q) { showErr("Link yapıştır veya bir şeyler yaz!"); return; }
+    document.getElementById("statusLine").classList.remove("hidden"); startTicker();
 
     try {
-      const url = safeUrl(`/api/search?q=${encodeURIComponent(q)}`);
-      const res = await fetch(url);
+      const res = await fetch(safeUrl(`/api/search?q=${encodeURIComponent(q)}`));
       const data = await res.json();
-
-      stopTicker();
-      document.getElementById("statusLine").classList.add("hidden");
-
-      if (!res.ok || data?.error) {
-        showErr(data?.message || "Bir hata oluştu, tekrar dene.");
-        return;
-      }
-
-      const products = data.products || [];
-      if (products.length === 0) {
-        showErr("Üzgünüm, bu ürünle ilgili veri bulamadım.");
-        return;
-      }
-
-      renderResults(products);
-      
-      setTimeout(() => {
-          document.getElementById("resultsSection").classList.remove("hidden");
-          document.getElementById("resultsSection").scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-
-    } catch (e) {
-      stopTicker();
-      document.getElementById("statusLine").classList.add("hidden");
-      showErr("Sunucuya bağlanamadım. İnternetini kontrol et.");
-    }
+      stopTicker(); document.getElementById("statusLine").classList.add("hidden");
+      if (!res.ok || data?.error) { showErr(data?.message || "Hata oluştu."); return; }
+      const prods = data.products || [];
+      if (prods.length === 0) { showErr("Ürün bulunamadı."); return; }
+      renderResults(prods);
+      setTimeout(() => { document.getElementById("resultsSection").classList.remove("hidden"); document.getElementById("resultsSection").scrollIntoView({ behavior: 'smooth' }); }, 100);
+    } catch (e) { stopTicker(); document.getElementById("statusLine").classList.add("hidden"); showErr("Sunucu hatası."); }
   }
 
-  // RESULTS (Kart renkleri tamamen yenilendi)
-  function renderResults(products) {
-      const grid = document.getElementById("resultsGrid");
-      grid.innerHTML = "";
+  function renderResults(prods) {
+    const grid = document.getElementById("resultsGrid"); grid.innerHTML = "";
+    prods.slice(0, 5).forEach((p, i) => {
+        let t = { bg:"bg-white", b:"border-slate-200 hover:border-indigo-300", bdg:"text-slate-600 bg-slate-100", ic:"fa-layer-group", ttl:"ALTERNATİF", btn:"bg-white text-slate-900 border-2 border-slate-200 hover:bg-slate-50" };
+        
+        if(i===0) t={ bg:"bg-gradient-to-b from-white to-indigo-50/30", b:"border-indigo-500 ring-4 ring-indigo-50/50", bdg:"text-white bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg", ic:"fa-crown", ttl:"CAYNANA ÖNERİYOR", btn:"bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg hover:shadow-xl" };
+        else if(i===1) t={ bg:"bg-white", b:"border-teal-400 ring-2 ring-teal-50", bdg:"text-teal-700 bg-teal-50 border border-teal-100", ic:"fa-brain", ttl:"MANTIKLI SEÇİM", btn:"bg-teal-600 text-white hover:bg-teal-700" };
+        else if(i===4) t={ bg:"bg-white", b:"border-rose-200", bdg:"text-rose-600 bg-rose-50 border border-rose-100", ic:"fa-triangle-exclamation", ttl:"DİKKAT ET", btn:"bg-white text-rose-600 border-2 border-rose-200 hover:bg-rose-50" };
 
-      products.slice(0, 5).forEach((p, idx) => {
-          // Varsayılan Tema (Alternatifler)
-          let theme = { 
-              bg:"bg-white", 
-              border:"border-slate-200 hover:border-indigo-300", 
-              badge:"text-slate-600 bg-slate-100", 
-              icon:"fa-layer-group", 
-              title:"ALTERNATİF",
-              btn:"bg-white text-slate-900 border-2 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-          };
-
-          // 1. Kart: CAYNANA ÖNERİYOR (En Premium - İndigo/Mor Lüksü)
-          if(idx === 0) theme = { 
-              bg:"bg-gradient-to-b from-white to-indigo-50/30", 
-              border:"border-indigo-500 ring-4 ring-indigo-50/50 shadow-indigo-100", 
-              badge:"text-white bg-gradient-to-r from-indigo-600 to-purple-600 shadow-lg", 
-              icon:"fa-crown", 
-              title:"CAYNANA ÖNERİYOR",
-              btn:"bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:scale-[1.02]"
-          };
-          // 2. Kart: MANTIKLI SEÇİM (Turkuaz/Mavi Akılcılık)
-          else if(idx === 1) theme = { 
-              bg:"bg-white", 
-              border:"border-teal-400 ring-2 ring-teal-50", 
-              badge:"text-teal-700 bg-teal-50 border border-teal-100", 
-              icon:"fa-brain", 
-              title:"MANTIKLI SEÇİM",
-              btn:"bg-teal-600 text-white hover:bg-teal-700 shadow-md hover:shadow-teal-100"
-          };
-          // Son Kart: DİKKAT ET (Kırmızı Uyarı - Aynı kaldı)
-          else if(idx === 4) theme = { 
-              bg:"bg-white", 
-              border:"border-rose-200", 
-              badge:"text-rose-600 bg-rose-50 border border-rose-100", 
-              icon:"fa-triangle-exclamation", 
-              title:"DİKKAT ET",
-              btn:"bg-white text-rose-600 border-2 border-rose-200 hover:bg-rose-50 hover:border-rose-300"
-          };
-
-          const card = document.createElement("div");
-          card.className = `${theme.bg} rounded-[2rem] border ${theme.border} p-6 flex flex-col soft-shadow relative transition-all duration-300 hover:shadow-2xl group`;
-          card.innerHTML = `
-            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full text-[11px] font-extrabold tracking-widest flex items-center gap-2 whitespace-nowrap ${theme.badge} z-20">
-                <i class="fa-solid ${theme.icon}"></i> ${theme.title}
-            </div>
-            
+        const c = document.createElement("div");
+        c.className = `${t.bg} rounded-[2rem] border ${t.b} p-6 flex flex-col soft-shadow relative transition-all duration-300 hover:shadow-2xl group`;
+        c.innerHTML = `
+            <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full text-[11px] font-extrabold tracking-widest flex items-center gap-2 whitespace-nowrap ${t.bdg} z-20"><i class="fa-solid ${t.ic}"></i> ${t.ttl}</div>
             <div class="mt-6 mb-4 flex items-start gap-4">
-                 <div class="w-20 h-20 bg-slate-50 rounded-2xl flex-shrink-0 flex items-center justify-center text-slate-300 relative overflow-hidden group-hover:text-indigo-300 transition">
-                    <i class="fa-solid fa-image text-3xl relative z-10"></i>
-                    <div class="absolute inset-0 bg-gradient-to-tr from-slate-100 to-white opacity-0 group-hover:opacity-100 transition"></div>
-                 </div>
-                 <div class="flex-1">
-                    <h3 class="font-bold text-slate-900 text-[15px] leading-snug line-clamp-2 group-hover:text-indigo-900 transition">${p.title || "Ürün Adı"}</h3>
-                    <p class="text-xs text-slate-500 mt-1.5 font-medium flex items-center gap-1">
-                        <i class="fa-solid fa-store text-slate-300"></i> ${p.source || "Pazaryeri"}
-                    </p>
-                 </div>
+                 <div class="w-20 h-20 bg-slate-50 rounded-2xl flex-shrink-0 flex items-center justify-center text-slate-300 text-3xl group-hover:text-indigo-300 transition"><i class="fa-solid fa-image"></i></div>
+                 <div class="flex-1"><h3 class="font-bold text-slate-900 text-[15px] leading-snug line-clamp-2">${p.title||"Ürün"}</h3><p class="text-xs text-slate-500 mt-1.5 font-medium"><i class="fa-solid fa-store text-slate-300"></i> ${p.source||"Pazar"}</p></div>
             </div>
-
-            <div class="text-3xl font-extrabold text-slate-900 mb-5 tracking-tight flex items-baseline gap-1">
-                ${p.price || "---"} <span class="text-sm font-medium text-slate-400">TL</span>
-            </div>
-            
-            <div class="bg-slate-50/80 p-5 rounded-2xl mb-8 flex-1 border border-slate-100 relative group-hover:bg-white group-hover:border-indigo-100 transition">
-                <i class="fa-solid fa-quote-left text-slate-200 absolute top-3 left-3 text-2xl group-hover:text-indigo-100 transition"></i>
-                <p class="text-[13px] text-slate-600 leading-relaxed relative z-10 pl-4 font-medium">
-                    ${p.reason || "Fiyat performansı incelendi. Caynana bu konuda detaylı bir analiz yaptı."}
-                </p>
-            </div>
-
-            <a href="${p.url}" target="_blank" class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${theme.btn}">
-                <span>Ürüne Git</span>
-                <i class="fa-solid fa-arrow-up-right-from-square"></i>
-            </a>
-          `;
-          grid.appendChild(card);
-      });
+            <div class="text-3xl font-extrabold text-slate-900 mb-5 tracking-tight flex items-baseline gap-1">${p.price||"--"} <span class="text-sm font-medium text-slate-400">TL</span></div>
+            <div class="bg-slate-50/80 p-5 rounded-2xl mb-8 flex-1 border border-slate-100 relative group-hover:bg-white group-hover:border-indigo-100 transition"><i class="fa-solid fa-quote-left text-slate-200 absolute top-3 left-3 text-2xl"></i><p class="text-[13px] text-slate-600 leading-relaxed relative z-10 pl-4 font-medium">${p.reason||"Analiz yapıldı."}</p></div>
+            <a href="${p.url}" target="_blank" class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl font-bold text-sm transition-all duration-300 ${t.btn}"><span>Ürüne Git</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>`;
+        grid.appendChild(c);
+    });
   }
-
+  
   loadTrending();
-  document.getElementById("q").addEventListener("keypress", (e) => { if (e.key === "Enter") runAnalyze(); });
-
+  document.getElementById("q").addEventListener("keypress", (e)=>{if(e.key==="Enter")runAnalyze()});
 </script>
 </body>
 </html>
