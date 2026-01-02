@@ -9,137 +9,141 @@
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #FAFAFA; }
-    /* Özel Premium Gölgeler */
-    .soft-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
-    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); }
-    .ticker { min-height: 24px; display: inline-block; }
+    .soft-shadow { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04); }
+    .card-hover:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08); }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    /* Caynana Mavisi/Yeşili */
-    .text-brand { color: #059669; }
-    .bg-brand { background-color: #059669; }
-    .bg-brand-hover:hover { background-color: #047857; }
+    /* Caynana Özel Animasyon */
+    @keyframes pulse-ring {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .avatar-glow { animation: pulse-ring 2s infinite; }
   </style>
 </head>
 
 <body class="text-slate-900 min-h-screen flex flex-col">
 
-<header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
+<header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-100">
   <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
     <a href="#" class="flex items-center gap-2 group">
-      <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 group-hover:scale-110 transition">
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+      <div class="w-9 h-9 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-emerald-200 shadow-lg group-hover:scale-110 transition">
+        <i class="fa-solid fa-magnifying-glass text-sm"></i>
       </div>
       <span class="text-xl font-extrabold tracking-tight text-slate-900">CAYNANA</span>
     </a>
-
-    <button class="hidden md:block text-sm font-semibold text-slate-600 hover:text-emerald-600 transition">
-      Günün Tavsiyeleri
+    <button class="hidden md:block text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition">
+      <i class="fa-solid fa-star mr-1"></i> Favorilerim
     </button>
   </div>
 </header>
 
 <main class="flex-1">
 
-  <section class="max-w-3xl mx-auto px-5 pt-20 pb-10 text-center">
+  <section class="max-w-3xl mx-auto px-5 pt-16 pb-10 text-center">
     
-    <div class="mb-6 flex justify-center">
-        <div class="w-24 h-24 rounded-full bg-slate-200 border-4 border-white shadow-lg overflow-hidden relative">
-             <img src="https://via.placeholder.com/150/e2e8f0/94a3b8?text=C" class="object-cover w-full h-full" alt="Caynana">
+    <div class="mb-8 flex justify-center relative">
+        <div class="w-28 h-28 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center relative z-10 avatar-glow">
+             <i class="fa-solid fa-user-tie text-5xl text-slate-300"></i>
+             
+             <div class="absolute bottom-0 right-0 bg-emerald-500 border-4 border-white w-8 h-8 rounded-full flex items-center justify-center text-white text-xs shadow-md">
+               <i class="fa-solid fa-check"></i>
+             </div>
         </div>
     </div>
 
-    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
-      Almadan önce <span class="text-emerald-600">Caynana’ya sor.</span>
+    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-slate-900 mb-4 leading-tight">
+      Almadan önce <br><span class="text-emerald-600">Caynana’ya danış.</span>
     </h1>
-    <p class="text-lg text-slate-500 max-w-lg mx-auto leading-relaxed">
-      Fiyatına bakar, yorumunu okur, riskini tartar. <br>Senin için net konuşur.
+    <p class="text-base md:text-lg text-slate-500 max-w-md mx-auto leading-relaxed mb-8">
+      Sanal alemin kurnaz asistanı. Fiyatı süzer, yorumu okur, sana net konuşur.
     </p>
 
-    <div class="mt-10 bg-white soft-shadow rounded-full p-2 flex items-center border border-slate-100 focus-within:ring-4 focus-within:ring-emerald-50 focus-within:border-emerald-200 transition-all max-w-2xl mx-auto">
-        <div class="pl-4 text-slate-400">
-            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+    <div class="bg-white soft-shadow rounded-full p-2 flex items-center border border-slate-100 focus-within:ring-4 focus-within:ring-emerald-50 focus-within:border-emerald-200 transition-all max-w-2xl mx-auto relative z-20">
+        <div class="pl-5 text-slate-400">
+            <i class="fa-solid fa-link text-lg"></i>
         </div>
         <input 
             id="q" 
             type="text" 
-            placeholder="Ürün linkini yapıştır veya ürün adını yaz..." 
-            class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 px-3 py-3 text-base md:text-lg w-full outline-none"
+            placeholder="Ürün linkini yapıştır veya adını yaz..." 
+            class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 px-4 py-3 text-base w-full outline-none"
         >
-        <button onclick="runAnalyze()" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-3 font-semibold transition shadow-md flex items-center gap-2">
+        <button onclick="runAnalyze()" class="bg-slate-900 hover:bg-slate-800 text-white rounded-full px-6 py-3 font-bold transition shadow-lg flex items-center gap-2">
             <span>Analiz Et</span>
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <i class="fa-solid fa-arrow-right"></i>
         </button>
     </div>
 
-    <div id="statusLine" class="mt-6 hidden">
-       <div class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium animate-pulse">
-           <svg class="animate-spin h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-           </svg>
-           <span id="ticker">Caynana analiz ediyor...</span>
-       </div>
+    <div class="h-10 mt-6 flex justify-center items-center">
+        <div id="statusLine" class="hidden inline-flex items-center gap-2 px-5 py-2 bg-white border border-emerald-100 text-emerald-700 rounded-full text-sm font-bold shadow-sm animate-pulse">
+           <i class="fa-solid fa-circle-notch fa-spin"></i>
+           <span id="ticker">Caynana piyasayı tarıyor...</span>
+        </div>
+        
+        <div id="err" class="hidden text-sm font-semibold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg border border-rose-100 flex items-center gap-2">
+           <i class="fa-solid fa-circle-exclamation"></i>
+           <span id="errMsg"></span>
+        </div>
     </div>
-    
-    <div id="err" class="mt-4 hidden text-sm font-medium text-red-600 bg-red-50 px-4 py-2 rounded-lg inline-block"></div>
 
   </section>
 
-  <section class="max-w-5xl mx-auto px-5 mt-4">
+  <section class="max-w-6xl mx-auto px-5 mt-2 mb-20">
     <div class="flex items-center justify-between mb-5">
       <div>
         <h2 class="text-lg font-bold text-slate-900">Günün Popüler Sorguları</h2>
-        <p class="text-sm text-slate-500">Son 24 saatte en çok merak edilenler</p>
+        <p class="text-xs text-slate-500 font-medium">Son 24 saatte en çok bunlar soruldu</p>
       </div>
-      <button onclick="loadTrending(true)" class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg hover:bg-emerald-100 transition">Yenile</button>
+      <button onclick="loadTrending(true)" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-600 transition flex items-center justify-center">
+          <i class="fa-solid fa-rotate"></i>
+      </button>
     </div>
 
-    <div id="trendingGrid" class="flex gap-4 overflow-x-auto pb-6 snap-x hide-scrollbar">
-       <div class="min-w-[160px] h-48 bg-white rounded-2xl border border-slate-100 p-3 animate-pulse"></div>
-       <div class="min-w-[160px] h-48 bg-white rounded-2xl border border-slate-100 p-3 animate-pulse"></div>
-       <div class="min-w-[160px] h-48 bg-white rounded-2xl border border-slate-100 p-3 animate-pulse"></div>
-    </div>
+    <div id="trendingGrid" class="flex gap-4 overflow-x-auto pb-8 pt-2 snap-x hide-scrollbar px-1">
+       </div>
   </section>
 
-  <section id="resultsSection" class="max-w-6xl mx-auto px-5 pb-20 mt-10 hidden bg-white rounded-t-3xl border-t border-slate-100 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] pt-10">
-    <div class="text-center mb-10">
-        <h2 class="text-2xl font-extrabold text-slate-900">Analiz Raporu Hazır</h2>
-        <p class="text-slate-500">Caynana 5 seçenek çıkardı. İşte kararı:</p>
+  <section id="resultsSection" class="max-w-6xl mx-auto px-5 pb-24 hidden pt-4 border-t border-slate-200/60 bg-slate-50/50">
+    <div class="text-center mb-10 mt-10">
+        <div class="inline-block p-3 rounded-full bg-emerald-100 text-emerald-600 mb-4 text-2xl shadow-sm">
+            <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900">Rapor Hazır!</h2>
+        <p class="text-slate-500">İşte Caynana'nın senin için seçtikleri:</p>
     </div>
 
-    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-5">
+    <div id="resultsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
       </div>
-  </section>
-
-  <section class="py-10 text-center opacity-40 grayscale hover:grayscale-0 transition duration-500">
-    <div class="flex justify-center gap-8 items-center max-w-2xl mx-auto">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Trendyol_logo.svg" class="h-5" alt="Trendyol">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Hepsiburada_logo.svg" class="h-5" alt="Hepsiburada">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" class="h-5" alt="Amazon">
-    </div>
   </section>
 
 </main>
 
-<footer class="bg-white border-t border-slate-100 py-8 text-center text-sm text-slate-400">
+<footer class="bg-white border-t border-slate-100 py-8 text-center text-xs text-slate-400 mt-auto">
+  <div class="flex justify-center gap-4 mb-4 opacity-50 grayscale hover:grayscale-0 transition duration-500">
+      <i class="fa-brands fa-amazon text-2xl"></i>
+      <i class="fa-brands fa-google text-2xl"></i>
+      <i class="fa-brands fa-instagram text-2xl"></i>
+  </div>
   <p>&copy; 2026 CAYNANA AI. Tüm hakları saklıdır.</p>
 </footer>
 
 <script>
-  // API URL'si
   const API_BASE = "https://bikonomi-api-1.onrender.com"; 
 
-  // Ticker Mesajları (Bekleme Ekranı)
   const tickerLines = [
-    "Fiyat geçmişini tarıyorum...",
+    "Fiyat geçmişine bakıyorum...",
     "Kullanıcı yorumlarını okuyorum...",
-    "Gizli indirimleri kontrol ediyorum...",
-    "En mantıklı seçeneği hesaplıyorum...",
-    "Az kaldı, harika bir şey buldum..."
+    "Satıcı güvenilir mi, ona bakıyorum...",
+    "Gizli indirim var mı?",
+    "Az kaldı, raporu hazırlıyorum..."
   ];
-
   let tickerIdx = 0;
   let tickerTimer = null;
 
@@ -151,7 +155,7 @@
     tickerTimer = setInterval(() => {
       tickerIdx = (tickerIdx + 1) % tickerLines.length;
       el.textContent = tickerLines[tickerIdx];
-    }, 2000);
+    }, 1800);
   }
 
   function stopTicker() {
@@ -161,14 +165,15 @@
 
   function showErr(msg) {
     const el = document.getElementById("err");
+    const msgEl = document.getElementById("errMsg");
     el.classList.remove("hidden");
-    el.textContent = msg;
+    msgEl.textContent = msg;
+    // 5 sn sonra hatayı gizle
+    setTimeout(() => { el.classList.add("hidden"); }, 5000);
   }
 
   function clearErr() {
-    const el = document.getElementById("err");
-    el.classList.add("hidden");
-    el.textContent = "";
+    document.getElementById("err").classList.add("hidden");
   }
 
   function safeUrl(path) {
@@ -176,34 +181,33 @@
     return API_BASE.replace(/\/$/, "") + path;
   }
 
-  // --- TRENDING FONKSİYONU ---
+  // TRENDING
   async function loadTrending(force = false) {
-    // Demo Verisi (API Hazır Olana Kadar)
     const demoData = [
-      { title: "Apple AirPods Pro 2", count: 142, img: "https://via.placeholder.com/150?text=AirPods" },
-      { title: "Philips Airfryer XXL", count: 98, img: "https://via.placeholder.com/150?text=Airfryer" },
-      { title: "Roborock S8 Süpürge", count: 85, img: "https://via.placeholder.com/150?text=Robot" },
-      { title: "Stanley Termos 1.3L", count: 76, img: "https://via.placeholder.com/150?text=Stanley" },
-      { title: "Dyson V15 Detect", count: 64, img: "https://via.placeholder.com/150?text=Dyson" },
+      { title: "Apple AirPods Pro 2", count: 142, icon: "fa-headphones" },
+      { title: "Philips Airfryer XXL", count: 98, icon: "fa-utensils" },
+      { title: "Roborock S8 Süpürge", count: 85, icon: "fa-robot" },
+      { title: "Stanley Termos 1.3L", count: 76, icon: "fa-mug-hot" },
+      { title: "Dyson V15 Detect", count: 64, icon: "fa-broom" },
     ];
 
     const grid = document.getElementById("trendingGrid");
     grid.innerHTML = "";
 
-    // Backend bağlanınca burayı fetch ile değiştiririz. Şimdilik demo:
-    demoData.forEach(item => {
+    demoData.forEach((item, idx) => {
         const card = document.createElement("div");
-        card.className = "min-w-[160px] bg-white rounded-2xl border border-slate-100 p-3 flex flex-col justify-between soft-shadow card-hover transition cursor-pointer";
+        card.className = "min-w-[180px] bg-white rounded-2xl border border-slate-100 p-4 flex flex-col justify-between soft-shadow card-hover transition cursor-pointer select-none snap-start";
         card.innerHTML = `
-            <div class="h-24 bg-slate-50 rounded-xl mb-3 overflow-hidden flex items-center justify-center">
-                <span class="text-2xl text-slate-300"><i class="fas fa-image"></i></span> 
-                </div>
+            <div class="h-28 bg-slate-50 rounded-xl mb-3 overflow-hidden flex items-center justify-center text-slate-300 text-4xl group">
+                <i class="fa-solid ${item.icon} group-hover:text-emerald-400 transition transform group-hover:scale-110"></i>
+            </div>
             <div>
-                <h4 class="font-bold text-sm text-slate-800 leading-tight mb-1 line-clamp-2">${item.title}</h4>
-                <div class="text-xs font-semibold text-emerald-600 bg-emerald-50 inline-block px-2 py-1 rounded-md">${item.count} analiz</div>
+                <h4 class="font-bold text-sm text-slate-800 leading-tight mb-2 line-clamp-2">${item.title}</h4>
+                <div class="text-[10px] font-bold text-emerald-600 bg-emerald-50 inline-block px-2 py-1 rounded-md border border-emerald-100">
+                    <i class="fa-solid fa-chart-line mr-1"></i> ${item.count} analiz
+                </div>
             </div>
         `;
-        // Tıklayınca aramaya at
         card.onclick = () => {
             document.getElementById("q").value = item.title;
             runAnalyze();
@@ -212,17 +216,16 @@
     });
   }
 
-  // --- ANALİZ FONKSİYONU ---
+  // ANALYZE
   async function runAnalyze() {
     clearErr();
     const q = document.getElementById("q").value.trim();
-    if (!q) { showErr("Lütfen bir ürün linki veya adı yazın."); return; }
+    if (!q) { showErr("Boşluğa mı bakayım? Bir link yapıştır :)"); return; }
 
     document.getElementById("statusLine").classList.remove("hidden");
     startTicker();
 
     try {
-      // Backend Çağrısı
       const url = safeUrl(`/api/search?q=${encodeURIComponent(q)}`);
       const res = await fetch(url);
       const data = await res.json();
@@ -231,80 +234,79 @@
       document.getElementById("statusLine").classList.add("hidden");
 
       if (!res.ok || data?.error) {
-        showErr(data?.message || "Analiz yapılamadı, lütfen tekrar deneyin.");
+        showErr(data?.message || "Bir hata oluştu, tekrar dene.");
         return;
       }
 
       const products = data.products || [];
       if (products.length === 0) {
-        showErr("Ürün bulunamadı. Lütfen linki kontrol edin.");
+        showErr("Üzgünüm, bu ürünle ilgili veri bulamadım.");
         return;
       }
 
       renderResults(products);
       
-      // Sonuçlara kaydır
-      document.getElementById("resultsSection").scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+          document.getElementById("resultsSection").classList.remove("hidden");
+          document.getElementById("resultsSection").scrollIntoView({ behavior: 'smooth' });
+      }, 100);
 
     } catch (e) {
       stopTicker();
       document.getElementById("statusLine").classList.add("hidden");
-      // Demo Modu (Backend kapalıysa test için)
-      showErr("Sunucuya ulaşılamadı. (Demo modunda çalışıyor olabilir)");
+      showErr("Sunucuya bağlanamadım. İnternetini kontrol et.");
     }
   }
 
   function renderResults(products) {
-      const section = document.getElementById("resultsSection");
       const grid = document.getElementById("resultsGrid");
-      section.classList.remove("hidden");
       grid.innerHTML = "";
 
       products.slice(0, 5).forEach((p, idx) => {
-          // Kart renkleri ve etiketler
-          let badgeClass = "bg-slate-100 text-slate-600";
-          let badgeText = "SEÇENEK";
-          let borderClass = "border-slate-100";
-          
-          if(idx === 0) { badgeClass = "bg-emerald-100 text-emerald-700"; badgeText = "👑 CAYNANA ÖNERİYOR"; borderClass = "border-emerald-500 ring-4 ring-emerald-50"; }
-          if(idx === 4) { badgeClass = "bg-red-100 text-red-700"; badgeText = "⚠️ DİKKAT"; borderClass = "border-red-200"; }
+          // Mantık: İlk ürün önerilen, son ürün riskli, ortadakiler alternatif
+          let theme = { bg:"bg-white", border:"border-slate-100", badge:"text-slate-500 bg-slate-100", icon:"fa-box-open", title:"SEÇENEK" };
+
+          if(idx === 0) theme = { bg:"bg-white", border:"border-emerald-500 ring-4 ring-emerald-50", badge:"text-white bg-emerald-600", icon:"fa-crown", title:"CAYNANA ÖNERİYOR" };
+          else if(idx === 1) theme = { bg:"bg-white", border:"border-blue-200", badge:"text-blue-600 bg-blue-50", icon:"fa-thumbs-up", title:"MANTIKLI SEÇİM" };
+          else if(idx === 4) theme = { bg:"bg-white", border:"border-red-200", badge:"text-red-600 bg-red-50", icon:"fa-triangle-exclamation", title:"DİKKAT ET" };
 
           const card = document.createElement("div");
-          card.className = `bg-white rounded-2xl border ${borderClass} p-5 flex flex-col soft-shadow relative`;
+          card.className = `${theme.bg} rounded-3xl border ${theme.border} p-5 flex flex-col soft-shadow relative transition hover:shadow-xl`;
           card.innerHTML = `
-            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider ${badgeClass}">
-                ${badgeText}
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-extrabold tracking-widest shadow-sm flex items-center gap-2 whitespace-nowrap ${theme.badge}">
+                <i class="fa-solid ${theme.icon}"></i> ${theme.title}
             </div>
-            <div class="mt-4 mb-2">
-                <h3 class="font-bold text-slate-900 leading-tight line-clamp-2">${p.title || "Ürün Adı"}</h3>
-                <p class="text-xs text-slate-400 mt-1">${p.source || "Pazaryeri"}</p>
-            </div>
-            <div class="text-2xl font-extrabold text-slate-900 mb-4">${p.price || "---"}</div>
             
-            <div class="bg-slate-50 p-3 rounded-xl mb-4 flex-1">
-                <p class="text-xs text-slate-600 leading-relaxed line-clamp-4">
-                    "${p.reason || "Fiyat analizi yapıldı, kullanıcı yorumları tarandı. Bu seçenek mantıklı görünüyor."}"
+            <div class="mt-5 mb-2 flex items-start gap-3">
+                 <div class="w-16 h-16 bg-slate-50 rounded-lg flex-shrink-0 flex items-center justify-center text-slate-300">
+                    <i class="fa-solid fa-image text-xl"></i>
+                 </div>
+                 <div>
+                    <h3 class="font-bold text-slate-900 text-sm leading-tight line-clamp-2">${p.title || "Ürün Adı"}</h3>
+                    <p class="text-xs text-slate-400 mt-1 font-medium">${p.source || "Pazaryeri"}</p>
+                 </div>
+            </div>
+
+            <div class="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight">${p.price || "---"}</div>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl mb-6 flex-1 border border-slate-100 relative">
+                <i class="fa-solid fa-quote-left text-slate-200 absolute top-2 left-2 text-xl"></i>
+                <p class="text-xs text-slate-600 leading-relaxed relative z-10 pl-2">
+                    ${p.reason || "Fiyat performansı incelendi. Caynana bu konuda detaylı bir analiz yaptı."}
                 </p>
             </div>
 
-            <a href="${p.url}" target="_blank" class="w-full block text-center bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition">
-                Ürüne Git
+            <a href="${p.url}" target="_blank" class="w-full group flex items-center justify-center gap-2 bg-slate-900 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-emerald-600 transition shadow-lg hover:shadow-emerald-200">
+                <span>Ürüne Git</span>
+                <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
             </a>
           `;
           grid.appendChild(card);
       });
   }
 
-  // Sayfa Yüklendiğinde
   loadTrending();
-
-  // Enter tuşu desteği
-  document.getElementById("q").addEventListener("keypress", function(event) {
-    if (event.key === "Enter") {
-      event.preventDefault();
-      runAnalyze();
-    }
-  });
+  document.getElementById("q").addEventListener("keypress", (e) => { if (e.key === "Enter") runAnalyze(); });
 
 </script>
 </body>
