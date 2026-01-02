@@ -10,20 +10,28 @@
 
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
   <style>
     body { font-family: 'Inter', sans-serif; }
+    .soft-shadow { box-shadow: 0 18px 55px rgba(2, 6, 23, .08); }
+    .glass { background: rgba(255,255,255,.82); backdrop-filter: blur(10px); }
+    .ticker { min-height: 22px; }
   </style>
 </head>
 
-<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
 
 <!-- HEADER -->
 <header class="bg-white border-b">
-  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-    <div class="text-2xl font-extrabold tracking-tight">
-      CAYNANA
-    </div>
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+    <!-- LOGO (simple, google-like wordmark + magnifier) -->
+    <a href="#" class="flex items-center gap-2 select-none">
+      <svg width="28" height="28" viewBox="0 0 24 24" class="text-emerald-600">
+        <path fill="currentColor" d="M10 18a8 8 0 1 1 0-16a8 8 0 0 1 0 16m0-2a6 6 0 1 0 0-12a6 6 0 0 0 0 12m9.707 4.293l-4.11-4.11a1 1 0 0 1 1.414-1.414l4.11 4.11a1 1 0 0 1-1.414 1.414"/>
+      </svg>
+      <div class="text-xl md:text-2xl font-extrabold tracking-tight">
+        CAYNANA
+      </div>
+    </a>
 
     <button class="bg-emerald-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-emerald-700 transition">
       Caynana’nın Seçimi
@@ -31,7 +39,6 @@
   </div>
 </header>
 
-<!-- MAIN -->
 <main class="flex-1">
 
   <!-- HERO -->
@@ -43,50 +50,93 @@
       Fiyatına bakar, yorumunu okur, riskini tartar. Net konuşur.
     </p>
 
-    <!-- SEARCH -->
-    <div class="mt-8 bg-white shadow-lg rounded-2xl p-4">
-      <input
-        id="productInput"
-        type="text"
-        placeholder="Ürün linkini yapıştır veya ürün adını yaz"
-        class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      />
-
-      <!-- ANALYSIS MODE -->
-      <div class="mt-4 flex gap-3 justify-center">
+    <!-- SEARCH CARD -->
+    <div class="mt-8 bg-white soft-shadow rounded-2xl p-4 md:p-5">
+      <div class="flex flex-col md:flex-row gap-3">
+        <input
+          id="q"
+          type="text"
+          placeholder="Ürün linkini yapıştır veya ürün adını yaz (örn: samsung a07)"
+          class="flex-1 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        />
         <button
-          onclick="setMode('caynana')"
-          id="btnCaynana"
-          class="px-4 py-2 rounded-xl border font-semibold bg-emerald-600 text-white">
-          🧠 Caynana gibi analiz et
-        </button>
-
-        <button
-          onclick="setMode('normal')"
-          id="btnNormal"
-          class="px-4 py-2 rounded-xl border font-semibold bg-white">
-          📊 Normal analiz
+          onclick="runAnalyze()"
+          class="bg-slate-900 text-white px-5 py-3 rounded-xl font-bold hover:bg-slate-800 transition">
+          Analiz Et
         </button>
       </div>
 
-      <button
-        onclick="analyze()"
-        class="mt-5 w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-slate-800 transition">
-        Analiz Et
+      <!-- fixed status line (always visible while analyzing) -->
+      <div id="statusLine" class="mt-4 hidden text-sm md:text-base font-semibold text-slate-700">
+        <span class="text-emerald-700">Caynana</span> senin için en uygun ürünü arıyor…
+        <span class="ml-2 text-slate-500 font-medium ticker" id="ticker"></span>
+      </div>
+
+      <!-- error line -->
+      <div id="err" class="mt-3 hidden text-sm text-red-600"></div>
+    </div>
+  </section>
+
+  <!-- 24H MOST ASKED (HOME) -->
+  <section class="max-w-6xl mx-auto px-4 mt-10">
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <h2 class="text-lg md:text-xl font-extrabold">Caynana’ya en çok sorulanlar</h2>
+        <p class="text-sm text-slate-500">Son 24 saatte en çok analiz edilen ürünler</p>
+      </div>
+      <button onclick="loadTrending(true)" class="text-sm font-semibold text-emerald-700 hover:text-emerald-800">
+        Yenile
       </button>
+    </div>
+
+    <div id="trendingGrid" class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
+      <!-- filled by JS -->
+      <div class="bg-white rounded-2xl p-3 border border-slate-100 animate-pulse h-28"></div>
+      <div class="bg-white rounded-2xl p-3 border border-slate-100 animate-pulse h-28"></div>
+      <div class="bg-white rounded-2xl p-3 border border-slate-100 animate-pulse h-28"></div>
+      <div class="bg-white rounded-2xl p-3 border border-slate-100 animate-pulse h-28 hidden md:block"></div>
+      <div class="bg-white rounded-2xl p-3 border border-slate-100 animate-pulse h-28 hidden md:block"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="resultsSection" class="max-w-6xl mx-auto px-4 mt-12 hidden">
+    <div class="flex items-end justify-between gap-3">
+      <div>
+        <h2 class="text-lg md:text-xl font-extrabold">Analiz Sonucu</h2>
+        <p class="text-sm text-slate-500">Caynana 5 seçenek çıkardı. En üste “Kaynana Öneriyor” koydu.</p>
+      </div>
+    </div>
+
+    <div id="resultsGrid" class="mt-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- 24H bar again -->
+    <div class="mt-10">
+      <div class="flex items-end justify-between gap-3">
+        <div>
+          <h3 class="text-base md:text-lg font-extrabold">Caynana’ya en çok sorulanlar</h3>
+          <p class="text-sm text-slate-500">Son 24 saatte en çok analiz edilenler</p>
+        </div>
+      </div>
+
+      <div id="trendingGrid2" class="mt-4 grid grid-cols-2 md:grid-cols-5 gap-3">
+        <!-- filled by JS -->
+      </div>
     </div>
   </section>
 
   <!-- MARKETPLACE LOGOS -->
-  <section class="max-w-4xl mx-auto px-4 mt-10">
-    <p class="text-center text-sm text-slate-500 mb-4">
-      Analiz edilen pazaryerleri
+  <section class="max-w-4xl mx-auto px-4 mt-12">
+    <p class="text-center text-xs text-slate-500 mb-4">
+      Çalışılan pazaryerleri
     </p>
     <div class="flex justify-center items-center gap-6 flex-wrap opacity-80">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Trendyol_logo.svg" class="h-6" />
-      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Hepsiburada_logo.svg" class="h-6" />
-      <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" class="h-6" />
-      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2b/N11_logo.svg" class="h-6" />
+      <img alt="Trendyol" src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Trendyol_logo.svg" class="h-6" />
+      <img alt="Hepsiburada" src="https://upload.wikimedia.org/wikipedia/commons/3/3f/Hepsiburada_logo.svg" class="h-6" />
+      <img alt="Amazon" src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" class="h-6" />
+      <img alt="N11" src="https://upload.wikimedia.org/wikipedia/commons/2/2b/N11_logo.svg" class="h-6" />
     </div>
   </section>
 
@@ -95,74 +145,313 @@
 <!-- FOOTER -->
 <footer class="bg-white border-t mt-14">
   <div class="max-w-6xl mx-auto px-4 py-8 grid grid-cols-2 md:grid-cols-4 gap-6 text-sm">
-
     <div>
-      <h4 class="font-bold mb-2">CAYNANA</h4>
-      <p class="text-slate-500">
-        Akıllı alışveriş danışmanınız.
-      </p>
+      <h4 class="font-extrabold mb-2">CAYNANA</h4>
+      <p class="text-slate-500">Akıllı alışveriş danışmanınız.</p>
     </div>
-
     <div>
-      <h4 class="font-bold mb-2">Analiz</h4>
+      <h4 class="font-extrabold mb-2">Analiz</h4>
       <ul class="space-y-1 text-slate-600">
-        <li>Nasıl yapılır?</li>
-        <li>Veri kaynakları</li>
-        <li>Güven skoru</li>
+        <li><a href="#" class="hover:text-slate-900">Nasıl yapılır?</a></li>
+        <li><a href="#" class="hover:text-slate-900">Veri kaynakları</a></li>
+        <li><a href="#" class="hover:text-slate-900">Güven skoru</a></li>
       </ul>
     </div>
-
     <div>
-      <h4 class="font-bold mb-2">Destek</h4>
+      <h4 class="font-extrabold mb-2">Destek</h4>
       <ul class="space-y-1 text-slate-600">
-        <li>SSS</li>
-        <li>İletişim</li>
-        <li>Geri bildirim</li>
+        <li><a href="#" class="hover:text-slate-900">SSS</a></li>
+        <li><a href="#" class="hover:text-slate-900">İletişim</a></li>
+        <li><a href="#" class="hover:text-slate-900">Geri bildirim</a></li>
       </ul>
     </div>
-
     <div>
-      <h4 class="font-bold mb-2">Yasal</h4>
+      <h4 class="font-extrabold mb-2">Yasal</h4>
       <ul class="space-y-1 text-slate-600">
-        <li>Hakkımızda</li>
-        <li>Gizlilik</li>
-        <li>Kullanım şartları</li>
+        <li><a href="#" class="hover:text-slate-900">Hakkımızda</a></li>
+        <li><a href="#" class="hover:text-slate-900">Gizlilik</a></li>
+        <li><a href="#" class="hover:text-slate-900">Kullanım şartları</a></li>
       </ul>
     </div>
-
   </div>
-
-  <div class="text-center text-xs text-slate-400 pb-4">
-    © 2026 CAYNANA
-  </div>
+  <div class="text-center text-xs text-slate-400 pb-4">© 2026 CAYNANA</div>
 </footer>
 
-<!-- SCRIPT -->
 <script>
-  let analysisMode = 'caynana';
+  // ✅ API BASE: Render backend’in burada
+  // Örn: "https://bikonomi-api-1.onrender.com"
+  const API_BASE = ""; // boş bırak: aynı domain/proxy ise çalışır. Değilse buraya yaz.
 
-  function setMode(mode) {
-    analysisMode = mode;
-    document.getElementById('btnCaynana').classList.toggle('bg-emerald-600', mode === 'caynana');
-    document.getElementById('btnCaynana').classList.toggle('text-white', mode === 'caynana');
+  // ✅ Endpoint varsayımı:
+  // 1) Arama/analiz: GET /api/search?q=...
+  // 2) Trending: GET /api/trending?hours=24&limit=10
+  // Eğer trending endpoint henüz yoksa fallback gösterir (ama sen backend’e ekleyeceksin).
 
-    document.getElementById('btnNormal').classList.toggle('bg-emerald-600', mode === 'normal');
-    document.getElementById('btnNormal').classList.toggle('text-white', mode === 'normal');
+  const tickerLines = [
+    "Caynana arıyor… bir saniye, üzme beni.",
+    "En iyisini bulmadan bırakmam.",
+    "Fiyat/yorum/riski aynı anda tartıyorum.",
+    "Sana en uygun olanı seçtiricem, sakin ol.",
+    "Hadi bakalım… cüzdanı yakmadan çözelim."
+  ];
+
+  let tickerIdx = 0;
+  let tickerTimer = null;
+
+  function startTicker() {
+    const el = document.getElementById("ticker");
+    el.textContent = tickerLines[0];
+    tickerIdx = 0;
+    if (tickerTimer) clearInterval(tickerTimer);
+    tickerTimer = setInterval(() => {
+      tickerIdx = (tickerIdx + 1) % tickerLines.length;
+      el.textContent = tickerLines[tickerIdx];
+    }, 1800);
   }
 
-  function analyze() {
-    const value = document.getElementById('productInput').value;
-    if (!value) {
-      alert("Bir şey gir, Caynana bakmadan olmaz.");
+  function stopTicker() {
+    if (tickerTimer) clearInterval(tickerTimer);
+    tickerTimer = null;
+    document.getElementById("ticker").textContent = "";
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById("err");
+    el.classList.remove("hidden");
+    el.textContent = msg;
+  }
+
+  function clearErr() {
+    const el = document.getElementById("err");
+    el.classList.add("hidden");
+    el.textContent = "";
+  }
+
+  function safeUrl(path) {
+    if (!API_BASE) return path;
+    return API_BASE.replace(/\/$/, "") + path;
+  }
+
+  // --------------------------
+  // TRENDING (24h)
+  // --------------------------
+  function trendingFallback() {
+    // Backend hazır değilse bile sayfa boş kalmasın
+    return [
+      { title: "Bluetooth Kulaklık", count24h: 98, url: "#", image: "" },
+      { title: "Robot Süpürge", count24h: 84, url: "#", image: "" },
+      { title: "Airfryer", count24h: 76, url: "#", image: "" },
+      { title: "Powerbank", count24h: 61, url: "#", image: "" },
+      { title: "Akıllı Saat", count24h: 57, url: "#", image: "" },
+      { title: "Laptop Standı", count24h: 49, url: "#", image: "" },
+      { title: "Kablosuz Mouse", count24h: 44, url: "#", image: "" },
+      { title: "Kahve Makinesi", count24h: 41, url: "#", image: "" },
+      { title: "Şarj Aleti", count24h: 39, url: "#", image: "" },
+      { title: "Çocuk Kamerası", count24h: 36, url: "#", image: "" },
+    ];
+  }
+
+  function renderTrending(items, targetId) {
+    const grid = document.getElementById(targetId);
+    grid.innerHTML = "";
+
+    items.slice(0, 10).forEach((it) => {
+      const card = document.createElement("a");
+      card.href = it.url || "#";
+      card.className =
+        "bg-white rounded-2xl border border-slate-100 p-3 hover:shadow-md transition soft-shadow/0";
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-2">
+          <div class="font-bold text-sm leading-snug line-clamp-2">${escapeHtml(it.title || "Ürün")}</div>
+          <div class="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full whitespace-nowrap">
+            ${Number(it.count24h || 0)}×
+          </div>
+        </div>
+        <div class="mt-3 text-xs text-slate-500">son 24 saat</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  async function loadTrending(force = false) {
+    // küçük cache: 3 dk
+    const key = "caynana_trending_cache_v1";
+    const now = Date.now();
+    if (!force) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(key) || "null");
+        if (cached && (now - cached.ts) < 180000 && Array.isArray(cached.items)) {
+          renderTrending(cached.items, "trendingGrid");
+          renderTrending(cached.items, "trendingGrid2");
+          return;
+        }
+      } catch {}
+    }
+
+    try {
+      const res = await fetch(safeUrl("/api/trending?hours=24&limit=10"));
+      if (!res.ok) throw new Error("trending endpoint yok");
+      const data = await res.json();
+
+      // Beklenen: { items: [{title, count24h, url, image}] }
+      const items = (data.items && Array.isArray(data.items)) ? data.items : trendingFallback();
+      localStorage.setItem(key, JSON.stringify({ ts: now, items }));
+
+      renderTrending(items, "trendingGrid");
+      renderTrending(items, "trendingGrid2");
+    } catch (e) {
+      const items = trendingFallback();
+      renderTrending(items, "trendingGrid");
+      renderTrending(items, "trendingGrid2");
+    }
+  }
+
+  // --------------------------
+  // ANALYZE -> 5 results
+  // --------------------------
+  function scoreBadge(score) {
+    const s = Math.max(0, Math.min(100, Number(score || 0)));
+    return `
+      <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-slate-900 text-white">
+        <div class="text-center leading-none">
+          <div class="text-xl font-extrabold">${s}</div>
+          <div class="text-[10px] font-bold opacity-80 -mt-0.5">PUAN</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function verdictLabel(score) {
+    const s = Number(score || 0);
+    if (s >= 85) return { text: "ÇOK İYİ", cls: "bg-emerald-50 text-emerald-700" };
+    if (s >= 70) return { text: "MANTIKLI", cls: "bg-sky-50 text-sky-700" };
+    if (s >= 55) return { text: "DÜŞÜNÜLEBİLİR", cls: "bg-amber-50 text-amber-700" };
+    return { text: "DİKKAT", cls: "bg-rose-50 text-rose-700" };
+  }
+
+  function renderResults(products) {
+    const section = document.getElementById("resultsSection");
+    const grid = document.getElementById("resultsGrid");
+    section.classList.remove("hidden");
+    grid.innerHTML = "";
+
+    const topFive = (products || []).slice(0, 5);
+
+    topFive.forEach((p, idx) => {
+      const card = document.createElement("a");
+      card.href = p.url || "#";
+      card.target = "_blank";
+      card.className = "bg-white rounded-2xl border border-slate-100 p-4 hover:shadow-lg transition soft-shadow";
+
+      const v = verdictLabel(p.score ?? p.finalScore ?? 0);
+      const score = p.score ?? p.finalScore ?? 0;
+
+      const badgeTop = (idx === 0)
+        ? `<div class="inline-flex items-center gap-2 text-[11px] font-extrabold px-3 py-1.5 rounded-full bg-emerald-600 text-white">
+             👑 KAYNANA ÖNERİYOR
+           </div>`
+        : `<div class="inline-flex items-center text-[11px] font-extrabold px-3 py-1.5 rounded-full ${v.cls}">
+             ${v.text}
+           </div>`;
+
+      card.innerHTML = `
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex flex-col gap-2">
+            ${badgeTop}
+            <div class="font-extrabold text-sm leading-snug line-clamp-2">${escapeHtml(p.title || "Ürün")}</div>
+            <div class="text-xs text-slate-500">${escapeHtml(p.source || p.marketplace || "")}</div>
+          </div>
+
+          <!-- BIG SCORE -->
+          ${scoreBadge(score)}
+        </div>
+
+        <div class="mt-3 text-sm font-bold text-slate-900">
+          ${escapeHtml(p.price || p.displayPrice || "")}
+        </div>
+
+        <div class="mt-2 text-xs text-slate-600 line-clamp-3">
+          ${escapeHtml(p.reason || p.summary || "Caynana bu ürün için net konuşacak…")}
+        </div>
+
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-500">
+          <span>Ürüne git</span>
+          <span class="font-extrabold text-emerald-700">→</span>
+        </div>
+      `;
+
+      grid.appendChild(card);
+    });
+  }
+
+  async function runAnalyze() {
+    clearErr();
+
+    const q = document.getElementById("q").value.trim();
+    if (!q) {
+      showErr("Bir şey yaz… Caynana boşluğa bakıp analiz yapmaz 🙂");
       return;
     }
 
-    console.log("Analiz modu:", analysisMode);
-    console.log("Ürün:", value);
+    // Show status line + ticker
+    document.getElementById("statusLine").classList.remove("hidden");
+    startTicker();
 
-    // burada backend'e fetch girecek
+    // call backend
+    try {
+      // Senin ekranda kullandığın endpoint: /api/search?q=...
+      const url = safeUrl(`/api/search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(url);
+      const data = await res.json();
+
+      // stop ticker
+      stopTicker();
+      document.getElementById("statusLine").classList.add("hidden");
+
+      // hata formatı olası: {error, message, ...}
+      if (!res.ok || data?.error) {
+        showErr(data?.message || data?.error || "Analiz alınamadı. Backend hata verdi.");
+        return;
+      }
+
+      // Beklenen: {products:[...]}
+      const products = Array.isArray(data.products) ? data.products : [];
+      if (products.length === 0) {
+        showErr("Ürün bulunamadı. (Backend ürün dönmedi)");
+        return;
+      }
+
+      renderResults(products);
+
+      // trending bar results altında da olsun (zaten var)
+      loadTrending(false);
+
+    } catch (e) {
+      stopTicker();
+      document.getElementById("statusLine").classList.add("hidden");
+      showErr("Bağlantı hatası. Backend erişilemiyor.");
+    }
   }
-</script>
 
+  function escapeHtml(str) {
+    return String(str || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  // init trending on load
+  loadTrending(false);
+
+  // Enter ile analiz
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      const active = document.activeElement;
+      if (active && active.id === "q") runAnalyze();
+    }
+  });
+</script>
 </body>
 </html>
