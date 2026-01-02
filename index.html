@@ -4,841 +4,290 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bikonomi - Akıllı Alışveriş Asistanı</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
   <style>
-    body { font-family: 'Inter', sans-serif; background: #f8fafc; color: #1e293b; }
-    .card-hover { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,0,0,.18); border-color: rgba(16,185,129,.45); }
-    .badge { border: 1px solid rgba(16,185,129,.25); }
-
-    /* Score ring */
-    .score-ring {
-      width: 44px; height: 44px; border-radius: 9999px;
-      display:flex; align-items:center; justify-content:center;
-      background: conic-gradient(#10b981 0deg, #10b981 0deg, #e2e8f0 0deg, #e2e8f0 360deg);
-      position: relative;
-      box-shadow: 0 10px 18px -12px rgba(16,185,129,.55);
-      border: 1px solid rgba(16,185,129,.18);
-      flex: 0 0 auto;
-    }
-    .score-ring::after{
-      content:"";
-      position:absolute; inset:6px;
-      background:#fff; border-radius:9999px;
-      border: 1px solid rgba(2,6,23,.06);
-    }
-    .score-ring span{
-      position:relative; z-index:2;
-      font-size: 12px;
-      font-weight: 800;
-      color:#0f172a;
-      line-height: 1;
-    }
-
-    /* Modal */
-    .modal-backdrop { background: rgba(2,6,23,.55); backdrop-filter: blur(6px); }
-    .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-
-    /* 📱 MOBİL DÜZELTME – SADECE TELEFON */
-    @media (max-width: 480px) {
-      .app-banner { padding: 16px !important; border-radius: 16px !important; }
-      .app-banner .text-sm { font-size: 14px !important; line-height: 1.3 !important; }
-      .app-banner .text-xs { font-size: 12px !important; margin-top: 6px !important; }
-
-      .store-buttons { display: flex !important; gap: 8px !important; margin-top: 12px !important; flex-wrap: nowrap !important; }
-      .store-buttons img { height: 36px !important; width: auto !important; }
-
-      .mobile-tight { padding-bottom: 10px !important; }
-    }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(2, 6, 23, .08); }
+    .skeleton { background: linear-gradient(90deg, rgba(226,232,240,.7) 25%, rgba(241,245,249,.9) 37%, rgba(226,232,240,.7) 63%); background-size: 400% 100%; animation: sk 1.2s ease infinite; }
+    @keyframes sk { 0%{background-position:100% 0} 100%{background-position:0 0} }
+    .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
   </style>
 </head>
-<body>
-  <div id="app" class="flex flex-col min-h-screen max-w-2xl mx-auto bg-white shadow-2xl border-x border-gray-100">
 
-    <div v-if="debugOn" class="bg-slate-900 text-white text-[11px] px-4 py-2 flex flex-wrap gap-x-4 gap-y-1 items-center">
-      <div><span class="opacity-70">API:</span> {{ apiBase }}</div>
-      <div><span class="opacity-70">ID:</span> {{ analysisId || "-" }}</div>
-      <div><span class="opacity-70">Last:</span> {{ lastStatus || "-" }}</div>
-      <div v-if="lastError" class="text-rose-300"><span class="opacity-70">Err:</span> {{ lastError }}</div>
-    </div>
-
-    <header class="p-5 flex justify-between items-center border-b border-gray-100 bg-white/90 backdrop-blur sticky top-0 z-50">
-      <div class="flex items-center gap-2 cursor-pointer" @click="reset">
-        <div class="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-emerald-200">
-          <i class="fa-solid fa-scale-balanced"></i>
-        </div>
+<body class="bg-slate-50 text-slate-900">
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-emerald-600"></div>
         <div>
-          <h1 class="text-xl font-extrabold tracking-tight text-slate-900 leading-none">Bikonomi</h1>
-          <span class="text-[10px] text-slate-400 font-medium tracking-wide">YAPAY ZEKA ASİSTANI</span>
+          <div class="font-extrabold tracking-tight leading-5">Bikonomi</div>
+          <div class="text-xs text-slate-500 -mt-0.5">Akıllı Alışveriş Asistanı</div>
         </div>
       </div>
 
-      <button @click="reset"
-        class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-4 rounded-full transition shadow-md shadow-emerald-200 flex items-center gap-2"
-        v-if="step===3 || step==='error'">
-        <i class="fa-solid fa-plus"></i> YENİ ANALİZ
-      </button>
-    </header>
+      <div class="flex-1"></div>
 
-    <main class="flex-1 overflow-y-auto">
-
-      <div v-if="step === 1" class="px-6 py-10">
-        <div class="text-center mb-8">
-          <h2 class="text-3xl font-extrabold text-slate-900 mb-3 tracking-tight">
-            Paranı <span class="text-emerald-600">Sokağa Atma.</span>
-          </h2>
-          <p class="text-slate-500 text-sm max-w-xs mx-auto leading-relaxed">
-            Ürün linkini yapıştır, Bikonomi birkaç saniyede analiz etsin.
-          </p>
-        </div>
-
-        <div class="w-full relative group z-10 mb-8">
-          <div class="absolute -inset-1 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-          <div class="relative bg-white p-2 rounded-2xl shadow-xl border border-gray-100">
-            <input v-model="linkInput" type="text" placeholder="Trendyol, Hepsiburada, Amazon linki..."
-              @keyup.enter="start"
-              class="w-full p-4 bg-transparent outline-none text-slate-900 font-medium placeholder-slate-400" />
-            <button @click="start"
-              class="w-full mt-2 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-black transition flex items-center justify-center gap-2 shadow-lg">
-              Analiz Et <i class="fa-solid fa-arrow-right"></i>
-            </button>
-          </div>
-        </div>
-
-        <div v-if="trending.length" class="w-full mt-4">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              <i class="fa-solid fa-fire text-orange-500 mr-1"></i> En Çok Analiz Edilen ( Son 24 Saat )
-            </h3>
-            <span class="text-[10px] text-slate-400">{{ trending.length }} ürün</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-for="(item, idx) in trending" :key="idx"
-                 class="bg-white border border-slate-200 rounded-2xl p-3 card-hover">
-              <div class="w-full h-40 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img :src="safeImg(item.user_item.image_url)" @error="imgErr($event)"
-                     class="w-full h-full object-contain p-3">
-              </div>
-
-              <div class="mt-3 flex items-start gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm font-extrabold text-slate-900 line-clamp-2">
-                    {{ item.user_item.title }}
-                  </div>
-
-                  <div class="mt-2 flex items-center justify-between gap-3">
-                    <div class="flex items-baseline gap-2">
-                      <div class="text-base font-extrabold text-emerald-600">{{ item.user_item.price }}</div>
-                      <div v-if="item.count" class="text-[10px] text-slate-400">
-                        <i class="fa-regular fa-chart-bar mr-1"></i>{{ item.count }} analiz
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="mt-2 text-[11px] text-slate-600 leading-relaxed line-clamp-3">
-                    {{ briefAI(item.user_item.reason) }}
-                  </div>
-                </div>
-
-                <div class="flex flex-col items-end gap-2">
-                  <div class="score-ring" :style="ringStyle(item.user_item.score)">
-                    <span>{{ item.user_item.score }}</span>
-                  </div>
-                  <div class="text-[10px] font-bold text-emerald-700 bg-emerald-50 badge px-2 py-1 rounded-full">
-                    Güven
-                  </div>
-                </div>
-              </div>
-
-              <button
-                class="mt-3 w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl hover:bg-black transition flex items-center justify-center gap-2"
-                @click="openAnalysis(item.analysis_id)">
-                Analize Git <i class="fa-solid fa-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="w-full mt-10 bg-slate-900 rounded-2xl p-5 text-white app-banner mobile-tight">
-          <div class="text-sm font-extrabold">Uygulamamızı indir, daha fazla analiz yaptır.</div>
-          <div class="text-xs text-white/80 mt-1">Google Play ve App Store linklerini sonra bağlayacağız.</div>
-
-          <div class="flex gap-3 mt-4 flex-wrap store-buttons">
-            <img class="h-12 cursor-pointer"
-              src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg"
-              alt="Download on the App Store"
-              @click="noopStore()" />
-            <img class="h-12 cursor-pointer"
-              src="https://play.google.com/intl/en_us/badges/static/images/badges/tr_badge_web_generic.png"
-              alt="Get it on Google Play"
-              @click="noopStore()" />
-          </div>
-        </div>
-      </div>
-
-      <div v-if="step === 2" class="flex flex-col items-center justify-center h-full py-32 px-6 text-center">
-        <div class="relative w-24 h-24 mb-8">
-          <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
-          <div class="absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
-          <div class="absolute inset-0 flex items-center justify-center text-emerald-500 text-3xl animate-pulse">
-            <i class="fa-solid fa-robot"></i>
-          </div>
-        </div>
-        <h3 class="text-xl font-bold text-slate-900 animate-pulse">{{ loadingMessage }}</h3>
-        <p class="text-slate-500 text-sm mt-2 max-w-xs mx-auto">Fiyatlar, yorumlar ve alternatifler hazırlanıyor…</p>
-      </div>
-
-      <div v-if="step === 3" class="bg-slate-50 min-h-full px-4 py-8">
-        <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 mb-6 relative overflow-hidden">
-          <div class="absolute top-0 left-0 bg-gray-100 text-gray-500 text-[10px] font-bold px-3 py-1 rounded-br-lg uppercase tracking-wide">
-            İncelediğin Ürün
-          </div>
-
-          <div class="flex gap-4 mt-5">
-            <div class="w-24 h-24 bg-white rounded-xl border border-gray-100 p-2 flex items-center justify-center shrink-0">
-              <img :src="safeImg(userProduct.image_url)" @error="imgErr($event)" class="max-h-full max-w-full object-contain" />
-            </div>
-
-            <div class="flex-1 min-w-0">
-              <h3 class="font-extrabold text-slate-900 text-sm leading-snug mb-2">{{ userProduct.title }}</h3>
-
-              <div class="flex items-end justify-between gap-2">
-                <p class="text-xl font-extrabold text-slate-800">{{ userProduct.price || 'Fiyat Görülmedi' }}</p>
-
-                <div class="flex items-center gap-2">
-                  <div class="score-ring" :style="ringStyle(userProduct.score)">
-                    <span>{{ userProduct.score }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="mt-2">
-                <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                      :class="platformOf(userProduct.url).cls">
-                  <i class="fa-solid mr-1" :class="platformOf(userProduct.url).icon"></i>
-                  {{ platformOf(userProduct.url).label }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-4 pt-3 border-t border-gray-100">
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-              <div class="flex items-start gap-3">
-                <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
-                <div class="flex-1">
-                  <p class="text-xs font-bold text-blue-900 mb-2">{{ splitReason(userProduct.reason).v }}</p>
-                  <p class="text-[12px] text-blue-900 leading-relaxed whitespace-pre-line">
-                    {{ splitReason(userProduct.reason).r }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button class="mt-4 w-full bg-white border border-slate-200 text-slate-900 font-extrabold py-3 rounded-xl hover:bg-slate-50 transition"
-                  @click="openUrl(userProduct.url)">
-            <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Ürünü Aç
-          </button>
-        </div>
-
-        <div v-if="heroProduct && heroProduct.url" class="bg-white rounded-2xl shadow-xl border-2 border-emerald-500 overflow-hidden mb-6">
-          <div class="bg-emerald-600 text-white text-xs font-bold py-3 px-5 flex justify-between items-center">
-            <span class="flex items-center gap-2"><i class="fa-solid fa-star text-yellow-300"></i> BİKONOMİ ÖNERİSİ</span>
-            <div class="score-ring" :style="ringStyle(heroProduct.score)"><span>{{ heroProduct.score }}</span></div>
-          </div>
-
-          <div class="p-6">
-            <div class="flex justify-center mb-6 h-56 bg-white rounded-xl">
-              <img :src="safeImg(heroProduct.image_url)" @error="imgErr($event)" class="h-full object-contain mix-blend-multiply" />
-            </div>
-
-            <div class="text-center mb-4">
-              <h2 class="text-lg font-extrabold text-slate-900 leading-tight mb-2">{{ heroProduct.title || 'Ürün' }}</h2>
-              <p class="text-3xl font-extrabold text-emerald-600 tracking-tight">{{ heroProduct.price || 'Fiyat Görülmedi' }}</p>
-
-              <div class="flex justify-center mt-2">
-                <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                      :class="platformOf(heroProduct.url).cls">
-                  <i class="fa-solid mr-1" :class="platformOf(heroProduct.url).icon"></i>
-                  {{ platformOf(heroProduct.url).label }}
-                </span>
-              </div>
-            </div>
-
-            <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mb-6">
-              <p class="text-[12px] text-emerald-900 font-medium leading-relaxed whitespace-pre-line">
-                {{ heroProduct.reason || 'Alternatif değerlendirme hazırlanıyor.' }}
-              </p>
-            </div>
-
-            <button @click="openUrl(heroProduct.url)"
-              class="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl text-center hover:bg-black transition">
-              <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Ürünü Aç
-            </button>
-          </div>
-        </div>
-
-        <div v-if="otherSuggestions.length" class="mt-2">
-          <div class="flex items-center justify-between mb-3 px-1">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              {{ altHeaderLabel() }}
-            </h3>
-            <span class="text-[10px] text-slate-400">{{ otherSuggestions.length }} ürün</span>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-for="(p, i) in otherSuggestions" :key="i"
-              class="bg-white border border-gray-200 rounded-2xl p-3 card-hover">
-              <div class="w-full h-36 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img :src="safeImg(p.image_url)" @error="imgErr($event)" class="w-full h-full object-contain p-3">
-              </div>
-
-              <div class="mt-3 flex items-start gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm font-extrabold text-slate-900 line-clamp-2">{{ p.title }}</div>
-
-                  <div class="mt-1">
-                    <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                          :class="platformOf(p.url).cls">
-                      <i class="fa-solid mr-1" :class="platformOf(p.url).icon"></i>
-                      {{ platformOf(p.url).label }}
-                    </span>
-                  </div>
-
-                  <div class="mt-2 flex items-center justify-between">
-                    <span class="text-base font-extrabold text-emerald-600">{{ p.price || 'Fiyat Görülmedi' }}</span>
-                    <div class="score-ring" :style="ringStyle(p.score)"><span>{{ p.score }}</span></div>
-                  </div>
-                  <p class="mt-2 text-[12px] text-slate-600 leading-relaxed line-clamp-3 whitespace-pre-line">
-                    {{ p.reason || '' }}
-                  </p>
-                </div>
-              </div>
-
-              <button class="mt-3 w-full bg-white border border-slate-200 text-slate-900 font-extrabold py-2.5 rounded-xl hover:bg-slate-50 transition"
-                      @click="openUrl(p.url)">
-                Ürünü Aç <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="trending.length" class="mt-10">
-          <div class="flex items-center justify-between mb-3 px-1">
-            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              <i class="fa-solid fa-fire text-orange-500 mr-1"></i> En Çok Analiz Edilen ( Son 24 Saat )
-            </h3>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-for="(item, idx) in trending" :key="idx"
-                 class="bg-white border border-slate-200 rounded-2xl p-3 card-hover">
-              <div class="w-full h-36 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                <img :src="safeImg(item.user_item.image_url)" @error="imgErr($event)" class="w-full h-full object-contain p-3">
-              </div>
-
-              <div class="mt-3 flex items-start gap-3">
-                <div class="flex-1 min-w-0">
-                  <div class="text-sm font-extrabold text-slate-900 line-clamp-2">{{ item.user_item.title }}</div>
-                  <div class="mt-2 flex items-center justify-between">
-                    <span class="text-base font-extrabold text-emerald-600">{{ item.user_item.price }}</span>
-                    <div class="score-ring" :style="ringStyle(item.user_item.score)"><span>{{ item.user_item.score }}</span></div>
-                  </div>
-                  <div class="mt-2 text-[11px] text-slate-600 leading-relaxed line-clamp-3">
-                    {{ briefAI(item.user_item.reason) }}
-                  </div>
-                </div>
-              </div>
-
-              <button class="mt-3 w-full bg-slate-900 text-white font-bold py-2.5 rounded-xl hover:bg-black transition flex items-center justify-center gap-2"
-                      @click="openAnalysis(item.analysis_id)">
-                Analize Git <i class="fa-solid fa-arrow-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-if="step === 'error'" class="flex flex-col items-center justify-center py-32 px-6 text-center">
-        <div class="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-2xl mb-4 border border-red-100 shadow-sm">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <h3 class="text-lg font-bold text-slate-900">Bir Sorun Oluştu</h3>
-        <p class="text-slate-500 mt-2 text-sm max-w-xs mx-auto">{{ errorMessage }}</p>
-        <button @click="reset" class="mt-8 text-slate-900 font-bold underline decoration-2 decoration-emerald-400 hover:text-emerald-600 transition">
-          Tekrar Dene
-        </button>
-      </div>
-    </main>
-
-    <footer class="border-t border-slate-100 bg-white px-6 py-8">
-      <div class="text-center text-[10px] text-slate-400 mt-2">@BİKONOMİ 2026</div>
-    </footer>
-
-    <div v-if="modal.open" class="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div class="absolute inset-0 modal-backdrop" @click="closeModal"></div>
-
-      <div class="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-extrabold">
-              <i class="fa-solid fa-robot"></i>
-            </div>
-            <div>
-              <div class="text-sm font-extrabold text-slate-900">Analiz Sonucu</div>
-              <div class="text-[10px] text-slate-400">ID: {{ modal.analysisId }}</div>
-            </div>
-          </div>
-          <button class="w-9 h-9 rounded-xl border border-slate-200 hover:bg-slate-50" @click="closeModal">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-
-        <div class="p-4 max-h-[75vh] overflow-y-auto">
-          <div v-if="modal.loading" class="py-16 text-center">
-            <div class="text-emerald-600 text-3xl mb-3"><i class="fa-solid fa-circle-notch animate-spin"></i></div>
-            <div class="text-sm font-bold text-slate-900">Analiz yükleniyor…</div>
-            <div class="text-xs text-slate-500 mt-1">Birazdan sonuç burada.</div>
-          </div>
-
-          <div v-else-if="modal.error" class="py-12 text-center">
-            <div class="text-red-500 text-3xl mb-3"><i class="fa-solid fa-triangle-exclamation"></i></div>
-            <div class="text-sm font-extrabold text-slate-900">Sonuç alınamadı</div>
-            <div class="text-xs text-slate-500 mt-2">{{ modal.error }}</div>
-          </div>
-
-          <div v-else>
-            <div :class="(modal.hero && modal.hero.url) ? 'grid grid-cols-1 sm:grid-cols-2 gap-4' : 'grid grid-cols-1 gap-4'">
-              <div class="border border-slate-200 rounded-2xl p-3">
-                <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-2">İncelenen Ürün</div>
-                <div class="w-full h-32 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                  <img :src="safeImg(modal.user.image_url)" @error="imgErr($event)" class="w-full h-full object-contain p-3">
-                </div>
-                <div class="mt-3 text-sm font-extrabold text-slate-900 line-clamp-2">{{ modal.user.title }}</div>
-
-                <div class="mt-1">
-                  <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                        :class="platformOf(modal.user.url).cls">
-                    <i class="fa-solid mr-1" :class="platformOf(modal.user.url).icon"></i>
-                    {{ platformOf(modal.user.url).label }}
-                  </span>
-                </div>
-
-                <div class="mt-2 flex items-center justify-between">
-                  <div class="text-base font-extrabold text-slate-900">{{ modal.user.price }}</div>
-                  <div class="score-ring" :style="ringStyle(modal.user.score)"><span>{{ modal.user.score }}</span></div>
-                </div>
-                <div class="mt-2 text-[11px] text-slate-600 leading-relaxed line-clamp-3">
-                  {{ briefAI(modal.user.reason) }}
-                </div>
-                <button class="mt-3 w-full bg-white border border-slate-200 text-slate-900 font-extrabold py-2.5 rounded-xl hover:bg-slate-50"
-                        @click="openUrl(modal.user.url)">
-                  Ürünü Aç <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
-                </button>
-              </div>
-
-              <div v-if="modal.hero && modal.hero.url" class="border-2 border-emerald-500 rounded-2xl p-3">
-                <div class="text-[10px] text-emerald-700 font-extrabold uppercase tracking-wider mb-2">
-                  Bikonomi Önerisi
-                </div>
-                <div class="w-full h-32 bg-emerald-50 border border-emerald-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                  <img :src="safeImg(modal.hero.image_url)" @error="imgErr($event)" class="w-full h-full object-contain p-3">
-                </div>
-                <div class="mt-3 text-sm font-extrabold text-slate-900 line-clamp-2">{{ modal.hero.title }}</div>
-
-                <div class="mt-1">
-                  <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                        :class="platformOf(modal.hero.url).cls">
-                    <i class="fa-solid mr-1" :class="platformOf(modal.hero.url).icon"></i>
-                    {{ platformOf(modal.hero.url).label }}
-                  </span>
-                </div>
-
-                <div class="mt-2 flex items-center justify-between">
-                  <div class="text-base font-extrabold text-emerald-700">{{ modal.hero.price }}</div>
-                  <div class="score-ring" :style="ringStyle(modal.hero.score)"><span>{{ modal.hero.score }}</span></div>
-                </div>
-                <div class="mt-2 text-[11px] text-slate-600 leading-relaxed line-clamp-3">
-                  {{ modal.hero.reason }}
-                </div>
-                <button class="mt-3 w-full bg-slate-900 text-white font-extrabold py-2.5 rounded-xl hover:bg-black"
-                        @click="openUrl(modal.hero.url)">
-                  Ürünü Aç <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
-                </button>
-              </div>
-            </div>
-
-            <div v-if="modal.alts.length" class="mt-5">
-              <div class="text-xs font-extrabold text-slate-500 uppercase tracking-wider mb-3">
-                Diğer Alternatifler
-              </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div v-for="(p, i) in modal.alts" :key="i" class="border border-slate-200 rounded-2xl p-3">
-                  <div class="w-full h-28 bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex items-center justify-center">
-                    <img :src="safeImg(p.image_url)" @error="imgErr($event)" class="w-full h-full object-contain p-3">
-                  </div>
-                  <div class="mt-3 text-sm font-extrabold text-slate-900 line-clamp-2">{{ p.title }}</div>
-
-                  <div class="mt-1">
-                    <span class="text-[10px] font-extrabold px-2 py-1 rounded-full border badge"
-                          :class="platformOf(p.url).cls">
-                      <i class="fa-solid mr-1" :class="platformOf(p.url).icon"></i>
-                      {{ platformOf(p.url).label }}
-                    </span>
-                  </div>
-
-                  <div class="mt-2 flex items-center justify-between">
-                    <div class="text-base font-extrabold text-emerald-600">{{ p.price }}</div>
-                    <div class="score-ring" :style="ringStyle(p.score)"><span>{{ p.score }}</span></div>
-                  </div>
-                  <div class="mt-2 text-[11px] text-slate-600 leading-relaxed line-clamp-3">
-                    {{ p.reason }}
-                  </div>
-                  <button class="mt-3 w-full bg-white border border-slate-200 text-slate-900 font-extrabold py-2.5 rounded-xl hover:bg-slate-50"
-                          @click="openUrl(p.url)">
-                    Ürünü Aç <i class="fa-solid fa-arrow-up-right-from-square ml-2"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-          <button class="text-xs font-extrabold text-slate-700 hover:text-emerald-700"
-                  @click="closeModal">
-            Kapat
-          </button>
-          <button class="text-xs font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-xl"
-                  @click="startFromModal">
-            Bu Ürünü Yeniden Analiz Et
-          </button>
-        </div>
+      <div class="hidden sm:flex items-center gap-2 text-xs text-slate-500">
+        <span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Frontend</span>
+        <span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Vercel</span>
       </div>
     </div>
+  </header>
 
-  </div>
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
+      <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+        <div class="flex-1">
+          <label class="text-xs font-semibold text-slate-600">Link veya arama metni</label>
+          <div class="mt-2 flex items-center gap-2">
+            <input id="q" type="text"
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
+              placeholder="Örn: samsung a07  |  Trendyol linki yapıştır..."
+              autocomplete="off"
+            />
+            <button id="btnSearch"
+              class="px-4 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:opacity-90 active:opacity-80 whitespace-nowrap">
+              Ara
+            </button>
+            <button id="btnAnalyze"
+              class="px-4 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:opacity-90 active:opacity-80 whitespace-nowrap">
+              Analiz
+            </button>
+          </div>
+          <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
+            <span id="apiBadge" class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">API: —</span>
+            <span id="status" class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Hazır</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-extrabold tracking-tight">Sonuçlar</h2>
+        <div class="text-xs text-slate-500" id="metaLine"></div>
+      </div>
+
+      <div id="grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+  </main>
+
+  <template id="tplSkeleton">
+    <div class="card bg-white border border-slate-200 rounded-2xl p-4">
+      <div class="flex gap-3">
+        <div class="w-20 h-20 rounded-xl skeleton"></div>
+        <div class="flex-1">
+          <div class="h-4 rounded skeleton w-11/12"></div>
+          <div class="h-4 rounded skeleton w-9/12 mt-2"></div>
+          <div class="h-4 rounded skeleton w-6/12 mt-3"></div>
+        </div>
+      </div>
+      <div class="mt-4 h-10 rounded-xl skeleton"></div>
+    </div>
+  </template>
 
   <script>
-    const { createApp } = Vue;
+    const API_BASE = "https://bikonomi-api-1.onrender.com";
 
-    const FALLBACK_IMAGE = "https://placehold.co/600x600/png?text=Resim+Yok";
-    const sp = new URLSearchParams(location.search);
+    const $ = (id) => document.getElementById(id);
+    const qEl = $("q");
+    const grid = $("grid");
+    const statusEl = $("status");
+    const metaLine = $("metaLine");
+    const apiBadge = $("apiBadge");
+    apiBadge.textContent = "API: " + API_BASE;
 
-    const apiFromQuery = (sp.get("api") || "").trim();
-    const isLocalHost = ["localhost", "127.0.0.1"].includes(location.hostname);
-    
-    // 🔥 KRİTİK AYAR: BURAYI CANLI RENDER ADRESİ YAPTIK
-    const PROD_API = "https://bikonomi-api-1.onrender.com"; 
+    function setStatus(txt, tone = "slate") {
+      statusEl.textContent = txt;
+      const map = {
+        slate: "bg-slate-100 border-slate-200 text-slate-700",
+        ok: "bg-emerald-50 border-emerald-200 text-emerald-700",
+        warn: "bg-amber-50 border-amber-200 text-amber-700",
+        bad: "bg-rose-50 border-rose-200 text-rose-700",
+      };
+      statusEl.className = "px-2 py-1 rounded-full border text-xs " + (map[tone] || map.slate);
+    }
 
-    const API_BASE = apiFromQuery || (isLocalHost ? "http://127.0.0.1:8000" : PROD_API);
-    const DEBUG_ON = sp.get("debug") === "1";
+    function escapeHtml(s) {
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
-    createApp({
-      data() {
-        return {
-          apiBase: API_BASE,
-          debugOn: DEBUG_ON,
+    function showSkeleton(n = 6) {
+      grid.innerHTML = "";
+      const tpl = document.getElementById("tplSkeleton");
+      for (let i = 0; i < n; i++) grid.appendChild(tpl.content.cloneNode(true));
+    }
 
-          step: 1,
-          linkInput: "",
-          analysisId: null,
+    function badge(platform) {
+      const label = platform?.label || "Diğer";
+      const color = platform?.color || "#6B7280";
+      return `
+        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold"
+              style="border-color:${color}33;background:${color}12;color:${color}">
+          <span class="w-1.5 h-1.5 rounded-full" style="background:${color}"></span>
+          ${escapeHtml(label)}
+        </span>
+      `;
+    }
 
-          userProduct: {},
-          heroProduct: {},
-          otherSuggestions: [],
+    function card(p) {
+      const title = escapeHtml(p?.title || "Ürün");
+      const img = escapeHtml(p?.image || "https://placehold.co/600x600/png?text=Bikonomi");
+      const price = escapeHtml(p?.price || "Fiyat Yok");
+      const url = escapeHtml(p?.url || "");
+      const score = Number(p?.bikonomiScore ?? 0);
+      const rating = Number(p?.rating ?? 0);
+      const review = Number(p?.reviewCount ?? 0);
 
-          trending: [],
+      const scoreTag = score > 0
+        ? `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold">Skor: ${score}</span>`
+        : "";
 
-          errorMessage: "",
-          loadingMessage: "Analiz Başlatılıyor...",
-          msgs: ["Fiyat taranıyor...", "Ürün bilgisi okunuyor...", "Yorumlar analiz ediliyor..."],
-          msgInterval: null,
-          pollTimer: null,
-          pollStartedAt: 0,
-          pollTimeoutMs: 90000,
+      const ratingTag = rating > 0
+        ? `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">★ ${rating.toFixed(1)} (${review})</span>`
+        : `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">Puan yok</span>`;
 
-          lastStatus: "",
-          lastError: "",
+      return `
+        <div class="card bg-white border border-slate-200 rounded-2xl p-4">
+          <div class="flex gap-3">
+            <img src="${img}" alt="" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200" referrerpolicy="no-referrer"/>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="text-sm font-extrabold leading-snug line-clamp-2">${title}</div>
+              </div>
+              <div class="mt-2 flex flex-wrap gap-2 items-center">
+                ${badge(p?.platform)}
+                ${ratingTag}
+                ${scoreTag}
+              </div>
+              <div class="mt-2 text-base font-extrabold">${price}</div>
+            </div>
+          </div>
 
-          modal: {
-            open: false,
-            loading: false,
-            error: "",
-            analysisId: "",
-            user: {},
-            hero: {},
-            alts: []
-          }
-        };
-      },
+          <div class="mt-4 flex gap-2">
+            <a href="${url || "#"}" target="_blank" rel="noopener"
+               class="flex-1 text-center px-3 py-2.5 rounded-xl bg-slate-900 text-white font-semibold hover:opacity-90 ${url ? "" : "pointer-events-none opacity-40"}">
+              Ürüne Git
+            </a>
+            <button data-url="${url}" data-title="${escapeHtml(p?.title || "")}"
+              class="btnQuickAnalyze px-3 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:opacity-90 ${url ? "" : "pointer-events-none opacity-40"}">
+              Analiz
+            </button>
+          </div>
 
-      mounted() {
-        this.fetchTrending();
-      },
+          ${p?.aiComment ? `<div class="mt-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl p-3">${escapeHtml(p.aiComment)}</div>` : ""}
+        </div>
+      `;
+    }
 
-      methods: {
-        safeImg(u) {
-          const x = (u || "").toString().trim();
-          if (!x) return FALLBACK_IMAGE;
-          if (x.startsWith("//")) return "https:" + x;
-          return x;
-        },
-        imgErr(ev) { try { ev.target.src = FALLBACK_IMAGE; } catch (_) {} },
+    async function apiSearch(query) {
+      const url = API_BASE + "/api/search?q=" + encodeURIComponent(query);
+      const r = await fetch(url, { method: "GET" });
+      const j = await r.json();
+      return { status: r.status, data: j };
+    }
 
-        platformOf(url) {
-          const u = (url || "").toString().toLowerCase();
-          if (u.includes("trendyol.com")) return { key: "trendyol", label: "Trendyol", cls: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: "fa-bag-shopping" };
-          if (u.includes("hepsiburada.com")) return { key: "hepsiburada", label: "Hepsiburada", cls: "bg-orange-50 text-orange-700 border-orange-200", icon: "fa-store" };
-          if (u.includes("amazon.")) return { key: "amazon", label: "Amazon", cls: "bg-yellow-50 text-yellow-800 border-yellow-200", icon: "fa-box" };
-          if (u.includes("n11.com")) return { key: "n11", label: "N11", cls: "bg-red-50 text-red-700 border-red-200", icon: "fa-tag" };
-          return { key: "web", label: "Web", cls: "bg-slate-50 text-slate-700 border-slate-200", icon: "fa-globe" };
-        },
+    async function apiAnalyze(target) {
+      const url = API_BASE + "/api/analyze";
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: target }),
+      });
+      const j = await r.json();
+      return { status: r.status, data: j };
+    }
 
-        altHeaderLabel() {
-          const u = ((this.userProduct && this.userProduct.url) ? this.userProduct.url : this.linkInput || "").toString().toLowerCase();
-          return u.includes("trendyol.com") ? "Trendyol’daki Benzer Alternatifler" : "Diğer Alternatifler";
-        },
+    async function doSearch() {
+      const query = (qEl.value || "").trim();
+      if (!query) return;
 
-        ringStyle(score) {
-          const s = Math.max(0, Math.min(100, parseInt(score || 0, 10)));
-          const deg = Math.round((s / 100) * 360);
-          return { background: `conic-gradient(#10b981 0deg, #10b981 ${deg}deg, #e2e8f0 ${deg}deg, #e2e8f0 360deg)` };
-        },
+      metaLine.textContent = "";
+      setStatus("Aranıyor…", "slate");
+      showSkeleton(9);
 
-        normalizeUrl(u) {
-          let url = (u || "").toString().trim();
-          if (!url || url === "#") return "";
-          if (url.startsWith("//")) url = "https:" + url;
-          if (!/^https?:\/\//i.test(url)) url = "https://" + url;
-          return url;
-        },
+      try {
+        const { status, data } = await apiSearch(query);
 
-        openUrl(u) {
-          const url = this.normalizeUrl(u);
-          if (!url) {
-            this.lastError = "Link bulunamadı (url boş).";
-            return;
-          }
-          window.open(url, "_blank", "noopener,noreferrer");
-        },
-
-        noopStore() {
-          alert("Yakında: Uygulama mağaza linkleri eklenecek.");
-        },
-
-        splitReason(reason) {
-          const s = (reason || "");
-          if (s.includes("||")) {
-            const [v, r] = s.split("||");
-            return { v: (v||"").trim(), r: (r||"").trim() };
-          }
-          return { v: "Bikonomi Analizi", r: s };
-        },
-
-        briefAI(reason) {
-          const r = this.splitReason(reason).r || "";
-          if (r.length > 220) return r.slice(0, 220) + "…";
-          return r;
-        },
-
-        async fetchTrending() {
-          try {
-            const res = await fetch(`${this.apiBase}/trending`, { cache: "no-store" });
-            const data = await res.json();
-            this.trending = (data.items || []).slice(0, 20);
-          } catch (e) {}
-        },
-
-        async openAnalysis(analysisId) {
-          const aid = (analysisId || "").trim();
-          if (!aid) return;
-
-          this.modal.open = true;
-          this.modal.loading = true;
-          this.modal.error = "";
-          this.modal.analysisId = aid;
-          this.modal.user = {};
-          this.modal.hero = {};
-          this.modal.alts = [];
-
-          try {
-            const res = await fetch(`${this.apiBase}/result/${aid}`, { cache: "no-store" });
-            if (!res.ok) throw new Error("Sonuç alınamadı");
-            const d = await res.json();
-
-            if (d.status !== "completed") {
-              throw new Error("Analiz henüz tamamlanmamış.");
-            }
-
-            const products = d.products || [];
-            const user = products.find(p => !p.is_suggestion) || {};
-            const suggestions = products.filter(p => p.is_suggestion);
-
-            const hero = suggestions[0] || {};
-            const alts = suggestions.slice(1, 7);
-
-            this.modal.user = { ...user, image_url: this.safeImg(user.image_url) };
-            this.modal.hero = (hero && hero.url) ? { ...hero, image_url: this.safeImg(hero.image_url) } : {};
-            this.modal.alts = (alts || []).map(x => ({ ...x, image_url: this.safeImg(x.image_url) }));
-
-          } catch (e) {
-            this.modal.error = (e && e.message) ? e.message : "Hata";
-          } finally {
-            this.modal.loading = false;
-          }
-        },
-
-        closeModal() {
-          this.modal.open = false;
-        },
-
-        startFromModal() {
-          const u = (this.modal.user && this.modal.user.url) ? this.modal.user.url : "";
-          if (u) {
-            this.linkInput = u;
-            this.closeModal();
-            this.start();
-          }
-        },
-
-        _startLoadingMessages() {
-          let i = 0;
-          this.loadingMessage = this.msgs[0];
-          this.msgInterval = setInterval(() => {
-            this.loadingMessage = this.msgs[++i % this.msgs.length];
-          }, 2200);
-        },
-
-        _stopLoadingMessages() {
-          if (this.msgInterval) clearInterval(this.msgInterval);
-          this.msgInterval = null;
-        },
-
-        _stopPoll() {
-          if (this.pollTimer) clearInterval(this.pollTimer);
-          this.pollTimer = null;
-        },
-
-        async start() {
-          if (!this.linkInput) return alert("Lütfen geçerli bir ürün linki giriniz.");
-
-          this.step = 2;
-          this.lastError = "";
-          this.lastStatus = "";
-          this._startLoadingMessages();
-          this._stopPoll();
-
-          this.analysisId = null;
-          this.userProduct = {};
-          this.heroProduct = {};
-          this.otherSuggestions = [];
-          this.errorMessage = "";
-
-          try {
-            const res = await fetch(`${this.apiBase}/analyze`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              cache: "no-store",
-              body: JSON.stringify({ url: this.linkInput })
-            });
-
-            if (!res.ok) throw new Error("analyze çağrısı başarısız");
-
-            const data = await res.json();
-            this.analysisId = data.analysis_id || data.id || data.analysisId;
-
-            if (!this.analysisId) throw new Error("analysis_id gelmedi");
-            this.poll();
-          } catch (e) {
-            this._stopLoadingMessages();
-            this._stopPoll();
-            this.lastError = (e && e.message) ? e.message : "Bağlantı Hatası";
-            this.errorMessage = this.lastError;
-            this.step = "error";
-          }
-        },
-
-        poll() {
-          this._stopPoll();
-          this.pollStartedAt = Date.now();
-
-          this.pollTimer = setInterval(async () => {
-            try {
-              if (Date.now() - this.pollStartedAt > this.pollTimeoutMs) {
-                this._stopPoll();
-                this._stopLoadingMessages();
-                this.lastError = "timeout";
-                this.errorMessage = "İşlem çok uzun sürdü.";
-                this.step = "error";
-                return;
-              }
-
-              const res = await fetch(`${this.apiBase}/result/${this.analysisId}`, { cache: "no-store" });
-              if (!res.ok) return;
-
-              const d = await res.json();
-              this.lastStatus = d.status || "";
-
-              if (d.status === "failed") {
-                this._stopPoll();
-                this._stopLoadingMessages();
-                this.errorMessage = d.products?.[0]?.reason || "Analiz başarısız oldu.";
-                this.step = "error";
-                return;
-              }
-
-              if (d.status === "completed") {
-                const products = d.products || [];
-                if (!products.length) return;
-
-                const user = products.find(p => !p.is_suggestion);
-                const suggestions = products.filter(p => p.is_suggestion);
-
-                if (!user || !user.title) return;
-
-                this.userProduct = { ...user, image_url: this.safeImg(user.image_url) };
-
-                const hero0 = (suggestions[0] || {});
-                this.heroProduct = (hero0 && hero0.url) ? { ...hero0, image_url: this.safeImg(hero0.image_url) } : {};
-
-                this.otherSuggestions = (suggestions.slice(1, 7) || []).map(x => ({ ...x, image_url: this.safeImg(x.image_url) }));
-
-                this._stopPoll();
-                this._stopLoadingMessages();
-                this.step = 3;
-
-                this.fetchTrending();
-              }
-            } catch (e) {
-              this.lastError = (e && e.message) ? e.message : "poll error";
-            }
-          }, 1000);
-        },
-
-        reset() {
-          this.step = 1;
-          this.linkInput = "";
-          this.analysisId = null;
-          this.userProduct = {};
-          this.heroProduct = {};
-          this.otherSuggestions = [];
-          this.errorMessage = "";
-          this.lastError = "";
-          this.lastStatus = "";
-          this._stopLoadingMessages();
-          this._stopPoll();
-          window.scrollTo(0, 0);
+        if (data?.error) {
+          grid.innerHTML = `<div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-700 font-semibold">
+            ${escapeHtml(data.message || "Hata")}
+          </div>`;
+          setStatus("Hata", "bad");
+          return;
         }
+
+        const products = data?.products || [];
+        metaLine.textContent = `İncelenen: ${data?.examined ?? 0} • Dönen: ${data?.returned ?? products.length}`;
+
+        if (!products.length) {
+          grid.innerHTML = `<div class="col-span-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800 font-semibold">
+            Sonuç bulunamadı.
+          </div>`;
+          setStatus("Sonuç yok", "warn");
+          return;
+        }
+
+        grid.innerHTML = products.map(card).join("");
+        setStatus("Tamam", "ok");
+
+      } catch (e) {
+        grid.innerHTML = `<div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-700 font-semibold">
+          Bağlantı hatası: ${escapeHtml(e?.message || e)}
+        </div>`;
+        setStatus("Bağlantı hatası", "bad");
       }
-    }).mount("#app");
+    }
+
+    async function doAnalyze(target) {
+      const t = (target || (qEl.value || "")).trim();
+      if (!t) return;
+
+      setStatus("Analiz…", "slate");
+
+      try {
+        const { status, data } = await apiAnalyze(t);
+
+        if (data?.error) {
+          setStatus("Hata", "bad");
+          alert(data.message || "Analiz hatası");
+          return;
+        }
+
+        setStatus("Tamam", "ok");
+        alert("Analiz gönderildi.");
+
+      } catch (e) {
+        setStatus("Bağlantı hatası", "bad");
+        alert(e?.message || String(e));
+      }
+    }
+
+    $("btnSearch").addEventListener("click", doSearch);
+    $("btnAnalyze").addEventListener("click", () => doAnalyze());
+
+    qEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") doSearch();
+    });
+
+    document.addEventListener("click", (e) => {
+      const btn = e.target.closest(".btnQuickAnalyze");
+      if (!btn) return;
+      const url = btn.getAttribute("data-url") || "";
+      if (url) doAnalyze(url);
+    });
   </script>
 </body>
 </html>
