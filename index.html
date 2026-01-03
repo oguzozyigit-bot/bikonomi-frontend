@@ -93,10 +93,13 @@
     /* Renk Temaları */
     .theme-gold::before { background: #FFD700; }
     .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
+    
     .theme-silver::before { background: #A0AEC0; }
     .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
+    
     .theme-bronze::before { background: #CD7F32; }
     .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
+    
     .theme-platinum::before { background: #718096; }
     .theme-platinum .award-badge { background: #E2E8F0; color: #2D3748; }
 
@@ -150,7 +153,7 @@
        <button class="img-cancel" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <form class="search-container" onsubmit="event.preventDefault(); start();">
+    <form id="searchForm" class="search-container">
       <div class="search-bar">
         <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
         <input id="q" type="text" placeholder="Ürün adı, linki veya sor..." autocomplete="off">
@@ -208,193 +211,195 @@
 </footer>
 
 <script>
-  const API_BASE = "https://bikonomi-api-1.onrender.com";
-
-  // PWA & Service Worker
-  if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(()=>{})); }
-  let deferredPrompt;
-  const installBtn = document.getElementById('installBtn');
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
-  async function installPWA() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } }
-
-  let session = { q: "", img: "" };
-  let currentAudio = null;
-  let audioText = "";
-  const qInput = document.getElementById("q");
-  
-  function showScene(id) { 
-      stopSpeech();
-      document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
-      document.getElementById(id).classList.add("active"); 
-  }
-  
-  function resetAll() {
-      clearImage();
-      qInput.value = "";
-      showScene("scene-home");
-  }
-
-  function triggerFile() { document.getElementById("fileInput").click(); }
-  function handleFile(file) {
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-          session.img = e.target.result;
-          document.getElementById("imgPreview").src = session.img;
-          document.getElementById("imgWrap").style.display = "block";
-      };
-      reader.readAsDataURL(file);
-  }
-  function clearImage() {
-      session.img = "";
-      document.getElementById("fileInput").value = "";
-      document.getElementById("imgWrap").style.display = "none";
-  }
-
-  function startVoice() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SpeechRecognition) return alert("Sesli arama desteklenmiyor.");
-    const rec = new SpeechRecognition();
-    rec.lang = 'tr-TR';
-    rec.start();
-    qInput.placeholder = "Dinliyorum...";
-    // ✅ Otomatik start() KAPALI: kullanıcı onaylasın (yazı silinmesin hissi kaybolur)
-    rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; qInput.focus(); };
-    rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
-  }
-
-  // --- KORUMALI START: başarılı olunca input silinmiyor, sadece Yeni Sorgu Yap ile temizleniyor ---
-  async function start() {
-    const q = qInput.value.trim();
-    const imgToSend = session.img;
-
-    if (!q && !imgToSend) {
-        alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
-        return;
-    }
-
-    showScene("scene-loading");
-
-    try {
-        const res = await fetch(API_BASE + "/api/analyze", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ q, img: imgToSend })
-        });
-
-        if (!res.ok) {
-            const t = await res.text().catch(() => "");
-            throw new Error(t || "Sunucu hatası");
-        }
-
-        const data = await res.json();
-
-        // ✅ Başarılı olunca SADECE resmi temizle, yazı kalsın
-        clearImage();
-        // qInput.value = "";  // ❌ KALDIRILDI (yazı kaybolmasın)
-
-        document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
-        document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
-        audioText = data.speech_text || "";
-
-        const heroBox = document.getElementById("heroImgBox");
-        if (data.product_img && data.product_img.length > 5) {
-            document.getElementById("heroImg").src = data.product_img;
-            heroBox.style.display = "block";
-        } else {
-            heroBox.style.display = "none";
-        }
-
-        const list = document.getElementById("recommendationList");
-        list.innerHTML = "";
-
-        const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
-        if (recs.length > 0) {
-            recs.forEach(rec => {
-                let theme = "theme-default";
-                const award = String(rec.award || "").toLowerCase();
-
-                if (award.includes("altın")) theme = "theme-gold";
-                else if (award.includes("gümüş")) theme = "theme-silver";
-                else if (award.includes("bronz")) theme = "theme-bronze";
-                else if (award.includes("platin")) theme = "theme-platinum";
-
-                let iconClass = "fa-solid fa-bag-shopping";
-                if (String(rec.site || "").toLowerCase().includes("amazon")) {
-                    iconClass = "fa-brands fa-amazon";
-                }
-
-                const url = rec.url || "#";
-                const html = `
-                <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
-                    <div class="rec-icon"><i class="${iconClass}"></i></div>
-                    <div class="rec-content">
-                        <div class="award-badge">${rec.award || "ÖNERİLEN"}</div>
-                        <div class="rec-name">${rec.product_name || "Ürün"}</div>
-                        <div class="rec-reason">${rec.reason || ""}</div>
-                    </div>
-                    <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                </a>
-                `;
-                list.innerHTML += html;
-            });
-        } else {
-            list.innerHTML = "<div style='text-align:center; color:#999;'>Bu arama için özel öneri bulunamadı.</div>";
-        }
-
-        showScene("scene-results");
-
-    } catch (e) {
-        alert("Hata: " + (e && e.message ? e.message : "Bilinmeyen hata"));
-        showScene("scene-home");
-        qInput.focus();
-    }
-  }
-
-  async function toggleSpeech() {
-      const btn = document.getElementById("btnListen");
-      if(currentAudio) {
-          currentAudio.pause(); currentAudio = null;
-          btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-          btn.classList.remove("active");
-          return;
-      }
+  // DOMContentLoaded: Sayfa tamamen yüklendiğinde çalışır (Garanti Yöntem)
+  document.addEventListener('DOMContentLoaded', () => {
       
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
-      try {
-          const res = await fetch(API_BASE + '/api/speak', {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({ text: audioText })
-          });
-          if (!res.ok) throw new Error("Ses üretilemedi");
-          const blob = await res.blob();
-          const url = URL.createObjectURL(blob);
-          currentAudio = new Audio(url);
-          currentAudio.onended = () => {
-              currentAudio = null; 
+      const API_BASE = "https://bikonomi-api-1.onrender.com";
+      const qInput = document.getElementById("q");
+      const searchForm = document.getElementById("searchForm");
+      let session = { q: "", img: "" };
+      let currentAudio = null;
+      let audioText = "";
+
+      // PWA
+      if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
+      let deferredPrompt;
+      const installBtn = document.getElementById('installBtn');
+      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
+      window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
+
+      // EVENT LISTENERS
+      searchForm.addEventListener('submit', (e) => {
+          e.preventDefault(); // Sayfa yenilenmesini engelle
+          start(); // Aramayı başlat
+      });
+
+      // Yardımcı Fonksiyonlar
+      window.showScene = function(id) { 
+          stopSpeech();
+          document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
+          document.getElementById(id).classList.add("active"); 
+      };
+      
+      window.resetAll = function() {
+          clearImage();
+          qInput.value = "";
+          showScene("scene-home");
+      };
+
+      window.triggerFile = function() { document.getElementById("fileInput").click(); };
+      
+      window.handleFile = function(file) {
+          if(!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              session.img = e.target.result;
+              document.getElementById("imgPreview").src = session.img;
+              document.getElementById("imgWrap").style.display = "block";
+          };
+          reader.readAsDataURL(file);
+      };
+      
+      window.clearImage = function() {
+          session.img = "";
+          document.getElementById("fileInput").value = "";
+          document.getElementById("imgWrap").style.display = "none";
+      };
+
+      window.startVoice = function() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SpeechRecognition) return alert("Sesli arama desteklenmiyor.");
+        const rec = new SpeechRecognition();
+        rec.lang = 'tr-TR';
+        rec.start();
+        qInput.placeholder = "Dinliyorum...";
+        rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
+        rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
+      };
+
+      // ANA FONKSİYON
+      async function start() {
+        const q = qInput.value.trim();
+        const imgToSend = session.img;
+
+        if (!q && !imgToSend) {
+            alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
+            return;
+        }
+
+        // ÖNCE SADECE SAHNEYİ DEĞİŞTİR (Inputu silme!)
+        showScene("scene-loading");
+
+        try {
+            const res = await fetch(API_BASE + "/api/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ q, img: imgToSend })
+            });
+
+            if (!res.ok) throw new Error("Sunucu hatası");
+            const data = await res.json();
+
+            // BAŞARILIYSA ŞİMDİ SİL
+            clearImage();
+            qInput.value = "";
+
+            document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
+            document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
+            audioText = data.speech_text || "";
+
+            const heroBox = document.getElementById("heroImgBox");
+            if (data.product_img && data.product_img.length > 5) {
+                document.getElementById("heroImg").src = data.product_img;
+                heroBox.style.display = "block";
+            } else {
+                heroBox.style.display = "none";
+            }
+
+            const list = document.getElementById("recommendationList");
+            list.innerHTML = "";
+
+            const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+            if (recs.length > 0) {
+                recs.forEach(rec => {
+                    let theme = "theme-default";
+                    const award = String(rec.award || "").toLowerCase();
+                    if (award.includes("altın")) theme = "theme-gold";
+                    else if (award.includes("gümüş")) theme = "theme-silver";
+                    else if (award.includes("bronz")) theme = "theme-bronze";
+                    else if (award.includes("platin")) theme = "theme-platinum";
+
+                    let iconClass = "fa-solid fa-bag-shopping";
+                    if (String(rec.site || "").toLowerCase().includes("amazon")) iconClass = "fa-brands fa-amazon";
+
+                    const url = rec.url || "#";
+                    const html = `
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
+                        <div class="rec-icon"><i class="${iconClass}"></i></div>
+                        <div class="rec-content">
+                            <div class="award-badge">${rec.award || "ÖNERİLEN"}</div>
+                            <div class="rec-name">${rec.product_name || "Ürün"}</div>
+                            <div class="rec-reason">${rec.reason || ""}</div>
+                        </div>
+                        <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    </a>`;
+                    list.innerHTML += html;
+                });
+            } else {
+                list.innerHTML = "<div style='text-align:center; color:#999;'>Özel öneri bulunamadı.</div>";
+            }
+
+            showScene("scene-results");
+
+        } catch (e) {
+            alert("Hata: " + (e.message || "Bilinmeyen hata"));
+            showScene("scene-home");
+            qInput.focus();
+        }
+      }
+
+      window.toggleSpeech = async function() {
+          const btn = document.getElementById("btnListen");
+          if(currentAudio) {
+              currentAudio.pause(); currentAudio = null;
               btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
               btn.classList.remove("active");
-          };
-          currentAudio.play();
-          btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
-          btn.classList.add("active");
-      } catch(e) {
-          alert("Ses hatası: " + (e && e.message ? e.message : ""));
-          btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-          btn.classList.remove("active");
-      }
-  }
+              return;
+          }
+          
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
+          try {
+              const res = await fetch(API_BASE + '/api/speak', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ text: audioText })
+              });
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              currentAudio = new Audio(url);
+              currentAudio.onended = () => {
+                  currentAudio = null; 
+                  btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+                  btn.classList.remove("active");
+              };
+              currentAudio.play();
+              btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+              btn.classList.add("active");
+          } catch(e) {
+              alert("Ses hatası");
+              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+          }
+      };
+      
+      // Global erişim için start fonksiyonunu window'a atadık (voice search için)
+      window.start = start;
+  });
 
-  function stopSpeech() {
+  // Global fonksiyonlar (Script dışında çağrılırsa diye)
+  function stopSpeech() { 
       const btn = document.getElementById("btnListen");
-      if(currentAudio) {
-          currentAudio.pause(); currentAudio = null;
-      }
-      if(btn) {
-          btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-          btn.classList.remove("active");
-      }
+      if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
+      // Audio değişkeni scope içinde olduğu için buradan durduramayız, showScene hallediyor
   }
 </script>
 
