@@ -93,13 +93,10 @@
     /* Renk Temaları */
     .theme-gold::before { background: #FFD700; }
     .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
-    
     .theme-silver::before { background: #A0AEC0; }
     .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
-    
     .theme-bronze::before { background: #CD7F32; }
     .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
-    
     .theme-platinum::before { background: #718096; }
     .theme-platinum .award-badge { background: #E2E8F0; color: #2D3748; }
 
@@ -261,22 +258,21 @@
     rec.lang = 'tr-TR';
     rec.start();
     qInput.placeholder = "Dinliyorum...";
-    rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
+    // ✅ Otomatik start() KAPALI: kullanıcı onaylasın (yazı silinmesin hissi kaybolur)
+    rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; qInput.focus(); };
     rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
   }
 
-  // --- YENİLENMİŞ VE KORUMALI START FONKSİYONU ---
+  // --- KORUMALI START: başarılı olunca input silinmiyor, sadece Yeni Sorgu Yap ile temizleniyor ---
   async function start() {
     const q = qInput.value.trim();
     const imgToSend = session.img;
 
-    // 1. Eğer boşsa uyarı ver
     if (!q && !imgToSend) {
         alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
         return;
     }
 
-    // 2. UI'ı silme! Önce sadece loading'e geç. Böylece kullanıcı hata olursa yazdığını kaybetmez.
     showScene("scene-loading");
 
     try {
@@ -286,7 +282,6 @@
             body: JSON.stringify({ q, img: imgToSend })
         });
 
-        // Hata yakalama
         if (!res.ok) {
             const t = await res.text().catch(() => "");
             throw new Error(t || "Sunucu hatası");
@@ -294,11 +289,10 @@
 
         const data = await res.json();
 
-        // 3. Başarılı cevap geldiyse ŞİMDİ temizle
+        // ✅ Başarılı olunca SADECE resmi temizle, yazı kalsın
         clearImage();
-        qInput.value = "";
+        // qInput.value = "";  // ❌ KALDIRILDI (yazı kaybolmasın)
 
-        // Verileri Yerleştir
         document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
         document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
         audioText = data.speech_text || "";
@@ -311,7 +305,6 @@
             heroBox.style.display = "none";
         }
 
-        // Kartları Oluştur
         const list = document.getElementById("recommendationList");
         list.innerHTML = "";
 
@@ -326,14 +319,12 @@
                 else if (award.includes("bronz")) theme = "theme-bronze";
                 else if (award.includes("platin")) theme = "theme-platinum";
 
-                // İkon Mantığı (Markaya göre ikon tipi değişir)
                 let iconClass = "fa-solid fa-bag-shopping";
                 if (String(rec.site || "").toLowerCase().includes("amazon")) {
                     iconClass = "fa-brands fa-amazon";
                 }
 
                 const url = rec.url || "#";
-
                 const html = `
                 <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
                     <div class="rec-icon"><i class="${iconClass}"></i></div>
@@ -355,7 +346,6 @@
 
     } catch (e) {
         alert("Hata: " + (e && e.message ? e.message : "Bilinmeyen hata"));
-        // Hata olursa ana ekrana dön ama İNPUTU SİLME, kullanıcı düzeltsin
         showScene("scene-home");
         qInput.focus();
     }
@@ -377,6 +367,7 @@
               headers: {'Content-Type': 'application/json'},
               body: JSON.stringify({ text: audioText })
           });
+          if (!res.ok) throw new Error("Ses üretilemedi");
           const blob = await res.blob();
           const url = URL.createObjectURL(blob);
           currentAudio = new Audio(url);
@@ -389,8 +380,20 @@
           btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
           btn.classList.add("active");
       } catch(e) {
-          alert("Ses hatası");
+          alert("Ses hatası: " + (e && e.message ? e.message : ""));
           btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+          btn.classList.remove("active");
+      }
+  }
+
+  function stopSpeech() {
+      const btn = document.getElementById("btnListen");
+      if(currentAudio) {
+          currentAudio.pause(); currentAudio = null;
+      }
+      if(btn) {
+          btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+          btn.classList.remove("active");
       }
   }
 </script>
