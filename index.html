@@ -60,17 +60,19 @@
     }
     .search-bar:hover, .search-bar:focus-within { box-shadow: 0 1px 6px rgba(32,33,36,.28); }
     
-    #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 100%; }
+    #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 100%; min-width: 50px; }
 
     /* İKONLAR (MİKROFON & KAMERA) */
     .icon-btn {
       color: var(--primary); font-size: 18px; cursor: pointer;
-      padding: 10px; border-radius: 50%; transition: background 0.2s;
+      padding: 8px; /* Padding azaltıldı */
+      border-radius: 50%; transition: background 0.2s;
       margin-left: 2px;
+      flex-shrink: 0; /* Sıkışmayı engelle */
     }
     .icon-btn:hover { background: #F1F3F4; }
     
-    /* MİKROFON ANİMASYONU (DİNLERKEN) */
+    /* MİKROFON ANİMASYONU */
     .listening { color: #ef4444 !important; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
@@ -80,7 +82,8 @@
       background: var(--primary); color: white;
       border: none; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s; margin-left: 5px;
+      transition: transform 0.2s; margin-left: 4px;
+      flex-shrink: 0; /* Sıkışmayı engelle */
     }
     .search-arrow-btn:hover { transform: scale(1.05); background: #059669; }
     .search-arrow-btn i { font-size: 16px; }
@@ -124,6 +127,7 @@
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
+    /* --- MOBİL ÖZEL AYARLAR (SIĞDIRMA ÇÖZÜMÜ) --- */
     @media (max-width: 600px) {
         main { padding-top: 5px; } 
         .hero-title { font-size: 24px; margin-bottom: 5px; }
@@ -132,6 +136,12 @@
         .banner-title { font-size: 16px; }
         .hero-sub-bottom { margin-top: 8px; font-size: 11px; } 
         header { padding: 10px 15px; } 
+        
+        /* İKONLARI VE BUTONU MOBİLDE KÜÇÜLTÜYORUZ */
+        .search-bar { padding-left: 12px; }
+        .icon-btn { font-size: 16px; padding: 6px; } /* İkon boşluğunu azalttım */
+        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; } /* Buton boyutunu 44'ten 38'e düşürdüm */
+        .search-arrow-btn i { font-size: 14px; }
     }
   </style>
 </head>
@@ -269,7 +279,7 @@
     document.getElementById("imgWrap").style.display = "none";
   }
 
-  // --- MİKROFON İŞLEVİ (YENİ) ---
+  // --- MİKROFON İŞLEVİ ---
   function startVoiceSearch() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         alert("Tarayıcınız sesli aramayı desteklemiyor.");
