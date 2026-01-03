@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-   
+    
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -297,7 +297,7 @@
 
 <script>
   // --- KONFİGÜRASYON ---
-  // Render'daki API adresini buraya sabitliyoruz:
+  // RENDER CANLI ADRESİ (BURASI ÇOK ÖNEMLİ BAŞKANIM)
   const API_BASE = "https://bikonomi-api-1.onrender.com"; 
 
   let deferredPrompt;
@@ -351,7 +351,6 @@
     let textToSpeak = audioText || document.getElementById("finalText").innerText;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...'; btn.classList.add("speaking");
     try {
-        // GÜNCELLENDİ: Tam adres kullanılıyor
         const res = await fetch(API_BASE + '/api/speak', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: textToSpeak }) });
         if (!res.ok) throw new Error("Ses üretilemedi.");
         const blob = await res.blob(); const url = window.URL.createObjectURL(blob);
@@ -374,7 +373,7 @@
     
     showScene("scene-loading");
     try {
-      // GÜNCELLENDİ: Tam adres kullanılıyor (Vercel -> Render)
+      // API'ye istek burada atılıyor:
       const res = await fetch(API_BASE + '/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: session.img }) });
       if (!res.ok) throw new Error("Sunucu hatası.");
       const data = await res.json();
