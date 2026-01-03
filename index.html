@@ -66,7 +66,7 @@
     .search-bar { 
       display: flex; align-items: center; background: #fff; 
       border: 1px solid var(--border); border-radius: 30px; 
-      padding: 4px 4px 4px 16px; /* İç boşluğu optimize ettim */
+      padding: 4px 4px 4px 16px; 
       transition: box-shadow 0.2s; 
       height: 54px; 
     }
@@ -82,10 +82,10 @@
     }
     .camera-btn:hover { background: #F1F3F4; }
 
-    /* OK BUTONU (DÜZELTİLDİ: SIKIŞMAYACAK) */
+    /* OK BUTONU */
     .search-arrow-btn {
       width: 44px; height: 44px; 
-      min-width: 44px; /* BU SATIR ÇOK ÖNEMLİ: Preslenmeyi engeller */
+      min-width: 44px; 
       background: var(--primary); color: white;
       border: none; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -99,7 +99,7 @@
       width: 100%; max-width: 584px; height: 110px; 
       border-radius: 12px; overflow: hidden; position: relative; 
       cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 15px; /* Banner boşluğu azaldı */
+      margin-top: 15px; 
       background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); 
       display: flex; align-items: center; justify-content: space-between; 
       padding: 0 24px; 
@@ -136,12 +136,12 @@
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* --- MOBİL ÖZEL AYARLAR (EKRAN SIĞDIRMA) --- */
+    /* --- MOBİL ÖZEL AYARLAR --- */
     @media (max-width: 600px) {
-        main { padding-top: 5px; } /* Üst boşluk minimuma indi */
+        main { padding-top: 5px; } 
         .hero-title { font-size: 24px; margin-bottom: 5px; }
         .hero-sub-top { font-size: 13px; margin-bottom: 15px; }
-        .promo-banner { height: 90px; margin-top: 10px; } /* Banner inceltildi */
+        .promo-banner { height: 90px; margin-top: 10px; } 
         .banner-title { font-size: 16px; }
         .hero-sub-bottom { margin-top: 8px; font-size: 11px; } 
         header { padding: 10px 15px; } 
@@ -177,7 +177,7 @@
         </button>
       </div>
 
-      <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+      <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
     </div>
 
     <div id="imgWrap" class="img-preview-box">
