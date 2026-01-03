@@ -30,27 +30,20 @@
       min-height: 100vh;
     }
 
-    /* HEADER - Minimalist */
+    /* HEADER */
     header {
       padding: 20px;
       display: flex;
-      justify-content: flex-end; /* Sağ üst köşe */
+      justify-content: flex-end;
       align-items: center;
       gap: 15px;
     }
-    .nav-link {
-      color: var(--text-main);
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .nav-link:hover { text-decoration: underline; }
     
     .logo-container {
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-right: auto; /* Logo solda kalsın */
+      margin-right: auto; 
       padding-left: 10px;
     }
     .logo-icon {
@@ -63,19 +56,19 @@
     }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
-    /* MAIN CENTER */
+    /* MAIN */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start; /* Yukarıya daha yakın */
+      justify-content: flex-start;
       padding-top: 8vh; 
       padding-left: 20px; padding-right: 20px;
       gap: 30px;
     }
 
-    /* HERO TEXT */
+    /* HERO */
     .hero-title {
       text-align: center;
       font-size: 28px;
@@ -88,11 +81,11 @@
       text-align: center;
       color: var(--text-muted);
       font-size: 15px;
-      max-width: 400px;
+      max-width: 500px; /* Biraz genişlettim metin sığsın diye */
       line-height: 1.5;
     }
 
-    /* GOOGLE STYLE SEARCH BAR */
+    /* SEARCH BAR */
     .search-wrapper {
       width: 100%;
       max-width: 584px;
@@ -115,74 +108,34 @@
     .search-icon-left { color: #9AA0A6; font-size: 16px; margin-right: 12px; }
     
     #q {
-      flex: 1;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      color: var(--text-main);
-      background: transparent;
-      height: 30px;
+      flex: 1; border: none; outline: none; font-size: 16px;
+      color: var(--text-main); background: transparent; height: 30px;
     }
 
-    /* CAMERA ICON (RIGHT) */
     .camera-btn {
-      color: var(--primary); /* Google Lens renkleri yerine markanın rengi */
-      font-size: 18px;
-      cursor: pointer;
-      padding: 8px;
-      border-radius: 50%;
-      transition: background 0.2s;
+      color: var(--primary); font-size: 18px; cursor: pointer;
+      padding: 8px; border-radius: 50%; transition: background 0.2s;
     }
     .camera-btn:hover { background: #F1F3F4; }
 
-    /* AFILLİ BANNER */
+    /* BANNER */
     .promo-banner {
-      width: 100%;
-      max-width: 584px;
-      height: 120px;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      margin-top: 20px;
-      
-      /* Afilli Gradient Arkaplan */
+      width: 100%; max-width: 584px; height: 120px;
+      border-radius: 12px; overflow: hidden; position: relative;
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 20px;
       background: linear-gradient(105deg, #10B981 0%, #064e3b 100%);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
     }
-    
-    /* Banner İçerik (Süs) */
     .banner-content { color: white; z-index: 2; }
-    .banner-tag { 
-      font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px;
-    }
-    .banner-title {
-      font-size: 20px; font-weight: 800; line-height: 1.1; margin-bottom: 8px;
-    }
-    .banner-cta {
-      font-size: 12px; font-weight: 600; background: white; color: #064e3b; 
-      padding: 6px 12px; border-radius: 20px; display: inline-block;
-    }
-    
-    /* Dekoratif Görsel/Efekt */
-    .banner-decor {
-      position: absolute; right: -20px; bottom: -20px;
-      font-size: 100px; color: white; opacity: 0.1;
-      transform: rotate(-15deg);
-    }
+    .banner-tag { font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .banner-title { font-size: 20px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
+    .banner-cta { font-size: 12px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
+    .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 100px; color: white; opacity: 0.1; transform: rotate(-15deg); }
 
-    /* PREVIEW BOX (Hidden initially) */
+    /* PREVIEW & ACTIONS */
     .img-preview-box {
-      margin-top: 20px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      display: none;
-      text-align: center;
+      margin-top: 20px; border: 1px solid var(--border); border-radius: 12px;
+      padding: 10px; display: none; text-align: center;
     }
     .img-preview-box img { max-height: 200px; border-radius: 8px; }
     .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
@@ -192,11 +145,11 @@
     footer {
       background: #F2F2F2;
       border-top: 1px solid #DADCE0;
-      padding: 15px 30px;
+      padding: 20px 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
       font-size: 12px;
       color: #70757A;
     }
@@ -204,25 +157,32 @@
     .footer-links a { color: #70757A; text-decoration: none; }
     .footer-links a:hover { color: #333; }
     
+    /* Şirket İmzası ve İtalyan Barı */
     .company-tag {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-weight: 800; color: #9CA3AF; letter-spacing: 0.05em; text-transform: uppercase; font-size: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-weight: 800;
+      color: #9CA3AF;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 10px;
     }
-    .italy-flag {
-      width: 18px; height: 10px;
+    
+    .italian-bar {
+      width: 100%; /* Yazı genişliği kadar */
+      height: 3px; /* İnce bar */
       background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%);
-      border: 1px solid rgba(0,0,0,0.1); border-radius: 1px; display: inline-block;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.05); /* Beyaz kısmın belli olması için hafif sınır */
     }
 
-    /* SCENE MANAGEMENT */
+    /* UTILS */
     .scene { display: none; width: 100%; max-width: 600px; }
     .scene.active { display: block; }
-    
-    /* LOADING & RESULTS (Basitleştirilmiş) */
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    
-    /* RESULT CARD */
     .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;}
 
@@ -236,7 +196,7 @@
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
     <div class="logo-text">CAYNANA</div>
   </div>
-  </header>
+</header>
 
 <main>
 
@@ -246,10 +206,12 @@
       Almadan Önce <br><span>CAYNANA'ya Sor.</span>
     </div>
     <div class="hero-sub">
-      Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm. Satış yapmam. bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.
+      Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm. Satış yapmam. Bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.
     </div>
 
-    <div style="height: 20px;"></div> <div class="search-wrapper">
+    <div style="height: 20px;"></div> 
+    
+    <div class="search-wrapper">
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
         
@@ -315,8 +277,8 @@
 
 <footer>
   <div class="company-tag">
-    @CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş 
-    <span class="italy-flag"></span>
+    <span>@CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş</span>
+    <div class="italian-bar"></div>
   </div>
   
   <div class="footer-links">
@@ -400,7 +362,3 @@
 
 </body>
 </html>
-
-
-
-
