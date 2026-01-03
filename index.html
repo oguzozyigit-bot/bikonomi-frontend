@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9386/9386895.png">
 
+  <meta property="og:title" content="CAYNANA.AI – Almadan Önce Bana Sor!" />
+  <meta property="og:description" content="Ürünlere yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm. Tarafsız alışveriş asistanın." />
+  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/9386/9386895.png" /> <meta property="og:url" content="https://caynana.ai" />
+  <meta property="og:type" content="website" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -182,7 +185,7 @@
 <header>
   <div class="logo-container">
     <div class="logo-icon">C</div>
-    <div class="logo-text">CAYNANA.AI</div>
+    <div class="logo-text">CAYNANA</div>
   </div>
   <button id="installBtn" onclick="installPWA()">
     <i class="fa-solid fa-download"></i> Uygulamayı Yükle
@@ -259,7 +262,7 @@
       </div>
     </div>
     <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
-      <i class="fa-solid fa-arrow-left"></i>
+      <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu
     </button>
   </section>
 
@@ -277,7 +280,7 @@
     <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark. info@italky.com')">İletişim</a>
   </div>
   <div class="company-tag">
-    <span>@CAYNANA.AI BY ITALKY TECHNOLOGY V.9.1</span>
+    <span>@CAYNANA.AI BY ITALKY TECHNOLOGY</span>
     <div class="italian-bar"></div>
   </div>
 </footer>
@@ -298,14 +301,12 @@
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
-  // --- SİHİRLİ LİNK KONTROLÜ (AUTO-START) ---
-  // Sayfa yüklendiğinde URL'de ?q=URUN var mı diye bakar. Varsa analiz eder.
   window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const queryParam = urlParams.get('q');
     if (queryParam) {
       qInput.value = queryParam;
-      start(); // Otomatik başlat
+      start(); 
     }
   });
 
@@ -313,7 +314,6 @@
   function resetAll() { 
       clearImage(); 
       qInput.value = ""; 
-      // URL'yi temizle ki kullanıcı yenileyince tekrar analiz yapmasın
       window.history.pushState({}, document.title, "/");
       showScene("scene-home"); 
   }
@@ -369,7 +369,6 @@
          const productUrl = data.product.url || "#";
          document.getElementById("heroLink").href = productUrl;
          
-         // SİHİRLİ LİNK OLUŞTURMA: caynana.ai/?q=URUN
          const magicLink = `https://caynana.ai/?q=${encodeURIComponent(q)}`;
          const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*İncelemek için tıkla:* ${magicLink}`;
          waShareBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -377,7 +376,6 @@
          if(data.product.img && data.product.img.length > 5) { heroImg.src = data.product.img; heroImg.style.display = "block"; } else { heroImg.style.display = "none"; }
       } else { recBox.style.display = "none"; }
       
-      // Analiz bitince inputu temizlemiyoruz ki kişi ne aradığını görsün. Reset'te temizliyoruz.
       showScene("scene-results");
     } catch (e) { alert("Hata: " + e.message); showScene("scene-home"); }
   }
@@ -385,4 +383,3 @@
 </script>
 </body>
 </html>
-
