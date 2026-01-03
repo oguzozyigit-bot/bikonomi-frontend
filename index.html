@@ -5,7 +5,7 @@
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,7 +21,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- GENEL AYARLAR --- */
+    /* --- TASARIM AYNEN KORUNDU --- */
     :root {
       --bg-body: #FFFFFF;
       --text-main: #202124;
@@ -29,18 +29,6 @@
       --primary: #10B981;
       --whatsapp: #25D366;
       --border: #DFE1E5;
-      
-      /* --- ÖDÜL RENK PALETİ --- */
-      --platinum: #E5E4E2;
-      --gold: #FFD700;
-      --silver: #C0C0C0;
-      --bronze: #CD7F32;
-      --titanium: #878681;
-      --emerald: #50C878;
-      --sapphire: #0F52BA;
-      --ruby: #E0115F;
-      --diamond: #B9F2FF;
-      --crystal: #E0FFFF;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -129,7 +117,6 @@
     .card-bronze { background: linear-gradient(135deg, #FFE6D5, #E6A57E); border: 1px solid #CD7F32; color: #4E2700; }
     .card-bronze .award-icon { color: #8C531B; }
 
-    /* YENİ ÖDÜL RENKLERİ */
     .card-titanium { background: linear-gradient(135deg, #E0E0E0, #878681); border: 1px solid #666; color: #222; }
     .card-titanium .award-icon { color: #444; }
 
@@ -296,9 +283,31 @@
 </footer>
 
 <script>
-  // --- KONFİGÜRASYON ---
-  // RENDER CANLI ADRESİ (BURASI ÇOK ÖNEMLİ BAŞKANIM)
   const API_BASE = "https://bikonomi-api-1.onrender.com"; 
+
+  // --- SERVICE WORKER KAYDI (PWA İÇİN ŞART) ---
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    });
+  }
+
+  // --- OTO-FOCUS FONKSİYONU ---
+  function focusSearch() {
+    const el = document.getElementById("q");
+    if (!el) return;
+    setTimeout(() => {
+      el.focus({ preventScroll: true });
+      const v = el.value || "";
+      el.setSelectionRange(v.length, v.length);
+    }, 250);
+  }
+
+  window.addEventListener("load", () => {
+    // URL kontrolü (Odaklanma için)
+    const p = new URLSearchParams(location.search);
+    if (p.get("focus") === "1") focusSearch();
+  });
 
   let deferredPrompt;
   const installBtn = document.getElementById('installBtn');
@@ -366,15 +375,22 @@
     const q = qInput.value.trim();
     if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
     
-    // --- TEMİZLİK VE GEÇİŞ ---
-    const previousQ = qInput.value; // Paylaşım için sakla
-    qInput.value = ""; // Kutuyu temizle
-    clearImage(); // Resmi temizle
+    // --- GÜNCELLEME: Fotoğrafı korumak için değişkene aldık ---
+    const imgToSend = session.img; 
+    const previousQ = qInput.value; 
+
+    // Arayüzü temizle ama imgToSend değişkeninde resim hala duruyor
+    qInput.value = ""; 
+    // clearImage() 'ı burada çağırmıyoruz, aşağıda iş bitince çağıracağız.
     
     showScene("scene-loading");
     try {
-      // API'ye istek burada atılıyor:
-      const res = await fetch(API_BASE + '/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: session.img }) });
+      // Body içinde artık imgToSend var, yani resim dolu gidiyor
+      const res = await fetch(API_BASE + '/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: imgToSend }) });
+      
+      // Fetch bitti, artık resmi silebiliriz
+      clearImage();
+
       if (!res.ok) throw new Error("Sunucu hatası.");
       const data = await res.json();
       
