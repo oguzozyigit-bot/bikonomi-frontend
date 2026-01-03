@@ -13,9 +13,9 @@
       --bg-body: #FFFFFF;
       --text-main: #202124;
       --text-muted: #5F6368;
-      --primary: #10B981;
+      --primary: #10B981; /* Caynana Yeşili */
       --border: #DFE1E5;
-      --shadow-hover: 0 1px 6px rgba(32,33,36,.28);
+      --accent: #FF5722; /* Öneri Etiketi Rengi */
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,183 +31,85 @@
     }
 
     /* HEADER */
-    header {
-      padding: 20px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      gap: 15px;
-    }
-    
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-right: auto; 
-      padding-left: 10px;
-    }
-    .logo-icon {
-      width: 24px; height: 24px;
-      background: #10B981;
-      color: white;
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 12px;
-    }
+    header { padding: 20px; display: flex; justify-content: flex-end; align-items: center; }
+    .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; padding-left: 10px; }
+    .logo-icon { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
     /* MAIN */
-    main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 6vh; 
-      padding-left: 20px; padding-right: 20px;
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 6vh; padding-left: 20px; padding-right: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
 
     /* HERO */
-    .hero-title {
-      text-align: center;
-      font-size: 28px;
-      font-weight: 700;
-      line-height: 1.3;
-      color: var(--text-main);
-      margin-bottom: 8px;
-    }
+    .hero-title { text-align: center; font-size: 28px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
     .hero-title span { color: var(--primary); }
-    
-    /* ÜST AÇIKLAMA */
-    .hero-sub-top {
-      text-align: center;
-      color: var(--text-muted);
-      font-size: 16px;
-      max-width: 500px;
-      line-height: 1.5;
-      margin-bottom: 25px; 
-    }
-
-    /* ALT AÇIKLAMA (BANNER ALTI) */
-    .hero-sub-bottom {
-      text-align: center;
-      color: #9AA0A6; 
-      font-size: 13px;
-      max-width: 480px;
-      line-height: 1.5;
-      margin-top: 15px;
-    }
+    .hero-sub-top { text-align: center; color: var(--text-muted); font-size: 16px; max-width: 500px; line-height: 1.5; margin-bottom: 25px; }
+    .hero-sub-bottom { text-align: center; color: #9AA0A6; font-size: 13px; max-width: 480px; margin-top: 15px; }
 
     /* SEARCH BAR */
-    .search-wrapper {
-      width: 100%;
-      max-width: 584px;
-      position: relative;
-    }
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 12px 16px;
-      transition: box-shadow 0.2s;
-    }
-    .search-bar:hover, .search-bar:focus-within {
-      box-shadow: var(--shadow-hover);
-      border-color: rgba(223,225,229,0);
-    }
-    
+    .search-wrapper { width: 100%; max-width: 584px; position: relative; }
+    .search-bar { display: flex; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 24px; padding: 12px 16px; transition: box-shadow 0.2s; }
+    .search-bar:hover, .search-bar:focus-within { box-shadow: 0 1px 6px rgba(32,33,36,.28); }
     .search-icon-left { color: #9AA0A6; font-size: 16px; margin-right: 12px; }
-    
-    #q {
-      flex: 1; border: none; outline: none; font-size: 16px;
-      color: var(--text-main); background: transparent; height: 30px;
-    }
-
-    .camera-btn {
-      color: var(--primary); font-size: 18px; cursor: pointer;
-      padding: 8px; border-radius: 50%; transition: background 0.2s;
-    }
+    #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 30px; }
+    .camera-btn { color: var(--primary); font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; }
     .camera-btn:hover { background: #F1F3F4; }
 
     /* BANNER */
-    .promo-banner {
-      width: 100%; max-width: 584px; height: 120px;
-      border-radius: 12px; overflow: hidden; position: relative;
-      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 30px; 
-      background: linear-gradient(105deg, #10B981 0%, #064e3b 100%);
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
-    }
+    .promo-banner { width: 100%; max-width: 584px; height: 120px; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 30px; background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
     .banner-content { color: white; z-index: 2; }
     .banner-tag { font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
     .banner-title { font-size: 20px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
     .banner-cta { font-size: 12px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
     .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 100px; color: white; opacity: 0.1; transform: rotate(-15deg); }
 
-    /* PREVIEW & ACTIONS */
-    .img-preview-box {
-      margin-top: 20px; border: 1px solid var(--border); border-radius: 12px;
-      padding: 10px; display: none; text-align: center;
+    /* RESULTS CARD */
+    .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
+    
+    /* ÖNERİ KUTUSU TASARIMI (YENİ) */
+    .recommendation-box {
+      margin-top: 25px;
+      border: 2px solid var(--primary); /* Yeşil Çerçeve */
+      border-radius: 12px;
+      padding: 15px;
+      position: relative;
+      background: #fcfdfc;
     }
-    .img-preview-box img { max-height: 200px; border-radius: 8px; }
-    .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
+    
+    .recommendation-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary);
+      color: white;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
+    }
+
+    .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
+    .speech-btn:hover { background: #e8eaed; color: #202124; }
+    .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
+
+    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; text-decoration: none; display: block; text-align: center;}
     .mini-btn { padding: 8px 16px; border-radius: 18px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; }
 
-    /* RESULTS */
-    .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
-    
-    /* SES BUTONU STİLİ */
-    .speech-btn {
-      background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px;
-      color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer;
-      display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
-      transition: background 0.2s;
-    }
-    .speech-btn:hover { background: #e8eaed; color: #202124; }
-    .speech-btn.speaking { background: #e6fffa; color: #10B981; border: 1px solid #10B981; }
-
-    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;}
+    /* PREVIEW & ACTIONS */
+    .img-preview-box { margin-top: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; text-align: center; }
+    .img-preview-box img { max-height: 200px; border-radius: 8px; }
+    .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
 
     /* FOOTER */
-    footer {
-      background: #F8F9FA;
-      border-top: 1px solid #DADCE0;
-      padding: 20px 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      font-size: 12px;
-      color: #70757A;
-      margin-top: auto;
-    }
+    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 12px; color: #70757A; margin-top: auto; }
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
     .footer-links a { color: #70757A; text-decoration: none; }
-    .footer-links a:hover { color: #333; }
     
-    .company-tag {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 6px;
-      font-weight: 800;
-      color: #9CA3AF;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      font-size: 10px;
-    }
-    .italian-bar {
-      width: 100%; 
-      height: 4px; 
-      background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%);
-      border-radius: 2px;
-      border: 1px solid rgba(0,0,0,0.05);
-    }
+    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; color: #9CA3AF; font-size: 10px; }
+    .italian-bar { width: 100%; height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); }
 
     /* UTILS */
     .scene { display: none; width: 100%; max-width: 600px; }
@@ -223,21 +125,15 @@
 <header>
   <div class="logo-container">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
-    <div class="logo-text">CAYNANA</div>
+    <div class="logo-text">CAYNANA.AI</div>
   </div>
 </header>
 
 <main>
 
   <section id="scene-home" class="scene active" style="display:flex; flex-direction:column; align-items:center;">
-    
-    <div class="hero-title">
-      Almadan Önce <br><span>CAYNANA'ya Sor.</span>
-    </div>
-    
-    <div class="hero-sub-top">
-      Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.
-    </div>
+    <div class="hero-title">Almadan Önce <br><span>CAYNANA'ya Sor.</span></div>
+    <div class="hero-sub-top">Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</div>
 
     <div class="search-wrapper">
       <div class="search-bar">
@@ -264,11 +160,7 @@
       </div>
       <i class="fa-solid fa-bag-shopping banner-decor"></i>
     </div>
-
-    <div class="hero-sub-bottom">
-      Satış yapmam. Bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.
-    </div>
-
+    <div class="hero-sub-bottom">Satış yapmam. Bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.</div>
   </section>
 
   <section id="scene-loading" class="scene" style="text-align:center; padding-top:40px;">
@@ -279,7 +171,6 @@
 
   <section id="scene-results" class="scene">
     <div class="result-card">
-      
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <h2 id="finalHeadline" style="margin:0;">Sonuç</h2>
         <button id="btnListen" onclick="toggleSpeech()" class="speech-btn">
@@ -289,16 +180,20 @@
 
       <p id="finalText" style="line-height:1.6; color:#444; margin-top:15px;"></p>
       
-      <div style="text-align:center; margin:15px 0;">
-        <img id="heroImg" src="" onerror="this.style.display='none'" style="display:none; max-width:100%; max-height:200px; object-fit:contain;">
-        <h4 id="heroTitle"></h4>
+      <div id="recommendationBox" class="recommendation-box" style="display:none;">
+        <div class="recommendation-badge"><i class="fa-solid fa-check"></i> CAYNANA ÖNERİYOR</div>
+        
+        <div style="text-align:center; margin-top:10px;">
+            <img id="heroImg" src="" onerror="this.style.display='none'" style="display:none; max-width:100%; max-height:180px; object-fit:contain; margin-bottom:10px;">
+            <h4 id="heroTitle" style="margin:5px 0 10px 0; color:#202124;"></h4>
+        </div>
+
+        <a id="heroLink" href="#" target="_blank" class="btn-main">
+           Trendyol Fiyatını Gör & İncele
+        </a>
       </div>
 
-      <a id="heroLink" href="#" target="_blank" class="btn-main" style="display:block; text-align:center; text-decoration:none;">
-        Fiyatı Gör & İncele
-      </a>
     </div>
-    
     <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
       <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu
     </button>
@@ -318,7 +213,6 @@
     <a href="#" onclick="openStatic('Gizlilik', 'Verileriniz bizimle güvende.')">Gizlilik</a>
     <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark. info@italky.com')">İletişim</a>
   </div>
-
   <div class="company-tag">
     <span>@CAYNANA.AI BY ITALKY TECHNOLOGY</span>
     <div class="italian-bar"></div>
@@ -326,15 +220,13 @@
 </footer>
 
 <script>
-  // --- STATE ---
   let session = { q: "", img: "" };
-  let currentAudio = null; // PREMIUM SES İÇİN
+  let currentAudio = null;
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
-  // --- NAVIGATION ---
   function showScene(id) {
-    stopSpeech(); // Sayfa değişince sesi kes
+    stopSpeech();
     document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
     document.getElementById(id).classList.add("active");
   }
@@ -345,7 +237,6 @@
     showScene("scene-home");
   }
 
-  // --- FILE HANDLING ---
   function triggerFileSelect() { fileInput.click(); }
 
   function handleFile(file) {
@@ -365,11 +256,8 @@
     document.getElementById("imgWrap").style.display = "none";
   }
 
-  // --- PREMIUM SPEECH FUNCTIONS (BACKEND BAĞLANTILI) ---
   async function toggleSpeech() {
     let btn = document.getElementById("btnListen");
-    
-    // Eğer şu an çalıyorsa DURDUR
     if (currentAudio) {
         currentAudio.pause();
         currentAudio = null;
@@ -377,41 +265,29 @@
         btn.classList.remove("speaking");
         return;
     }
-
-    // Metni Al
     let text = document.getElementById("finalText").innerText;
     if (!text) return;
-
-    // Yükleniyor ikonu yap
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...';
     btn.classList.add("speaking");
-
     try {
-        // Backend'den sesi iste (Maliyeti burada oluşur)
         const res = await fetch('https://bikonomi-api-1.onrender.com/api/speak', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({ text: text })
         });
-
         if (!res.ok) throw new Error("Ses üretilemedi.");
-
-        // Gelen sesi (blob) oynat
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         currentAudio = new Audio(url);
-
         currentAudio.onended = () => {
             currentAudio = null;
             btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
             btn.classList.remove("speaking");
         };
-
         currentAudio.play();
         btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
-
     } catch (e) {
-        alert("Ses oluşturulurken hata oluştu: " + e.message);
+        alert("Ses hatası: " + e.message);
         btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
         btn.classList.remove("speaking");
     }
@@ -429,17 +305,15 @@
     }
   }
 
-  // --- STATIC PAGES ---
   function openStatic(title, text) {
     document.getElementById("staticTitle").textContent = title;
     document.getElementById("staticText").textContent = text;
     showScene("scene-static");
   }
 
-  // --- API CALL ---
   async function start() {
     const q = qInput.value.trim();
-    if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
+    if (!q && !session.img) return alert("Bir ürün adı yazın.");
 
     showScene("scene-loading");
     
@@ -450,15 +324,18 @@
         body: JSON.stringify({ q: q, img: session.img })
       });
 
-      if (!res.ok) throw new Error("Sunucuya ulaşılamadı.");
+      if (!res.ok) throw new Error("Sunucu hatası.");
 
       const data = await res.json();
 
       document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
-      document.getElementById("finalText").textContent = data.text || "Detaylı bilgi alınamadı.";
+      document.getElementById("finalText").textContent = data.text || "Bilgi yok.";
       
+      const recBox = document.getElementById("recommendationBox");
       const heroImg = document.getElementById("heroImg");
+
       if (data.product && data.product.title) {
+         recBox.style.display = "block"; // Kutuyu göster
          document.getElementById("heroTitle").textContent = data.product.title;
          document.getElementById("heroLink").href = data.product.url || "#";
          
@@ -469,21 +346,18 @@
              heroImg.style.display = "none";
          }
       } else {
-         document.getElementById("heroTitle").textContent = "";
-         document.getElementById("heroLink").href = "#";
-         heroImg.style.display = "none";
+         recBox.style.display = "none"; // Öneri yoksa kutuyu gizle
       }
       
       showScene("scene-results");
 
     } catch (e) {
-      alert("Bağlantı hatası: " + e.message);
+      alert("Hata: " + e.message);
       showScene("scene-home");
     }
   }
 
   qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
-
 </script>
 
 </body>
