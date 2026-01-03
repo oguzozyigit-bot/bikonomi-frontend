@@ -11,17 +11,17 @@
         
         body { font-family: 'Poppins', sans-serif; background-color: #f3f4f6; }
         
-        /* Kart Renk Tasarımları - Canlı Renkler */
+        /* --- KART RENKLERİ GERİ GELDİ --- */
         .card-platinyum { border-left: 6px solid #e5e4e2; background: linear-gradient(to right, #ffffff, #fdfdfd); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .card-altin { border-left: 6px solid #FFD700; background: linear-gradient(to right, #fffdf0, #fff); }
-        .card-gumus { border-left: 6px solid #C0C0C0; background: linear-gradient(to right, #f8f9fa, #fff); }
-        .card-bronz { border-left: 6px solid #CD7F32; background: linear-gradient(to right, #fffaf0, #fff); }
-        .card-titanyum { border-left: 6px solid #878681; background: linear-gradient(to right, #f4f4f5, #fff); }
-        .card-zumrut { border-left: 6px solid #50C878; background: linear-gradient(to right, #f0fff4, #fff); }
-        .card-safir { border-left: 6px solid #0F52BA; background: linear-gradient(to right, #eff6ff, #fff); }
-        .card-yakut { border-left: 6px solid #E0115F; background: linear-gradient(to right, #fff0f5, #fff); }
-        .card-elmas { border-left: 6px solid #B9F2FF; background: linear-gradient(to right, #f0fbff, #fff); }
-        .card-kristal { border-left: 6px solid #A7D8DE; background: linear-gradient(to right, #f5fdff, #fff); }
+        .card-altin { border-left: 6px solid #FFD700; background: linear-gradient(to right, #fffdf0, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-gumus { border-left: 6px solid #C0C0C0; background: linear-gradient(to right, #f8f9fa, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-bronz { border-left: 6px solid #CD7F32; background: linear-gradient(to right, #fffaf0, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-titanyum { border-left: 6px solid #878681; background: linear-gradient(to right, #f4f4f5, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-zumrut { border-left: 6px solid #50C878; background: linear-gradient(to right, #f0fff4, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-safir { border-left: 6px solid #0F52BA; background: linear-gradient(to right, #eff6ff, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-yakut { border-left: 6px solid #E0115F; background: linear-gradient(to right, #fff0f5, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-elmas { border-left: 6px solid #B9F2FF; background: linear-gradient(to right, #f0fbff, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card-kristal { border-left: 6px solid #A7D8DE; background: linear-gradient(to right, #f5fdff, #fff); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         /* Konuşma İkonu Patlama Animasyonu */
         @keyframes pulse-ring {
@@ -29,10 +29,7 @@
             70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        
-        .speak-btn-anim {
-            animation: pulse-ring 2s infinite;
-        }
+        .speak-btn-anim { animation: pulse-ring 2s infinite; }
 
         .loader {
             border: 4px solid #f3f3f3;
@@ -92,10 +89,7 @@
                 </button>
             </div>
             
-            <p id="resultText" class="text-gray-700 leading-relaxed text-lg"></p>
-            <div id="productImageResult" class="mt-4 hidden">
-                <img id="resImg" src="" class="w-32 h-32 object-contain mx-auto">
-            </div>
+            <p id="resultText" class="text-gray-700 leading-relaxed text-lg whitespace-pre-line"></p>
         </div>
 
         <div id="recommendationsList" class="space-y-4">
@@ -116,7 +110,6 @@
         let currentSpeechText = "";
         let currentBase64Image = "";
 
-        // Resim Önizleme ve Base64 Çevirme
         function previewImage() {
             const file = document.getElementById('imageInput').files[0];
             if (file) {
@@ -140,7 +133,7 @@
             if (e.key === 'Enter') analyzeProduct();
         }
 
-        // Ödül İsmine Göre Renk Sınıfı Seçimi
+        // Ödül İsmine Göre Renkli CSS Sınıfı
         function getCardStyle(awardName) {
             const lowerName = awardName.toLowerCase();
             if (lowerName.includes('platinyum')) return 'card-platinyum';
@@ -153,7 +146,7 @@
             if (lowerName.includes('yakut')) return 'card-yakut';
             if (lowerName.includes('elmas')) return 'card-elmas';
             if (lowerName.includes('kristal')) return 'card-kristal';
-            return 'border-l-4 border-gray-300 bg-white'; // Varsayılan
+            return 'border-l-4 border-gray-300 bg-white';
         }
 
         async function analyzeProduct() {
@@ -161,17 +154,16 @@
             const query = input.value;
 
             if (!query && !currentBase64Image) {
-                alert("Evladım ya bir şey yaz ya da resim yükle!");
+                alert("Evladım bir şey yaz veya resim yükle!");
                 return;
             }
 
-            // Arayüz Hazırlığı
             document.getElementById('loader').style.display = 'block';
             document.getElementById('resultArea').classList.add('hidden');
             
-            // --- SORUN ÇÖZÜMÜ: ARAMA KUTUSUNU TEMİZLE ---
-            input.value = ""; 
-            clearImage(); // Resmi de temizleyelim ki yeni aramaya hazır olsun
+            // Kutuyu Temizle
+            input.value = "";
+            clearImage();
 
             try {
                 const response = await fetch('/api/analyze', {
@@ -182,18 +174,15 @@
 
                 const data = await response.json();
 
-                // Başlık ve Metin
                 document.getElementById('resultTitle').innerText = data.headline || "Analiz Tamamlandı";
                 document.getElementById('resultText').innerText = data.text || "Detay bulunamadı.";
                 currentSpeechText = data.speech_text || data.text;
 
-                // Kartları Oluştur
                 const listDiv = document.getElementById('recommendationsList');
-                listDiv.innerHTML = ""; // Temizle
+                listDiv.innerHTML = "";
 
                 if (data.recommendations && data.recommendations.length > 0) {
                     data.recommendations.forEach(item => {
-                        // Ödüle göre stil sınıfını bul
                         const cardClass = getCardStyle(item.award);
                         
                         const cardHTML = `
@@ -201,7 +190,7 @@
                                 <div class="${cardClass} p-4 rounded-r-lg flex justify-between items-center group">
                                     <div class="flex-1">
                                         <div class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-1 flex items-center gap-2">
-                                            ${getAwardIcon(item.award)} ${item.award}
+                                            <i class="fas fa-award"></i> ${item.award}
                                         </div>
                                         <h3 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition">${item.product_name}</h3>
                                         <p class="text-sm text-gray-600 mt-1">"${item.reason}"</p>
@@ -227,21 +216,8 @@
             }
         }
 
-        // İkon Helper
-        function getAwardIcon(award) {
-            const a = award.toLowerCase();
-            if(a.includes('platinyum')) return '<i class="fas fa-medal text-gray-400"></i>';
-            if(a.includes('altın')) return '<i class="fas fa-trophy text-yellow-500"></i>';
-            if(a.includes('elmas')) return '<i class="far fa-gem text-blue-300"></i>';
-            return '<i class="fas fa-award"></i>';
-        }
-
         async function playVoice() {
             if (!currentSpeechText) return;
-            
-            // Butona basıldığında animasyonu biraz hızlandırabiliriz veya durdurabiliriz
-            // Şimdilik standart bırakıyoruz, sürekli dikkat çeksin.
-
             try {
                 const response = await fetch('/api/speak', {
                     method: 'POST',
