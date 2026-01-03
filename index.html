@@ -55,7 +55,7 @@
     .hero-title span { color: var(--primary); }
     .hero-sub { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
     
-    /* FORM YAPISI (ENTER SORUNUNU ÇÖZER) */
+    /* FORM YAPISI */
     .search-container { position: relative; width: 100%; margin-bottom: 20px; }
     .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px 5px 5px 15px; height: 60px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); transform: translateY(-1px); }
@@ -213,7 +213,7 @@
 <script>
   const API_BASE = "https://bikonomi-api-1.onrender.com";
 
-  // PWA
+  // PWA & Service Worker
   if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(()=>{})); }
   let deferredPrompt;
   const installBtn = document.getElementById('installBtn');
@@ -265,66 +265,82 @@
     rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
   }
 
-  // --- KRİTİK GÜNCELLEME: start() fonksiyonu artık Enter ile uyumlu ---
+  // --- YENİLENMİŞ VE KORUMALI START FONKSİYONU ---
   async function start() {
-    // 1. Yazıyı al
     const q = qInput.value.trim();
-    
-    // 2. Yazı ve Resim yoksa uyarı ver
-    if (!q && !session.img) return alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
-
-    // 3. Verileri değişkene al (ekranı temizlemeden önce)
     const imgToSend = session.img;
-    const qToSend = q;
 
-    // 4. Ekranı temizle ve Yükleniyor'a geç
-    clearImage();
-    qInput.value = ""; 
+    // 1. Eğer boşsa uyarı ver
+    if (!q && !imgToSend) {
+        alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
+        return;
+    }
+
+    // 2. UI'ı silme! Önce sadece loading'e geç. Böylece kullanıcı hata olursa yazdığını kaybetmez.
     showScene("scene-loading");
 
     try {
-        const res = await fetch(API_BASE + '/api/analyze', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ q: qToSend, img: imgToSend })
+        const res = await fetch(API_BASE + "/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ q, img: imgToSend })
         });
+
+        // Hata yakalama
+        if (!res.ok) {
+            const t = await res.text().catch(() => "");
+            throw new Error(t || "Sunucu hatası");
+        }
+
         const data = await res.json();
-        
+
+        // 3. Başarılı cevap geldiyse ŞİMDİ temizle
+        clearImage();
+        qInput.value = "";
+
+        // Verileri Yerleştir
         document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
         document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
         audioText = data.speech_text || "";
-        
+
         const heroBox = document.getElementById("heroImgBox");
-        if(data.product_img && data.product_img.length > 5) {
+        if (data.product_img && data.product_img.length > 5) {
             document.getElementById("heroImg").src = data.product_img;
             heroBox.style.display = "block";
         } else {
             heroBox.style.display = "none";
         }
 
+        // Kartları Oluştur
         const list = document.getElementById("recommendationList");
         list.innerHTML = "";
-        
-        if (data.recommendations && data.recommendations.length > 0) {
-            data.recommendations.forEach(rec => {
+
+        const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+        if (recs.length > 0) {
+            recs.forEach(rec => {
                 let theme = "theme-default";
-                const award = (rec.award || "").toLowerCase();
-                
+                const award = String(rec.award || "").toLowerCase();
+
                 if (award.includes("altın")) theme = "theme-gold";
                 else if (award.includes("gümüş")) theme = "theme-silver";
                 else if (award.includes("bronz")) theme = "theme-bronze";
                 else if (award.includes("platin")) theme = "theme-platinum";
 
-                let iconClass = "fa-bag-shopping";
-                if(rec.site.toLowerCase().includes("amazon")) iconClass = "fa-amazon";
+                // İkon Mantığı (Markaya göre ikon tipi değişir)
+                let iconClass = "fa-solid fa-bag-shopping";
+                if (String(rec.site || "").toLowerCase().includes("amazon")) {
+                    iconClass = "fa-brands fa-amazon";
+                }
+
+                const url = rec.url || "#";
 
                 const html = `
-                <a href="${rec.url}" target="_blank" class="rec-card ${theme}">
-                    <div class="rec-icon"><i class="fa-solid ${iconClass}"></i></div>
+                <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
+                    <div class="rec-icon"><i class="${iconClass}"></i></div>
                     <div class="rec-content">
                         <div class="award-badge">${rec.award || "ÖNERİLEN"}</div>
-                        <div class="rec-name">${rec.product_name}</div>
-                        <div class="rec-reason">${rec.reason}</div>
+                        <div class="rec-name">${rec.product_name || "Ürün"}</div>
+                        <div class="rec-reason">${rec.reason || ""}</div>
                     </div>
                     <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
                 </a>
@@ -338,8 +354,10 @@
         showScene("scene-results");
 
     } catch (e) {
-        alert("Hata: " + e.message);
+        alert("Hata: " + (e && e.message ? e.message : "Bilinmeyen hata"));
+        // Hata olursa ana ekrana dön ama İNPUTU SİLME, kullanıcı düzeltsin
         showScene("scene-home");
+        qInput.focus();
     }
   }
 
