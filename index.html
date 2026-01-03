@@ -10,21 +10,15 @@
 
   <style>
     :root {
-      /* Renk Paleti - Premium Feel */
-      --bg-body: #F3F4F6;       /* Hafif gri arka plan */
-      --bg-card: #FFFFFF;       /* Bembeyaz kartlar */
-      --primary: #10B981;       /* Caynana Yeşili (Emerald) */
+      --bg-body: #F3F4F6;
+      --bg-card: #FFFFFF;
+      --primary: #10B981;
       --primary-dark: #059669;
-      --text-main: #111827;     /* Simsiyah değil, koyu antrasit */
+      --text-main: #111827;
       --text-muted: #6B7280;
       --border: #E5E7EB;
-      
-      /* Gölgeler (Apple Style) */
-      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --shadow-input: 0 0 0 4px rgba(16, 185, 129, 0.1); /* Odaklanınca çıkan yeşil halka */
-
       --radius: 16px;
     }
 
@@ -40,7 +34,7 @@
       min-height: 100vh;
     }
 
-    /* --- HEADER --- */
+    /* HEADER */
     header {
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(12px);
@@ -66,254 +60,122 @@
       color: var(--text-main);
     }
     .brand-icon {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      border-radius: 8px;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 8px; color: white;
+      display: flex; align-items: center; justify-content: center;
       font-size: 16px;
-      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
     }
-    .brand-text {
-      font-weight: 800;
-      font-size: 20px;
-      letter-spacing: -0.03em;
-    }
+    .brand-text { font-weight: 800; font-size: 20px; letter-spacing: -0.03em; }
 
-    /* --- MAIN LAYOUT --- */
+    /* MAIN */
     main {
       flex: 1;
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
+      width: 100%; max-width: 600px; margin: 0 auto;
       padding: 24px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+      display: flex; flex-direction: column; gap: 24px;
     }
 
-    /* --- HERO SECTION --- */
-    .hero {
-      text-align: center;
-      padding: 10px 0 20px;
-    }
-    .hero h1 {
-      font-size: 28px;
-      font-weight: 800;
-      margin: 0 0 12px;
-      line-height: 1.2;
-      letter-spacing: -0.04em;
-    }
-    .hero span {
-      color: var(--primary);
-    }
-    .hero p {
-      color: var(--text-muted);
-      font-size: 15px;
-      line-height: 1.5;
-      margin: 0 auto;
-      max-width: 90%;
-    }
+    /* HERO */
+    .hero { text-align: center; padding: 10px 0 20px; }
+    .hero h1 { font-size: 28px; font-weight: 800; margin: 0 0 12px; line-height: 1.2; letter-spacing: -0.04em; }
+    .hero span { color: var(--primary); }
+    .hero p { color: var(--text-muted); font-size: 15px; line-height: 1.5; margin: 0 auto; max-width: 90%; }
 
-    /* --- SEARCH CARD --- */
+    /* CARD & INPUT */
     .card {
       background: var(--bg-card);
       border-radius: var(--radius);
       border: 1px solid var(--border);
       box-shadow: var(--shadow-md);
-      padding: 6px; /* Inner padding for the input group */
+      padding: 6px;
     }
-    
     .input-group {
-      position: relative;
-      display: flex;
-      align-items: center;
-      background: #F9FAFB;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      transition: all 0.2s ease;
+      position: relative; display: flex; align-items: center;
+      background: #F9FAFB; border-radius: 12px;
+      border: 1px solid transparent; transition: all 0.2s ease;
     }
-    .input-group:focus-within {
-      background: #fff;
-      border-color: var(--primary);
-      box-shadow: var(--shadow-input);
-    }
-    .input-icon {
-      padding-left: 16px;
-      color: var(--text-muted);
-    }
+    .input-group:focus-within { background: #fff; border-color: var(--primary); }
+    .input-icon { padding-left: 16px; color: var(--text-muted); }
     input[type="text"] {
-      flex: 1;
-      border: none;
-      background: transparent;
-      padding: 16px;
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--text-main);
-      outline: none;
-      width: 100%;
+      flex: 1; border: none; background: transparent; padding: 16px;
+      font-size: 16px; font-weight: 500; color: var(--text-main); outline: none; width: 100%;
     }
     .btn-search {
-      background: var(--text-main);
-      color: white;
-      border: none;
-      width: 48px;
-      height: 48px;
-      border-radius: 10px;
-      margin-right: 4px;
-      cursor: pointer;
-      font-size: 18px;
-      transition: transform 0.1s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--text-main); color: white; border: none;
+      width: 48px; height: 48px; border-radius: 10px; margin-right: 4px;
+      cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
     }
-    .btn-search:active { transform: scale(0.95); }
 
-    /* --- ACTION BUTTONS --- */
-    .action-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-      padding: 0 12px 12px;
-    }
+    /* ACTIONS & PREVIEW */
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; padding: 0 12px 12px; }
     .action-btn {
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: var(--shadow-sm);
+      background: white; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; font-size: 14px; font-weight: 600; color: var(--text-main);
+      display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
     }
-    .action-btn:hover {
-      border-color: var(--text-muted);
-      background: #F9FAFB;
-    }
-    .action-btn i { color: var(--primary); font-size: 16px; }
-
-    /* --- PREVIEW IMAGE AREA --- */
-    .img-preview-box {
-      margin: 0 12px 12px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      display: none; /* JS ile açılacak */
-      background: #000;
-    }
+    .img-preview-box { margin: 0 12px 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); display: none; background: #000; }
     .img-preview-box img { width: 100%; display: block; }
     .img-actions { padding: 10px; display: flex; gap: 10px; background: #fff; }
 
-    /* --- CHIPS / EXAMPLES --- */
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 24px;
-    }
-    .chip {
-      background: white;
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .chip:hover {
-      border-color: var(--primary);
-      color: var(--primary);
-      background: #ECFDF5;
-    }
-
-    /* --- AD BANNERS (REKLAM ALANI) --- */
+    /* AD BANNER */
     .ad-container {
-      margin-top: 30px;
-      width: 100%;
-      background: white;
-      border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
+      margin-top: 10px; width: 100%; background: white;
+      border: 1px dashed var(--border); border-radius: 12px; padding: 16px;
+      text-align: center; position: relative; overflow: hidden;
     }
     .ad-label {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--bg-body);
-      padding: 2px 10px;
-      font-size: 10px;
-      color: #9CA3AF;
-      border-bottom-left-radius: 6px;
-      border-bottom-right-radius: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      background: var(--bg-body); padding: 2px 10px; font-size: 10px; color: #9CA3AF;
+      border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; text-transform: uppercase;
     }
-    /* Google Adsense responsive kodu buraya sığacak şekilde ayarlanır */
-    .ad-slot {
-      min-height: 100px; /* Reklam gelene kadar yer tutsun */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #F9FAFB;
-      border-radius: 8px;
-      color: #D1D5DB;
-      font-size: 12px;
+    .ad-slot { min-height: 100px; display: flex; align-items: center; justify-content: center; background: #F9FAFB; border-radius: 8px; color: #D1D5DB; font-size: 12px; }
+
+    /* FOOTER */
+    footer {
+      margin-top: auto;
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 30px 20px;
+      text-align: center;
+    }
+    .footer-nav {
+      display: flex; justify-content: center; gap: 24px; margin-bottom: 20px;
+    }
+    .footer-nav a {
+      text-decoration: none; color: var(--text-muted); font-size: 13px; font-weight: 500; transition: color 0.2s;
+    }
+    .footer-nav a:hover { color: var(--text-main); }
+    
+    .company-tag {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 11px; font-weight: 800; color: #9CA3AF; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    /* İtalyan Bayrağı (CSS Çizim) */
+    .italy-flag {
+      width: 24px; height: 14px;
+      background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%);
+      border: 1px solid rgba(0,0,0,0.1); border-radius: 2px;
+      display: inline-block;
     }
 
-    /* --- SCENE MANAGEMENT --- */
+    /* SCENE & LOADER */
     .scene { display: none; animation: fadeIn 0.4s ease; }
     .scene.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* --- LOADING BAR --- */
-    .loading-container { text-align: center; padding: 40px 0; }
-    .spinner {
-      width: 50px; height: 50px; margin: 0 auto 20px;
-      border: 4px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 1s infinite linear;
-    }
+    .spinner { width: 50px; height: 50px; margin: 0 auto 20px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* --- RESULT BOX --- */
-    .result-box {
-      background: white; border-radius: var(--radius);
-      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
-      overflow: hidden;
-    }
-    .verdict-header {
-      background: #F0FDF4; border-bottom: 1px solid #DCFCE7;
-      padding: 16px 20px;
-      color: var(--primary-dark); font-weight: 700; font-size: 14px;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      display: flex; align-items: center; gap: 8px;
-    }
+    /* RESULT */
+    .result-box { background: white; border-radius: var(--radius); box-shadow: var(--shadow-lg); border: 1px solid var(--border); overflow: hidden; }
+    .verdict-header { background: #F0FDF4; border-bottom: 1px solid #DCFCE7; padding: 16px 20px; color: var(--primary-dark); font-weight: 700; font-size: 14px; text-transform: uppercase; }
     .verdict-body { padding: 20px; }
-    .product-hero {
-      width: 100%; aspect-ratio: 16/9; background: #fff;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 16px; border-radius: 8px; border: 1px solid var(--border); padding: 10px;
-    }
+    .product-hero { width: 100%; aspect-ratio: 16/9; background: #fff; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; border-radius: 8px; border: 1px solid var(--border); padding: 10px; }
     .product-hero img { max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    /* CONTENT PAGES (Simple Text) */
+    .page-content { text-align: left; font-size: 14px; line-height: 1.6; color: var(--text-muted); }
+    .page-content h2 { color: var(--text-main); font-size: 20px; margin-bottom: 10px; }
   </style>
 </head>
 
@@ -321,18 +183,15 @@
 
 <header>
   <div class="header-inner">
-    <a href="#" onclick="resetAll()" class="brand">
+    <a href="#" onclick="showScene('scene-home')" class="brand">
       <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
       <span class="brand-text">CAYNANA</span>
     </a>
-    <div style="font-size:12px; font-weight:600; color:var(--text-muted);">v2.0 Beta</div>
-  </div>
+    </div>
 </header>
 
 <main>
-
   <section id="scene-home" class="scene active">
-    
     <div class="hero">
       <h1>Almadan Önce <br><span>Bana Danış.</span></h1>
       <p>Binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</p>
@@ -341,7 +200,7 @@
     <div class="card">
       <div class="input-group">
         <i class="fa-solid fa-magnifying-glass input-icon"></i>
-        <input id="q" type="text" placeholder="Ürün adı, link veya marka..." autocomplete="off">
+        <input id="q" type="text" placeholder="Ürün adı veya link yapıştır..." autocomplete="off">
         <button class="btn-search" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
       </div>
 
@@ -365,100 +224,94 @@
       </div>
     </div>
 
-    <div class="chips">
-      <div class="chip" onclick="fillQ('iPhone 15 alınır mı?')">📱 iPhone 15</div>
-      <div class="chip" onclick="fillQ('Dyson V15 vs Gen5')">🧹 Dyson</div>
-      <div class="chip" onclick="fillQ('Philips Airfryer XXL')">🍟 Airfryer</div>
-      <div class="chip" onclick="fillQ('Sony WH-1000XM5')">🎧 Kulaklık</div>
-    </div>
-
     <div class="ad-container">
-      <div class="ad-label">Sponsorlu Bağlantı</div>
-      
+      <div class="ad-label">Sponsorlu</div>
       <div class="ad-slot">
-        <span>Reklam Alanı (Google Adsense)</span>
+        <span style="opacity:0.5;">Google Reklam Alanı</span>
       </div>
-      </div>
-
+    </div>
   </section>
 
-
   <section id="scene-loading" class="scene">
-    <div class="loading-container">
+    <div style="text-align: center; padding: 40px 0;">
       <div class="spinner"></div>
       <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Analiz Ediliyor...</h3>
       <p id="loadingStep" style="color:var(--text-muted); font-size:14px;">Veriler taranıyor</p>
     </div>
   </section>
 
-
   <section id="scene-results" class="scene">
-    
     <div class="result-box">
-      <div class="verdict-header">
-        <i class="fa-solid fa-check-circle"></i> Caynana Kararı
-      </div>
+      <div class="verdict-header"><i class="fa-solid fa-check-circle"></i> Caynana Kararı</div>
       <div class="verdict-body">
-        <h2 id="finalHeadline" style="margin:0 0 10px; font-size:20px; font-weight:800; line-height:1.3;">Sonuç Başlığı</h2>
-        <p id="finalText" style="color:#4B5563; line-height:1.6; font-size:15px; margin-bottom:20px;">
-          Buraya yapay zeka analizi gelecek.
-        </p>
-
-        <div class="product-hero">
-           <img id="heroImg" src="" alt="Ürün Resmi">
-        </div>
-        <h3 id="heroTitle" style="font-size:16px; font-weight:700; text-align:center; margin-bottom:16px;">Ürün Adı</h3>
-
+        <h2 id="finalHeadline" style="margin:0 0 10px; font-size:20px; font-weight:800; line-height:1.3;">Sonuç</h2>
+        <p id="finalText" style="color:#4B5563; line-height:1.6; font-size:15px; margin-bottom:20px;">...</p>
+        <div class="product-hero"><img id="heroImg" src="" alt="Ürün"></div>
+        <h3 id="heroTitle" style="font-size:16px; font-weight:700; text-align:center; margin-bottom:16px;">-</h3>
         <a id="heroLink" href="#" target="_blank" class="action-btn" style="background:var(--text-main); color:white; border:none; width:100%; justify-content:center; padding:16px;">
           Fiyatı Gör & İncele <i class="fa-solid fa-arrow-up-right-from-square" style="color:white; margin-left:5px;"></i>
         </a>
       </div>
     </div>
-    
     <button onclick="resetAll()" style="width:100%; padding:15px; margin-top:15px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer;">
       <i class="fa-solid fa-rotate-left"></i> Yeni Sorgu Yap
     </button>
+  </section>
 
-    <div class="ad-container" style="margin-top:20px;">
-      <div class="ad-label">Önerilen</div>
-      <div class="ad-slot">Reklam Alanı</div>
-    </div>
-
+  <section id="scene-about" class="scene page-content">
+    <h2>Biz Kimiz?</h2>
+    <p>Caynana, alışveriş kararlarınızı duygusal değil, verisel olarak almanızı sağlayan yeni nesil bir yapay zeka asistanıdır. İtalky Teknoloji A.Ş. iştirakidir.</p>
+    <button onclick="showScene('scene-home')" class="action-btn" style="margin-top:20px;">← Geri Dön</button>
+  </section>
+  
+  <section id="scene-sss" class="scene page-content">
+    <h2>Sıkça Sorulanlar</h2>
+    <p><strong>Ücretli mi?</strong><br>Hayır, son kullanıcı için tamamen ücretsizdir.</p>
+    <p><strong>Hangi siteleri tarıyor?</strong><br>Türkiye'deki tüm büyük pazar yerlerini ve forumları tarar.</p>
+    <button onclick="showScene('scene-home')" class="action-btn" style="margin-top:20px;">← Geri Dön</button>
+  </section>
+  
+  <section id="scene-privacy" class="scene page-content">
+    <h2>Gizlilik Politikası</h2>
+    <p>Kullanıcı verileriniz anonim olarak işlenir. Kişisel bilgileriniz (isim, adres, telefon) talep edilmez ve saklanmaz.</p>
+    <button onclick="showScene('scene-home')" class="action-btn" style="margin-top:20px;">← Geri Dön</button>
+  </section>
+  
+  <section id="scene-contact" class="scene page-content">
+    <h2>İletişim</h2>
+    <p>Düzce Teknopark, Türkiye<br>Email: info@italky.com</p>
+    <button onclick="showScene('scene-home')" class="action-btn" style="margin-top:20px;">← Geri Dön</button>
   </section>
 
 </main>
 
+<footer>
+  <nav class="footer-nav">
+    <a href="#" onclick="showScene('scene-about')">Hakkımızda</a>
+    <a href="#" onclick="showScene('scene-sss')">SSS</a>
+    <a href="#" onclick="showScene('scene-privacy')">Gizlilik</a>
+    <a href="#" onclick="showScene('scene-contact')">İletişim</a>
+  </nav>
+
+  <div class="company-tag">
+    <span>@CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş</span>
+    <div class="italy-flag"></div>
+  </div>
+</footer>
 
 <script>
-  /* * TEMEL MANTIK VE JS
-   * Burası önceki kodun aynısıdır, sadece ID'ler ve sınıflar yeni tasarıma göre uyarlandı.
-   */
-
-  // --- AYARLAR ---
-  const MOCK_MODE = true; // Backend yoksa true kalsın, sunucun varsa false yap.
-  
-  // --- DEĞİŞKENLER ---
+  // --- TEMEL JS FONKSİYONLARI ---
   let session = { q: "", img: "" };
   let loadingTimer = null;
-
-  // --- DOM ELEMENTLERİ ---
   const qInput = document.getElementById("q");
   const camInput = document.getElementById("camInput");
   const fileInput = document.getElementById("fileInput");
 
-  // --- SAYFA GEÇİŞLERİ ---
   function showScene(id) {
     document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
     document.getElementById(id).classList.add("active");
     window.scrollTo(0, 0);
   }
-
-  function fillQ(text) {
-    qInput.value = text;
-    qInput.focus();
-  }
-
-  // --- IMAGE HANDLE ---
   function handleFile(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -470,10 +323,8 @@
     };
     reader.readAsDataURL(file);
   }
-
   camInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
   fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
-
   function clearImage() {
     session.img = "";
     camInput.value = "";
@@ -481,58 +332,36 @@
     document.getElementById("imgWrap").style.display = "none";
     document.getElementById("defaultActions").style.display = "grid";
   }
-
   function resetAll() {
     clearImage();
     qInput.value = "";
     showScene("scene-home");
   }
-
-  // --- MAIN PROCESS ---
   async function start() {
     const q = qInput.value.trim();
-    if (!q && !session.img) return alert("Lütfen bir ürün yazın veya fotoğraf çekin başkanım.");
-
+    if (!q && !session.img) return alert("Lütfen ürün yazın veya foto çekin.");
     showScene("scene-loading");
     
-    // Fake Loading Steps
-    const steps = ["Yorumlar taranıyor...", "Kronik arızalar kontrol ediliyor...", "Fiyat geçmişine bakılıyor...", "Sonuç hazırlanıyor..."];
-    let i = 0;
-    document.getElementById("loadingStep").textContent = steps[0];
-    loadingTimer = setInterval(() => {
-      i++;
-      if(i < steps.length) document.getElementById("loadingStep").textContent = steps[i];
-    }, 800);
-
-    // MOCK RESPONSE (Backend varmış gibi davran)
+    // MOCK DATA SIMULATION
     setTimeout(() => {
-      clearInterval(loadingTimer);
-      
-      // Örnek Sonuç Verisi
       const mockResult = {
         headline: "Bu fiyata daha iyisi var.",
-        text: "Başkanım, baktığın ürünün pil ömrüyle ilgili çok şikayet var. Kullanıcıların %40'ı 6 ay sonra pilin öldüğünü söylüyor. Aynı paraya şu modeli alman daha mantıklı.",
+        text: "Başkanım, bu ürünün kronik sorunları var. Şarj soketi 3 ayda bozuluyor diyen çok kişi var. Onun yerine aşağıdaki modele bakmanı öneririm, daha sağlam.",
         product: {
           title: "Alternatif: TechPro X2000",
           img: "https://via.placeholder.com/400x300?text=TechPro+X2000",
-          url: "https://trendyol.com"
+          url: "#"
         }
       };
-
       document.getElementById("finalHeadline").textContent = mockResult.headline;
       document.getElementById("finalText").textContent = mockResult.text;
       document.getElementById("heroTitle").textContent = mockResult.product.title;
       document.getElementById("heroImg").src = mockResult.product.img;
       document.getElementById("heroLink").href = mockResult.product.url;
-
       showScene("scene-results");
-
-    }, 3500); // 3.5 saniye bekleme süresi
+    }, 2500);
   }
-
-  // Enter tuşu desteği
   qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
-
 </script>
 
 </body>
