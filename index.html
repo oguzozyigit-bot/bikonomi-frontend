@@ -116,9 +116,12 @@
     .recommendations-title { font-size: 14px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 15px 0; text-align: center; }
     .rec-card { display: flex; align-items: center; background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit; position: relative; overflow: hidden; border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     .rec-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+    
+    /* THEMES */
     .theme-gold::before { background: #FFD700; } .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
     .theme-silver::before { background: #A0AEC0; } .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
     .theme-bronze::before { background: #CD7F32; } .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
+    .theme-platinum::before { background: #718096; } .theme-platinum .award-badge { background: #E2E8F0; color: #2D3748; }
     .theme-default::before { background: var(--primary); } .theme-default .award-badge { background: #D1FAE5; color: #065F46; }
     
     .rec-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; background: #F9FAFB; margin-left: 10px; margin-right: 15px; flex-shrink: 0; }
@@ -127,7 +130,9 @@
     .award-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
     .rec-name { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; color: #111; }
     .rec-reason { font-size: 12px; color: #6B7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .rec-arrow { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; background: #F3F4F6; border-radius: 50%; margin-left: 10px; flex-shrink: 0; }
 
+    /* IMAGE PREVIEW */
     #imgWrap { display: none; margin-bottom: 20px; position: relative; border-radius: 16px; overflow: hidden; border: 2px dashed var(--primary); }
     #imgPreview { width: 100%; display: block; }
     .img-cancel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -233,6 +238,39 @@
         </div>
 
         <div id="finalText" class="result-text"></div>
+
+        <div id="indicatorRow" style="display:none; gap:10px; margin:10px 0 15px 0; flex-wrap:wrap;">
+            <div id="indTrust" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+            <div id="indChronic" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+            <div id="indReturn" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+        </div>
+
+        <div id="prosConsWrap" style="display:none; gap:12px; margin-top:10px; flex-wrap: wrap;">
+            <div style="flex:1; min-width: 250px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:12px;">
+                <div style="font-weight:800; font-size:12px; margin-bottom:8px; color:var(--good);"><i class="fa-solid fa-check"></i> Artılar</div>
+                <ul id="prosList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+            </div>
+            <div style="flex:1; min-width: 250px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:12px;">
+                <div style="font-weight:800; font-size:12px; margin-bottom:8px; color:var(--bad);"><i class="fa-solid fa-xmark"></i> Eksiler</div>
+                <ul id="consList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+            </div>
+        </div>
+
+        <div id="chronicWrap" style="display:none; margin-top:12px; padding:12px; border-radius:12px; border:1px solid rgba(245,158,11,0.35); background:rgba(245,158,11,0.08);">
+            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Kronik Sorunlar</div>
+            <ul id="chronicList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+        </div>
+
+        <div id="riskWrap" style="display:none; margin-top:12px;">
+            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Risk Bayrakları</div>
+            <div id="riskChips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </div>
+
+        <div id="evidenceWrap" style="display:none; margin-top:12px;">
+            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Yorumlardan Kanıt</div>
+            <div id="evidenceList" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+
     </div>
 
     <div class="recommendations-title">CAYNANA ÖNERİYOR</div>
@@ -272,80 +310,15 @@
 </footer>
 
 <script>
-  // --- İÇERİK YÖNETİM SİSTEMİ (CMS) ---
   const CONTENTS = {
-    "hakkimizda": `
-      <h3>1. CAYNANA nedir?</h3>
-      <p>CAYNANA, yapay zekâ destekli bir alışveriş analiz asistanıdır. Ürünleri satmaz, yorumları ve riskleri analiz eder.</p>
-      <h3>2. CAYNANA bir alışveriş sitesi mi?</h3>
-      <p>Hayır. CAYNANA ürün satmaz, sepet oluşturmaz, ödeme almaz.</p>
-      <h3>3. CAYNANA kararımı benim yerime mi veriyor?</h3>
-      <p>Hayır. CAYNANA veriyi analiz eder, kararı sana bırakır.</p>
-      <p><strong>Tasarımcı Notu:</strong> "Bu arayüzün amacı kullanıcıyı ikna etmek değil, korumaktır. Daha az seçenek, daha çok gerekçe."</p>
-    `,
-    "puan": `
-      <h3>CAYNANA PUANI NASIL HESAPLANIR?</h3>
-      <p>Puan 4 ana bileşenden oluşur:</p>
-      <p><strong>1. Yorum Güveni (0–30):</strong> Gerçek kullanıcı ayırt edilir. Tekrarlayan, sahte şüphesi olan yorumlar elenir.</p>
-      <p><strong>2. Kronik Sorun Riski (0–30):</strong> "3 ay sonra bozuldu", "koku yapıyor" gibi tekrarlayan arızalar taranır.</p>
-      <p><strong>3. Fiyat / Performans (0–25):</strong> Verilen paraya değip değmediği analiz edilir.</p>
-      <p><strong>4. Satıcı & Garanti (0–15):</strong> İade zorlukları ve servis şikayetleri kontrol edilir.</p>
-      <hr>
-      <h3>PUAN SEVİYELERİ</h3>
-      <p><span style="color:#10B981; font-weight:800;">85–100:</span> Güvenle Al</p>
-      <p><span style="color:#3B82F6; font-weight:800;">70–84:</span> Mantıklı</p>
-      <p><span style="color:#F59E0B; font-weight:800;">50–69:</span> Dikkat</p>
-      <p><span style="color:#EF4444; font-weight:800;">0–49:</span> Uzak Dur</p>
-      <p><em>Not: Sponsorlu içerikler puanı ASLA etkilemez.</em></p>
-    `,
-    "sss": `
-      <h3>A) CAYNANA HAKKINDA</h3>
-      <p><strong>1. CAYNANA nedir?</strong><br>Yapay zekâ destekli alışveriş analiz asistanı.</p>
-      
-      <h3>B) PUANLAMA</h3>
-      <p><strong>4. Puan nedir?</strong><br>Ürünün genel alınabilirliğini 0-100 arası özetleyen skor.</p>
-      <p><strong>5. Neden tek başına yetmez?</strong><br>Önemli olan kaç puan olduğu değil, neden o puanı aldığıdır.</p>
-      <p><strong>6. Puan değişir mi?</strong><br>Evet, yeni yorumlar geldikçe güncellenir.</p>
-
-      <h3>C) YORUMLAR</h3>
-      <p><strong>9. Sahte yorumları nasıl anlıyorsunuz?</strong><br>Tekrarlanan kalıplar ve tutarsızlıklar taranır.</p>
-      
-      <h3>D) ÖNERİLER</h3>
-      <p><strong>11. Neden sadece 5 öneri?</strong><br>Karar vermeyi kolaylaştırmak için en iyi 5 seçenek sunulur.</p>
-      
-      <h3>E) SPONSOR</h3>
-      <p><strong>14. Sponsor sonuçları etkiler mi?</strong><br>Hayır. Analiz tamamen bağımsızdır.</p>
-      
-      <h3>F) TEKNİK</h3>
-      <p><strong>20. Hata alırsam?</strong><br>Sayfayı yenileyip tekrar deneyin.</p>
-    `,
-    "gizlilik": `
-      <h3>GİZLİLİK POLİTİKASI</h3>
-      <p><strong>1. Veri Kullanımı:</strong> Link ve görseller sadece analiz anında işlenir, veritabanına kaydedilmez.</p>
-      <p><strong>2. Üçüncü Taraflar:</strong> Verileriniz asla pazarlama amacıyla satılmaz.</p>
-      <p><strong>3. Anonimlik:</strong> Aramalarınız anonim olarak işlenir.</p>
-    `,
-    "sartlar": `
-      <h3>KULLANIM ŞARTLARI</h3>
-      <p>1. CAYNANA sonuçları birer tavsiye niteliğindedir. Kesin yatırım tavsiyesi değildir.</p>
-      <p>2. Yapay zeka hatalı analiz yapabilir, son karar kullanıcıya aittir.</p>
-    `,
-    "iletisim": `
-      <h3>İLETİŞİM</h3>
-      <p>Her türlü soru, görüş ve iş birliği için:</p>
-      <p><strong>E-posta:</strong> info@italky.com</p>
-      <p><strong>Adres:</strong> Düzce Teknopark</p>
-    `,
-    "sorumluluk": `
-      <h3>YASAL UYARI & SORUMLULUK REDDİ</h3>
-      <p>Sonuçlar AI tabanlıdır ve %100 doğruluk garanti edilmez. Ürün fiyatları ve stok durumları anlık değişebilir. Satın alma kararı tamamen kullanıcının sorumluluğundadır.</p>
-    `,
-    "sponsor": `
-      <h3>SPONSOR AÇIKLAMASI</h3>
-      <p>CAYNANA’da yer alan sponsorlu içerikler, analiz sonuçlarından tamamen bağımsızdır.</p>
-      <p>Sponsorlu alanlar açıkça etiketlenir ve kullanıcıyı yanıltacak şekilde sunulmaz.</p>
-      <p><strong>ÖNEMLİ:</strong> CAYNANA Puanı ve yorum analizleri reklamdan etkilenmez.</p>
-    `
+    "hakkimizda": `<h3>1. CAYNANA nedir?</h3><p>CAYNANA, yapay zekâ destekli bir alışveriş analiz asistanıdır. Ürünleri satmaz, yorumları ve riskleri analiz eder.</p><h3>2. CAYNANA bir alışveriş sitesi mi?</h3><p>Hayır. CAYNANA ürün satmaz, sepet oluşturmaz, ödeme almaz.</p><h3>3. CAYNANA kararımı benim yerime mi veriyor?</h3><p>Hayır. CAYNANA veriyi analiz eder, kararı sana bırakır.</p><p><strong>Tasarımcı Notu:</strong> "Bu arayüzün amacı kullanıcıyı ikna etmek değil, korumaktır. Daha az seçenek, daha çok gerekçe."</p>`,
+    "puan": `<h3>CAYNANA PUANI NASIL HESAPLANIR?</h3><p>Puan 4 ana bileşenden oluşur:</p><p><strong>1. Yorum Güveni (0–30):</strong> Gerçek kullanıcı ayırt edilir. Tekrarlayan, sahte şüphesi olan yorumlar elenir.</p><p><strong>2. Kronik Sorun Riski (0–30):</strong> "3 ay sonra bozuldu", "koku yapıyor" gibi tekrarlayan arızalar taranır.</p><p><strong>3. Fiyat / Performans (0–25):</strong> Verilen paraya değip değmediği analiz edilir.</p><p><strong>4. Satıcı & Garanti (0–15):</strong> İade zorlukları ve servis şikayetleri kontrol edilir.</p><hr><h3>PUAN SEVİYELERİ</h3><p><span style="color:#10B981; font-weight:800;">85–100:</span> Güvenle Al</p><p><span style="color:#3B82F6; font-weight:800;">70–84:</span> Mantıklı</p><p><span style="color:#F59E0B; font-weight:800;">50–69:</span> Dikkat</p><p><span style="color:#EF4444; font-weight:800;">0–49:</span> Uzak Dur</p><p><em>Not: Sponsorlu içerikler puanı ASLA etkilemez.</em></p>`,
+    "sss": `<h3>A) CAYNANA HAKKINDA</h3><p><strong>1. CAYNANA nedir?</strong><br>Yapay zekâ destekli alışveriş analiz asistanı.</p><h3>B) PUANLAMA</h3><p><strong>4. Puan nedir?</strong><br>Ürünün genel alınabilirliğini 0-100 arası özetleyen skor.</p><p><strong>5. Neden tek başına yetmez?</strong><br>Önemli olan kaç puan olduğu değil, neden o puanı aldığıdır.</p><p><strong>6. Puan değişir mi?</strong><br>Evet, yeni yorumlar geldikçe güncellenir.</p><h3>C) YORUMLAR</h3><p><strong>9. Sahte yorumları nasıl anlıyorsunuz?</strong><br>Tekrarlanan kalıplar ve tutarsızlıklar taranır.</p><h3>D) ÖNERİLER</h3><p><strong>11. Neden sadece 5 öneri?</strong><br>Karar vermeyi kolaylaştırmak için en iyi 5 seçenek sunulur.</p><h3>E) SPONSOR</h3><p><strong>14. Sponsor sonuçları etkiler mi?</strong><br>Hayır. Analiz tamamen bağımsızdır.</p><h3>F) TEKNİK</h3><p><strong>20. Hata alırsam?</strong><br>Sayfayı yenileyip tekrar deneyin.</p>`,
+    "gizlilik": `<h3>GİZLİLİK POLİTİKASI</h3><p><strong>1. Veri Kullanımı:</strong> Link ve görseller sadece analiz anında işlenir, veritabanına kaydedilmez.</p><p><strong>2. Üçüncü Taraflar:</strong> Verileriniz asla pazarlama amacıyla satılmaz.</p><p><strong>3. Anonimlik:</strong> Aramalarınız anonim olarak işlenir.</p>`,
+    "sartlar": `<h3>KULLANIM ŞARTLARI</h3><p>1. CAYNANA sonuçları birer tavsiye niteliğindedir. Kesin yatırım tavsiyesi değildir.</p><p>2. Yapay zeka hatalı analiz yapabilir, son karar kullanıcıya aittir.</p>`,
+    "iletisim": `<h3>İLETİŞİM</h3><p>Her türlü soru, görüş ve iş birliği için:</p><p><strong>E-posta:</strong> info@italky.com</p><p><strong>Adres:</strong> Düzce Teknopark</p>`,
+    "sorumluluk": `<h3>YASAL UYARI & SORUMLULUK REDDİ</h3><p>Sonuçlar AI tabanlıdır ve %100 doğruluk garanti edilmez. Ürün fiyatları ve stok durumları anlık değişebilir. Satın alma kararı tamamen kullanıcının sorumluluğundadır.</p>`,
+    "sponsor": `<h3>SPONSOR AÇIKLAMASI</h3><p>CAYNANA’da yer alan sponsorlu içerikler, analiz sonuçlarından tamamen bağımsızdır.</p><p>Sponsorlu alanlar açıkça etiketlenir ve kullanıcıyı yanıltacak şekilde sunulmaz.</p><p><strong>ÖNEMLİ:</strong> CAYNANA Puanı ve yorum analizleri reklamdan etkilenmez.</p>`
   };
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -358,14 +331,12 @@
       let audioText = "";
       let loadingInterval;
 
-      // PWA
       if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
       let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
       window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
       window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
 
-      // Helper
       window.stopSpeech = function() {
           const btn = document.getElementById("btnListen");
           if(currentAudio) { currentAudio.pause(); currentAudio = null; }
@@ -374,19 +345,18 @@
 
       window.fillSearch = function(txt) { qInput.value = txt; start(); };
 
-      // EVENT LISTENERS
       searchForm.addEventListener('submit', (e) => { e.preventDefault(); start(); });
 
       window.showScene = function(id) { 
-          stopSpeech();
+          window.stopSpeech();
           document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
           document.getElementById(id).classList.add("active"); 
           window.scrollTo(0,0);
       };
       
       window.resetAll = function() {
-          stopSpeech();
-          clearImage();
+          window.stopSpeech();
+          window.clearImage(); // FIXED: Scope fix
           qInput.value = "";
           clearInterval(loadingInterval);
           showScene("scene-home");
@@ -413,7 +383,6 @@
           qInput.placeholder = "Ürün adı, linki veya sor...";
       };
 
-      // YENİ İÇERİK AÇMA FONKSİYONU
       window.openContent = function(key) {
           const content = CONTENTS[key] || "<p>İçerik bulunamadı.</p>";
           let title = "Bilgi";
@@ -422,6 +391,10 @@
           if(key === "gizlilik") title = "Gizlilik Politikası";
           if(key === "iletisim") title = "İletişim";
           if(key === "puan") title = "Puan Sistemi";
+          // FIXED: Missing titles added
+          if(key === "sartlar") title = "Kullanım Şartları";
+          if(key === "sorumluluk") title = "Yasal Uyarı";
+          if(key === "sponsor") title = "Sponsor Açıklaması";
           
           document.getElementById("staticTitle").textContent = title;
           document.getElementById("staticText").innerHTML = content;
@@ -450,6 +423,33 @@
         }, 1500);
       }
 
+      function setList(ul, arr, max=3) {
+        ul.innerHTML = "";
+        (arr || []).slice(0, max).forEach(x => {
+            const li = document.createElement("li");
+            li.textContent = x;
+            ul.appendChild(li);
+        });
+      }
+      function setChips(box, arr) {
+        box.innerHTML = "";
+        (arr || []).forEach(x => {
+            const s = document.createElement("span");
+            s.textContent = x;
+            s.style.cssText = "padding:6px 10px;border-radius:999px;background:#F3F4F6;color:#374151;font-size:12px;border:1px solid var(--border);";
+            box.appendChild(s);
+        });
+      }
+      function setEvidence(box, arr, max=3) {
+        box.innerHTML = "";
+        (arr || []).slice(0, max).forEach(x => {
+            const d = document.createElement("div");
+            d.style.cssText = "padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:white;color:#374151;font-size:13px;font-style:italic;";
+            d.textContent = "“" + x + "”";
+            box.appendChild(d);
+        });
+      }
+
       async function start() {
         const q = qInput.value.trim();
         const imgToSend = session.img;
@@ -471,7 +471,7 @@
             if (!res.ok) throw new Error("Sunucu hatası");
             const data = await res.json();
 
-            clearImage();
+            window.clearImage();
             qInput.value = "";
             document.getElementById("scoreArea").style.display = "none";
 
@@ -487,31 +487,78 @@
                 heroBox.style.display = "none";
             }
 
-            // SCORE LOGIC (Simülasyon - Backend desteklediğinde burası dolacak)
-            // Şimdilik analiz metninin uzunluğuna göre random bir puan gösterelim ki UI çalışsın
-            // (Gerçekte backend'den "data.score" gelmeli)
-            if (true) {
+            const indRow = document.getElementById("indicatorRow");
+            const iTrust = document.getElementById("indTrust");
+            const iChronic = document.getElementById("indChronic");
+            const iReturn = document.getElementById("indReturn");
+            if (data.indicators) {
+                indRow.style.display = "flex";
+                iTrust.innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
+                iChronic.innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
+                iReturn.innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
+            } else {
+                indRow.style.display = "none";
+            }
+
+            const pcWrap = document.getElementById("prosConsWrap");
+            if ((data.pros && data.pros.length) || (data.cons && data.cons.length)) {
+                pcWrap.style.display = "flex";
+                setList(document.getElementById("prosList"), data.pros, 3);
+                setList(document.getElementById("consList"), data.cons, 3);
+            } else {
+                pcWrap.style.display = "none";
+            }
+
+            const chWrap = document.getElementById("chronicWrap");
+            if (data.chronic_issues && data.chronic_issues.length) {
+                chWrap.style.display = "block";
+                setList(document.getElementById("chronicList"), data.chronic_issues, 5);
+            } else {
+                chWrap.style.display = "none";
+            }
+
+            const rWrap = document.getElementById("riskWrap");
+            if (data.risk_flags && data.risk_flags.length) {
+                rWrap.style.display = "block";
+                setChips(document.getElementById("riskChips"), data.risk_flags);
+            } else {
+                rWrap.style.display = "none";
+            }
+
+            const eWrap = document.getElementById("evidenceWrap");
+            if (data.evidence_quotes && data.evidence_quotes.length) {
+                eWrap.style.display = "block";
+                setEvidence(document.getElementById("evidenceList"), data.evidence_quotes, 3);
+            } else {
+                eWrap.style.display = "none";
+            }
+
+            // FIXED: Safe Score Check (No Random)
+            if (data.score && data.score.value !== undefined && data.score.value !== null) {
                 const scoreEl = document.getElementById("scoreArea");
                 const gauge = document.getElementById("scoreGauge");
                 const val = document.getElementById("scoreVal");
                 const verdict = document.getElementById("scoreVerdict");
 
-                // Geçici: Rastgele puan (70-95 arası) - Sadece görsellik için
-                const score = data.score || Math.floor(Math.random() * (95 - 70 + 1) + 70); 
-
+                const score = parseInt(data.score.value);
                 scoreEl.style.display = "flex";
                 val.innerText = score;
                 
-                let color = "#10B981"; // Good
-                let text = "Güvenle Al";
-                if(score < 50) { color = "#EF4444"; text = "Uzak Dur"; }
-                else if(score < 70) { color = "#F59E0B"; text = "Dikkat Et"; }
-                else if(score < 85) { color = "#3B82F6"; text = "Mantıklı"; }
+                let color = data.score.color || "#10B981"; 
+                let text = data.score.label || "Güvenle Al";
+                
+                if(!data.score.color) {
+                    if(score < 50) { color = "#EF4444"; text = "Uzak Dur"; }
+                    else if(score < 70) { color = "#F59E0B"; text = "Dikkat Et"; }
+                    else if(score < 85) { color = "#3B82F6"; text = "Mantıklı"; }
+                }
 
                 gauge.style.setProperty('--score-color', color);
                 gauge.style.setProperty('--score-pct', score + '%');
                 verdict.style.color = color;
                 verdict.innerText = text;
+            } else {
+                document.getElementById("scoreArea").style.display = "none";
             }
 
             const list = document.getElementById("recommendationList");
@@ -527,8 +574,11 @@
                     else if (award.includes("bronz")) theme = "theme-bronze";
                     else if (award.includes("platin")) theme = "theme-platinum";
 
+                    // FIXED: Platform check logic
                     let iconClass = "fa-solid fa-bag-shopping";
-                    if (String(rec.site || "").toLowerCase().includes("trendyol")) iconClass = "fa-solid fa-cart-shopping"; 
+                    const platform = String(rec.site || rec.platform || "").toLowerCase();
+                    if (platform.includes("trendyol")) iconClass = "fa-solid fa-cart-shopping"; 
+                    if (platform.includes("amazon")) iconClass = "fa-brands fa-amazon"; 
 
                     const url = rec.url || "#";
                     const html = `
