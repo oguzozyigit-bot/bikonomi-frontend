@@ -5,7 +5,14 @@
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *;">
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src * data: blob: 'unsafe-inline' 'unsafe-eval';
+    script-src * data: blob: 'unsafe-inline' 'unsafe-eval';
+    connect-src * data: blob:;
+    img-src * data: blob:;
+    media-src * data: blob:;
+    frame-src * data: blob:;
+  ">
 
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#10B981">
@@ -310,6 +317,7 @@
 </footer>
 
 <script>
+  // --- İÇERİK YÖNETİM SİSTEMİ (CMS) ---
   const CONTENTS = {
     "hakkimizda": `<h3>1. CAYNANA nedir?</h3><p>CAYNANA, yapay zekâ destekli bir alışveriş analiz asistanıdır. Ürünleri satmaz, yorumları ve riskleri analiz eder.</p><h3>2. CAYNANA bir alışveriş sitesi mi?</h3><p>Hayır. CAYNANA ürün satmaz, sepet oluşturmaz, ödeme almaz.</p><h3>3. CAYNANA kararımı benim yerime mi veriyor?</h3><p>Hayır. CAYNANA veriyi analiz eder, kararı sana bırakır.</p><p><strong>Tasarımcı Notu:</strong> "Bu arayüzün amacı kullanıcıyı ikna etmek değil, korumaktır. Daha az seçenek, daha çok gerekçe."</p>`,
     "puan": `<h3>CAYNANA PUANI NASIL HESAPLANIR?</h3><p>Puan 4 ana bileşenden oluşur:</p><p><strong>1. Yorum Güveni (0–30):</strong> Gerçek kullanıcı ayırt edilir. Tekrarlayan, sahte şüphesi olan yorumlar elenir.</p><p><strong>2. Kronik Sorun Riski (0–30):</strong> "3 ay sonra bozuldu", "koku yapıyor" gibi tekrarlayan arızalar taranır.</p><p><strong>3. Fiyat / Performans (0–25):</strong> Verilen paraya değip değmediği analiz edilir.</p><p><strong>4. Satıcı & Garanti (0–15):</strong> İade zorlukları ve servis şikayetleri kontrol edilir.</p><hr><h3>PUAN SEVİYELERİ</h3><p><span style="color:#10B981; font-weight:800;">85–100:</span> Güvenle Al</p><p><span style="color:#3B82F6; font-weight:800;">70–84:</span> Mantıklı</p><p><span style="color:#F59E0B; font-weight:800;">50–69:</span> Dikkat</p><p><span style="color:#EF4444; font-weight:800;">0–49:</span> Uzak Dur</p><p><em>Not: Sponsorlu içerikler puanı ASLA etkilemez.</em></p>`,
@@ -323,7 +331,9 @@
 
   document.addEventListener('DOMContentLoaded', () => {
       
+      // API ADRESİNİN DOĞRU OLDUĞUNDAN EMİN OL
       const API_BASE = "https://bikonomi-api-1.onrender.com";
+      
       const qInput = document.getElementById("q");
       const searchForm = document.getElementById("searchForm");
       let session = { q: "", img: "" };
@@ -331,22 +341,32 @@
       let audioText = "";
       let loadingInterval;
 
+      // PWA
       if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
       let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
       window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
       window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
 
+      // Helper: Sesi Durdur
       window.stopSpeech = function() {
           const btn = document.getElementById("btnListen");
-          if(currentAudio) { currentAudio.pause(); currentAudio = null; }
-          if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
+          if(currentAudio) { 
+              currentAudio.pause(); 
+              currentAudio.currentTime = 0; 
+              currentAudio = null; 
+          }
+          if(btn) { 
+              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; 
+              btn.classList.remove("active"); 
+          }
       };
 
       window.fillSearch = function(txt) { qInput.value = txt; start(); };
 
       searchForm.addEventListener('submit', (e) => { e.preventDefault(); start(); });
 
+      // Scope Fix: stopSpeech artık window altında
       window.showScene = function(id) { 
           window.stopSpeech();
           document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
@@ -356,7 +376,7 @@
       
       window.resetAll = function() {
           window.stopSpeech();
-          window.clearImage(); 
+          window.clearImage(); // Scope Fix
           qInput.value = "";
           clearInterval(loadingInterval);
           showScene("scene-home");
@@ -383,17 +403,18 @@
           qInput.placeholder = "Ürün adı, linki veya sor...";
       };
 
+      // Title Mapping (Kullanıcı Talebi)
       window.openContent = function(key) {
-          const content = CONTENTS[key] || "<p>İçerik bulunamadı.</p>";
+          const content = CONTENTS[key] || "<p>İçerik hazırlanıyor...</p>";
           let title = "Bilgi";
-          if(key === "hakkimizda") title = "Hakkımızda";
-          if(key === "sss") title = "Sıkça Sorulan Sorular";
-          if(key === "gizlilik") title = "Gizlilik Politikası";
-          if(key === "iletisim") title = "İletişim";
-          if(key === "puan") title = "Puan Sistemi";
-          if(key === "sartlar") title = "Kullanım Şartları";
-          if(key === "sorumluluk") title = "Yasal Uyarı";
-          if(key === "sponsor") title = "Sponsor Açıklaması";
+          if(key==="hakkimizda") title="Hakkımızda";
+          if(key==="sss") title="Sıkça Sorulan Sorular";
+          if(key==="gizlilik") title="Gizlilik Politikası";
+          if(key==="iletisim") title="İletişim";
+          if(key==="puan") title="Puan Sistemi";
+          if(key==="sartlar") title="Kullanım Şartları";
+          if(key==="sorumluluk") title="Yasal Uyarı";
+          if(key==="sponsor") title="Sponsor Açıklaması";
           
           document.getElementById("staticTitle").textContent = title;
           document.getElementById("staticText").innerHTML = content;
@@ -402,7 +423,7 @@
 
       window.startVoice = function() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(!SpeechRecognition) return alert("Tarayıcınız sesli aramayı desteklemiyor.");
+        if(!SpeechRecognition) return alert("Cihazınız sesli aramayı desteklemiyor.");
         const rec = new SpeechRecognition();
         rec.lang = 'tr-TR';
         rec.start();
@@ -412,7 +433,7 @@
       };
 
       function startLoadingAnim() {
-        const texts = ["Link çözümleniyor...", "Yorumlar taranıyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
+        const texts = ["Link çözümleniyor...", "Yorumlar okunuyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
         let i = 0;
         const sub = document.getElementById("loadingSub");
         sub.innerText = texts[0];
@@ -453,7 +474,7 @@
         const q = qInput.value.trim();
         const imgToSend = session.img;
 
-        if (!q && !imgToSend) { alert("Lütfen bir şey yazın veya fotoğraf yükleyin."); return; }
+        if (!q && !imgToSend) { alert("Lütfen bir ürün adı yazın veya görsel yükleyin."); return; }
 
         showScene("scene-loading");
         startLoadingAnim();
@@ -488,14 +509,11 @@
 
             // Indicators
             const indRow = document.getElementById("indicatorRow");
-            const iTrust = document.getElementById("indTrust");
-            const iChronic = document.getElementById("indChronic");
-            const iReturn = document.getElementById("indReturn");
             if (data.indicators) {
                 indRow.style.display = "flex";
-                iTrust.innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
-                iChronic.innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
-                iReturn.innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
+                document.getElementById("indTrust").innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
+                document.getElementById("indChronic").innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
+                document.getElementById("indReturn").innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
             } else {
                 indRow.style.display = "none";
             }
@@ -620,7 +638,7 @@
         }
       }
 
-      // FIXED: Hata Avcısı Ses Fonksiyonu
+      // FIXED: Hata Avcısı Ses Fonksiyonu + FIX: CSP Bypass
       window.toggleSpeech = async function() {
           const btn = document.getElementById("btnListen");
           
@@ -650,7 +668,6 @@
                   throw new Error("Sunucu Hatası: " + errText);
               }
 
-              // Gelen verinin tipi ses mi?
               const contentType = res.headers.get("content-type");
               if (contentType && contentType.includes("application/json")) {
                   const errJson = await res.json();
@@ -665,6 +682,10 @@
               const url = URL.createObjectURL(blob);
               currentAudio = new Audio(url);
               
+              // FIX: Ses garanti açılıyor
+              currentAudio.muted = false;
+              currentAudio.volume = 1.0;
+
               currentAudio.onended = () => { 
                   console.log("Ses bitti.");
                   window.stopSpeech(); 
