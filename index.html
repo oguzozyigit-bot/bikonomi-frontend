@@ -12,6 +12,9 @@
     --primary: #10B981;
     --bg: #FFFFFF;
     --text: #202124;
+    --muted: #5F6368;
+    --border: #dfe1e5;
+
     --italy-green: #009246;
     --italy-white: #F1F2F1;
     --italy-red: #CE2B37;
@@ -20,83 +23,339 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   body {
-    margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg);
-    color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* --- ONBOARDING MODAL --- */
+  #onboardingModal{
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+  }
+  .modal-content{
+    width: min(420px, 100%);
+    background: #fff;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 18px 60px rgba(0,0,0,.35);
+    text-align: center;
+  }
+  .modal-title{ font-size: 20px; font-weight: 900; margin: 0 0 6px; }
+  .modal-sub{ font-size: 13px; color: #666; margin: 0 0 14px; line-height: 1.45; }
+  .form-row{ text-align: left; margin-bottom: 12px; }
+  .form-label{ display:block; font-size: 12px; font-weight: 800; color:#444; margin-bottom:6px; }
+  .form-input{
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #E2E8F0;
+    border-radius: 12px;
+    outline: none;
+    font-size: 15px;
+  }
+  .form-input:focus{ border-color: var(--primary); }
+  .gender-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+  .gender-btn{
+    border: 2px solid #E2E8F0;
+    background: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    color:#666;
+    user-select:none;
+  }
+  .gender-btn.selected{
+    border-color: var(--primary);
+    background: #ECFDF5;
+    color: var(--primary);
+  }
+  .save-btn{
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 900;
+    cursor: pointer;
+    font-size: 15px;
   }
 
   /* --- ORTA ALAN --- */
   #main-container {
-    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 20px; transition: all 0.4s ease; width: 100%; max-width: 900px; margin: 0 auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: all 0.4s ease;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    gap: 16px;
+  }
+
+  .top-row{
+    width: 100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
   }
 
   .logo {
-    font-size: 56px; font-weight: 900; color: #333; letter-spacing: -2px;
-    margin-bottom: 30px; cursor: pointer; text-align: center;
+    font-size: 56px;
+    font-weight: 900;
+    color: #333;
+    letter-spacing: -2px;
+    margin: 0;
+    cursor: pointer;
+    text-align: center;
+    line-height: 1;
   }
   .logo span { color: var(--primary); }
+
+  /* Profile pill */
+  .profile-pill{
+    display:none;
+    align-items:center;
+    gap:10px;
+    padding: 10px 12px;
+    border: 1px solid #E2E8F0;
+    border-radius: 999px;
+    background:#F8FAFC;
+    color:#475569;
+    font-size:12px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .profile-pill a{
+    color: var(--primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight:900;
+  }
+
+  /* PERSONA BAR */
+  .persona-wrap{
+    width: 100%;
+    max-width: 760px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .persona-wrap::-webkit-scrollbar{ display:none; }
+  .persona-bar{
+    display:flex;
+    gap: 10px;
+    padding: 2px 2px;
+    min-width: max-content;
+  }
+  .persona-btn{
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    padding: 9px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 800;
+    color:#4B5563;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:.2s;
+    white-space:nowrap;
+  }
+  .persona-btn:hover{
+    border-color: var(--primary);
+    color: var(--primary);
+    background: #ECFDF5;
+  }
+  .persona-btn.active{
+    border-color: var(--primary);
+    background: var(--primary);
+    color:#fff;
+    box-shadow: 0 10px 25px rgba(16,185,129,.18);
+  }
 
   /* Arama */
   .search-wrapper { width: 100%; max-width: 650px; position: relative; }
   .search-box {
-    width: 100%; height: 56px; border: 1px solid #dfe1e5; border-radius: 28px;
-    padding: 0 110px 0 25px; font-size: 16px; outline: none; transition: 0.3s;
+    width: 100%;
+    height: 56px;
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 0 110px 0 25px;
+    font-size: 16px;
+    outline: none;
+    transition: 0.3s;
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
   }
-  .search-box:hover, .search-box:focus { box-shadow: 0 2px 8px rgba(0,0,0,0.15); border-color: transparent; }
+  .search-box:hover, .search-box:focus {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-color: transparent;
+  }
 
   .input-tools {
-    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
-    display: flex; gap: 10px; align-items: center;
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 10px;
+    align-items: center;
   }
   .tool-btn {
-    background: none; border: none; cursor: pointer; font-size: 20px; color: #5F6368; transition: 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--muted);
+    transition: 0.2s;
   }
   .tool-btn:hover { color: var(--primary); }
+
+  /* Mic state FIX: button has "mic" class now */
   .tool-btn.mic.active { color: #EA4335; animation: pulse 1s infinite; }
   @keyframes pulse { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
 
   /* KATEGORİ BUTONLARI (CHIPS) */
   .chips-grid {
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; max-width: 700px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 8px;
+    max-width: 700px;
   }
   .chip {
-    background: #F8F9FA; border: 1px solid #F1F3F4; padding: 10px 18px; border-radius: 24px;
-    font-size: 13px; font-weight: 600; color: #4B5563; cursor: pointer;
-    display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    background: #F8F9FA;
+    border: 1px solid #F1F3F4;
+    padding: 10px 18px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4B5563;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
   }
-  .chip:hover { background: #ECFDF5; border-color: var(--primary); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+  .chip:hover {
+    background: #ECFDF5;
+    border-color: var(--primary);
+    color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
   .chip i { font-size: 15px; }
 
   /* --- SONUÇ ALANI --- */
   #results-area {
-    flex: 1; width: 100%; max-width: 800px; margin: 0 auto; padding: 20px;
-    overflow-y: auto; display: none; padding-bottom: 80px;
+    flex: 1;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    overflow-y: auto;
+    display: none;
+    padding-bottom: 80px;
   }
 
-  .user-query { font-size: 22px; color: #1F2937; margin-bottom: 20px; font-weight: 700; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-  
+  .user-query {
+    font-size: 22px;
+    color: #1F2937;
+    margin-bottom: 12px;
+    font-weight: 700;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .meta-line{
+    font-size: 12px;
+    color:#6b7280;
+    font-weight:700;
+    margin: 8px 0 18px;
+    display:flex;
+    gap:10px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .meta-pill{
+    background:#F8FAFC;
+    border:1px solid #E2E8F0;
+    padding:6px 10px;
+    border-radius:999px;
+  }
+
   .ai-card {
-    background: #F8FAFC; border-radius: 16px; padding: 20px; margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #E2E8F0;
+    background: #F8FAFC;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    border: 1px solid #E2E8F0;
   }
   .ai-text { font-size: 16px; line-height: 1.6; color: #333; }
-  
+
   .audio-btn {
-    margin-top: 15px; background: white; border: 1px solid #E2E8F0; border-radius: 20px;
-    padding: 6px 14px; font-size: 13px; color: var(--primary); font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; width: fit-content;
+    margin-top: 15px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+    width: fit-content;
   }
   .audio-btn:hover { background: #ECFDF5; border-color: var(--primary); }
+
+  .persona-note{
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color:#475569;
+  }
 
   /* Ürün Kartları */
   .cards-row { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
   .cards-row::-webkit-scrollbar { display: none; }
-  
+
   .card {
-    min-width: 200px; max-width: 200px; background: white; border: 1px solid #E2E8F0;
-    border-radius: 12px; padding: 12px; text-decoration: none; color: inherit;
-    display: flex; flex-direction: column; transition: 0.2s;
+    min-width: 200px;
+    max-width: 200px;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 12px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    transition: 0.2s;
   }
   .card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
   .card img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; }
@@ -106,50 +365,118 @@
   /* --- FOOTER --- */
   .footer { margin-top: auto; width: 100%; background: #FAFAFA; border-top: 1px solid #EEEEEE; }
   .footer-links {
-    padding: 15px; text-align: center; font-size: 13px; color: #666;
-    display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;
+    padding: 15px;
+    text-align: center;
+    font-size: 13px;
+    color: #666;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
   }
+  .footer-links span{ cursor:pointer; }
+  .footer-links span:hover{ color: var(--primary); text-decoration: underline; }
+
   .italy-bar {
-    height: 6px; width: 100%;
+    height: 6px;
+    width: 100%;
     background: linear-gradient(90deg, var(--italy-green) 33.3%, var(--italy-white) 33.3%, var(--italy-white) 66.6%, var(--italy-red) 66.6%);
   }
 
   /* UI STATES */
-  body.searching #main-container { flex: 0; padding: 10px 20px; border-bottom: 1px solid #eee; flex-direction: row; justify-content: space-between; margin: 0; max-width: 100%; }
+  body.searching #main-container {
+    flex: 0;
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0;
+    max-width: 100%;
+    gap: 14px;
+  }
+  body.searching .top-row{ width:auto; }
   body.searching .logo { font-size: 24px; margin: 0; }
+  body.searching .persona-wrap { display:none; }
   body.searching .chips-grid { display: none; }
-  body.searching .search-wrapper { max-width: 50%; margin: 0; }
-  body.searching .search-box { height: 44px; }
+  body.searching .search-wrapper { max-width: 52%; margin: 0; }
+  body.searching .search-box { height: 44px; padding-right: 105px; }
   body.searching #results-area { display: block; }
   body.searching .footer { display: none; }
+  body.searching .profile-pill { display:none; }
 
   .loader { display: none; text-align: center; padding: 40px; color: #999; font-style: italic; }
   #fileInput { display: none; }
+
+  @media (max-width: 720px){
+    .logo{ font-size: 44px; }
+    body.searching .search-wrapper { max-width: 60%; }
+    .profile-pill{ display:none !important; }
+  }
 </style>
 </head>
+
 <body>
 
-<div id="main-container">
-  <div class="logo" onclick="location.reload()">CAYNANA<span>.AI</span></div>
+<!-- Onboarding Modal -->
+<div id="onboardingModal">
+  <div class="modal-content">
+    <div class="modal-title">Hoş geldin evladım!</div>
+    <div class="modal-sub">Sana daha iyi hitap edeyim diye iki bilgi alayım. (Veri saklamıyoruz; tarayıcında durur.)</div>
 
-  <div class="search-wrapper">
-    <input type="text" id="searchInput" class="search-box" placeholder="Caynana'ya bir şey danış..." onkeypress="if(event.key==='Enter') doSearch()">
-    <div class="input-tools">
-      <button class="tool-btn" onclick="triggerCam()"><i class="fa-solid fa-camera"></i></button>
-      <button class="tool-btn" onclick="triggerMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
-      <button class="tool-btn" onclick="doSearch()" style="color:var(--primary)"><i class="fa-solid fa-arrow-right"></i></button>
+    <div class="form-row">
+      <div class="form-label">Sana nasıl hitap edeyim?</div>
+      <div class="gender-grid">
+        <div class="gender-btn" id="btn-female" onclick="selectGender('female')">👩 Kızım / Canım</div>
+        <div class="gender-btn" id="btn-male" onclick="selectGender('male')">👨 Oğlum / Paşam</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Hangi şehirdesin?</label>
+      <input class="form-input" id="cityInput" placeholder="Örn: İstanbul, Düzce...">
+    </div>
+
+    <button class="save-btn" onclick="saveProfile()">Kaydet ve Başla</button>
+  </div>
+</div>
+
+<div id="main-container">
+  <div class="top-row">
+    <div class="logo" onclick="location.reload()">CAYNANA<span>.AI</span></div>
+
+    <div class="profile-pill" id="profilePill">
+      <span id="profileText">🙂 Evladım | 📍 -</span>
+      <a onclick="openProfile()">Düzenle</a>
     </div>
   </div>
 
-  <div class="chips-grid">
-    <div class="chip" onclick="fill('Fal bak (Fincan)')"><i class="fa-solid fa-mug-hot"></i> Fal Bak</div>
-    <div class="chip" onclick="fill('İngilizceye çevir: Seni seviyorum')"><i class="fa-solid fa-language"></i> Çevirmen</div>
-    <div class="chip" onclick="fill('Airfryer önerisi')"><i class="fa-solid fa-cart-shopping"></i> Alışveriş</div>
-    <div class="chip" onclick="fill('Başım ağrıyor ne yapayım?')"><i class="fa-solid fa-user-doctor"></i> Doktor</div>
-    <div class="chip" onclick="fill('Kiracımla kavga ettim ne yapayım?')"><i class="fa-solid fa-scale-balanced"></i> Avukat</div>
-    <div class="chip" onclick="fill('Dolar ne olur?')"><i class="fa-solid fa-chart-line"></i> Ekonomist</div>
-    <div class="chip" onclick="fill('Canım çok sıkkın')"><i class="fa-solid fa-hand-holding-heart"></i> Arkadaş</div>
-    <div class="chip" onclick="fill('Kuantum nedir anlat')"><i class="fa-solid fa-chalkboard-user"></i> Öğretmen</div>
+  <!-- Persona bar -->
+  <div class="persona-wrap">
+    <div class="persona-bar" id="personaBar">
+      <button class="persona-btn active" id="p-shopping" onclick="setPersona('shopping')"><i class="fa-solid fa-bag-shopping"></i> Alışverişte</button>
+      <button class="persona-btn" id="p-translator" onclick="setPersona('translator')"><i class="fa-solid fa-language"></i> Çevirmen</button>
+      <button class="persona-btn" id="p-teacher" onclick="setPersona('teacher')"><i class="fa-solid fa-chalkboard-user"></i> Öğretmen</button>
+      <button class="persona-btn" id="p-friend" onclick="setPersona('friend')"><i class="fa-solid fa-comments"></i> Arkadaş</button>
+      <button class="persona-btn" id="p-doctor" onclick="setPersona('doctor')"><i class="fa-solid fa-stethoscope"></i> Doktor</button>
+      <button class="persona-btn" id="p-lawyer" onclick="setPersona('lawyer')"><i class="fa-solid fa-scale-balanced"></i> Avukat</button>
+      <button class="persona-btn" id="p-economist" onclick="setPersona('economist')"><i class="fa-solid fa-chart-line"></i> Ekonomist</button>
+      <button class="persona-btn" id="p-oracle" onclick="setPersona('oracle')"><i class="fa-solid fa-wand-magic-sparkles"></i> Geleceği Gören</button>
+    </div>
+  </div>
+
+  <div class="search-wrapper">
+    <input type="text" id="searchInput" class="search-box"
+           placeholder="Caynana'ya bir şey danış..."
+           onkeypress="if(event.key==='Enter') doSearch()">
+    <div class="input-tools">
+      <button class="tool-btn" onclick="triggerCam()" title="Foto"><i class="fa-solid fa-camera"></i></button>
+      <button class="tool-btn mic" onclick="triggerMic()" id="micBtn" title="Mikrofon"><i class="fa-solid fa-microphone"></i></button>
+      <button class="tool-btn" onclick="doSearch()" style="color:var(--primary)" title="Gönder"><i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <div class="chips-grid" id="chipsGrid">
+    <!-- persona’ya göre otomatik güncellenecek -->
   </div>
 </div>
 
@@ -159,7 +486,10 @@
 
 <div class="footer">
   <div class="footer-links">
-    <span>Hakkımızda</span><span>SSS</span><span>Gizlilik</span><span>İletişim</span>
+    <span onclick="openStatic('about')">Hakkımızda</span>
+    <span onclick="openStatic('sss')">SSS</span>
+    <span onclick="openStatic('privacy')">Gizlilik</span>
+    <span onclick="openStatic('contact')">İletişim</span>
   </div>
   <div class="italy-bar"></div>
 </div>
@@ -167,21 +497,170 @@
 <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
 
 <script>
-  const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
+  const API_URL   = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
-  
+
   const searchInput = document.getElementById('searchInput');
   const resultsArea = document.getElementById('results-area');
   const loader = document.getElementById('loader');
-  
+  const chipsGrid = document.getElementById('chipsGrid');
+
   let currentImg = null;
   let currentAudio = null;
+  let currentAudioBtn = null;
 
-  function fill(txt) {
-    searchInput.value = txt;
-    doSearch();
+  // ---- Profile (localStorage) ----
+  let session = {
+    persona: "shopping",
+    city: "",
+    gender: "neutral"
+  };
+
+  let tempGender = "neutral";
+
+  function initProfile(){
+    const g = localStorage.getItem("caynana_gender");
+    const c = localStorage.getItem("caynana_city");
+    if(!g || !c){
+      document.getElementById("onboardingModal").style.display = "flex";
+      document.getElementById("profilePill").style.display = "none";
+    } else {
+      session.gender = g;
+      session.city = c;
+      updateProfilePill();
+    }
   }
 
+  function updateProfilePill(){
+    const pill = document.getElementById("profilePill");
+    const t = document.getElementById("profileText");
+    const gIcon = session.gender === "female" ? "👩 Kızım" : (session.gender === "male" ? "👨 Oğlum" : "🙂 Evladım");
+    t.textContent = `${gIcon} | 📍 ${session.city}`;
+    pill.style.display = "inline-flex";
+  }
+
+  function openProfile(){
+    // show modal with current values
+    document.getElementById("onboardingModal").style.display = "flex";
+    document.getElementById("cityInput").value = session.city || localStorage.getItem("caynana_city") || "";
+    document.querySelectorAll(".gender-btn").forEach(b=>b.classList.remove("selected"));
+    const g = session.gender || localStorage.getItem("caynana_gender") || "neutral";
+    if(g === "female" || g === "male"){
+      document.getElementById("btn-" + g).classList.add("selected");
+      tempGender = g;
+    }
+  }
+
+  function selectGender(g){
+    tempGender = g;
+    document.querySelectorAll(".gender-btn").forEach(b=>b.classList.remove("selected"));
+    document.getElementById("btn-" + g).classList.add("selected");
+  }
+
+  function saveProfile(){
+    const city = document.getElementById("cityInput").value.trim();
+    if(!city){ alert("Şehrini yaz evladım 🙂"); return; }
+    localStorage.setItem("caynana_gender", tempGender);
+    localStorage.setItem("caynana_city", city);
+    session.gender = tempGender;
+    session.city = city;
+    document.getElementById("onboardingModal").style.display = "none";
+    updateProfilePill();
+    updatePersonaUI(session.persona);
+  }
+
+  // ---- Persona config ----
+  const PERSONAS = {
+    shopping:   { label:"Alışverişte", icon:"fa-bag-shopping", placeholder:"Ürün, link veya soru yaz...", chips:[
+      ["Airfryer önerisi", "fa-cart-shopping"],
+      ["iPhone 15 alınır mı?", "fa-mobile-screen"],
+      ["Bu ürün orijinal mi?", "fa-shield-halved"],
+      ["En iyi fiyat/performans", "fa-star"]
+    ], camera:true },
+    translator: { label:"Çevirmen", icon:"fa-language", placeholder:"Metni yaz / yapıştır: TR ⇄ EN…", chips:[
+      ["İngilizceye çevir: Seni seviyorum", "fa-language"],
+      ["Metni sadeleştir", "fa-file-lines"],
+      ["Profesyonel e-posta yaz", "fa-envelope"],
+      ["Bu metni özetle", "fa-align-left"]
+    ], camera:false },
+    teacher:    { label:"Öğretmen", icon:"fa-chalkboard-user", placeholder:"Konu yaz: matematik, İngilizce…", chips:[
+      ["Kuantum nedir anlat", "fa-chalkboard-user"],
+      ["% nasıl hesaplanır?", "fa-percent"],
+      ["5 dakikalık çalışma planı", "fa-stopwatch"],
+      ["Bu konuyu örnekle anlat", "fa-lightbulb"]
+    ], camera:false },
+    friend:     { label:"Arkadaş", icon:"fa-comments", placeholder:"Ne oldu anlat…", chips:[
+      ["Canım çok sıkkın", "fa-hand-holding-heart"],
+      ["Motivasyon ver", "fa-heart"],
+      ["Kafam çok dolu", "fa-cloud"],
+      ["Hedef koymama yardım et", "fa-flag"]
+    ], camera:false },
+    doctor:     { label:"Doktor", icon:"fa-stethoscope", placeholder:"Belirti yaz (acilse 112)…", chips:[
+      ["Başım ağrıyor ne yapayım?", "fa-user-doctor"],
+      ["Boğaz ağrısı ne olabilir?", "fa-stethoscope"],
+      ["Ateşim var ne yapayım?", "fa-temperature-high"],
+      ["Ne zaman doktora gitmeliyim?", "fa-hospital"]
+    ], camera:false },
+    lawyer:     { label:"Avukat", icon:"fa-scale-balanced", placeholder:"Durumu yaz (bilgi amaçlı)…", chips:[
+      ["Kiracımla kavga ettim ne yapayım?", "fa-scale-balanced"],
+      ["İhtarname taslağı", "fa-gavel"],
+      ["Senet/çek problemi var", "fa-file-signature"],
+      ["Bu maddeyi açıkla", "fa-section"]
+    ], camera:false },
+    economist:  { label:"Ekonomist", icon:"fa-chart-line", placeholder:"Soru yaz: enflasyon, döviz, bütçe…", chips:[
+      ["Dolar ne olur?", "fa-chart-line"],
+      ["Bütçe planı yap", "fa-wallet"],
+      ["Faiz artarsa ne olur?", "fa-arrow-trend-up"],
+      ["Kredi mi nakit mi?", "fa-coins"]
+    ], camera:false },
+    oracle:     { label:"Geleceği Gören", icon:"fa-wand-magic-sparkles", placeholder:"Hedefini yaz: 3 ay / 1 yıl…", chips:[
+      ["Fal bak (Fincan)", "fa-mug-hot"],
+      ["2026’da işim nereye gider?", "fa-wand-magic-sparkles"],
+      ["Bana yol haritası çıkar", "fa-route"],
+      ["Şansım açık mı?", "fa-clover"]
+    ], camera:false }
+  };
+
+  function setPersona(key){
+    session.persona = key;
+
+    // active state
+    document.querySelectorAll(".persona-btn").forEach(b=>b.classList.remove("active"));
+    const btn = document.getElementById("p-" + key);
+    if(btn) btn.classList.add("active");
+
+    updatePersonaUI(key);
+  }
+
+  function updatePersonaUI(key){
+    const p = PERSONAS[key] || PERSONAS.shopping;
+
+    // placeholder
+    searchInput.placeholder = p.placeholder;
+
+    // camera visibility
+    const camBtn = document.querySelector(".input-tools .fa-camera")?.parentElement;
+    if(camBtn) camBtn.style.display = p.camera ? "inline-block" : "none";
+
+    // chips
+    chipsGrid.innerHTML = "";
+    p.chips.slice(0, 8).forEach(([txt, icon]) => {
+      const div = document.createElement("div");
+      div.className = "chip";
+      div.onclick = () => { fill(txt, false); };
+      div.innerHTML = `<i class="fa-solid ${icon}"></i> ${escapeHtml(txt)}`;
+      chipsGrid.appendChild(div);
+    });
+  }
+
+  // ---- Chips fill helper ----
+  function fill(txt, autoSearch=true) {
+    searchInput.value = txt;
+    if(autoSearch) doSearch();
+    else searchInput.focus();
+  }
+
+  // ---- Camera ----
   function triggerCam() { document.getElementById('fileInput').click(); }
   function handleFile(file) {
     if(!file) return;
@@ -194,15 +673,17 @@
     reader.readAsDataURL(file);
   }
 
+  // ---- Mic ----
   function triggerMic() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SpeechRecognition) return alert("Mikrofon yok.");
+    if(!SpeechRecognition) return alert("Bu tarayıcıda mikrofon yok.");
+
     const rec = new SpeechRecognition();
     rec.lang = 'tr-TR';
     const btn = document.getElementById('micBtn');
-    
+
     rec.onstart = () => { btn.classList.add('active'); searchInput.placeholder = "Dinliyorum..."; };
-    rec.onend = () => { btn.classList.remove('active'); searchInput.placeholder = "Danış..."; };
+    rec.onend   = () => { btn.classList.remove('active'); updatePersonaUI(session.persona); };
     rec.onresult = (e) => {
       searchInput.value = e.results[0][0].transcript;
       doSearch();
@@ -210,26 +691,38 @@
     rec.start();
   }
 
+  // ---- Search ----
   async function doSearch() {
+    stopVoice(); // yeni aramada sesi kes
     const txt = searchInput.value.trim();
     if(!txt && !currentImg) return;
 
     document.body.classList.add('searching');
     resultsArea.innerHTML = '';
-    
+
     const h = document.createElement('div');
     h.className = 'user-query';
-    h.innerText = txt;
+    h.innerText = txt || "(görsel)";
     resultsArea.appendChild(h);
+
+    const meta = document.createElement("div");
+    meta.className = "meta-line";
+    meta.innerHTML = `
+      <span class="meta-pill">👤 ${escapeHtml(PERSONAS[session.persona]?.label || "Caynana")}</span>
+      <span class="meta-pill">📍 ${escapeHtml(session.city || "-")}</span>
+    `;
+    resultsArea.appendChild(meta);
+
     resultsArea.appendChild(loader);
     loader.style.display = 'block';
 
     const payload = {
-        message: txt,
-        image: currentImg,
-        user: { city: 'İstanbul', gender: 'neutral' }
+      message: txt,
+      image: currentImg,
+      persona: session.persona,
+      user: { city: session.city || "", gender: session.gender || "neutral" }
     };
-    
+
     currentImg = null;
     document.getElementById('fileInput').value = '';
 
@@ -239,8 +732,8 @@
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload)
       });
+
       const data = await res.json();
-      
       loader.style.display = 'none';
       renderResult(data);
 
@@ -250,61 +743,148 @@
     }
   }
 
+  function personaNoteHtml(persona){
+    if(persona === "doctor"){
+      return `⚠️ Sağlık bilgisi genel bilgilendirme amaçlıdır. Şiddetli belirti / nefes darlığı / göğüs ağrısı gibi durumlarda <b>112</b> veya acil.`;
+    }
+    if(persona === "lawyer"){
+      return `⚠️ Hukuki bilgi genel bilgilendirme amaçlıdır. Resmi süreçte uzman avukata danışman gerekebilir.`;
+    }
+    if(persona === "oracle"){
+      return `🔮 Gelecek yorumları olasılıktır; kesin hüküm değil. İstersen hedefe göre yol haritası çıkaralım.`;
+    }
+    return "";
+  }
+
   function renderResult(data) {
-    // 1. AI Kartı
+    // 1) AI Kartı (güvenli render)
     const card = document.createElement('div');
     card.className = 'ai-card';
-    
+
     const textDiv = document.createElement('div');
     textDiv.className = 'ai-text';
-    const cleanText = (data.reply || "").replace(/\n/g, '<br>');
-    textDiv.innerHTML = cleanText;
-    
+
+    // reply’i escape edip <br> yapıyoruz (XSS yok)
+    const safe = escapeHtml((data.reply || ""));
+    textDiv.innerHTML = safe.replace(/\n/g, '<br>');
+
+    const note = personaNoteHtml(session.persona);
+    if(note){
+      const n = document.createElement("div");
+      n.className = "persona-note";
+      n.innerHTML = note;
+      card.appendChild(n);
+    }
+
     const btn = document.createElement('button');
     btn.className = 'audio-btn';
     btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Seslendir';
-    const safeTxt = cleanText.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
-    btn.onclick = () => playVoice(btn, safeTxt);
-    
+
+    const plainTxt = (data.speech_text && String(data.speech_text).trim())
+      ? String(data.speech_text)
+      : (data.reply || "");
+
+    btn.onclick = () => playVoice(btn, plainTxt);
+
     card.appendChild(textDiv);
     card.appendChild(btn);
     resultsArea.appendChild(card);
 
-    // 2. Ürün Kartları (Varsa)
+    // 2) Ürün Kartları (Varsa)
     if(data.data && Array.isArray(data.data) && data.data.length > 0) {
-        const row = document.createElement('div');
-        row.className = 'cards-row';
-        data.data.forEach(c => {
-            const el = document.createElement('a');
-            el.className = 'card';
-            el.href = c.url || '#';
-            el.target = '_blank';
-            const img = c.image ? `<img src="${c.image}">` : '<div style="height:140px;background:#eee;margin-bottom:10px;"></div>';
-            el.innerHTML = `${img}<div class="card-title">${c.title}</div><div class="card-price">${c.price||''}</div>`;
-            row.appendChild(el);
-        });
-        resultsArea.appendChild(row);
+      const row = document.createElement('div');
+      row.className = 'cards-row';
+
+      data.data.forEach(c => {
+        const el = document.createElement('a');
+        el.className = 'card';
+        el.href = c.url || '#';
+        el.target = '_blank';
+        el.rel = 'noopener';
+
+        const img = c.image
+          ? `<img src="${escapeAttr(c.image)}" alt="">`
+          : '<div style="height:140px;background:#eee;margin-bottom:10px;border-radius:10px;"></div>';
+
+        el.innerHTML = `${img}
+          <div class="card-title">${escapeHtml(c.title || '')}</div>
+          <div class="card-price">${escapeHtml(c.price || '')}</div>`;
+
+        row.appendChild(el);
+      });
+
+      resultsArea.appendChild(row);
     }
   }
 
+  // ---- Voice ----
   async function playVoice(btn, text) {
-    if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i> Seslendir'; return; }
-    
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    // toggle
+    if(currentAudio) {
+      stopVoice();
+      return;
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
+    currentAudioBtn = btn;
+
     try {
       const res = await fetch(SPEAK_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({text: text})
+        body: JSON.stringify({ text: text })
       });
+
+      if(!res.ok) throw new Error("TTS hata");
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
+
       currentAudio = new Audio(url);
-      currentAudio.onended = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Seslendir'; };
+      currentAudio.onended = () => stopVoice();
+
       await currentAudio.play();
       btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
-    } catch(e) { btn.innerHTML = 'Hata'; }
+    } catch(e) {
+      btn.innerHTML = 'Ses Hatası';
+      currentAudioBtn = null;
+      currentAudio = null;
+    }
   }
+
+  function stopVoice(){
+    if(currentAudio){
+      currentAudio.pause();
+      currentAudio = null;
+    }
+    if(currentAudioBtn){
+      currentAudioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Seslendir';
+      currentAudioBtn = null;
+    }
+  }
+
+  // ---- Static links (placeholder) ----
+  function openStatic(key){
+    alert("Bu sayfayı istersen modal/ayrı sayfa olarak bağlarız: " + key);
+  }
+
+  // ---- Escape helpers ----
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+  function escapeAttr(str){
+    // attribute için temel kaçış
+    return escapeHtml(str).replaceAll("`","&#096;");
+  }
+
+  // ---- Boot ----
+  initProfile();
+  setPersona("shopping");
 </script>
 
 </body>
