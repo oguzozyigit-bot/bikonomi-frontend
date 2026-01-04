@@ -42,6 +42,28 @@
       min-height: 100vh;
     }
 
+    /* GENDER MODAL */
+    #genderModal {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.85); z-index: 9999;
+        display: flex; align-items: center; justify-content: center;
+        backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: white; width: 90%; max-width: 400px; padding: 25px;
+        border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #111; }
+    .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .gender-btn {
+        padding: 15px; border: 2px solid var(--border); border-radius: 12px;
+        background: white; font-size: 16px; font-weight: 600; cursor: pointer;
+        display: flex; flex-direction: column; align-items: center; gap: 5px;
+    }
+    .gender-btn:hover { border-color: var(--primary); background: #F0FDF9; }
+    .gender-btn i { font-size: 24px; color: var(--primary); }
+    .gender-skip { width: 100%; margin-top: 10px; padding: 12px; background: #F3F4F6; border: none; border-radius: 12px; color: #666; font-weight: 600; cursor: pointer; }
+
     /* HEADER */
     header { padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; position: sticky; top: 0; }
     .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
@@ -53,9 +75,11 @@
     .header-btn { background: #ECFDF5; border: 1px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; margin-left: 5px; transition: 0.2s; }
     .header-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
 
-    /* MODE SELECTOR */
-    .mode-selector { display: flex; background: #F1F5F9; padding: 4px; border-radius: 12px; gap: 4px; }
-    .mode-btn { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; transition: 0.2s; text-align: center; }
+    /* MODE SELECTOR - Scrollable on mobile */
+    .mode-selector-wrap { overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+    .mode-selector-wrap::-webkit-scrollbar { display: none; }
+    .mode-selector { display: flex; background: #F1F5F9; padding: 4px; border-radius: 12px; gap: 4px; min-width: max-content; }
+    .mode-btn { border: none; background: transparent; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; transition: 0.2s; text-align: center; white-space: nowrap; }
     .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
     #installBtn { display: none; background: #E6FFFA; color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; align-items: center; gap: 5px; }
@@ -171,6 +195,24 @@
 
 <body>
 
+<div id="genderModal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-title">CAYNANA sana nasıl hitap etsin?</div>
+        <div class="gender-grid">
+            <button class="gender-btn" onclick="selectGender('female')">
+                <i class="fa-solid fa-venus"></i>
+                Kızım / Canım
+            </button>
+            <button class="gender-btn" onclick="selectGender('male')">
+                <i class="fa-solid fa-mars"></i>
+                Oğlum / Evladım
+            </button>
+        </div>
+        <button class="gender-skip" onclick="selectGender('neutral')">Fark Etmez</button>
+        <div style="font-size:10px; color:#999; margin-top:15px;">Bu bilgi sadece bu cihazda saklanır.</div>
+    </div>
+</div>
+
 <header>
   <div class="header-top">
     <div class="logo-container" onclick="window.location.reload()">
@@ -184,10 +226,15 @@
     </div>
   </div>
 
-  <div class="mode-selector">
-    <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')"><i class="fa-solid fa-bag-shopping"></i> Alışveriş</button>
-    <button class="mode-btn" id="mode-places" onclick="setMode('places')"><i class="fa-solid fa-map-location-dot"></i> Mekan</button>
-    <button class="mode-btn" id="mode-daily" onclick="setMode('daily')"><i class="fa-solid fa-cloud-sun"></i> Günlük</button>
+  <div class="mode-selector-wrap">
+      <div class="mode-selector">
+        <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')"><i class="fa-solid fa-bag-shopping"></i> Alışveriş</button>
+        <button class="mode-btn" id="mode-food" onclick="setMode('food')"><i class="fa-solid fa-utensils"></i> Yemek</button>
+        <button class="mode-btn" id="mode-travel" onclick="setMode('travel')"><i class="fa-solid fa-plane"></i> Tatil</button>
+        <button class="mode-btn" id="mode-cinema" onclick="setMode('cinema')"><i class="fa-solid fa-film"></i> Sinema</button>
+        <button class="mode-btn" id="mode-school" onclick="setMode('school')"><i class="fa-solid fa-graduation-cap"></i> Okul</button>
+        <button class="mode-btn" id="mode-life" onclick="setMode('life')"><i class="fa-solid fa-cloud-sun"></i> Yaşam</button>
+      </div>
   </div>
 
   <button id="installBtn" onclick="installPWA()">Uygulamayı Yükle</button>
@@ -197,7 +244,7 @@
   
   <section id="scene-home" class="scene active">
     <div class="hero-title">Almadan Önce<br><span>CAYNANA'ya Sor.</span></div>
-    <div class="hero-sub">Kararsız mısın? Ürün, mekan, yemek veya kıyafet... Kaynanana danış, pişman olma.</div>
+    <div class="hero-sub" id="heroSubText">Kararsız mısın? Ürün, mekan, yemek veya kıyafet... Kaynanana danış, pişman olma.</div>
 
     <div id="imgWrap">
        <img id="imgPreview" src="">
@@ -359,10 +406,26 @@
       
       const API_BASE = "https://bikonomi-api-1.onrender.com";
       const qInput = document.getElementById("q");
-      let session = { q: "", img: "", mode: "shopping" }; // Default mode
+      let session = { q: "", img: "", mode: "shopping", gender: "neutral" };
       let currentAudio = null;
       let audioText = "";
       let loadingInterval;
+
+      // KİMLİK KONTROLÜ
+      function checkGender() {
+          const g = localStorage.getItem("caynana_gender");
+          if(g) {
+              session.gender = g;
+          } else {
+              document.getElementById("genderModal").style.display = "flex";
+          }
+      }
+      
+      window.selectGender = function(g) {
+          localStorage.setItem("caynana_gender", g);
+          session.gender = g;
+          document.getElementById("genderModal").style.display = "none";
+      };
 
       // MOD SELECTOR
       window.setMode = function(mode) {
@@ -370,7 +433,6 @@
           document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
           document.getElementById("mode-"+mode).classList.add("active");
           
-          // Placeholder & Chips Update
           const chips = document.getElementById("chipContainer");
           if(mode === "shopping") {
               qInput.placeholder = "Ürün adı, linki veya sor...";
@@ -378,22 +440,36 @@
                 <div class="chip" onclick="fillSearch('En iyi airfryer hangisi?')"><i class="fa-solid fa-fire"></i> Airfryer</div>
                 <div class="chip" onclick="fillSearch('Iphone 15 alınır mı?')"><i class="fa-solid fa-mobile"></i> Telefon</div>
                 <div class="chip" onclick="fillSearch('Robot süpürge önerisi')"><i class="fa-solid fa-robot"></i> Süpürge</div>`;
-          } else if(mode === "places") {
-              qInput.placeholder = "Şehir, mekan, aktivite sor...";
+          } else if(mode === "food") {
+              qInput.placeholder = "Ne yemek istersin?";
               chips.innerHTML = `
-                <div class="chip" onclick="fillSearch('Fethiyede kahvaltı nerede yapılır?')"><i class="fa-solid fa-utensils"></i> Fethiye Kahvaltı</div>
-                <div class="chip" onclick="fillSearch('İstanbulda gezilecek sessiz yerler')"><i class="fa-solid fa-tree"></i> Sessiz Yerler</div>
-                <div class="chip" onclick="fillSearch('Düzcede ne yenir?')"><i class="fa-solid fa-burger"></i> Düzce Yemek</div>`;
-          } else {
-              qInput.placeholder = "Bugün ne giysem? Ne yapsam?";
+                <div class="chip" onclick="fillSearch('Düzcede en iyi hamburgerci')"><i class="fa-solid fa-burger"></i> Hamburger</div>
+                <div class="chip" onclick="fillSearch('İstanbulda romantik yemek')"><i class="fa-solid fa-heart"></i> Romantik</div>`;
+          } else if(mode === "travel") {
+              qInput.placeholder = "Nereye gitmek istersin?";
               chips.innerHTML = `
-                <div class="chip" onclick="fillSearch('Bugün hava yağmurlu ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
-                <div class="chip" onclick="fillSearch('Canım sıkılıyor ne izlesem?')"><i class="fa-solid fa-tv"></i> Film Öner</div>
-                <div class="chip" onclick="fillSearch('Evde yapılabilecek hobi?')"><i class="fa-solid fa-puzzle-piece"></i> Hobi</div>`;
+                <div class="chip" onclick="fillSearch('Fethiyede gezilecek yerler')"><i class="fa-solid fa-map-location-dot"></i> Fethiye</div>
+                <div class="chip" onclick="fillSearch('Vizesiz gidilecek ülkeler')"><i class="fa-solid fa-passport"></i> Vizesiz</div>`;
+          } else if(mode === "cinema") {
+              qInput.placeholder = "Hangi filmi merak ediyorsun?";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('Netflixte ne izlenir?')"><i class="fa-brands fa-netflix"></i> Netflix</div>
+                <div class="chip" onclick="fillSearch('Vizyondaki en iyi film')"><i class="fa-solid fa-film"></i> Vizyon</div>`;
+          } else if(mode === "school") {
+              qInput.placeholder = "Hangi okul veya kurs?";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('Yazılım kursu önerisi')"><i class="fa-solid fa-laptop-code"></i> Yazılım</div>
+                <div class="chip" onclick="fillSearch('İngilizce nasıl öğrenilir?')"><i class="fa-solid fa-language"></i> İngilizce</div>`;
+          } else if(mode === "life") {
+              qInput.placeholder = "Derdin ne yavrum?";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
+                <div class="chip" onclick="fillSearch('Canım sıkılıyor ne yapsam?')"><i class="fa-solid fa-puzzle-piece"></i> Sıkıldım</div>`;
           }
       };
       
-      // Init Default Mode
+      // Init
+      checkGender();
       setMode("shopping");
 
       if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
@@ -515,11 +591,18 @@
         startLoadingAnim();
 
         try {
-            // Mode bilgisini de gönderiyoruz
+            // Mode ve Gender gönderiyoruz
+            const payload = { 
+                q, 
+                img: imgToSend, 
+                mode: session.mode,
+                gender: session.gender
+            };
+
             const res = await fetch(API_BASE + "/api/analyze", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ q, img: imgToSend, mode: session.mode })
+                body: JSON.stringify(payload)
             });
 
             clearInterval(loadingInterval);
@@ -543,7 +626,7 @@
                 heroBox.style.display = "none";
             }
 
-            // MODE'a göre render farkı (Alışverişte Skor Var, Diğerlerinde Yok)
+            // MODE'a göre render farkı
             if (session.mode === "shopping" && data.score) {
                 const scoreEl = document.getElementById("scoreArea");
                 const gauge = document.getElementById("scoreGauge");
@@ -560,13 +643,6 @@
                     scoreColor = data.score.color || "#10B981";
                 } else {
                     scoreValue = parseInt(data.score) || 0;
-                }
-
-                if (!scoreColor || !scoreLabel) {
-                    if(scoreValue < 50) { scoreColor = "#EF4444"; scoreLabel = "Uzak Dur"; }
-                    else if(scoreValue < 70) { scoreColor = "#F59E0B"; scoreLabel = "Dikkat Et"; }
-                    else if(scoreValue < 85) { scoreColor = "#3B82F6"; scoreLabel = "Mantıklı"; }
-                    else { scoreColor = "#10B981"; scoreLabel = "Güvenle Al"; }
                 }
 
                 scoreEl.style.display = "flex";
@@ -599,7 +675,7 @@
                 pcWrap.style.display = "none";
             }
 
-            // Diğer bloklar (Chronic, Risk, Evidence)
+            // Diğer bloklar
             const chWrap = document.getElementById("chronicWrap");
             if (data.chronic_issues && data.chronic_issues.length) {
                 chWrap.style.display = "block";
@@ -624,8 +700,8 @@
             waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
             waBtn.style.display = "block";
 
-            // Recommendations (Moda göre başlık değişir)
-            document.getElementById("recTitle").innerText = (session.mode === "places" ? "MEKAN ÖNERİLERİ" : (session.mode === "daily" ? "TAVSİYELER" : "ALTERNATİF ÜRÜNLER"));
+            // Recommendations (Moda göre başlık)
+            document.getElementById("recTitle").innerText = (session.mode === "shopping" ? "ALTERNATİF ÜRÜNLER" : "TAVSİYELER");
             
             const list = document.getElementById("recommendationList");
             list.innerHTML = "";
@@ -639,8 +715,9 @@
                     
                     let iconClass = "fa-solid fa-star";
                     if (session.mode === "shopping") iconClass = "fa-solid fa-bag-shopping";
-                    if (session.mode === "places") iconClass = "fa-solid fa-location-dot";
-                    if (session.mode === "daily") iconClass = "fa-solid fa-lightbulb";
+                    else if (session.mode === "food") iconClass = "fa-solid fa-utensils";
+                    else if (session.mode === "travel") iconClass = "fa-solid fa-plane";
+                    else iconClass = "fa-solid fa-lightbulb";
 
                     const url = rec.url || "#";
                     const html = `
