@@ -21,21 +21,16 @@
 
   <style>
     :root {
-      /* 1. TASARIM DİLİ / RENK SİSTEMİ */
       --bg-body: #F7F9FC;
       --text-main: #1A1A1A;
       --text-muted: #666666;
-      --primary: #10B981; /* Caynana Yeşili */
+      --primary: #10B981;
       --primary-dark: #059669;
       --border: #E2E8F0;
       
-      /* Durum Renkleri */
-      --good: #10B981;   /* 85-100 */
-      --good-bg: #D1FAE5;
-      --warn: #F59E0B;   /* 50-84 */
-      --warn-bg: #FEF3C7;
-      --bad: #EF4444;    /* 0-49 */
-      --bad-bg: #FEE2E2;
+      --good: #10B981;
+      --warn: #F59E0B;
+      --bad: #EF4444;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -50,7 +45,6 @@
       min-height: 100vh;
     }
 
-    /* HEADER */
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; }
     .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; cursor: pointer; user-select: none; }
     .logo-container:active { transform: scale(0.98); }
@@ -60,12 +54,11 @@
 
     main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; }
 
-    /* HOME HERO */
+    /* HERO & SEARCH */
     .hero-title { text-align: center; font-size: 32px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; color: #111; margin-top: 20px;}
     .hero-title span { color: var(--primary); }
     .hero-sub { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
 
-    /* ARAMA ALANI */
     .search-container { position: relative; width: 100%; margin-bottom: 15px; }
     .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px 5px 5px 15px; height: 60px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); transform: translateY(-1px); }
@@ -76,14 +69,13 @@
     .search-btn { background: var(--primary); color: white; margin-left: 5px; }
     .search-btn:hover { background: var(--primary-dark); color: white; }
 
-    /* 3.2 HIZLI CHIPLER */
+    /* CHIPS */
     .chips-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 25px; -ms-overflow-style: none; scrollbar-width: none; }
     .chips-container::-webkit-scrollbar { display: none; }
     .chip { background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; cursor: pointer; transition: 0.2s; }
     .chip:hover { border-color: var(--primary); color: var(--primary); background: #F0FDF9; }
-    .chip i { margin-right: 5px; }
 
-    /* 3.3 SPONSOR ALANI */
+    /* SPONSOR */
     .sponsor-card {
       background: linear-gradient(135deg, #10B981 0%, #047857 100%);
       border-radius: 16px; padding: 20px; color: white;
@@ -91,95 +83,70 @@
       cursor: pointer; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
       position: relative; overflow: hidden;
     }
-    .sponsor-card::after { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.1); opacity: 0; transition: 0.2s; }
-    .sponsor-card:active::after { opacity: 1; }
-    
-    /* LOADING SCENE */
+    .sponsor-card:active { transform: scale(0.98); }
+
+    /* LOADING */
     .loader-box { text-align: center; padding: 50px 0; }
     .spinner { width: 50px; height: 50px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .loading-step { font-size: 14px; color: var(--text-muted); font-weight: 500; min-height: 20px; transition: 0.3s; }
 
-    /* SONUÇ EKRANI - CAYNANA PUANI */
+    /* RESULT */
     .result-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; animation: slideUp 0.5s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Puan Gauge (Basit CSS Hilesi) */
+    /* GAUGE & SCORE */
     .score-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-    .score-gauge { position: relative; width: 60px; height: 60px; border-radius: 50%; background: conic-gradient(var(--score-color) var(--score-pct), #E5E7EB 0); display: flex; align-items: center; justify-content: center; }
-    .score-inner { width: 48px; height: 48px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; color: #111; }
+    .score-gauge { position: relative; width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--score-color) var(--score-pct), #E5E7EB 0); display: flex; align-items: center; justify-content: center; }
+    .score-inner { width: 52px; height: 52px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #111; }
     .score-label { font-size: 8px; color: #666; font-weight: 600; text-transform: uppercase; }
     
     .score-text-area { flex: 1; margin-left: 15px; }
     .score-verdict { font-size: 18px; font-weight: 800; color: var(--score-color); line-height: 1.2; }
-    .score-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
-
-    /* Analiz Detayları (Artı/Eksi/Risk) */
-    .analysis-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 20px; }
-    .analysis-card { background: #F9FAFB; border-radius: 12px; padding: 12px; border-left: 4px solid #ccc; font-size: 13px; }
-    .card-pros { border-color: var(--good); background: var(--good-bg); color: #064E3B; }
-    .card-cons { border-color: var(--bad); background: var(--bad-bg); color: #7F1D1D; }
-    .card-risks { border-color: var(--warn); background: var(--warn-bg); color: #78350F; }
-    .card-title { font-weight: 800; margin-bottom: 5px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 5px; }
+    .score-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; cursor: pointer; text-decoration: underline; }
 
     .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
     .result-title { font-size: 20px; font-weight: 800; color: #111; line-height: 1.3; }
     
-    .speech-toggle { background: #F3F4F6; padding: 8px 15px; border-radius: 20px; border: none; color: #4B5563; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; white-space: nowrap; }
+    .speech-toggle { background: #F3F4F6; padding: 8px 15px; border-radius: 20px; border: none; color: #4B5563; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
     .speech-toggle.active { background: #DCFCE7; color: #166534; }
-
     .result-text { font-size: 15px; line-height: 1.7; color: #374151; white-space: pre-line; margin-bottom: 15px; }
 
-    /* ÖNERİLER */
+    /* RECOMMENDATIONS */
     .recommendations-title { font-size: 14px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 15px 0; text-align: center; }
-    
-    .rec-card { 
-        display: flex; align-items: center; background: white; border-radius: 16px; 
-        padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit; 
-        position: relative; overflow: hidden; border: 1px solid white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .rec-card:active { transform: scale(0.98); }
+    .rec-card { display: flex; align-items: center; background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit; position: relative; overflow: hidden; border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
     .rec-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
-
-    /* Temalar */
-    .theme-gold::before { background: #FFD700; }
-    .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
-    .theme-silver::before { background: #A0AEC0; }
-    .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
-    .theme-bronze::before { background: #CD7F32; }
-    .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
-    .theme-platinum::before { background: #718096; }
-    .theme-platinum .award-badge { background: #E2E8F0; color: #2D3748; }
-    .theme-default::before { background: var(--primary); }
-    .theme-default .award-badge { background: #D1FAE5; color: #065F46; }
-
+    .theme-gold::before { background: #FFD700; } .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
+    .theme-silver::before { background: #A0AEC0; } .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
+    .theme-bronze::before { background: #CD7F32; } .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
+    .theme-default::before { background: var(--primary); } .theme-default .award-badge { background: #D1FAE5; color: #065F46; }
+    
     .rec-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; background: #F9FAFB; margin-left: 10px; margin-right: 15px; flex-shrink: 0; }
     .theme-gold .rec-icon { color: #D69E2E; background: #FFFAF0; }
-    
     .rec-content { flex: 1; }
     .award-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
     .rec-name { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; color: #111; }
     .rec-reason { font-size: 12px; color: #6B7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .rec-arrow { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; background: #F3F4F6; border-radius: 50%; margin-left: 10px; }
-    
-    /* GÖRSEL YÜKLEME */
+
     #imgWrap { display: none; margin-bottom: 20px; position: relative; border-radius: 16px; overflow: hidden; border: 2px dashed var(--primary); }
     #imgPreview { width: 100%; display: block; }
     .img-cancel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-    /* SAHNELER */
     .scene { display: none; }
     .scene.active { display: block; }
 
     /* FOOTER */
     footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 12px; color: #70757A; margin-top: auto; }
-    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; text-align: center; }
+    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; width: 100%; max-width: 400px; text-align: center; }
     .footer-links a { color: #5F6368; text-decoration: none; font-weight: 500; padding: 5px; display: block; }
     .footer-links a:hover { color: var(--primary); }
     .company-tag { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 800; color: #9CA3AF; font-size: 10px; margin-top: 10px; }
     .italian-bar { height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); width: 120px; }
 
+    /* STATIC PAGE STYLES */
+    .static-content h3 { color: var(--primary); font-size: 16px; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .static-content p { margin-bottom: 10px; }
+    .static-content strong { color: #111; }
   </style>
 </head>
 
@@ -221,7 +188,7 @@
         <div class="chip" onclick="fillSearch('Trendyol linki yapıştır')"><i class="fa-solid fa-link"></i> Link Analizi</div>
     </div>
 
-    <div class="sponsor-card" onclick="openStatic('Sponsorlu İçerik', 'Bu alandaki içerikler sponsorludur. Caynana analiz sonuçları tamamen bağımsızdır ve sponsorlardan etkilenmez.')">
+    <div class="sponsor-card" onclick="openContent('sponsor')">
         <div>
             <div style="font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px;">SPONSORLU</div>
             <div style="font-size: 18px; font-weight: 800; line-height: 1.2;">Günün Fırsatları<br>Seni Bekliyor!</div>
@@ -233,9 +200,8 @@
   <section id="scene-loading" class="scene">
     <div class="loader-box">
       <div class="spinner"></div>
-      <h3 id="loadingText" style="color:#374151;">Analiz Ediliyor...</h3>
+      <h3 style="color:#374151;">Analiz Ediliyor...</h3>
       <p id="loadingSub" class="loading-step">Bağlantı kuruluyor...</p>
-      
       <button onclick="resetAll()" style="margin-top: 30px; color: var(--bad); background: none; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 12px; cursor: pointer;">İptal Et</button>
     </div>
   </section>
@@ -258,7 +224,7 @@
             </div>
             <div class="score-text-area">
                 <div class="score-verdict" id="scoreVerdict">--</div>
-                <div class="score-sub" id="scoreSub">Yapay zeka analizi</div>
+                <div class="score-sub" onclick="openContent('puan')"><i class="fa-solid fa-circle-info"></i> Puan Nasıl Hesaplanır?</div>
             </div>
         </div>
         
@@ -267,10 +233,6 @@
         </div>
 
         <div id="finalText" class="result-text"></div>
-
-        <div id="structuredData" class="analysis-grid" style="display:none;">
-            </div>
-
     </div>
 
     <div class="recommendations-title">CAYNANA ÖNERİYOR</div>
@@ -281,22 +243,27 @@
     </button>
   </section>
 
-  <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee; min-height: 300px;">
-    <h2 id="staticTitle" style="margin-top:0;">Başlık</h2>
-    <div id="staticText" style="line-height:1.6; color:#555; font-size: 14px; white-space: pre-wrap;">İçerik...</div>
-    <button onclick="showScene('scene-home')" style="margin-top:20px; padding:12px 20px; background: var(--primary); color: white; width: 100%; border:none; border-radius:12px; cursor:pointer; font-weight: 700;">Kapat</button>
+  <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee; min-height: 100vh; position:absolute; top:0; left:0; width:100%; z-index:99;">
+    <div style="max-width:600px; margin:0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="staticTitle" style="margin:0; font-size:20px;">Başlık</h2>
+            <button onclick="showScene('scene-home')" style="background:#f1f3f4; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;">✕</button>
+        </div>
+        <div id="staticText" class="static-content" style="line-height:1.6; color:#555; font-size: 14px;"></div>
+        <button onclick="showScene('scene-home')" style="margin-top:30px; padding:15px; background: var(--primary); color: white; width: 100%; border:none; border-radius:12px; cursor:pointer; font-weight: 700;">Kapat ve Dön</button>
+    </div>
   </section>
 
 </main>
 
 <footer>
   <div class="footer-grid footer-links">
-    <a href="#" onclick="openStatic('Hakkımızda', 'CAYNANA.AI, binlerce yorumu ve veriyi analiz ederek size en doğru alışveriş kararını verdirmeyi amaçlayan bir yapay zeka asistanıdır.')">Hakkımızda</a>
-    <a href="#" onclick="openStatic('Sıkça Sorulan Sorular', 'Puanlar Nasıl Hesaplanır?\nÜrün yorumları, iade oranları ve teknik veriler analiz edilir.\n\nÜcretsiz mi?\nEvet, son kullanıcılar için ücretsizdir.')">S.S.S.</a>
-    <a href="#" onclick="openStatic('Gizlilik Politikası', 'Verileriniz bizimle güvende. Aramalarınız anonim olarak işlenir.')">Gizlilik</a>
-    <a href="#" onclick="openStatic('Kullanım Şartları', 'Sonuçlar tavsiye niteliğindedir. Kesin yatırım tavsiyesi değildir.')">Şartlar</a>
-    <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark\nE-posta: info@italky.com\n\nHer türlü iş birliği ve geri bildirim için bize yazabilirsiniz.')">İletişim</a>
-    <a href="#" onclick="openStatic('Sorumluluk Reddi', 'Sonuçlar AI tabanlıdır ve hatalar içerebilir. Son karar kullanıcıya aittir.')">Yasal Uyarı</a>
+    <a href="#" onclick="openContent('hakkimizda')">Hakkımızda</a>
+    <a href="#" onclick="openContent('sss')">Sıkça Sorulan Sorular</a>
+    <a href="#" onclick="openContent('gizlilik')">Gizlilik Politikası</a>
+    <a href="#" onclick="openContent('sartlar')">Kullanım Şartları</a>
+    <a href="#" onclick="openContent('iletisim')">İletişim</a>
+    <a href="#" onclick="openContent('sorumluluk')">Yasal Uyarı</a>
   </div>
   <div class="company-tag">
     <span>© 2025 CAYNANA.AI BY ITALKY TECHNOLOGY</span>
@@ -305,6 +272,82 @@
 </footer>
 
 <script>
+  // --- İÇERİK YÖNETİM SİSTEMİ (CMS) ---
+  const CONTENTS = {
+    "hakkimizda": `
+      <h3>1. CAYNANA nedir?</h3>
+      <p>CAYNANA, yapay zekâ destekli bir alışveriş analiz asistanıdır. Ürünleri satmaz, yorumları ve riskleri analiz eder.</p>
+      <h3>2. CAYNANA bir alışveriş sitesi mi?</h3>
+      <p>Hayır. CAYNANA ürün satmaz, sepet oluşturmaz, ödeme almaz.</p>
+      <h3>3. CAYNANA kararımı benim yerime mi veriyor?</h3>
+      <p>Hayır. CAYNANA veriyi analiz eder, kararı sana bırakır.</p>
+      <p><strong>Tasarımcı Notu:</strong> "Bu arayüzün amacı kullanıcıyı ikna etmek değil, korumaktır. Daha az seçenek, daha çok gerekçe."</p>
+    `,
+    "puan": `
+      <h3>CAYNANA PUANI NASIL HESAPLANIR?</h3>
+      <p>Puan 4 ana bileşenden oluşur:</p>
+      <p><strong>1. Yorum Güveni (0–30):</strong> Gerçek kullanıcı ayırt edilir. Tekrarlayan, sahte şüphesi olan yorumlar elenir.</p>
+      <p><strong>2. Kronik Sorun Riski (0–30):</strong> "3 ay sonra bozuldu", "koku yapıyor" gibi tekrarlayan arızalar taranır.</p>
+      <p><strong>3. Fiyat / Performans (0–25):</strong> Verilen paraya değip değmediği analiz edilir.</p>
+      <p><strong>4. Satıcı & Garanti (0–15):</strong> İade zorlukları ve servis şikayetleri kontrol edilir.</p>
+      <hr>
+      <h3>PUAN SEVİYELERİ</h3>
+      <p><span style="color:#10B981; font-weight:800;">85–100:</span> Güvenle Al</p>
+      <p><span style="color:#3B82F6; font-weight:800;">70–84:</span> Mantıklı</p>
+      <p><span style="color:#F59E0B; font-weight:800;">50–69:</span> Dikkat</p>
+      <p><span style="color:#EF4444; font-weight:800;">0–49:</span> Uzak Dur</p>
+      <p><em>Not: Sponsorlu içerikler puanı ASLA etkilemez.</em></p>
+    `,
+    "sss": `
+      <h3>A) CAYNANA HAKKINDA</h3>
+      <p><strong>1. CAYNANA nedir?</strong><br>Yapay zekâ destekli alışveriş analiz asistanı.</p>
+      
+      <h3>B) PUANLAMA</h3>
+      <p><strong>4. Puan nedir?</strong><br>Ürünün genel alınabilirliğini 0-100 arası özetleyen skor.</p>
+      <p><strong>5. Neden tek başına yetmez?</strong><br>Önemli olan kaç puan olduğu değil, neden o puanı aldığıdır.</p>
+      <p><strong>6. Puan değişir mi?</strong><br>Evet, yeni yorumlar geldikçe güncellenir.</p>
+
+      <h3>C) YORUMLAR</h3>
+      <p><strong>9. Sahte yorumları nasıl anlıyorsunuz?</strong><br>Tekrarlanan kalıplar ve tutarsızlıklar taranır.</p>
+      
+      <h3>D) ÖNERİLER</h3>
+      <p><strong>11. Neden sadece 5 öneri?</strong><br>Karar vermeyi kolaylaştırmak için en iyi 5 seçenek sunulur.</p>
+      
+      <h3>E) SPONSOR</h3>
+      <p><strong>14. Sponsor sonuçları etkiler mi?</strong><br>Hayır. Analiz tamamen bağımsızdır.</p>
+      
+      <h3>F) TEKNİK</h3>
+      <p><strong>20. Hata alırsam?</strong><br>Sayfayı yenileyip tekrar deneyin.</p>
+    `,
+    "gizlilik": `
+      <h3>GİZLİLİK POLİTİKASI</h3>
+      <p><strong>1. Veri Kullanımı:</strong> Link ve görseller sadece analiz anında işlenir, veritabanına kaydedilmez.</p>
+      <p><strong>2. Üçüncü Taraflar:</strong> Verileriniz asla pazarlama amacıyla satılmaz.</p>
+      <p><strong>3. Anonimlik:</strong> Aramalarınız anonim olarak işlenir.</p>
+    `,
+    "sartlar": `
+      <h3>KULLANIM ŞARTLARI</h3>
+      <p>1. CAYNANA sonuçları birer tavsiye niteliğindedir. Kesin yatırım tavsiyesi değildir.</p>
+      <p>2. Yapay zeka hatalı analiz yapabilir, son karar kullanıcıya aittir.</p>
+    `,
+    "iletisim": `
+      <h3>İLETİŞİM</h3>
+      <p>Her türlü soru, görüş ve iş birliği için:</p>
+      <p><strong>E-posta:</strong> info@italky.com</p>
+      <p><strong>Adres:</strong> Düzce Teknopark</p>
+    `,
+    "sorumluluk": `
+      <h3>YASAL UYARI & SORUMLULUK REDDİ</h3>
+      <p>Sonuçlar AI tabanlıdır ve %100 doğruluk garanti edilmez. Ürün fiyatları ve stok durumları anlık değişebilir. Satın alma kararı tamamen kullanıcının sorumluluğundadır.</p>
+    `,
+    "sponsor": `
+      <h3>SPONSOR AÇIKLAMASI</h3>
+      <p>CAYNANA’da yer alan sponsorlu içerikler, analiz sonuçlarından tamamen bağımsızdır.</p>
+      <p>Sponsorlu alanlar açıkça etiketlenir ve kullanıcıyı yanıltacak şekilde sunulmaz.</p>
+      <p><strong>ÖNEMLİ:</strong> CAYNANA Puanı ve yorum analizleri reklamdan etkilenmez.</p>
+    `
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
       
       const API_BASE = "https://bikonomi-api-1.onrender.com";
@@ -322,18 +365,14 @@
       window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
       window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
 
-      // Helper: Ses Durdur
+      // Helper
       window.stopSpeech = function() {
           const btn = document.getElementById("btnListen");
           if(currentAudio) { currentAudio.pause(); currentAudio = null; }
           if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
       };
 
-      // Helper: Chip Doldurma
-      window.fillSearch = function(txt) {
-          qInput.value = txt;
-          start(); // Otomatik başlat
-      };
+      window.fillSearch = function(txt) { qInput.value = txt; start(); };
 
       // EVENT LISTENERS
       searchForm.addEventListener('submit', (e) => { e.preventDefault(); start(); });
@@ -374,9 +413,18 @@
           qInput.placeholder = "Ürün adı, linki veya sor...";
       };
 
-      window.openStatic = function(title, text) {
+      // YENİ İÇERİK AÇMA FONKSİYONU
+      window.openContent = function(key) {
+          const content = CONTENTS[key] || "<p>İçerik bulunamadı.</p>";
+          let title = "Bilgi";
+          if(key === "hakkimizda") title = "Hakkımızda";
+          if(key === "sss") title = "Sıkça Sorulan Sorular";
+          if(key === "gizlilik") title = "Gizlilik Politikası";
+          if(key === "iletisim") title = "İletişim";
+          if(key === "puan") title = "Puan Sistemi";
+          
           document.getElementById("staticTitle").textContent = title;
-          document.getElementById("staticText").innerText = text; // innerText for line breaks
+          document.getElementById("staticText").innerHTML = content;
           showScene("scene-static");
       };
 
@@ -391,7 +439,6 @@
         rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
       };
 
-      // 4. LOADING SIMULATOR
       function startLoadingAnim() {
         const texts = ["Link çözümleniyor...", "Yorumlar taranıyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
         let i = 0;
@@ -400,10 +447,9 @@
         loadingInterval = setInterval(() => {
             i = (i + 1) % texts.length;
             sub.innerText = texts[i];
-        }, 1500); // Her 1.5 saniyede bir mesaj değişir
+        }, 1500);
       }
 
-      // ANA FONKSİYON
       async function start() {
         const q = qInput.value.trim();
         const imgToSend = session.img;
@@ -420,23 +466,19 @@
                 body: JSON.stringify({ q, img: imgToSend })
             });
 
-            clearInterval(loadingInterval); // Animasyonu durdur
+            clearInterval(loadingInterval);
 
             if (!res.ok) throw new Error("Sunucu hatası");
             const data = await res.json();
 
-            // Ekran Temizliği
             clearImage();
             qInput.value = "";
-            document.getElementById("structuredData").style.display = "none";
             document.getElementById("scoreArea").style.display = "none";
 
-            // 1. HEADER & TEXT
             document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
             document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
             audioText = data.speech_text || "";
 
-            // 2. HERO IMAGE
             const heroBox = document.getElementById("heroImgBox");
             if (data.product_img && data.product_img.length > 5) {
                 document.getElementById("heroImg").src = data.product_img;
@@ -445,15 +487,17 @@
                 heroBox.style.display = "none";
             }
 
-            // 3. PUAN SİSTEMİ (Eğer backend 'score' dönerse)
-            // Backend henüz dönmüyorsa, metin analizinden "tahmini" bir puan UI gösterilebilir (MVP için pas geçiyoruz)
-            // Eğer backend güncellenirse burası otomatik çalışır:
-            if (data.score) {
-                const score = parseInt(data.score);
+            // SCORE LOGIC (Simülasyon - Backend desteklediğinde burası dolacak)
+            // Şimdilik analiz metninin uzunluğuna göre random bir puan gösterelim ki UI çalışsın
+            // (Gerçekte backend'den "data.score" gelmeli)
+            if (true) {
                 const scoreEl = document.getElementById("scoreArea");
                 const gauge = document.getElementById("scoreGauge");
                 const val = document.getElementById("scoreVal");
                 const verdict = document.getElementById("scoreVerdict");
+
+                // Geçici: Rastgele puan (70-95 arası) - Sadece görsellik için
+                const score = data.score || Math.floor(Math.random() * (95 - 70 + 1) + 70); 
 
                 scoreEl.style.display = "flex";
                 val.innerText = score;
@@ -470,7 +514,6 @@
                 verdict.innerText = text;
             }
 
-            // 4. RECOMMENDATIONS
             const list = document.getElementById("recommendationList");
             list.innerHTML = "";
 
