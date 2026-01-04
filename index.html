@@ -48,7 +48,6 @@
     .logo-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
     .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #111; }
     
-    /* HEADER BUTONLARI */
     .header-btn { background: #ECFDF5; border: 1px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; margin-right: 10px; transition: 0.2s; }
     .header-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
 
@@ -190,7 +189,7 @@
   
   <section id="scene-home" class="scene active">
     <div class="hero-title">Almadan Önce<br><span>CAYNANA'ya Sor.</span></div>
-    <div class="hero-sub">Binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</div>
+    <div class="hero-sub">Ürün, mekan, yemek, kıyafet... Ne yapacağına karar vermeden önce Kaynanana danış.</div>
 
     <div id="imgWrap">
        <img id="imgPreview" src="">
@@ -200,7 +199,7 @@
     <form id="searchForm" class="search-container">
       <div class="search-bar">
         <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
-        <input id="q" type="text" placeholder="Ürün adı, linki veya sor..." autocomplete="off">
+        <input id="q" type="text" placeholder="Ürün, mekan veya tavsiye iste..." autocomplete="off">
         <button type="button" class="action-btn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
         <button type="submit" class="action-btn search-btn"><i class="fa-solid fa-arrow-right"></i></button>
       </div>
@@ -208,10 +207,10 @@
     </form>
     
     <div class="chips-container">
-        <div class="chip" onclick="fillSearch('En iyi airfryer hangisi?')"><i class="fa-solid fa-fire"></i> En iyi Airfryer?</div>
-        <div class="chip" onclick="fillSearch('Bebek kamerası önerisi')"><i class="fa-solid fa-video"></i> Bebek kamerası</div>
-        <div class="chip" onclick="fillSearch('Bu ürün sahte mi?')"><i class="fa-solid fa-shield-halved"></i> Sahte mi?</div>
-        <div class="chip" onclick="fillSearch('Trendyol linki yapıştır')"><i class="fa-solid fa-link"></i> Link Analizi</div>
+        <div class="chip" onclick="fillSearch('Fethiyede kahvaltı nerede yapılır?')"><i class="fa-solid fa-utensils"></i> Fethiye Kahvaltı</div>
+        <div class="chip" onclick="fillSearch('Düzcede gezilecek yerler')"><i class="fa-solid fa-map-location-dot"></i> Düzce Gezi</div>
+        <div class="chip" onclick="fillSearch('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
+        <div class="chip" onclick="fillSearch('En iyi airfryer hangisi?')"><i class="fa-solid fa-fire"></i> Airfryer</div>
     </div>
 
     <div class="sponsor-card" onclick="openContent('sponsor')">
@@ -226,8 +225,8 @@
   <section id="scene-loading" class="scene">
     <div class="loader-box">
       <div class="spinner"></div>
-      <h3 style="color:#374151;">Analiz Ediliyor...</h3>
-      <p id="loadingSub" class="loading-step">Bağlantı kuruluyor...</p>
+      <h3 style="color:#374151;">Kaynanan Araştırıyor...</h3>
+      <p id="loadingSub" class="loading-step">Detaylara bakılıyor...</p>
       <button onclick="resetAll()" style="margin-top: 30px; color: var(--bad); background: none; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 12px; cursor: pointer;">İptal Et</button>
     </div>
   </section>
@@ -278,7 +277,7 @@
         </div>
 
         <div id="chronicWrap" style="display:none; margin-top:12px; padding:12px; border-radius:12px; border:1px solid rgba(245,158,11,0.35); background:rgba(245,158,11,0.08);">
-            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Kronik Sorunlar</div>
+            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Dikkat Edilecekler</div>
             <ul id="chronicList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
         </div>
 
@@ -288,14 +287,14 @@
         </div>
 
         <div id="evidenceWrap" style="display:none; margin-top:12px;">
-            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Yorumlardan Kanıt</div>
+            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Kaynana Notu</div>
             <div id="evidenceList" style="display:flex; flex-direction:column; gap:8px;"></div>
         </div>
 
     </div>
 
     <a id="waShareBtn" href="#" target="_blank" style="display:none; width:100%; padding:12px; background:#25D366; color:white; border-radius:12px; text-align:center; text-decoration:none; font-weight:bold; margin-top:15px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);">
-        <i class="fa-brands fa-whatsapp"></i> Bu Analizi Paylaş
+        <i class="fa-brands fa-whatsapp"></i> Bu Tavsiyeyi Paylaş
     </a>
 
     <div class="recommendations-title">CAYNANA ÖNERİYOR</div>
@@ -361,25 +360,16 @@
       let audioText = "";
       let loadingInterval;
 
-      // PWA
       if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
       let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
       window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
       window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
 
-      // Helper: Sesi Durdur
       window.stopSpeech = function() {
           const btn = document.getElementById("btnListen");
-          if(currentAudio) { 
-              currentAudio.pause(); 
-              currentAudio.currentTime = 0; 
-              currentAudio = null; 
-          }
-          if(btn) { 
-              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; 
-              btn.classList.remove("active"); 
-          }
+          if(currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+          if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
       };
 
       window.fillSearch = function(txt) { qInput.value = txt; start(); };
@@ -419,14 +409,13 @@
           session.img = "";
           document.getElementById("fileInput").value = "";
           document.getElementById("imgWrap").style.display = "none";
-          qInput.placeholder = "Ürün adı, linki veya sor...";
+          qInput.placeholder = "Ürün, mekan veya tavsiye iste...";
       };
 
       window.openContent = function(key) {
           const content = CONTENTS[key] || "<p>İçerik hazırlanıyor...</p>";
           let title = "Bilgi";
           if(key==="hakkimizda") title="Hakkımızda";
-          
           document.getElementById("staticTitle").textContent = title;
           document.getElementById("staticText").innerHTML = content;
           showScene("scene-static");
@@ -444,7 +433,7 @@
       };
 
       function startLoadingAnim() {
-        const texts = ["Link çözümleniyor...", "Yorumlar okunuyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
+        const texts = ["Kaynanan araştırıyor...", "Yorumlara bakılıyor...", "Fiyatlar kontrol ediliyor...", "Puan hesaplanıyor..."];
         let i = 0;
         const sub = document.getElementById("loadingSub");
         sub.innerText = texts[0];
@@ -485,7 +474,7 @@
         const q = qInput.value.trim();
         const imgToSend = session.img;
 
-        if (!q && !imgToSend) { alert("Lütfen bir ürün adı yazın veya görsel yükleyin."); return; }
+        if (!q && !imgToSend) { alert("Lütfen bir şey yazın veya fotoğraf yükleyin."); return; }
 
         showScene("scene-loading");
         startLoadingAnim();
@@ -522,9 +511,9 @@
             const indRow = document.getElementById("indicatorRow");
             if (data.indicators) {
                 indRow.style.display = "flex";
-                document.getElementById("indTrust").innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
-                document.getElementById("indChronic").innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
-                document.getElementById("indReturn").innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
+                document.getElementById("indTrust").innerHTML = `<strong>Güven:</strong> %${data.indicators.comment_trust ?? "-"}`;
+                document.getElementById("indChronic").innerHTML = `<strong>Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
+                document.getElementById("indReturn").innerHTML = `<strong>Risk:</strong> ${(data.indicators.return_risk || "-")}`;
             } else {
                 indRow.style.display = "none";
             }
@@ -566,7 +555,7 @@
                 eWrap.style.display = "none";
             }
 
-            // FIXED: Puan Render
+            // Score Render
             if (data.score) {
                 const scoreEl = document.getElementById("scoreArea");
                 const gauge = document.getElementById("scoreGauge");
@@ -620,13 +609,14 @@
                     const award = String(rec.award || "").toLowerCase();
                     if (award.includes("altın") || award.includes("gold")) theme = "theme-gold";
                     else if (award.includes("gümüş") || award.includes("silver")) theme = "theme-silver";
-                    else if (award.includes("bronz")) theme = "theme-bronze";
+                    else if (award.includes("bronz") theme = "theme-bronze";
                     else if (award.includes("platin")) theme = "theme-platinum";
 
                     let iconClass = "fa-solid fa-bag-shopping";
                     const platform = String(rec.site || rec.platform || "").toLowerCase();
                     if (platform.includes("trendyol")) iconClass = "fa-solid fa-cart-shopping"; 
                     if (platform.includes("amazon")) iconClass = "fa-brands fa-amazon"; 
+                    if (platform.includes("google")) iconClass = "fa-brands fa-google";
 
                     const url = rec.url || "#";
                     const html = `
@@ -654,74 +644,42 @@
         }
       }
 
-      // FIXED: Hata Avcısı Ses Fonksiyonu
       window.toggleSpeech = async function() {
           const btn = document.getElementById("btnListen");
-          
-          if(currentAudio) { 
-              window.stopSpeech(); 
-              return; 
-          }
-          
-          if (!audioText || audioText.length < 2) {
-              alert("Okunacak metin yok. Önce analiz yapmalısın.");
-              return;
-          }
+          if(currentAudio) { window.stopSpeech(); return; }
+          if (!audioText || audioText.length < 2) { alert("Okunacak metin yok."); return; }
           
           btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...';
           btn.classList.add("active");
           
           try {
-              console.log("Ses isteği gönderiliyor...");
               const res = await fetch(API_BASE + '/api/speak', {
                   method: 'POST',
                   headers: {'Content-Type': 'application/json'},
                   body: JSON.stringify({ text: audioText })
               });
 
-              if(!res.ok) {
-                  const errText = await res.text();
-                  throw new Error("Sunucu Hatası: " + errText);
-              }
-
-              const contentType = res.headers.get("content-type");
-              if (contentType && contentType.includes("application/json")) {
-                  const errJson = await res.json();
-                  throw new Error("Backend Hatası: " + (errJson.message || "Bilinmiyor"));
-              }
+              if(!res.ok) throw new Error("Ses servisi hatası");
 
               const blob = await res.blob();
-              if (blob.size < 100) {
-                  throw new Error("Ses dosyası boş veya hatalı geldi.");
-              }
+              if (blob.size < 100) throw new Error("Boş ses dosyası");
 
               const url = URL.createObjectURL(blob);
               currentAudio = new Audio(url);
-              
               currentAudio.muted = false;
               currentAudio.volume = 1.0;
 
-              currentAudio.onended = () => { 
-                  console.log("Ses bitti.");
-                  window.stopSpeech(); 
-              };
-              
-              currentAudio.onerror = (e) => {
-                  console.error("Audio hatası:", e);
-                  alert("Tarayıcı bu ses formatını çalamadı.");
-                  window.stopSpeech();
-              };
+              currentAudio.onended = () => { window.stopSpeech(); };
+              currentAudio.onerror = () => { alert("Ses çalınamadı."); window.stopSpeech(); };
 
-              await currentAudio.play().catch(e => {
-                  console.error("Oynatma engellendi:", e);
-                  alert("Ses oynatılamadı. Lütfen telefonun 'Sessiz Mod'da olmadığından emin olun veya ekrana bir kez dokunun.");
+              await currentAudio.play().catch(() => {
+                  alert("Lütfen ekranın sesini açın.");
                   window.stopSpeech();
               });
 
               btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
 
           } catch(e) {
-              console.error(e);
               alert("Ses Hatası: " + e.message);
               window.stopSpeech();
           }
