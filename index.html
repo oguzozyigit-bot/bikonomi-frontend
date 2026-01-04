@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CAYNANA - Yaşam Asistanı</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -16,8 +16,11 @@
     --bg-app: #F9FAFB;
     --bg-white: #FFFFFF;
     --border: #E5E7EB;
-    --dock-height: 80px;
+    
+    /* Mobil Uyumlu Yükseklikler */
     --header-height: 60px;
+    --dock-height: 70px;
+    --input-height: 120px; /* Chips dahil */
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,7 +29,8 @@
     margin: 0;
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-app);
-    height: 100vh;
+    height: 100vh; /* Fallback */
+    height: 100dvh; /* Modern tarayıcılar için dinamik yükseklik */
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -41,9 +45,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
+    padding-top: env(safe-area-inset-top);
     position: fixed;
     top: 0; left: 0; right: 0;
-    z-index: 50;
+    z-index: 60;
   }
 
   .logo {
@@ -58,18 +63,19 @@
   .top-icons {
     display: flex; gap: 15px; color: var(--text-sub); font-size: 18px;
   }
-  .top-icon-btn { cursor: pointer; transition: 0.2s; }
-  .top-icon-btn:hover { color: var(--primary); }
 
-  /* --- B) ORTA ANA PENCERE (MAIN PANEL) --- */
+  /* --- B) ORTA ANA PENCERE (SCROLL AREA) --- */
   .main-panel {
     flex: 1;
     margin-top: var(--header-height);
-    margin-bottom: var(--dock-height);
+    /* Alt boşluk = Input + Dock */
+    margin-bottom: calc(var(--dock-height) + var(--input-height)); 
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
     position: relative;
+    padding-bottom: 20px;
   }
 
   /* Panel Başlığı */
@@ -77,7 +83,9 @@
     text-align: center;
     padding: 20px 10px 10px;
     background: var(--bg-app);
-    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
   .ph-title {
     font-size: 18px; font-weight: 800; color: var(--text-main);
@@ -87,15 +95,12 @@
     font-size: 13px; color: var(--text-sub);
   }
 
-  /* Sohbet Akışı (Results Stream) */
+  /* Sohbet Akışı */
   .results-stream {
-    flex: 1;
-    overflow-y: auto;
     padding: 15px;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    scroll-behavior: smooth;
   }
 
   /* Mesaj Balonları */
@@ -111,61 +116,83 @@
     max-width: 85%;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
     position: relative;
+    word-wrap: break-word;
   }
   .msg-row.user .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
   .msg-row.ai .bubble { background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-  /* Kartlar (Yatay) */
-  .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0; width: 100%; scrollbar-width: none; }
+  /* Kartlar */
+  .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 2px; width: 100%; scrollbar-width: none; }
   .cards-scroll::-webkit-scrollbar { display: none; }
   
   .card {
     min-width: 200px; max-width: 200px; background: white; border: 1px solid var(--border);
     border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
-    text-decoration: none; color: inherit;
+    text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
   }
   .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; }
-  .card-title { font-size: 13px; font-weight: 700; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .card-title { font-size: 13px; font-weight: 700; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;}
   .card-price { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: auto; }
+
+  /* Loader (Balon Gibi) */
+  .loader-bubble {
+    align-self: flex-start;
+    background: white; border: 1px solid var(--border);
+    padding: 10px 16px; border-radius: 16px; border-bottom-left-radius: 4px;
+    color: var(--text-sub); font-size: 13px; font-style: italic;
+    display: none; margin-left: 15px; margin-bottom: 10px;
+  }
 
   @keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
 
-  /* Orta Bar (Input Area) - Panelin İçinde, En Altta */
-  .input-section {
+  /* --- C) SABİT ALT ALAN (INPUT + DOCK) --- */
+  .fixed-bottom-area {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 50;
     background: var(--bg-white);
-    border-top: 1px solid var(--border);
-    padding: 10px 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    flex-shrink: 0;
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* 1. Input Section (Dock'un Üstünde) */
+  .input-section {
+    padding: 8px 10px;
+    background: var(--bg-white);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-bottom: 1px solid #F3F4F6;
   }
 
   /* Chips */
   .chips-row {
-    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px;
   }
+  .chips-row::-webkit-scrollbar { display: none; }
   .chip {
     background: var(--bg-app); border: 1px solid var(--border);
-    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
-    color: var(--text-sub); white-space: nowrap; cursor: pointer;
+    padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    color: var(--text-sub); white-space: nowrap; cursor: pointer; flex-shrink: 0;
   }
-  .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .chip:active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
 
   /* Input Wrapper */
   .input-wrapper {
     display: flex; align-items: center; gap: 8px;
     background: var(--bg-app); border: 1px solid var(--border);
-    border-radius: 24px; padding: 8px 12px;
+    border-radius: 24px; padding: 6px 10px;
   }
   .input-wrapper:focus-within { border-color: var(--primary); background: white; }
 
   .tool-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: transparent; color: var(--text-sub); font-size: 18px;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: transparent; color: var(--text-sub); font-size: 16px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .tool-btn:hover { color: var(--primary); }
   .tool-btn.active { color: #EF4444; animation: pulse 1s infinite; }
 
   .main-input {
@@ -173,57 +200,43 @@
   }
 
   .send-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: var(--primary); color: white; font-size: 16px;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: var(--primary); color: white; font-size: 14px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
 
-  /* --- C) ALT MOD İKONLARI (MODE DOCK) --- */
+  /* 2. Mode Dock (En Altta) */
   .mode-dock {
-    position: fixed; bottom: 0; left: 0; right: 0;
     height: var(--dock-height);
     background: var(--bg-white);
-    border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
-    padding: 0 10px;
+    padding: 0 5px;
     overflow-x: auto;
     scrollbar-width: none;
-    z-index: 50;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
   }
   .mode-dock::-webkit-scrollbar { display: none; }
 
   .dock-item {
-    min-width: 70px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    color: var(--text-sub);
-    cursor: pointer;
-    padding: 5px;
-    transition: 0.2s;
-    border-radius: 8px;
+    min-width: 65px; flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px; color: var(--text-sub); cursor: pointer;
+    padding: 5px; border-radius: 8px;
   }
-  .dock-item i { font-size: 20px; margin-bottom: 2px; }
-  .dock-item span { font-size: 10px; font-weight: 600; text-align: center; line-height: 1.2; }
+  .dock-item i { font-size: 18px; margin-bottom: 2px; }
+  .dock-item span { font-size: 10px; font-weight: 500; text-align: center; line-height: 1.1; }
   
-  /* Aktif Mod */
-  .dock-item.active { color: var(--primary); transform: translateY(-2px); }
-  .dock-item.active i { font-size: 22px; }
+  .dock-item.active { color: var(--primary); }
+  .dock-item.active i { transform: translateY(-2px); }
 
-  /* Yükleniyor */
-  .loader { display: none; width: 100%; text-align: center; padding: 10px; color: var(--text-sub); font-size: 12px; font-style: italic; }
-  
-  /* Ses Butonu Mesaj İçi */
+  /* Audio Btn */
   .audio-play {
     margin-top: 5px; background: none; border: 1px solid var(--border);
     border-radius: 12px; padding: 4px 10px; font-size: 11px;
     color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
   }
-  .audio-play:hover { color: var(--primary); border-color: var(--primary); }
 
   @keyframes pulse { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
   #fileInput { display: none; }
@@ -233,24 +246,29 @@
 <body>
 
 <div class="top-bar">
-  <div class="logo"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
+  <div class="logo" onclick="location.reload()"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
   <div class="top-icons">
     <div class="top-icon-btn"><i class="fa-regular fa-bell"></i></div>
-    <div class="top-icon-btn"><i class="fa-regular fa-circle-user"></i></div>
   </div>
 </div>
 
-<div class="main-panel">
+<div class="main-panel" id="mainPanel">
   
   <div class="panel-header">
     <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
-    <div class="ph-desc" id="panelDesc">Bir konu seç, sorunu yaz, çözelim.</div>
+    <div class="ph-desc" id="panelDesc">Bir konu seç, hemen başlayalım.</div>
   </div>
 
-  <div class="results-stream" id="resultsStream">
-    </div>
-  <div class="loader" id="loader">Kaynanan inceliyor...</div>
+  <div class="results-stream" id="resultsStream"></div>
+  
+  <div class="loader-bubble" id="loader">
+    <i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...
+  </div>
 
+</div>
+
+<div class="fixed-bottom-area">
+  
   <div class="input-section">
     <div class="chips-row" id="chipsRow"></div>
 
@@ -261,209 +279,131 @@
       <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
     </div>
   </div>
-</div>
 
-<div class="mode-dock" id="modeDock">
-  </div>
+  <div class="mode-dock" id="modeDock"></div>
+</div>
 
 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
 
 <script>
-  // --- KONFİGÜRASYON ---
   const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
   
-  // Session ID oluştur (Tarayıcı yenilense de kalsın diye local storage)
+  // Session
   let sessionId = localStorage.getItem('caynana_sid');
   if (!sessionId) {
       sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
       localStorage.setItem('caynana_sid', sessionId);
   }
 
+  // Modes
   const MODES = {
-    shopping: {
-      title: "Alışveriş Uzmanınız CAYNANA",
-      desc: "En iyi fiyatı ve kaliteyi bulurum.",
-      icon: "fa-bag-shopping",
-      label: "Alışveriş",
-      placeholder: "Ürün adı veya linki yapıştır...",
-      chips: ["Airfryer önerisi", "iPhone 15 fiyatı", "Robot süpürge"]
-    },
-    health: {
-      title: "Sağlık Danışmanınız CAYNANA",
-      desc: "Şikayetini yaz (Acilse 112'yi ara).",
-      icon: "fa-user-doctor",
-      label: "Sağlık",
-      placeholder: "Şikayetini kısaca yaz...",
-      chips: ["Başım çok ağrıyor", "Grip oldum", "Vitamin önerisi"]
-    },
-    diet: {
-      title: "Diyet Uzmanınız CAYNANA",
-      desc: "Sağlıklı yaşam ve beslenme planı.",
-      icon: "fa-apple-whole",
-      label: "Diyet",
-      placeholder: "Hedefini yaz: Kilo ver/al...",
-      chips: ["Kilo vermek istiyorum", "Göbek eriten diyet", "Kalori hesabı"]
-    },
-    food: {
-      title: "Yemek Uzmanınız CAYNANA",
-      desc: "Ne pişirsem ya da nerede yesem?",
-      icon: "fa-utensils",
-      label: "Yemek",
-      placeholder: "Malzemeleri yaz, tarif vereyim...",
-      chips: ["Akşama ne pişirsem?", "Kolay tatlı tarifi", "En yakın pizzacı"]
-    },
-    translator: {
-      title: "Çevirmeniniz CAYNANA",
-      desc: "Her dili anlarım, sana tercüme ederim.",
-      icon: "fa-language",
-      label: "Çeviri",
-      placeholder: "Metni yapıştır veya yaz...",
-      chips: ["İngilizceye çevir", "Almanca nasılsın de", "Fransızca seni seviyorum"]
-    },
-    teacher: {
-      title: "Öğretmeniniz CAYNANA",
-      desc: "Bilmeyen kalmasın, her şeyi anlatırım.",
-      icon: "fa-chalkboard-user",
-      label: "Eğitim",
-      placeholder: "Hangi konuyu öğrenmek istersin?",
-      chips: ["Matematik sorusu", "Tarih anlat", "İngilizce gramer"]
-    },
-    economist: {
-      title: "Ekonomist CAYNANA",
-      desc: "Paranı yönet, yatırımını planla.",
-      icon: "fa-chart-line",
-      label: "Ekonomi",
-      placeholder: "Sorunu yaz: Yatırım, bütçe...",
-      chips: ["Dolar ne olur?", "Altın alınır mı?", "Bütçe planlama"]
-    },
-    lawyer: {
-      title: "Hukuk Danışmanı CAYNANA",
-      desc: "Haklarını öğren (Bilgi amaçlıdır).",
-      icon: "fa-scale-balanced",
-      label: "Avukat",
-      placeholder: "Olayı kısaca özetle...",
-      chips: ["Kiracı hakları", "İşe iade davası", "Tüketici hakem heyeti"]
-    },
-    future: {
-      title: "Gelecek Yorumcusu CAYNANA",
-      desc: "Fal, Tarot, Burç yorumları.",
-      icon: "fa-wand-magic-sparkles",
-      label: "Gelecek",
-      placeholder: "Niyetini yaz veya fotoğraf yükle...",
-      chips: ["Kahve falı (Fincan çek)", "3 Kart Tarot", "Günlük Burç"]
-    }
+    shopping: { icon: "fa-bag-shopping", label: "Alışveriş", title: "Alışveriş Uzmanı", desc: "En iyi fiyatı bulurum.", chips: ["Airfryer", "iPhone 15", "Robot Süpürge"] },
+    health: { icon: "fa-user-doctor", label: "Sağlık", title: "Sağlık Danışmanı", desc: "Şikayetini yaz (Acilse 112).", chips: ["Başım ağrıyor", "Grip oldum", "Vitamin önerisi"] },
+    diet: { icon: "fa-apple-whole", label: "Diyet", title: "Diyetisyen", desc: "Beslenme planı yapalım.", chips: ["Kilo vermek istiyorum", "Kalori hesabı"] },
+    food: { icon: "fa-utensils", label: "Yemek", title: "Yemek Gurmesi", desc: "Ne yesek, ne pişirsek?", chips: ["Akşama ne pişirsem?", "En yakın pizzacı"] },
+    teacher: { icon: "fa-chalkboard-user", label: "Eğitim", title: "Öğretmen", desc: "Her konuyu anlatırım.", chips: ["Matematik sorusu", "İngilizce gramer"] },
+    translator: { icon: "fa-language", label: "Çeviri", title: "Çevirmen", desc: "Dili seç, çevireyim.", chips: ["İngilizceye çevir", "Almanca nasılsın de"] },
+    lawyer: { icon: "fa-scale-balanced", label: "Hukuk", title: "Hukukçu", desc: "Haklarını öğren (Bilgi amaçlı).", chips: ["Kiracı hakları", "İşe iade"] },
+    life: { icon: "fa-heart", label: "Yaşam", title: "Yaşam Koçu", desc: "Dertleşelim, plan yapalım.", chips: ["Canım sıkkın", "Motivasyon lazım"] },
+    future: { icon: "fa-wand-magic-sparkles", label: "Fal", title: "Falcı Bacı", desc: "Geleceği yorumlayalım.", chips: ["Kahve Falı (Foto)", "Tarot", "Burç"] }
   };
 
-  let currentMode = "shopping"; // Varsayılan mod (veya 'life' yapabilirsin)
+  let currentMode = "life"; // Default: Yaşam Koçu
   let currentImg = null;
   let currentAudio = null;
 
-  // --- UI ELEMENTLERİ ---
-  const panelTitle = document.getElementById('panelTitle');
-  const panelDesc = document.getElementById('panelDesc');
+  // UI
   const resultsStream = document.getElementById('resultsStream');
-  const chipsRow = document.getElementById('chipsRow');
   const mainInput = document.getElementById('mainInput');
-  const modeDock = document.getElementById('modeDock');
   const loader = document.getElementById('loader');
+  const mainPanel = document.getElementById('mainPanel');
 
-  // --- BAŞLATMA ---
   function init() {
     renderDock();
-    switchMode('shopping'); // Başlangıç modu
-    addMsg("Hoş geldin evladım. Bir uzman seç, hemen başlayalım.", 'ai');
+    switchMode('life'); 
+    addMsg("Hoş geldin evladım. Bir konu seç, dertleşelim.", 'ai');
   }
 
-  // --- MOD DEĞİŞTİRME ---
   function renderDock() {
-    modeDock.innerHTML = '';
+    const dock = document.getElementById('modeDock');
+    dock.innerHTML = '';
     Object.keys(MODES).forEach(key => {
-      const mode = MODES[key];
-      const btn = document.createElement('div');
-      btn.className = `dock-item ${key === currentMode ? 'active' : ''}`;
-      btn.onclick = () => switchMode(key);
-      btn.innerHTML = `<i class="fa-solid ${mode.icon}"></i><span>${mode.label}</span>`;
-      modeDock.appendChild(btn);
+      const m = MODES[key];
+      const div = document.createElement('div');
+      div.className = `dock-item ${key === currentMode ? 'active' : ''}`;
+      div.onclick = () => switchMode(key);
+      div.innerHTML = `<i class="fa-solid ${m.icon}"></i><span>${m.label}</span>`;
+      dock.appendChild(div);
     });
   }
 
   function switchMode(key) {
     currentMode = key;
-    const conf = MODES[key];
+    const m = MODES[key];
     
-    // Header güncelle
-    panelTitle.innerText = conf.title;
-    panelDesc.innerText = conf.desc;
+    document.getElementById('panelTitle').innerText = m.title;
+    document.getElementById('panelDesc').innerText = m.desc;
     
-    // Input güncelle
-    mainInput.placeholder = conf.placeholder;
-    mainInput.value = '';
-    
-    // Chips güncelle
+    const chipsRow = document.getElementById('chipsRow');
     chipsRow.innerHTML = '';
-    conf.chips.forEach(txt => {
-      const c = document.createElement('div');
-      c.className = 'chip';
-      c.innerText = txt;
-      c.onclick = () => { mainInput.value = txt; sendMessage(); };
-      chipsRow.appendChild(c);
+    m.chips.forEach(t => {
+        const c = document.createElement('div');
+        c.className = 'chip';
+        c.innerText = t;
+        c.onclick = () => { mainInput.value = t; sendMessage(); };
+        chipsRow.appendChild(c);
     });
 
-    // Dock aktif durumu güncelle
-    document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-    // Basit index bulma yerine text kontrolü veya id ile yapılabilir ama
-    // yeniden render daha temiz:
-    renderDock();
+    renderDock(); // Update active state
+    // Opsiyonel: Ekranı temizle
+    // resultsStream.innerHTML = '';
+    // addMsg(`${m.title} moduna geçildi.`, 'ai');
   }
 
-  // --- MESAJLAŞMA ---
   async function sendMessage() {
     const txt = mainInput.value.trim();
-    if (!txt && !currentImg) return;
+    if(!txt && !currentImg) return;
 
-    // Kullanıcı mesajı
     addMsg(txt, 'user', currentImg);
-    
     mainInput.value = '';
-    const imgData = currentImg; // cache
-    currentImg = null; // reset
+    const imgData = currentImg;
+    currentImg = null;
     document.getElementById('fileInput').value = '';
 
-    // Yükleniyor
     loader.style.display = 'block';
-    resultsStream.scrollTop = resultsStream.scrollHeight;
+    scrollToBottom();
 
-    // API Payload (Zorunlu alanlar eklendi)
     const payload = {
-      message: txt || "Dosya gönderildi",
-      image: imgData,
-      mode: currentMode, // KRİTİK: Modu gönderiyoruz
-      session_id: sessionId, // KRİTİK: Session
-      user: { city: 'İstanbul', gender: 'neutral' }
+        message: txt || "Dosya gönderildi",
+        image: imgData,
+        mode: currentMode,
+        session_id: sessionId,
+        user: { city: 'İstanbul', gender: 'neutral' }
     };
 
     try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-      
-      loader.style.display = 'none';
-      
-      const aiText = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
-      addMsg(aiText, 'ai');
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        loader.style.display = 'none';
+        const aiTxt = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
+        
+        // AI Cevabı
+        const aiRow = addMsg(aiTxt, 'ai');
 
-      // Kartlar varsa (Sadece Shopping/Food gibi modlarda)
-      if (data.data && Array.isArray(data.data)) {
-        renderCards(data.data);
-      }
+        // Kartlar (Sadece bazı modlarda)
+        if(data.data && Array.isArray(data.data) && (currentMode === 'shopping' || currentMode === 'food')) {
+            renderCards(data.data, aiRow);
+        }
 
-    } catch (e) {
-      loader.style.display = 'none';
-      addMsg("Bağlantı hatası oluştu evladım.", 'ai');
+    } catch(e) {
+        loader.style.display = 'none';
+        addMsg("Bağlantı koptu evladım.", 'ai');
     }
   }
 
@@ -474,60 +414,73 @@
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     
-    if (imgBase64) {
-      const img = document.createElement('img');
-      img.src = imgBase64;
-      img.style.maxWidth = '100%';
-      img.style.borderRadius = '10px';
-      img.style.marginBottom = '8px';
-      img.style.display = 'block';
-      bubble.appendChild(img);
+    if(imgBase64) {
+        const img = document.createElement('img');
+        img.src = imgBase64;
+        img.style.maxWidth = '100%';
+        img.style.borderRadius = '10px';
+        img.style.marginBottom = '8px';
+        img.style.display = 'block';
+        bubble.appendChild(img);
     }
     
     const span = document.createElement('span');
     span.innerHTML = text.replace(/\n/g, '<br>');
     bubble.appendChild(span);
-    
-    // AI ise ses butonu
-    if (type === 'ai') {
+
+    if(type === 'ai') {
         const btn = document.createElement('button');
         btn.className = 'audio-play';
         btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+        // Temizle
         const safeTxt = text.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
         btn.onclick = () => playVoice(btn, safeTxt);
-        bubble.appendChild(btn); // Balonun içine koydum daha derli toplu olsun
+        bubble.appendChild(btn);
     }
 
     row.appendChild(bubble);
-    resultsStream.appendChild(row);
-    resultsStream.scrollTop = resultsStream.scrollHeight;
+    // Loader'dan önceye ekle
+    resultsStream.insertBefore(row, loader); 
+    // Veya direkt appendChild yapıp loader'ı en alta alabiliriz
+    // resultsStream.appendChild(row);
+    
+    scrollToBottom();
+    return row;
   }
 
-  function renderCards(cards) {
+  function renderCards(cards, parentRow) {
     const scroll = document.createElement('div');
     scroll.className = 'cards-scroll';
     
     cards.forEach(c => {
-      const a = document.createElement('a');
-      a.className = 'card';
-      a.href = c.url || '#';
-      a.target = '_blank';
-      
-      const img = c.image ? `<img src="${c.image}">` : '<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#ccc; margin-bottom:8px;"><i class="fa-solid fa-image" style="font-size:30px;"></i></div>';
-      
-      a.innerHTML = `
-        ${img}
-        <div class="card-title">${c.title || 'Ürün'}</div>
-        <div class="card-price">${c.price || c.desc || ''}</div>
-      `;
-      scroll.appendChild(a);
+        const a = document.createElement('a');
+        a.className = 'card';
+        a.href = c.url || '#';
+        a.target = '_blank';
+        
+        const img = c.image ? `<img src="${c.image}">` : '<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:8px; font-size:30px; color:#ccc;"><i class="fa-solid fa-image"></i></div>';
+        
+        a.innerHTML = `
+            ${img}
+            <div class="card-title">${c.title}</div>
+            <div class="card-price">${c.price || c.desc || ''}</div>
+        `;
+        scroll.appendChild(a);
     });
     
-    resultsStream.appendChild(scroll);
-    resultsStream.scrollTop = resultsStream.scrollHeight;
+    // Mesajdan sonra ekle
+    resultsStream.insertBefore(scroll, loader);
+    scrollToBottom();
   }
 
-  // --- SES, KAMERA, MİKROFON ---
+  function scrollToBottom() {
+    // Mobilde klavye açılınca scroll sorununu çözmek için biraz gecikmeli
+    setTimeout(() => {
+        mainPanel.scrollTop = mainPanel.scrollHeight;
+    }, 100);
+  }
+
+  // --- SES / KAMERA / MİKROFON ---
   function triggerCam() { document.getElementById('fileInput').click(); }
   
   function handleFile(file) {
@@ -535,25 +488,24 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       currentImg = e.target.result;
-      // Otomatik gönderim yerine kullanıcı görsün
-      mainInput.value = "Fotoğraf eklendi. (Göndermek için bas)";
+      mainInput.value = "Fotoğraf eklendi. (Gönder)";
       mainInput.focus();
     };
     reader.readAsDataURL(file);
   }
 
   function triggerMic() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SpeechRecognition) return alert("Mikrofon yok.");
-    const rec = new SpeechRecognition();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return alert("Mikrofon yok.");
+    const rec = new SR();
     rec.lang = 'tr-TR';
     const btn = document.getElementById('micBtn');
     
     rec.onstart = () => { btn.classList.add('active'); mainInput.placeholder = "Dinliyorum..."; };
     rec.onend = () => { btn.classList.remove('active'); mainInput.placeholder = "Yaz..."; };
     rec.onresult = (e) => {
-      mainInput.value = e.results[0][0].transcript;
-      sendMessage();
+        mainInput.value = e.results[0][0].transcript;
+        sendMessage();
     };
     rec.start();
   }
@@ -563,25 +515,23 @@
     
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     try {
-      const res = await fetch(SPEAK_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({text: text})
-      });
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      currentAudio = new Audio(url);
-      currentAudio.onended = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; };
-      await currentAudio.play();
-      btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+        const res = await fetch(SPEAK_URL, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: text})
+        });
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+        currentAudio.onended = () => { btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; };
+        await currentAudio.play();
+        btn.innerHTML='<i class="fa-solid fa-stop"></i>';
     } catch(e) {
-      btn.innerHTML = '!';
+        btn.innerHTML='!';
     }
   }
 
-  // Start
   init();
-
 </script>
 
 </body>
