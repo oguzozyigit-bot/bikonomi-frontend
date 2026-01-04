@@ -4,748 +4,500 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Karar Danışmanım</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-
-  <!-- CSP (tight but workable for this single-file app) -->
-  <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self' https://bikonomi-api-1.onrender.com; connect-src 'self' https://bikonomi-api-1.onrender.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline';">
-
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://bikonomi-api-1.onrender.com; connect-src 'self' https://bikonomi-api-1.onrender.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline';">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#10B981">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9386/9386895.png">
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root {
-      --bg-body: #F7F9FC;
-      --text-main: #1A1A1A;
-      --text-muted: #666666;
-      --primary: #10B981;
-      --primary-dark: #059669;
-      --border: #E2E8F0;
-      --good: #10B981;
-      --warn: #F59E0B;
-      --bad: #EF4444;
-    }
-
+    :root { --bg-body: #F7F9FC; --text-main: #1A1A1A; --primary: #10B981; --border: #E2E8F0; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-body);
-      color: var(--text-main);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    /* ONBOARDING MODAL */
-    #onboardingModal {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.95); z-index: 9999;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(5px);
-    }
-    .modal-content {
-      background: white; width: 90%; max-width: 400px; padding: 25px;
-      border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    }
-    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; color: #111; }
-    .modal-sub { font-size: 14px; color: #666; margin-bottom: 20px; }
-    .form-group { margin-bottom: 15px; text-align: left; }
-    .form-label { font-size: 12px; font-weight: 700; color: #444; margin-bottom: 5px; display: block; }
-    .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; font-size: 16px; outline: none; }
-    .form-input:focus { border-color: var(--primary); }
-    .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .gender-btn {
-      padding: 12px; border: 2px solid var(--border); border-radius: 12px;
-      background: white; font-size: 14px; font-weight: 600; cursor: pointer; color: #666;
-      user-select: none;
-    }
-    .gender-btn.selected { border-color: var(--primary); background: #ECFDF5; color: var(--primary); }
-    .save-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    .save-btn:active { transform: scale(.99); }
+    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+    
+    /* MODAL */
+    #onboardingModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
+    .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .gender-btn { padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: white; cursor: pointer; }
+    .gender-btn.selected { border-color: var(--primary); background: #ECFDF5; color: var(--primary); font-weight: bold; }
+    .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 15px; font-size: 16px; }
+    .save-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
     /* HEADER */
-    header { padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; position: sticky; top: 0; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-    .logo-container { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-    .logo-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
-    .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #111; }
-    .header-actions { display: flex; gap: 5px; }
-    .header-btn { background: #ECFDF5; border: 1px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; transition: 0.2s; }
-    .header-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
-
-    /* PROFILE BAR */
-    .profile-bar { display: flex; justify-content: space-between; align-items: center; background: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #475569; border: 1px solid #E2E8F0; }
-    .profile-edit { color: var(--primary); cursor: pointer; text-decoration: underline; }
-
-    /* MODE SELECTOR */
-    .mode-selector-wrap { overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
-    .mode-selector-wrap::-webkit-scrollbar { display: none; }
-    .mode-selector { display: flex; gap: 6px; min-width: max-content; padding-bottom: 2px; }
-    .mode-btn { border: 1px solid var(--border); background: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+    header { padding: 15px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .logo-text { font-weight: 800; font-size: 20px; }
+    .header-btn { background: #ECFDF5; border: none; width: 36px; height: 36px; border-radius: 50%; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
+    .profile-bar { background: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #475569; display: flex; justify-content: space-between; margin-bottom: 10px; }
+    
+    /* MODES */
+    .mode-selector-wrap { overflow-x: auto; scrollbar-width: none; }
+    .mode-selector { display: flex; gap: 6px; padding-bottom: 2px; min-width: max-content; }
+    .mode-btn { border: 1px solid var(--border); background: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; white-space: nowrap; transition: 0.2s; }
     .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     /* MAIN */
     main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; }
-    .hero-title { text-align: center; font-size: 28px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; color: #111; margin-top: 10px; }
-    .hero-title span { color: var(--primary); }
-    .hero-sub { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 20px; line-height: 1.5; }
-
-    .search-container { position: relative; width: 100%; margin-bottom: 15px; }
-    .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px; height: 56px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-    #q { flex: 1; border: none; outline: none; font-size: 16px; height: 100%; background: transparent; padding-left: 10px; }
-    .action-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: #666; font-size: 18px; cursor: pointer; }
-    .action-btn:active { transform: scale(.98); }
+    .search-container { position: relative; margin-bottom: 15px; margin-top: 20px; }
+    .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px; height: 56px; }
+    #q { flex: 1; border: none; outline: none; font-size: 16px; padding-left: 10px; }
+    .action-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: #666; cursor: pointer; font-size: 18px; }
     .search-btn { background: var(--primary); color: white; }
-
-    /* CHIPS */
     .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 20px; scrollbar-width: none; }
-    .chips-container::-webkit-scrollbar { display:none; }
-    .chip { background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #555; white-space: nowrap; cursor: pointer; user-select:none; }
-    .chip:active { transform: scale(.98); }
+    .chip { background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
-    /* IMAGE PREVIEW */
-    #imgWrap { display: none; margin-bottom: 20px; position: relative; border-radius: 16px; overflow: hidden; border: 2px dashed var(--primary); text-align: center; background: white; }
-    #imgPreview { width: 100%; display: block; max-height: 300px; object-fit: contain; }
-    .img-cancel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
-
-    /* SPONSOR CARD */
-    .sponsor-card {
-      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-      border-radius: 16px; padding: 20px; color: white;
-      display: flex; justify-content: space-between; align-items: center;
-      cursor: pointer; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
-      margin-top: 10px;
-    }
-    .sponsor-card:active { transform: scale(0.98); }
-
-    /* LOADING & RESULT */
-    .loader-box { text-align: center; padding: 50px 0; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
+    /* RESULT */
     .result-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .result-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 15px; }
-    .result-title { font-size: 18px; font-weight: 800; color: #111; line-height: 1.3; }
-    .speech-toggle { background: #F3F4F6; padding: 6px 12px; border-radius: 15px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; color: #444; white-space: nowrap; }
-    .speech-toggle.active { background: #DCFCE7; color: #166534; }
-    .result-text { font-size: 15px; line-height: 1.6; color: #333; white-space: pre-line; margin-bottom: 15px; }
+    .result-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
+    .result-title { font-size: 18px; font-weight: 800; }
+    .result-text { font-size: 15px; line-height: 1.6; color: #333; margin-bottom: 15px; }
 
     /* SCORE */
-    .score-container { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-    .score-gauge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .score-inner { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
-    .score-text-area { flex: 1; }
-    .score-verdict { font-size: 16px; font-weight: 800; }
+    .score-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+    .score-gauge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; background: #eee; }
+    .score-verdict { font-weight: 800; font-size: 16px; }
 
-    /* LISTS + WARN */
+    /* LISTS */
     .list-item { font-size: 13px; margin-bottom: 6px; padding-left: 15px; position: relative; }
     .list-item::before { content: '•'; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
-    .warn-box { background: #FFF7ED; border: 1px solid #FFEDD5; color: #C2410C; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-top: 10px; }
 
     /* RECS */
-    .recommendations-title { font-weight:800; letter-spacing:.5px; margin: 20px 0 10px; color:#111; font-size: 14px; text-transform: uppercase; text-align: center; }
-    .rec-card { display: flex; align-items: center; background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-decoration: none; color: inherit; border: 1px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
-    .rec-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
-    .theme-gold::before { background: #FFD700; } .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
-    .theme-silver::before { background: #A0AEC0; } .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
-    .theme-default::before { background: var(--primary); } .theme-default .award-badge { background: #D1FAE5; color: #065F46; }
-    .theme-bad::before { background: #EF4444; } .theme-bad .award-badge { background: #FEE2E2; color: #991B1B; }
+    .rec-card { display: flex; align-items: center; background: white; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+    .rec-content { flex: 1; margin-left: 10px; }
+    .rec-name { font-weight: 700; font-size: 14px; }
+    .rec-reason { font-size: 11px; color: #666; }
+    .award-badge { font-size: 10px; font-weight: 800; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+    .theme-gold { border-left: 4px solid #FFD700; }
+    .theme-default { border-left: 4px solid #10B981; }
 
-    .rec-content { flex: 1; }
-    .award-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
-    .rec-name { font-weight: 700; font-size: 14px; line-height: 1.3; margin-bottom: 4px; color: #111; }
-    .rec-reason { font-size: 11px; color: #666; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .rec-arrow { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; background: #F3F4F6; border-radius: 50%; margin-left: 10px; flex-shrink: 0; }
+    /* COACH PLAN CARD */
+    .coach-card { background: #F0FDF9; border: 1px solid #CCFBF1; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+    .coach-section { margin-bottom: 15px; }
+    .coach-title { font-size: 12px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 5px; }
+    .coach-text { font-size: 14px; line-height: 1.5; color: #064E3B; }
+    .boost-box { background: white; border-radius: 12px; padding: 15px; text-align: center; font-weight: 700; color: #059669; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-    /* WHATSAPP FLOAT */
-    .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; text-decoration: none; }
+    /* LOADING */
+    #scene-loading { text-align: center; padding-top: 50px; }
+    .spinner { width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .scene { display: none; }
     .scene.active { display: block; }
-
-    /* install button override (keeps your look) */
-    #installBtn { display: none; background: #E6FFFA; color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; align-items: center; gap: 5px; }
-
-    footer { padding: 30px 20px; text-align: center; font-size: 12px; color: #888; background: #F1F5F9; margin-top: auto; }
-    .footer-links { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; }
-    .footer-links a { color:#64748B; text-decoration:none; font-weight:600; font-size:12px; }
-    .footer-links a:hover { text-decoration:underline; }
+    #installBtn { display: none; }
+    #imgWrap { display:none; text-align:center; margin-bottom:15px; } #imgPreview { max-height:150px; border-radius:10px; }
+    footer { text-align: center; padding: 30px; font-size: 12px; color: #888; background: #F1F5F9; margin-top: auto; }
+    .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
   </style>
 </head>
-
 <body>
 
 <div id="onboardingModal" style="display:none;">
-  <div class="modal-content">
-    <div class="modal-title">Hoş Geldin Evladım!</div>
-    <div class="modal-sub">Sana doğru hitap edebilmem ve şehrine özel öneriler verebilmem için seni tanımam lazım.</div>
-
-    <div class="form-group">
-      <label class="form-label">Sana nasıl hitap edeyim?</label>
-      <div class="gender-grid">
-        <div class="gender-btn" id="btn-female" onclick="selectGender('female')">👩 Kızım / Canım</div>
-        <div class="gender-btn" id="btn-male" onclick="selectGender('male')">👨 Oğlum / Paşam</div>
-      </div>
+    <div class="modal-content">
+        <div class="modal-title">Hoş Geldin Evladım!</div>
+        <div class="gender-grid">
+            <div class="gender-btn" id="btn-female" onclick="selectGender('female')">👩 Kızım</div>
+            <div class="gender-btn" id="btn-male" onclick="selectGender('male')">👨 Oğlum</div>
+        </div>
+        <input type="text" id="cityInput" class="form-input" placeholder="Hangi Şehir? (Örn: İstanbul)">
+        <button class="save-btn" onclick="saveProfile()">Kaydet ve Başla</button>
     </div>
-
-    <div class="form-group">
-      <label class="form-label">Hangi şehirdesin?</label>
-      <input type="text" id="cityInput" class="form-input" placeholder="Örn: İstanbul, Düzce...">
-    </div>
-
-    <button class="save-btn" onclick="saveProfile()">Kaydet ve Başla</button>
-  </div>
 </div>
 
 <header>
-  <div class="header-top">
-    <div class="logo-container" onclick="window.location.reload()">
-      <div class="logo-icon">C</div>
-      <div class="logo-text">CAYNANA</div>
+    <div class="header-top">
+        <div class="logo-text" onclick="location.reload()">CAYNANA</div>
+        <div class="header-actions">
+            <button class="header-btn" onclick="resetAll()"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="header-btn" onclick="openProfile()"><i class="fa-solid fa-user"></i></button>
+            <button id="installBtn" class="header-btn" onclick="installPWA()"><i class="fa-solid fa-download"></i></button>
+        </div>
     </div>
-
-    <div class="header-actions">
-      <button class="header-btn" onclick="resetAll()" title="Yeni Arama"><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button class="header-btn" onclick="fillSearch('Caynana kendini tanıt')" title="Ben Kimim?"><i class="fa-solid fa-user-nurse"></i></button>
-      <button class="header-btn" onclick="openProfile()" title="Profil"><i class="fa-solid fa-user-gear"></i></button>
-      <button id="installBtn" onclick="installPWA()" class="header-btn" title="Uygulamayı Yükle" style="display:none;"><i class="fa-solid fa-download"></i></button>
+    <div class="profile-bar" id="profileBar" style="display:none;">
+        <span id="profileText">-</span>
+        <span class="profile-edit" onclick="openProfile()">Düzenle</span>
     </div>
-  </div>
-
-  <div class="profile-bar" id="profileBar" style="display:none;">
-    <span id="profileText">Misafir</span>
-    <span class="profile-edit" onclick="openProfile()">Düzenle</span>
-  </div>
-
-  <div class="mode-selector-wrap">
-    <div class="mode-selector">
-      <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')"><i class="fa-solid fa-bag-shopping"></i> Alışveriş</button>
-      <button class="mode-btn" id="mode-food" onclick="setMode('food')"><i class="fa-solid fa-utensils"></i> Yemek</button>
-      <button class="mode-btn" id="mode-travel" onclick="setMode('travel')"><i class="fa-solid fa-plane"></i> Tatil</button>
-      <button class="mode-btn" id="mode-cinema" onclick="setMode('cinema')"><i class="fa-solid fa-film"></i> Sinema</button>
-      <button class="mode-btn" id="mode-pharmacy" onclick="setMode('pharmacy')"><i class="fa-solid fa-pills"></i> Eczane</button>
-      <button class="mode-btn" id="mode-life" onclick="setMode('life')"><i class="fa-solid fa-cloud-sun"></i> Yaşam</button>
+    <div class="mode-selector-wrap">
+        <div class="mode-selector">
+            <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')">Alışveriş</button>
+            <button class="mode-btn" id="mode-food" onclick="setMode('food')">Yemek</button>
+            <button class="mode-btn" id="mode-pharmacy" onclick="setMode('pharmacy')">Eczane</button>
+            <button class="mode-btn" id="mode-travel" onclick="setMode('travel')">Tatil</button>
+            <button class="mode-btn" id="mode-cinema" onclick="setMode('cinema')">Sinema</button>
+            <button class="mode-btn" id="mode-life" onclick="setMode('life')">Yaşam</button>
+        </div>
     </div>
-  </div>
 </header>
 
 <main>
-  <section id="scene-home" class="scene active">
-    <div class="hero-title">Karar <br><span>Danışmanım.</span></div>
-    <div class="hero-sub">Alışveriş, mekan, plan... Kaynanaya danış, pişman olma.</div>
+    <section id="scene-home" class="scene active">
+        <div class="search-container">
+            <div class="hero-title">Karar <span>Danışmanım</span></div>
+            <div class="hero-sub">Alışveriş, mekan, eczane... Kaynanana sor.</div>
+            
+            <div id="imgWrap">
+                <img id="imgPreview" src="">
+                <button class="action-btn" onclick="clearImage()">✕</button>
+            </div>
 
-    <div id="imgWrap">
-      <img id="imgPreview" src="" alt="Seçilen görsel">
-      <button class="img-cancel" type="button" onclick="clearImage()" aria-label="Görseli kaldır">✕</button>
-    </div>
+            <form id="searchForm" onsubmit="event.preventDefault(); start();">
+                <div class="search-bar">
+                    <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
+                    <input id="q" type="text" placeholder="Ne arıyorsun evladım?" autocomplete="off">
+                    <button type="button" class="action-btn" id="camBtn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
+                    <button type="button" class="action-btn search-btn" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+                <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+            </form>
+            <div class="chips-container" id="chipContainer"></div>
+        </div>
+    </section>
 
-    <form id="searchForm" class="search-container" onsubmit="event.preventDefault(); start();">
-      <div class="search-bar">
-        <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
-        <input id="q" type="text" placeholder="Ne danışmak istersin?" autocomplete="off">
-        <button type="button" class="action-btn" id="camBtn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
-        <button type="button" class="action-btn search-btn" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
-      </div>
-      <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
-    </form>
+    <section id="scene-loading" class="scene">
+        <div class="loader-box">
+            <div class="spinner"></div>
+            <h3>Araştırıyorum...</h3>
+            <p id="loadingSub">Bekle evladım...</p>
+            <button onclick="resetAll()" style="margin-top:20px; border:1px solid #ccc; background:white; padding:5px 10px; border-radius:10px;">İptal</button>
+        </div>
+    </section>
 
-    <div class="chips-container" id="chipContainer"></div>
+    <section id="scene-results" class="scene">
+        <div class="result-box">
+            <div class="result-header">
+                <div class="result-title" id="finalHeadline">Sonuç</div>
+                <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()">Dinle</button>
+            </div>
+            
+            <div id="scoreArea" class="score-container" style="display:none;">
+                <div class="score-gauge" id="scoreGauge"><span id="scoreVal"></span></div>
+                <div class="score-text-area"><div class="score-verdict" id="scoreVerdict"></div></div>
+            </div>
 
-    <div class="sponsor-card" onclick="openContent('sponsor')">
-      <div>
-        <div style="font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px;">SPONSORLU</div>
-        <div style="font-size: 18px; font-weight: 800; line-height: 1.2;">Günün Fırsatları<br>Seni Bekliyor!</div>
-      </div>
-      <div style="font-size: 30px; opacity: 0.9;"><i class="fa-solid fa-bag-shopping"></i></div>
-    </div>
-  </section>
+            <div id="finalText" class="result-text"></div>
+            
+            <div id="listsWrap"></div>
 
-  <section id="scene-loading" class="scene">
-    <div class="loader-box">
-      <div class="spinner"></div>
-      <h3>Caynana Araştırıyor...</h3>
-      <p id="loadingSub">Başlıyor...</p>
-      <button onclick="resetAll()" style="background:none; border:1px solid #ddd; padding:5px 15px; border-radius:15px; margin-top:20px;">İptal</button>
-    </div>
-  </section>
+            <div id="coachWrap" class="coach-card" style="display:none;">
+                <div class="coach-section">
+                    <div class="coach-title">DURUM ÖZETİ</div>
+                    <div class="coach-text" id="coachSummary"></div>
+                </div>
+                <div class="coach-section">
+                    <div class="coach-title">KENDİNE SORMAN GEREKENLER</div>
+                    <div id="coachQuestions"></div>
+                </div>
+                <div class="coach-section">
+                    <div class="coach-title">BUGÜNKÜ ADIMIN</div>
+                    <div class="coach-text" id="coachToday"></div>
+                </div>
+                <div class="boost-box" id="coachBoost"></div>
+            </div>
 
-  <section id="scene-results" class="scene">
-    <div class="result-box">
-      <div class="result-header">
-        <div class="result-title" id="finalHeadline">Sonuç</div>
-        <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()"><i class="fa-solid fa-volume-high"></i> Dinle</button>
-      </div>
+            <div id="warnWrap" class="warn-box" style="display:none;"></div>
+        </div>
 
-      <div id="scoreArea" class="score-container" style="display:none;">
-        <div class="score-gauge" id="scoreGauge"><div class="score-inner" id="scoreVal">0</div></div>
-        <div class="score-text-area"><div class="score-verdict" id="scoreVerdict">-</div></div>
-      </div>
+        <h4 id="recTitle" style="margin:20px 0 10px; text-align:center; font-size:12px; color:#666;">ÖNERİLER</h4>
+        <div id="recommendationList"></div>
 
-      <div id="heroImgBox" style="text-align:center; margin-bottom:15px; display:none;">
-        <img id="heroImg" src="" style="max-height:150px; border-radius:10px;" alt="Görsel">
-      </div>
+        <button onclick="resetAll()" style="width:100%; padding:15px; background:white; border:1px solid #ddd; border-radius:12px; margin-top:20px;">Yeni Sorgu</button>
+    </section>
 
-      <div id="finalText" class="result-text"></div>
-
-      <div class="block-row" id="indicatorRow"></div>
-      <div id="listsWrap"></div>
-      <div id="warnWrap" style="display:none;" class="warn-box"></div>
-    </div>
-
-    <a id="waShareBtn" href="#" target="_blank"
-       style="display:none; width:100%; padding:12px; background:#25D366; color:white; border-radius:12px; text-align:center; text-decoration:none; font-weight:bold; margin-bottom:20px;">
-      <i class="fa-brands fa-whatsapp"></i> Paylaş
-    </a>
-
-    <div class="recommendations-title" id="recTitle">ÖNERİLER</div>
-    <div id="recommendationList"></div>
-
-    <button onclick="resetAll()" style="width:100%; padding:15px; background:white; border:1px solid #E5E7EB; border-radius:12px; color:#6B7280; font-weight:600; cursor:pointer; margin-top:20px;">
-      <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu Yap
-    </button>
-  </section>
-
-  <section id="scene-static" class="scene">
-    <div class="result-box">
-      <div class="result-header">
-        <div class="result-title" id="staticTitle">Bilgi</div>
-        <button onclick="showScene('scene-home')" style="background:#f1f3f4; border:none; width:30px; height:30px; border-radius:50%; font-weight:bold;">✕</button>
-      </div>
-      <div id="staticText" class="result-text" style="font-size:14px; line-height:1.6;"></div>
-      <button onclick="showScene('scene-home')" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:12px; margin-top:20px;">Kapat</button>
-    </div>
-  </section>
+    <section id="scene-static" class="scene">
+        <div class="result-box">
+            <div class="result-header">
+                <div class="result-title" id="staticTitle">Bilgi</div>
+                <button onclick="showScene('scene-home')" style="border:none; background:#eee; width:30px; height:30px; border-radius:50%;">✕</button>
+            </div>
+            <div id="staticText" class="result-text"></div>
+        </div>
+    </section>
 </main>
 
 <footer>
-  <div class="footer-links">
-    <a href="#" onclick="openContent('hakkimizda')">Hakkımızda</a>
-    <a href="#" onclick="openContent('anayasasi')">Anayasa</a>
-    <a href="#" onclick="openContent('sss')">SSS</a>
-    <a href="#" onclick="openContent('gizlilik')">Gizlilik</a>
-    <a href="#" onclick="openContent('sartlar')">Şartlar</a>
-    <a href="#" onclick="openContent('iletisim')">İletişim</a>
-  </div>
-  <div class="company-tag" style="margin-top:12px;">
-    <span>© 2026 CAYNANA.AI</span>
-  </div>
+    <div style="margin-top:10px;">© 2026 CAYNANA.AI</div>
 </footer>
 
-<a href="https://wa.me/?text=Caynana" target="_blank" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
+<a href="https://wa.me/" id="waShareBtn" target="_blank" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
 
 <script>
-  const API_BASE = "https://bikonomi-api-1.onrender.com";
+    const API_BASE = "https://bikonomi-api-1.onrender.com";
+    let session = { q: "", img: "", mode: "shopping", gender: "neutral", city: "" };
+    let currentAudio = null;
+    let audioText = "";
+    let deferredPrompt = null;
+    let loadingInterval = null;
 
-  // Globals
-  let session = { q: "", img: "", mode: "shopping", gender: "neutral", city: "" };
-  let currentAudio = null;
-  let audioText = "";
-  let deferredPrompt = null;
-  let loadingInterval = null;
+    const CONTENTS = { "hakkimizda": "<h3>Hakkımızda</h3><p>Caynana, yapay zeka destekli bir karar danışmanıdır.</p>" };
 
-  const CONTENTS = {
-    "hakkimizda": `<h3>1. CAYNANA nedir?</h3><p>CAYNANA, yapay zekâ destekli bir alışveriş ve karar danışmanıdır.</p><h3>2. Amacı Nedir?</h3><p>Seni hatalı kararlardan korumak.</p>`,
-    "anayasasi": `<h3>CAYNANA ANAYASASI</h3><p>1. Caynana asla yalan söylemez, dobra konuşur.</p><p>2. Seni gaza getirmez, frenler.</p><p>3. Ürün satmaya çalışmaz, paranı korur.</p><p>4. Her konuda bir fikri vardır.</p>`,
-    "sss": `<h3>SSS</h3><p><strong>Puan neden değişir?</strong><br>Yeni yorumlar geldikçe güncellenir.</p>`,
-    "gizlilik": `<h3>Gizlilik</h3><p>Verileriniz anonimdir ve cihazınızda saklanır.</p>`,
-    "sartlar": `<h3>Kullanım Şartları</h3><p>Tavsiye amaçlıdır, kesin yargı içermez.</p>`,
-    "iletisim": `<h3>İletişim</h3><p>info@italky.com</p>`,
-    "sponsor": `<h3>Sponsorluk</h3><p>Bu alan sponsorlu içerik gösterebilir. Sponsorlu içerikler açıkça işaretlenir.</p>`
-  };
-
-  // Theme helpers (award + score)
-  function getRecThemeByAward(award) {
-    const a = String(award || "").toLowerCase();
-
-    if (a.includes("care") || a.includes("avoid") || a.includes("be careful") || a.includes("dikkat") || a.includes("sakın") || a.includes("uzak")) {
-      return "theme-bad";
-    }
-    if (a.includes("strong") || a.includes("best") || a.includes("top") || a.includes("öner") || a.includes("tavsiye")) {
-      return "theme-gold";
-    }
-    if (a.includes("smart") || a.includes("choice") || a.includes("good") || a.includes("akıll") || a.includes("mantıkl") || a.includes("f/p") || a.includes("fiyat/performans")) {
-      return "theme-silver";
-    }
-    return "theme-default";
-  }
-
-  function getRecThemeByScore(scoreValue) {
-    const s = Number(scoreValue);
-    if (!Number.isFinite(s)) return null;
-
-    // score.value is expected like 0-100 (or percent). Keep simple:
-    if (s >= 80) return "theme-gold";
-    if (s >= 60) return "theme-silver";
-    if (s > 0 && s < 40) return "theme-bad";
-    return "theme-default";
-  }
-
-  function pickRecTheme(award, scoreValue) {
-    // Prefer award if meaningful; otherwise score
-    const byAward = getRecThemeByAward(award);
-    if (byAward && byAward !== "theme-default") return byAward;
-    const byScore = getRecThemeByScore(scoreValue);
-    return byScore || byAward || "theme-default";
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const qInput = document.getElementById("q");
-
-    // Speech stop
-    window.stopSpeech = function() {
-      const btn = document.getElementById("btnListen");
-      if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-      if (btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
-    };
-
-    // PWA install
-    window.installPWA = async function() {
-      if (!deferredPrompt) return alert("Yükleme hazır değil veya zaten yüklü.");
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      const btn = document.getElementById("installBtn");
-      if (btn) btn.style.display = "none";
-    };
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      const btn = document.getElementById('installBtn');
-      if (btn) btn.style.display = 'flex';
+    document.addEventListener('DOMContentLoaded', () => {
+        init();
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'flex'; });
     });
 
-    // ONBOARDING
     function init() {
-      const g = localStorage.getItem("caynana_gender");
-      const c = localStorage.getItem("caynana_city");
-      if (!g || !c) {
-        document.getElementById("onboardingModal").style.display = "flex";
-      } else {
-        session.gender = g;
-        session.city = c;
-        updateProfileBar();
-      }
-      setMode("shopping");
+        const g = localStorage.getItem("caynana_gender");
+        const c = localStorage.getItem("caynana_city");
+        if(!g || !c) document.getElementById("onboardingModal").style.display = "flex";
+        else { session.gender = g; session.city = c; updateProfileBar(); }
+        setMode("shopping");
     }
 
     let tempGender = "neutral";
     window.selectGender = function(g) {
-      tempGender = g;
-      document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
-      const el = document.getElementById("btn-" + g);
-      if (el) el.classList.add("selected");
-    };
+        tempGender = g;
+        document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
+        document.getElementById("btn-"+g).classList.add("selected");
+    }
 
     window.saveProfile = function() {
-      const city = document.getElementById("cityInput").value.trim();
-      if (!city) { alert("Lütfen şehrini yaz evladım."); return; }
-      localStorage.setItem("caynana_gender", tempGender);
-      localStorage.setItem("caynana_city", city);
-      session.gender = tempGender;
-      session.city = city;
-      document.getElementById("onboardingModal").style.display = "none";
-      updateProfileBar();
-    };
+        const city = document.getElementById("cityInput").value.trim();
+        if(!city) return alert("Şehir yaz evladım.");
+        localStorage.setItem("caynana_gender", tempGender);
+        localStorage.setItem("caynana_city", city);
+        session.gender = tempGender;
+        session.city = city;
+        document.getElementById("onboardingModal").style.display = "none";
+        updateProfileBar();
+    }
 
     function updateProfileBar() {
-      const gIcon = session.gender === "female" ? "👩 Kızım" : (session.gender === "male" ? "👨 Oğlum" : "🙂 Evladım");
-      document.getElementById("profileText").innerText = `${gIcon} | 📍 ${session.city}`;
-      document.getElementById("profileBar").style.display = "flex";
+        const icon = session.gender === "female" ? "👩" : (session.gender === "male" ? "👨" : "🙂");
+        document.getElementById("profileText").innerText = `${icon} | ${session.city}`;
+        document.getElementById("profileBar").style.display = "flex";
     }
 
-    window.openProfile = function() {
-      document.getElementById("onboardingModal").style.display = "flex";
-    };
+    window.openProfile = () => document.getElementById("onboardingModal").style.display = "flex";
 
-    // MODES
     window.setMode = function(mode) {
-      session.mode = mode;
-      document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-      const active = document.getElementById("mode-" + mode);
-      if (active) active.classList.add("active");
+        session.mode = mode;
+        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
+        document.getElementById("mode-"+mode).classList.add("active");
+        
+        const q = document.getElementById("q");
+        const c = document.getElementById("chipContainer");
+        const cam = document.getElementById("camBtn");
+        c.innerHTML = "";
 
-      const c = document.getElementById("chipContainer");
-      const camBtn = document.getElementById("camBtn");
-      c.innerHTML = "";
-
-      if (mode === "shopping") {
-        camBtn.style.display = "flex";
-        qInput.placeholder = "Ürün adı, linki veya sor...";
-        addChip("En iyi airfryer hangisi?", "fire");
-        addChip("Iphone 15 alınır mı?", "mobile");
-      } else {
-        camBtn.style.display = "none";
-
-        if (mode === "food") {
-          qInput.placeholder = `${session.city} içinde ne yemek istersin?`;
-          addChip("En iyi kahvaltı nerede?", "utensils");
-          addChip("Romantik akşam yemeği", "heart");
-        } else if (mode === "travel") {
-          qInput.placeholder = "Nereye gitmek istersin?";
-          addChip("Haftasonu gezilecek yerler", "car");
-          addChip("Vizesiz ülkeler", "passport");
-        } else if (mode === "pharmacy") {
-          qInput.placeholder = "Hangi ilçedesin?";
-          addChip(`${session.city} merkez nöbetçi eczane`, "pills");
-          addChip("En yakın eczane", "location-dot");
-        } else if (mode === "cinema") {
-          qInput.placeholder = "Hangi filmi merak ediyorsun?";
-          addChip("Vizyondaki filmler", "film");
+        if(mode === "shopping") {
+            cam.style.display = "block";
+            q.placeholder = "Ürün adı veya linki...";
+            addChip("Airfryer önerisi", "fire");
         } else {
-          qInput.placeholder = "Derdin ne yavrum?";
-          addChip("Bugün ne giysem?", "shirt");
-          addChip("Canım sıkılıyor", "face-meh");
+            cam.style.display = "none";
+            if(mode === "life") {
+                q.placeholder = "Derdin ne yavrum?";
+                addChip("Bugün motivasyona ihtiyacım var", "heart");
+            } else {
+                q.placeholder = "Ne arıyorsun?";
+            }
         }
-      }
-    };
+    }
 
     function addChip(txt, icon) {
-      const d = document.createElement("div");
-      d.className = "chip";
-      d.onclick = () => { qInput.value = txt; start(); };
-      d.innerHTML = `<i class="fa-solid fa-${icon}"></i> ${txt}`;
-      document.getElementById("chipContainer").appendChild(d);
+        const d = document.createElement("div");
+        d.className = "chip";
+        d.innerHTML = `<i class="fa-solid fa-${icon}"></i> ${txt}`;
+        d.onclick = () => { document.getElementById("q").value = txt; start(); };
+        document.getElementById("chipContainer").appendChild(d);
     }
 
-    // HELPERS
     window.resetAll = function() {
-      window.stopSpeech();
-      window.clearImage();
-      qInput.value = "";
-      clearInterval(loadingInterval);
-      document.getElementById("scoreArea").style.display = "none";
-      document.getElementById("warnWrap").style.display = "none";
-      document.getElementById("recommendationList").innerHTML = "";
-      document.getElementById("finalText").innerText = "";
-      audioText = "";
-      showScene("scene-home");
-    };
-
-    window.triggerFile = function() { document.getElementById("fileInput").click(); };
-
-    window.handleFile = function(file) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        session.img = e.target.result;
-        document.getElementById("imgPreview").src = session.img;
-        document.getElementById("imgWrap").style.display = "block";
-        qInput.placeholder = "Görsel eklendi, sorunu yaz...";
-      };
-      reader.readAsDataURL(file);
-    };
-
-    window.clearImage = function() {
-      session.img = "";
-      document.getElementById("fileInput").value = "";
-      document.getElementById("imgWrap").style.display = "none";
-      qInput.placeholder = (session.mode === "shopping") ? "Ürün adı, linki veya sor..." : "Bir şeyler sor...";
-    };
-
-    window.startVoice = function() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("Cihazınız sesli aramayı desteklemiyor.");
-      const rec = new SpeechRecognition();
-      rec.lang = 'tr-TR';
-      rec.start();
-      qInput.placeholder = "Dinliyorum...";
-      rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
-      rec.onend = () => { qInput.placeholder = (session.mode === "shopping") ? "Ürün adı, linki veya sor..." : "Bir şeyler sor..."; };
-    };
-
-    window.fillSearch = function(txt) { qInput.value = txt; start(); };
-
-    window.openContent = function(key) {
-      const content = CONTENTS[key] || "<p>İçerik bulunamadı.</p>";
-      let title = "Bilgi";
-      if (key === "hakkimizda") title = "Hakkımızda";
-      if (key === "anayasasi") title = "Anayasa";
-      if (key === "sss") title = "SSS";
-      if (key === "gizlilik") title = "Gizlilik";
-      if (key === "sartlar") title = "Şartlar";
-      if (key === "iletisim") title = "İletişim";
-      if (key === "sponsor") title = "Sponsorlu Alan";
-
-      document.getElementById("staticTitle").textContent = title;
-      document.getElementById("staticText").innerHTML = content;
-      showScene("scene-static");
-    };
-
-    window.showScene = function(id) {
-      window.stopSpeech();
-      document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
-      document.getElementById(id).classList.add("active");
-      window.scrollTo(0, 0);
-    };
-
-    // MAIN ANALYZE
-    window.start = async function() {
-      const q = qInput.value.trim();
-      if (!q && !session.img) return alert("Bir şey sor evladım.");
-
-      showScene("scene-loading");
-
-      const texts = ["Caynana.AI araştırıyor...", "Detaylara bakılıyor...", "Tecrübeler konuşuyor...", "Analiz yapılıyor..."];
-      let i = 0;
-      const sub = document.getElementById("loadingSub");
-      sub.innerText = texts[0];
-      clearInterval(loadingInterval);
-      loadingInterval = setInterval(() => { i = (i + 1) % texts.length; sub.innerText = texts[i]; }, 1500);
-
-      try {
-        const payload = { ...session, q, img: session.img, user: { gender: session.gender, city: session.city } };
-        const res = await fetch(API_BASE + "/api/analyze", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
+        window.stopSpeech();
+        window.clearImage();
+        document.getElementById("q").value = "";
         clearInterval(loadingInterval);
-        if (!res.ok) throw new Error("Sunucu hatası");
-
-        const data = await res.json();
-        renderResult(data);
-      } catch (e) {
-        clearInterval(loadingInterval);
-        alert("Hata: " + (e && e.message ? e.message : "Bilinmeyen hata"));
         showScene("scene-home");
-      }
-    };
+    }
+
+    window.triggerFile = () => document.getElementById("fileInput").click();
+    window.handleFile = (file) => {
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            session.img = e.target.result;
+            document.getElementById("imgPreview").src = session.img;
+            document.getElementById("imgWrap").style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    }
+    window.clearImage = () => {
+        session.img = "";
+        document.getElementById("fileInput").value = "";
+        document.getElementById("imgWrap").style.display = "none";
+    }
+
+    window.startVoice = () => {
+        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SR) return alert("Tarayıcı desteklemiyor.");
+        const rec = new SR();
+        rec.lang = 'tr-TR';
+        rec.start();
+        document.getElementById("q").placeholder = "Dinliyorum...";
+        rec.onresult = (e) => { document.getElementById("q").value = e.results[0][0].transcript; start(); }
+    }
+
+    window.openContent = (key) => {
+        document.getElementById("staticTitle").textContent = key.toUpperCase();
+        document.getElementById("staticText").innerHTML = CONTENTS[key] || "İçerik yok.";
+        showScene("scene-static");
+    }
+
+    window.showScene = (id) => {
+        document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+        window.scrollTo(0,0);
+    }
+
+    window.installPWA = async () => {
+        if(!deferredPrompt) return;
+        deferredPrompt.prompt();
+        deferredPrompt = null;
+        document.getElementById("installBtn").style.display = "none";
+    }
+
+    window.start = async function() {
+        const q = document.getElementById("q").value.trim();
+        if(!q && !session.img) return alert("Soru sor evladım.");
+        
+        showScene("scene-loading");
+        const sub = document.getElementById("loadingSub");
+        let i=0; const txts=["Arıyorum...","İnceliyorum...","Yazıyorum..."];
+        loadingInterval = setInterval(()=>{ sub.innerText=txts[i++%3]; }, 800);
+
+        try {
+            const res = await fetch(API_BASE + "/api/analyze", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({...session, q, user: {gender: session.gender, city: session.city}})
+            });
+            clearInterval(loadingInterval);
+            if(!res.ok) throw new Error("Hata oluştu");
+            const data = await res.json();
+            renderResult(data);
+        } catch(e) {
+            clearInterval(loadingInterval);
+            alert("Bağlantı hatası!");
+            showScene("scene-home");
+        }
+    }
 
     function renderResult(data) {
-      // Clear query only if user typed something; keep image context if needed
-      if (qInput.value.trim()) qInput.value = "";
+        audioText = data.speech_text;
+        document.getElementById("finalHeadline").innerText = data.headline;
+        document.getElementById("finalText").innerText = data.text;
+        
+        // Reset Views
+        document.getElementById("scoreArea").style.display = "none";
+        document.getElementById("listsWrap").innerHTML = "";
+        document.getElementById("coachWrap").style.display = "none";
+        document.getElementById("recommendationList").innerHTML = "";
+        document.getElementById("recTitle").style.display = "none";
 
-      audioText = data.speech_text || "";
+        // Logic Switch
+        if(session.mode === "life" && data.coach_plan) {
+            // LIFE MODE
+            document.getElementById("coachWrap").style.display = "block";
+            document.getElementById("coachSummary").innerText = data.coach_plan.summary || "";
+            document.getElementById("coachToday").innerText = data.coach_plan.today_step || "";
+            document.getElementById("coachBoost").innerText = data.coach_plan.confidence_boost || "";
+            
+            const qDiv = document.getElementById("coachQuestions");
+            qDiv.innerHTML = "";
+            (data.coach_plan.clarifying_questions || []).forEach(q => {
+                qDiv.innerHTML += `<div class="list-item">${q}</div>`;
+            });
 
-      document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
-      document.getElementById("finalText").innerText = data.text || "";
+        } else if(session.mode === "shopping") {
+            // SHOPPING MODE
+            if(data.score && data.score.value > 0) {
+                const sArea = document.getElementById("scoreArea");
+                sArea.style.display = "flex";
+                document.getElementById("scoreVal").innerText = data.score.value;
+                document.getElementById("scoreVerdict").innerText = data.score.label;
+                document.getElementById("scoreVerdict").style.color = data.score.color;
+                document.getElementById("scoreGauge").style.background = `conic-gradient(${data.score.color} ${data.score.value}%, #eee 0)`;
+            }
+            // Pros/Cons
+            const listWrap = document.getElementById("listsWrap");
+            if(data.pros) createList(listWrap, "Artılar", data.pros, "check", "green");
+            if(data.cons) createList(listWrap, "Eksiler", data.cons, "xmark", "red");
+            
+            // Recs
+            renderRecs(data.recommendations);
 
-      // Score
-      const sBox = document.getElementById("scoreArea");
-      const scoreVal = data && data.score ? Number(data.score.value) : 0;
+        } else {
+            // OTHER MODES (Food, Travel, etc.)
+            renderRecs(data.recommendations);
+        }
 
-      if (session.mode === "shopping" && data.score && Number(data.score.value) > 0) {
-        sBox.style.display = "flex";
-        document.getElementById("scoreVal").innerText = data.score.value;
+        // Warnings
+        const wBox = document.getElementById("warnWrap");
+        if(data.chronic_issues && data.chronic_issues.length) {
+            wBox.style.display = "block";
+            wBox.innerHTML = "⚠️ " + data.chronic_issues.join("<br>");
+        } else { wBox.style.display = "none"; }
 
-        const v = document.getElementById("scoreVerdict");
-        v.innerText = data.score.label || "";
-        v.style.color = data.score.color || "#111";
+        const wa = document.getElementById("waShareBtn");
+        wa.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(data.headline + " - Caynana")}`;
+        
+        showScene("scene-results");
+    }
 
-        document.getElementById("scoreGauge").style.background =
-          `conic-gradient(${data.score.color || '#10B981'} ${data.score.value}%, #eee 0)`;
-      } else {
-        sBox.style.display = "none";
-      }
-
-      // Lists
-      const listWrap = document.getElementById("listsWrap");
-      listWrap.innerHTML = "";
-      if (data.pros && data.pros.length) createList(listWrap, "Artılar", data.pros, "check", "green");
-      if (data.cons && data.cons.length) createList(listWrap, "Eksiler", data.cons, "xmark", "red");
-
-      // Warnings
-      const wBox = document.getElementById("warnWrap");
-      if (data.chronic_issues && data.chronic_issues.length) {
-        wBox.style.display = "block";
-        wBox.innerHTML = "<strong>⚠️ Dikkat:</strong><br>" + data.chronic_issues.join("<br>");
-      } else {
-        wBox.style.display = "none";
-      }
-
-      // Recommendations
-      document.getElementById("recTitle").innerText = (session.mode === "shopping" ? "ALTERNATİF ÜRÜNLER" : "TAVSİYELER");
-
-      const rList = document.getElementById("recommendationList");
-      rList.innerHTML = "";
-
-      if (data.recommendations && data.recommendations.length) {
-        data.recommendations.forEach(r => {
-          const div = document.createElement("a");
-          const theme = pickRecTheme(r.award, scoreVal);
-          div.className = "rec-card " + (theme || "theme-default");
-          div.href = r.url || "#";
-          div.target = "_blank";
-          div.rel = "noopener noreferrer";
-          div.innerHTML = `
-            <div class="rec-content">
-              <div class="award-badge">${(r.award || "Öneri")}</div>
-              <div class="rec-name">${(r.product_name || "Ürün")}</div>
-              <div class="rec-reason">${(r.reason || "")}</div>
-            </div>
-            <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-          `;
-          rList.appendChild(div);
+    function renderRecs(recs) {
+        if(!recs || recs.length === 0) return;
+        document.getElementById("recTitle").style.display = "block";
+        const list = document.getElementById("recommendationList");
+        recs.forEach(r => {
+            const a = document.createElement("a");
+            a.className = "rec-card theme-default";
+            a.href = r.url || "#";
+            a.target = "_blank";
+            a.innerHTML = `
+                <div class="rec-content">
+                    <div class="award-badge">${r.award}</div>
+                    <div class="rec-name">${r.product_name}</div>
+                    <div class="rec-reason">${r.reason}</div>
+                </div>
+                <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            `;
+            list.appendChild(a);
         });
-      } else {
-        rList.innerHTML = "<div style='text-align:center; color:#999;'>Öneri yok.</div>";
-      }
-
-      // WhatsApp
-      const waBtn = document.getElementById("waShareBtn");
-      waBtn.style.display = "block";
-      const shareText = `${data.headline || "Caynana Tavsiyesi"}\n\n${data.text || ""}\n\nCAYNANA.AI`;
-      waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-
-      showScene("scene-results");
     }
 
     function createList(parent, title, arr, icon, color) {
-      const d = document.createElement("div");
-      d.style.marginBottom = "15px";
-      d.innerHTML = `<div style="font-weight:700; color:${color}; margin-bottom:5px;"><i class="fa-solid fa-${icon}"></i> ${title}</div>`;
-      arr.slice(0, 3).forEach(i => { d.innerHTML += `<div class="list-item">${i}</div>`; });
-      parent.appendChild(d);
+        if(!arr || arr.length===0) return;
+        const d = document.createElement("div");
+        d.innerHTML = `<div style="font-weight:700; color:${color}; margin:10px 0 5px;"><i class="fa-solid fa-${icon}"></i> ${title}</div>`;
+        arr.forEach(i => { d.innerHTML += `<div class="list-item">${i}</div>`; });
+        parent.appendChild(d);
     }
 
-    // TTS
-    window.toggleSpeech = async function() {
-      const btn = document.getElementById("btnListen");
-      if (currentAudio) { window.stopSpeech(); return; }
-      if (!audioText) return alert("Metin yok");
+    window.stopSpeech = () => {
+        if(currentAudio) { currentAudio.pause(); currentAudio=null; }
+        document.getElementById("btnListen").classList.remove("active");
+    }
 
-      btn.innerHTML = "Yükleniyor...";
-      btn.classList.add("active");
-
-      try {
-        const res = await fetch(API_BASE + "/api/speak", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: audioText })
-        });
-
-        const ct = (res.headers.get("content-type") || "").toLowerCase();
-        if (ct.includes("json")) {
-          const err = await res.json();
-          throw new Error(err.message || err.error || "Ses hatası");
-        }
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        currentAudio = new Audio(url);
-        currentAudio.onended = () => window.stopSpeech();
-        await currentAudio.play();
-        btn.innerHTML = "Durdur";
-      } catch (e) {
-        alert("Ses hatası: " + (e && e.message ? e.message : "Bilinmeyen hata"));
-        window.stopSpeech();
-      }
-    };
-
-    // Start
-    init();
-  });
+    window.toggleSpeech = async () => {
+        const btn = document.getElementById("btnListen");
+        if(currentAudio) return window.stopSpeech();
+        if(!audioText) return;
+        
+        btn.classList.add("active");
+        try {
+            const res = await fetch(API_BASE + "/api/speak", {
+                method: "POST",
+                headers: {"Content-Type":"application/json"},
+                body: JSON.stringify({text: audioText})
+            });
+            const blob = await res.blob();
+            currentAudio = new Audio(URL.createObjectURL(blob));
+            currentAudio.onended = window.stopSpeech;
+            currentAudio.play();
+        } catch(e) { window.stopSpeech(); }
+    }
 </script>
-
 </body>
 </html>
-
