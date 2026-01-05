@@ -3,670 +3,880 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>CAYNANA - Yaşam Asistanı</title>
+<title>CAYNANA.AI</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  :root {
-    --primary: #10B981;
-    --primary-light: #ECFDF5;
-    --text-main: #111827;
-    --text-sub: #6B7280;
-    --bg-app: #F9FAFB;
-    --bg-white: #FFFFFF;
-    --border: #E5E7EB;
-    
-    --header-height: 60px;
-    --dock-height: 70px;
+  :root{
+    --primary:#10B981;
+    --primary-dark:#059669;
+    --bg:#F3F4F6;
+    --white:#fff;
+    --text:#111827;
+    --muted:#6B7280;
+    --border:#E5E7EB;
+    --maxw:768px;
   }
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    margin: 0;
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-app);
-    height: 100vh;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+    background:var(--bg);
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    justify-content:center;
+    overflow:hidden;
   }
 
-  /* --- A) ÜST BAR --- */
-  .top-bar {
-    min-height: var(--header-height);
-    background: var(--bg-white);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    padding-top: env(safe-area-inset-top);
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 60;
+  #app{
+    width:100%;
+    max-width:var(--maxw);
+    height:100%;
+    background:var(--white);
+    position:relative;
+    box-shadow:0 0 20px rgba(0,0,0,.05);
+    overflow:hidden;
   }
 
-  .logo {
-    font-weight: 900;
-    font-size: 18px;
-    color: var(--text-main);
-    display: flex; align-items: center; gap: 6px;
-    letter-spacing: -0.5px;
-    cursor: pointer;
+  /* Top bar */
+  #topbar{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 16px;
+    padding-top:env(safe-area-inset-top);
+    border-bottom:1px solid var(--border);
+    background:var(--white);
+    z-index:10;
   }
-  .logo span { color: var(--primary); }
-
-  .top-menu-btn {
-    font-size: 20px; color: var(--text-sub); background: none; border: none; cursor: pointer;
+  .brand{
+    display:flex; align-items:center; gap:8px;
+    font-weight:900; letter-spacing:-.5px;
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
   }
-
-  /* --- B) ORTA ANA PENCERE --- */
-  .main-panel {
-    flex: 1;
-    margin-top: var(--header-height);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-    position: relative;
-    /* Alt boşluk JS ile dinamik ayarlanacak */
-    padding-bottom: 100px; 
-  }
-
-  /* Panel Başlığı */
-  .panel-header {
-    text-align: center;
-    padding: 20px 10px 10px;
-    background: var(--bg-app);
-    position: sticky; top: 0; z-index: 10;
-  }
-  .ph-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
-  .ph-desc { font-size: 13px; color: var(--text-sub); }
-
-  /* Sohbet Akışı */
-  .results-stream {
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    min-height: 200px;
+  .brand span{color:var(--primary)}
+  .topbtn{
+    background:none;border:none;cursor:pointer;
+    color:var(--muted);
+    font-size:20px;
   }
 
-  /* Mesaj Balonları */
-  .msg-row { display: flex; flex-direction: column; width: 100%; animation: slideUp 0.3s ease; }
-  .msg-row.user { align-items: flex-end; }
-  .msg-row.ai { align-items: flex-start; }
-
-  .bubble {
-    padding: 12px 16px;
-    border-radius: 16px;
-    font-size: 15px;
-    line-height: 1.5;
-    max-width: 85%;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    position: relative;
-    word-wrap: break-word;
+  /* Main scroll */
+  #main{
+    height:100%;
+    overflow-y:auto;
+    padding-top:56px; /* JS ile ayarlanacak */
+    padding-bottom:180px; /* JS ile ayarlanacak */
+    scroll-behavior:smooth;
   }
-  .msg-row.user .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-  .msg-row.ai .bubble { background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-
-  /* Kartlar */
-  .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 2px; width: 100%; scrollbar-width: none; }
-  .cards-scroll::-webkit-scrollbar { display: none; }
-  
-  .card {
-    min-width: 200px; max-width: 200px; background: white; border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
-    text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  .content{
+    max-width:var(--maxw);
+    margin:0 auto;
   }
-  .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; }
-  .card-title { font-size: 13px; font-weight: 700; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;}
-  .card-price { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: auto; }
+
+  /* Header */
+  #modeHeader{
+    text-align:center;
+    padding:22px 16px 10px;
+    background:var(--white);
+    position:sticky;
+    top:0;
+    z-index:5;
+    border-bottom:1px solid rgba(0,0,0,0.03);
+  }
+  #modeTitle{font-size:18px;font-weight:900;color:var(--text); margin-bottom:4px}
+  #modeDesc{font-size:13px;color:var(--muted)}
+
+  /* Results */
+  #results{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .msg{display:flex; width:100%;}
+  .msg.user{justify-content:flex-end;}
+  .msg.ai{justify-content:flex-start;}
+
+  .bubble{
+    max-width:86%;
+    padding:12px 16px;
+    border-radius:18px;
+    font-size:15px;
+    line-height:1.5;
+    box-shadow:0 1px 2px rgba(0,0,0,.05);
+    word-break:break-word;
+  }
+  .msg.user .bubble{
+    background:var(--primary);
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .msg.ai .bubble{
+    background:#F3F4F6;
+    color:var(--text);
+    border-bottom-left-radius:4px;
+  }
+
+  .bubble img.preview{
+    max-width:100%;
+    border-radius:12px;
+    display:block;
+    margin-bottom:10px;
+    border:1px solid var(--border);
+  }
+
+  .disclaimer{
+    display:block;
+    margin-top:8px;
+    font-size:11px;
+    color:#9CA3AF;
+    font-style:italic;
+  }
+
+  .audio-btn{
+    margin-top:10px;
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:5px 10px;
+    font-size:12px;
+    cursor:pointer;
+    color:var(--muted);
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+  }
+  .audio-btn:hover{border-color:var(--primary); color:var(--primary);}
 
   /* Loader */
-  .loader-bubble {
-    align-self: flex-start;
-    background: white; border: 1px solid var(--border);
-    padding: 10px 16px; border-radius: 16px; border-bottom-left-radius: 4px;
-    color: var(--text-sub); font-size: 13px; font-style: italic;
-    display: none; margin-bottom: 10px;
-    animation: pulse 1.5s infinite;
+  #loader{
+    display:none;
+    align-self:flex-start;
+    background:var(--white);
+    border:1px solid var(--border);
+    padding:10px 14px;
+    border-radius:16px;
+    border-bottom-left-radius:4px;
+    color:var(--muted);
+    font-style:italic;
   }
 
-  @keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
-  @keyframes pulse { 0% {opacity:0.6} 50% {opacity:1} 100% {opacity:0.6} }
-
-  /* --- C) SABİT ALT ALAN --- */
-  .fixed-bottom-area {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    z-index: 50;
-    background: var(--bg-white);
-    display: flex;
-    flex-direction: column;
-    border-top: 1px solid var(--border);
-    padding-bottom: env(safe-area-inset-bottom);
+  /* Cards */
+  .cards{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding:6px 2px 2px;
+    scrollbar-width:none;
+  }
+  .cards::-webkit-scrollbar{display:none;}
+  .card{
+    min-width:210px;
+    max-width:210px;
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    text-decoration:none;
+    color:var(--text);
+    box-shadow:0 2px 6px rgba(0,0,0,.04);
+    transition:transform .15s ease;
+  }
+  .card:hover{transform:translateY(-3px);}
+  .card img{
+    width:100%;
+    height:120px;
+    object-fit:contain;
+    border-radius:10px;
+    background:#fff;
+    margin-bottom:8px;
+  }
+  .card .title{
+    font-size:13px;
+    font-weight:800;
+    height:36px;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .card .price{
+    margin-top:8px;
+    color:var(--primary);
+    font-weight:900;
+    font-size:14px;
+  }
+  .card .footer{
+    margin-top:4px;
+    font-size:11px;
+    color:#9CA3AF;
+    display:flex;
+    gap:6px;
+    align-items:center;
   }
 
-  /* 1. Input Section */
-  .input-section {
-    padding: 8px 10px;
-    background: var(--bg-white);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border-bottom: 1px solid #F3F4F6;
+  /* Bottom fixed area */
+  #bottom{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    background:var(--white);
+    border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom);
   }
 
   /* Chips */
-  .chips-row {
-    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; height: 34px;
+  #chips{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:8px 12px;
+    scrollbar-width:none;
+    align-items:center;
   }
-  .chips-row::-webkit-scrollbar { display: none; }
-  .chip {
-    background: var(--bg-app); border: 1px solid var(--border);
-    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
-    color: var(--text-sub); white-space: nowrap; cursor: pointer; flex-shrink: 0;
-    display: flex; align-items: center;
+  #chips::-webkit-scrollbar{display:none;}
+  .chip{
+    border:1px solid var(--border);
+    background:var(--bg);
+    color:var(--muted);
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:.15s;
   }
-  .chip:active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  .chip:hover{border-color:var(--primary); color:var(--primary); background:#ECFDF5;}
+  .chip:active{transform:scale(.98);}
 
-  /* Input Wrapper */
-  .input-wrapper {
-    display: flex; align-items: center; gap: 8px;
-    background: var(--bg-app); border: 1px solid var(--border);
-    border-radius: 24px; padding: 6px 6px 6px 12px;
+  /* Input row */
+  #inputRow{
+    display:flex;
+    gap:10px;
+    padding:8px 12px 10px;
+    align-items:center;
   }
-  .input-wrapper:focus-within { border-color: var(--primary); background: white; }
-
-  .tool-btn {
-    width: 32px; height: 32px; border-radius: 50%; border: none;
-    background: transparent; color: var(--text-sub); font-size: 18px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  #inputWrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:var(--bg);
+    border-radius:999px;
+    padding:6px 10px;
   }
-  .tool-btn.active { color: #EF4444; animation: recording 1s infinite; background: #FEE2E2; }
-  @keyframes recording { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
-
-  .main-input {
-    flex: 1; border: none; background: transparent; font-size: 15px; outline: none; padding: 0 5px;
-    min-width: 0;
+  #inputWrap:focus-within{border-color:var(--primary); background:var(--white); box-shadow:0 0 0 2px rgba(16,185,129,.12);}
+  .iconBtn{
+    width:34px;height:34px;
+    border:none;background:transparent;
+    border-radius:50%;
+    cursor:pointer;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    flex-shrink:0;
   }
+  .iconBtn:hover{background:rgba(0,0,0,.06); color:var(--primary);}
+  .iconBtn.mic-active{background:#FEE2E2; color:#EF4444; animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
 
-  .send-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
-    background: var(--primary); color: white; font-size: 16px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: 0.2s;
+  #text{
+    flex:1;
+    border:none;
+    background:transparent;
+    outline:none;
+    font-size:15px;
+    padding:0 4px;
+    min-width:0;
   }
-  .send-btn i { transform: rotate(0deg); } 
-  .send-btn:active { transform: scale(0.9); background: #059669; }
-
-  /* 2. Mode Dock */
-  .mode-dock {
-    height: var(--dock-height);
-    background: var(--bg-white);
-    display: flex;
-    align-items: center;
-    padding: 0 5px;
-    overflow-x: auto;
-    scrollbar-width: none;
+  #sendBtn{
+    width:42px;height:42px;
+    border:none;
+    border-radius:50%;
+    background:var(--primary);
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.15s;
   }
-  .mode-dock::-webkit-scrollbar { display: none; }
+  #sendBtn:hover{background:var(--primary-dark);}
+  #sendBtn:active{transform:scale(.95);}
 
-  .dock-item {
-    min-width: 65px; flex: 1;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 4px; color: var(--text-sub); cursor: pointer;
-    padding: 5px; border-radius: 8px;
+  /* Dock */
+  #dock{
+    display:flex;
+    border-top:1px solid var(--border);
+    height:72px;
+    overflow-x:auto;
+    scrollbar-width:none;
   }
-  .dock-item i { font-size: 20px; margin-bottom: 2px; }
-  .dock-item span { font-size: 10px; font-weight: 500; text-align: center; line-height: 1.1; }
-  
-  .dock-item.active { color: var(--primary); }
-  .dock-item.active i { transform: translateY(-2px); }
-
-  /* Audio Btn */
-  .audio-play {
-    margin-top: 5px; background: none; border: 1px solid var(--border);
-    border-radius: 12px; padding: 4px 10px; font-size: 11px;
-    color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  #dock::-webkit-scrollbar{display:none;}
+  .dockItem{
+    flex:1;
+    min-width:70px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+    cursor:pointer;
+    padding:6px 0;
+    user-select:none;
   }
-  .audio-play:hover { color: var(--primary); border-color: var(--primary); }
-
-  /* Modal */
-  #infoModal {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
-    align-items: center; justify-content: center; backdrop-filter: blur(3px);
-  }
-  .info-content {
-    background: white; width: 85%; max-width: 350px; padding: 20px; border-radius: 20px;
-    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-  }
-  .info-links { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-  .info-link { font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: 500; border-bottom: 1px solid #eee; padding-bottom: 10px;}
-  .close-modal { margin-top: 10px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
-
-  #fileInput { display: none; }
-
+  .dockItem i{font-size:20px;}
+  .dockItem span{font-size:10px; font-weight:700;}
+  .dockItem.active{color:var(--primary);}
 </style>
 </head>
+
 <body>
+<div id="app">
 
-<div class="top-bar" id="topBar">
-  <div class="logo" onclick="location.reload()"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
-  <button class="top-menu-btn" onclick="openInfo()"><i class="fa-solid fa-bars"></i></button>
-</div>
-
-<div class="main-panel" id="mainPanel">
-  
-  <div class="panel-header">
-    <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
-    <div class="ph-desc" id="panelDesc">Bir konu seç, hemen başlayalım.</div>
+  <div id="topbar">
+    <div class="brand" onclick="location.reload()">
+      <i class="fa-solid fa-shapes"></i>
+      CAYNANA<span>.AI</span>
+    </div>
+    <button class="topbtn" type="button" onclick="toggleInfo()"><i class="fa-solid fa-bars"></i></button>
   </div>
 
-  <div class="results-stream" id="resultsStream">
-    <div class="loader-bubble" id="loader">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...
+  <div id="main">
+    <div class="content">
+
+      <div id="modeHeader">
+        <div id="modeTitle"></div>
+        <div id="modeDesc"></div>
+      </div>
+
+      <div id="results">
+        <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...</div>
+      </div>
+
     </div>
   </div>
 
-</div>
+  <div id="bottom">
+    <div id="chips"></div>
 
-<div class="fixed-bottom-area" id="fixedBottom">
-  
-  <div class="input-section">
-    <div class="chips-row" id="chipsRow"></div>
-
-    <div class="input-wrapper">
-      <button class="tool-btn" onclick="triggerCam()"><i class="fa-solid fa-camera"></i></button>
-      <button class="tool-btn" onclick="triggerMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
-      <input type="text" id="mainInput" class="main-input" placeholder="Bir şeyler yaz..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
-      <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-right"></i></button>
+    <div id="inputRow">
+      <div id="inputWrap">
+        <button class="iconBtn" type="button" onclick="openCamera()" title="Fotoğraf">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+        <button class="iconBtn" id="micBtn" type="button" onclick="startMic()" title="Konuş">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <input id="text" autocomplete="off" placeholder="Bir şeyler yaz..." onkeypress="if(event.key==='Enter') sendMessage()">
+      </div>
+      <button id="sendBtn" type="button" onclick="sendMessage()" title="Gönder">
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
     </div>
+
+    <div id="dock"></div>
   </div>
 
-  <div class="mode-dock" id="modeDock"></div>
 </div>
 
-<div id="infoModal">
-  <div class="info-content">
-    <h3>Bilgilendirme</h3>
-    <div class="info-links">
-      <a href="#" class="info-link">Hakkımızda</a>
-      <a href="#" class="info-link">Sıkça Sorulan Sorular (SSS)</a>
-      <a href="#" class="info-link">Gizlilik Politikası</a>
-      <a href="#" class="info-link">İletişim</a>
-    </div>
-    <button class="close-modal" onclick="closeInfo()">Kapat</button>
-  </div>
-</div>
-
-<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+<!-- Camera input -->
+<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
 
 <script>
-  const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
+  // ---- CONFIG
+  const API_URL   = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
-  
-  let sessionId = localStorage.getItem('caynana_sid');
-  if (!sessionId) {
-      sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('caynana_sid', sessionId);
+
+  // ---- SESSION
+  let sessionId = localStorage.getItem("caynana_sid");
+  if(!sessionId){
+    sessionId = "sess_" + Math.random().toString(36).slice(2, 11);
+    localStorage.setItem("caynana_sid", sessionId);
   }
 
+  // ---- DOM
+  const mainEl   = document.getElementById("main");
+  const topbarEl = document.getElementById("topbar");
+  const bottomEl = document.getElementById("bottom");
+  const resultsEl= document.getElementById("results");
+  const loaderEl = document.getElementById("loader");
+  const chipsEl  = document.getElementById("chips");
+  const dockEl   = document.getElementById("dock");
+  const textEl   = document.getElementById("text");
+  const fileEl   = document.getElementById("fileInput");
+  const micBtnEl = document.getElementById("micBtn");
+
+  // ---- STATE
+  let currentMode = "life";
+  let pendingImageDataUrl = null;
+  let currentAudio = null;
+
+  // Mode config (karşılama + placeholder + ikon + chip)
   const MODES = {
-    shopping: { 
-        icon: "fa-bag-shopping", label: "Alışveriş", title: "Alışveriş Uzmanı", desc: "En iyi fiyatı bulurum.", placeholder: "Ürün adı veya linki...",
-        chips: ["Airfryer", "iPhone 15", "Robot Süpürge"],
-        welcome: "Bugün ne alıyoruz evladım? Ürün adı yaz, link at veya fotoğraf çek.Sana en uygununu ve en kalitelisini bulayım."
+    shopping: {
+      icon:"fa-bag-shopping",
+      label:"Alışveriş",
+      title:"Alışveriş Uzmanı",
+      desc:"Bugün ne alıyoruz evladım? Ürün adı yaz, link at; istersen foto çek.",
+      placeholder:"Ürün adı yaz veya link yapıştır...",
+      chips:["Airfryer", "iPhone 15", "Robot süpürge"],
+      welcome:"Bugün ne alıyoruz evladım? Ürün adı yaz, link at ya da fotoğrafını çek; en uygununu bulayım."
     },
-    health: { 
-        icon: "fa-user-doctor", label: "Sağlık", title: "Sağlık Danışmanı", desc: "Şikayetini yaz (Acilse 112).", placeholder: "Şikayetin nedir?",
-        chips: ["Başım ağrıyor", "Grip oldum", "Vitamin önerisi"],
-        welcome: "Ne oldu evladım, rahtsızlığın nedir? (Acil durumlarda 112'yi ara)."
+    health: {
+      icon:"fa-user-doctor",
+      label:"Sağlık",
+      title:"Sağlık Danışmanı",
+      desc:"Şikayetini yaz (Acilse 112).",
+      placeholder:"Şikayetin nedir?",
+      chips:["Başım ağrıyor", "Boğazım yanıyor", "Grip oldum"],
+      welcome:"Ne oldu evladım, rahatsızlığın nedir? (Acil durumlarda 112’yi ara.)"
     },
-    diet: { 
-        icon: "fa-apple-whole", label: "Diyet", title: "Diyetisyen", desc: "Beslenme planı yapalım.", placeholder: "Hedefin ne?",
-        chips: ["Kilo vermek istiyorum", "Kalori hesabı"],
-        welcome: "Hedefin ne evladım? Kilo ver, kilo al veya form koru. Söyle bakalım."
+    diet: {
+      icon:"fa-apple-whole",
+      label:"Diyet",
+      title:"Diyetisyen",
+      desc:"Hedefe göre plan yapalım.",
+      placeholder:"Hedefin ne? kilo ver / al / form...",
+      chips:["Kilo vermek istiyorum", "Kalori hesabı", "Akşam ne yesem?"],
+      welcome:"Tamam evladım, hedefin ne? Kilo verme mi, alma mı, yoksa form mu? Boy-kilo ve günlük hareketini de yazarsan şahane."
     },
-    food: { 
-        icon: "fa-utensils", label: "Yemek", title: "Yemek Gurmesi", desc: "Ne yesek, ne pişirsek?", placeholder: "Malzemeleri yaz...",
-        chips: ["Akşama ne pişirsem?", "En yakın pizzacı"],
-        welcome: "Evde ne var evladım? Malzemeleri yaz, sana tarif çıkarayım."
+    food: {
+      icon:"fa-utensils",
+      label:"Yemek",
+      title:"Yemek Uzmanı",
+      desc:"Ne pişirsek, ne yesek?",
+      placeholder:"Evde ne var? Malzemeleri yaz...",
+      chips:["Akşama ne pişirsem?", "3 malzemeli tatlı", "Diyet yemek"],
+      welcome:"Haydi bakalım evladım, evde ne malzeme var? Yaz, sana mis gibi tarif çıkarayım."
     },
-    teacher: { 
-        icon: "fa-chalkboard-user", label: "Eğitim", title: "Öğretmen", desc: "Her konuyu anlatırım.", placeholder: "Hangi konuyu öğrenmek istersin?",
-        chips: ["Matematik sorusu", "İngilizce gramer"],
-        welcome: "Bugün hangi konuda ders çalışmak istersin? Konuyu yaz, birlikte ilerleyelim."
+    teacher: {
+      icon:"fa-chalkboard-user",
+      label:"Eğitim",
+      title:"Öğretmen",
+      desc:"Bugün hangi konuda çalışıyoruz?",
+      placeholder:"Konuyu yaz, birlikte öğrenelim...",
+      chips:["Matematik", "İngilizce", "Tarih"],
+      welcome:"Bugün hangi konuda ders çalışmak istersin evladım? Konuyu yaz, adım adım gidelim."
     },
-    translator: { 
-        icon: "fa-language", label: "Çeviri", title: "Çevirmen", desc: "Dili seç, çevireyim.", placeholder: "Metni yapıştır...",
-        chips: ["İngilizceye çevir", "Almanca nasılsın de"],
-        welcome: "Metni yapıştır evladım, hangi dile çevireyim?"
+    translator: {
+      icon:"fa-language",
+      label:"Çeviri",
+      title:"Çevirmen",
+      desc:"Metni yapıştır, çevireyim.",
+      placeholder:"Metni buraya yaz/yapıştır...",
+      chips:["İngilizceye çevir", "Resmi çeviri", "Günlük çeviri"],
+      welcome:"Metni yapıştır evladım. Hangi dile çevireyim—resmi mi günlük mü?"
     },
-    lawyer: { 
-        icon: "fa-scale-balanced", label: "Hukuk", title: "Hukukçu", desc: "Haklarını öğren (Bilgi amaçlı).", placeholder: "Olayı kısaca anlat...",
-        chips: ["Kiracı hakları", "İşe iade"],
-        welcome: "Olayı kısaca anlat evladım. (Unutma, bu genel bilgidir, resmi danışmanlık değildir.)"
+    economist: {
+      icon:"fa-chart-line",
+      label:"Ekonomi",
+      title:"Ekonomist",
+      desc:"Bütçe, piyasa, plan.",
+      placeholder:"Sorunu yaz: bütçe/yatırım/kur...",
+      chips:["Altın alınır mı?", "Bütçe planla", "Dolar gündemi"],
+      welcome:"Hadi anlat evladım: bütçe mi yapıyoruz, yatırım mı konuşuyoruz? Ne istiyorsun?"
     },
-    life: { 
-        icon: "fa-heart", label: "Yaşam", title: "Yaşam Koçu", desc: "Dertleşelim, plan yapalım.", placeholder: "Neyin var?",
-        chips: ["Canım sıkkın", "Motivasyon lazım"],
-        welcome: "Neyin var evladım? Anlat dertleşelim, bir çare bulalım."
+    lawyer: {
+      icon:"fa-scale-balanced",
+      label:"Hukuk",
+      title:"Hukuk Danışmanı",
+      desc:"Genel bilgi amaçlıdır.",
+      placeholder:"Olayı kısaca özetle...",
+      chips:["Kiracı hakları", "Tüketici hakem", "İşe iade"],
+      welcome:"Anlat evladım, olay ne? (Genel bilgi verebilirim; resmi danışmanlık için avukata danışmak en doğrusu.)"
     },
-    future: { 
-        icon: "fa-wand-magic-sparkles", label: "Fal", title: "Falcı Bacı", desc: "Geleceği yorumlayalım.", placeholder: "Niyetini yaz...",
-        chips: ["Kahve Falı (Foto)", "Tarot", "Burç"],
-        welcome: "Niyetini yaz veya fincan fotoğrafı gönder evladım. (Eğlence amaçlıdır.)"
+    future: {
+      icon:"fa-wand-magic-sparkles",
+      label:"Fal",
+      title:"Gelecek Yorumcusu",
+      desc:"Eğlence amaçlı yorum.",
+      placeholder:"Niyetini yaz veya fotoğraf yükle...",
+      chips:["Kahve falı (foto)", "3 kart tarot", "Günlük burç"],
+      welcome:"Tamam evladım… Niyetini söyle ya da fincan fotoğrafını gönder. (Eğlence amaçlıdır, kesinlik içermez.)"
+    },
+    life: {
+      icon:"fa-heart",
+      label:"Yaşam",
+      title:"Yaşam Koçu",
+      desc:"Dertleşelim, plan yapalım.",
+      placeholder:"İçinden geçenleri yaz...",
+      chips:["Canım sıkkın", "Motivasyon lazım", "Bir plan yapalım"],
+      welcome:"Hoş geldin evladım. Anlat bakalım, neye takıldı gönlün?"
     }
   };
 
-  let currentMode = "life";
-  let currentImg = null;
-  let currentAudio = null;
-  
-  // Mod Bazlı Sohbet Geçmişi (Threads)
-  const chatThreads = {}; // { 'shopping': [domElement, ...], 'health': [...] }
+  // Mode bazlı thread (sohbet karışmasın)
+  const threads = {};      // mode -> [{role,text,img,ts,type}]
+  const welcomed = {};     // mode -> true
 
-  // UI Ref
-  const resultsStream = document.getElementById('resultsStream');
-  const mainInput = document.getElementById('mainInput');
-  const loader = document.getElementById('loader');
-  const mainPanel = document.getElementById('mainPanel');
-  const fixedBottom = document.getElementById('fixedBottom');
-  const topBar = document.getElementById('topBar');
-
-  // --- DİNAMİK YERLEŞİM (SCROLL FIX) ---
-  function adjustLayout() {
-    const bottomHeight = fixedBottom.offsetHeight;
-    const topHeight = topBar.offsetHeight;
-    
-    // Panel boşluklarını ayarla
-    mainPanel.style.marginTop = topHeight + 'px';
-    // Son mesaj barın altında kalmasın diye padding veriyoruz
-    mainPanel.style.paddingBottom = (bottomHeight + 20) + 'px';
-    
-    setTimeout(scrollToBottom, 100);
+  function ensureThread(m){
+    if(!threads[m]) threads[m] = [];
   }
 
-  window.addEventListener('resize', adjustLayout);
-  window.addEventListener('load', adjustLayout);
+  // ---- LAYOUT: altta kalan yazı görünür olsun
+  function adjustLayout(){
+    const topH = topbarEl.offsetHeight;
+    const bottomH = bottomEl.offsetHeight;
 
-  function init() {
-    // Threadleri başlat
-    Object.keys(MODES).forEach(k => chatThreads[k] = []);
-    
+    // main padding
+    mainEl.style.paddingTop = topH + "px";
+    mainEl.style.paddingBottom = bottomH + "px";
+
+    // RESULTS alt padding: sabit bar kadar + 16
+    resultsEl.style.paddingBottom = (bottomH + 16) + "px";
+  }
+
+  window.addEventListener("resize", () => setTimeout(adjustLayout, 50));
+  window.addEventListener("load", () => setTimeout(adjustLayout, 50));
+
+  // ---- UI Render
+  function setHeader(){
+    document.getElementById("modeTitle").innerText = MODES[currentMode].title;
+    document.getElementById("modeDesc").innerText  = MODES[currentMode].desc;
+    textEl.placeholder = MODES[currentMode].placeholder;
+  }
+
+  function renderDock(){
+    dockEl.innerHTML = "";
+    Object.keys(MODES).forEach(k=>{
+      const item = document.createElement("div");
+      item.className = "dockItem" + (k===currentMode ? " active" : "");
+      item.innerHTML = `<i class="fa-solid ${MODES[k].icon}"></i><span>${MODES[k].label}</span>`;
+      item.onclick = ()=>switchMode(k);
+      dockEl.appendChild(item);
+    });
+  }
+
+  function renderChips(list){
+    chipsEl.innerHTML = "";
+    (list||[]).forEach(txt=>{
+      const c = document.createElement("div");
+      c.className = "chip";
+      c.innerText = txt;
+      c.onclick = ()=>{ textEl.value = txt; sendMessage(); };
+      chipsEl.appendChild(c);
+    });
+  }
+
+  function clearResults(){
+    // loader kalacak
+    const keepLoader = loaderEl;
+    resultsEl.innerHTML = "";
+    resultsEl.appendChild(keepLoader);
+  }
+
+  function redrawThread(){
+    clearResults();
+    ensureThread(currentMode);
+
+    for(const m of threads[currentMode]){
+      if(m.type === "cards"){
+        renderCards(m.cards, true);
+      } else {
+        addBubble(m.role, m.text, m.img, true);
+      }
+    }
+
+    scrollToBottom(true);
+  }
+
+  function switchMode(m){
+    if(!MODES[m]) return;
+    if(m === currentMode) return;
+
+    currentMode = m;
+    ensureThread(m);
+
+    setHeader();
     renderDock();
-    switchMode('life'); 
+    renderChips(MODES[m].chips);
+
+    // İlk kez girince welcome mesajı (spam yok)
+    if(!welcomed[m]){
+      welcomed[m] = true;
+      pushMessage("ai", MODES[m].welcome);
+    }
+
+    redrawThread();
     adjustLayout();
   }
 
-  function renderDock() {
-    const dock = document.getElementById('modeDock');
-    dock.innerHTML = '';
-    Object.keys(MODES).forEach(key => {
-      const m = MODES[key];
-      const div = document.createElement('div');
-      div.className = `dock-item ${key === currentMode ? 'active' : ''}`;
-      div.onclick = () => switchMode(key);
-      div.innerHTML = `<i class="fa-solid ${m.icon}"></i><span>${m.label}</span>`;
-      dock.appendChild(div);
+  // ---- Messages
+  function pushMessage(role, text, img=null){
+    ensureThread(currentMode);
+    threads[currentMode].push({type:"msg", role, text, img, ts:Date.now()});
+    addBubble(role, text, img);
+  }
+
+  function addBubble(role, text, img=null, silent=false){
+    const row = document.createElement("div");
+    row.className = "msg " + (role === "user" ? "user" : "ai");
+
+    const b = document.createElement("div");
+    b.className = "bubble";
+
+    if(img){
+      const im = document.createElement("img");
+      im.src = img;
+      im.className = "preview";
+      b.appendChild(im);
+    }
+
+    const span = document.createElement("span");
+    span.innerHTML = (text||"").toString().replace(/\n/g, "<br>");
+    b.appendChild(span);
+
+    // Fal modunda uyarı (AI mesajında)
+    if(role === "ai" && currentMode === "future"){
+      const d = document.createElement("span");
+      d.className = "disclaimer";
+      d.innerText = "(Eğlence amaçlıdır, kesinlik içermez)";
+      b.appendChild(d);
+    }
+
+    // Ses butonu (AI)
+    if(role === "ai"){
+      const btn = document.createElement("button");
+      btn.className = "audio-btn";
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+      btn.onclick = ()=>playVoice(btn, text || "");
+      b.appendChild(btn);
+    }
+
+    row.appendChild(b);
+    resultsEl.insertBefore(row, loaderEl);
+
+    if(!silent){
+      row.scrollIntoView({block:"end", behavior:"smooth"});
+    }
+  }
+
+  function renderCards(cards, silent=false){
+    const wrap = document.createElement("div");
+    wrap.className = "cards";
+
+    cards.forEach(p=>{
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = p.url || "#";
+      a.target = "_blank";
+
+      const img = p.image ? `<img src="${p.image}">`
+        : `<div style="width:100%;height:120px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
+             <i class="fa-solid fa-image"></i>
+           </div>`;
+
+      a.innerHTML = `
+        ${img}
+        <div class="title">${(p.title||"Ürün").toString()}</div>
+        <div class="price">${(p.price||"").toString()}</div>
+        <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
+      `;
+
+      wrap.appendChild(a);
     });
-  }
 
-  function switchMode(key) {
-    if (key !== currentMode) {
-        // Eski modun mesajlarını sakla (DOM'dan al, memory'e at - Basit yöntem: display none)
-        // Daha temiz yöntem: DOM'u temizle, thread arrayinden yeniden bas.
-        
-        // 1. Mevcut ekranı temizle (Loader hariç)
-        // Ancak thread yapısını kurmak için şu anki DOM elemanlarını saklamamız lazım.
-        // Basitlik için: Her mod değiştiğinde ekranı temizleyip o moda ait array'i basacağız.
-        
-        currentMode = key;
-        const m = MODES[key];
-        
-        // UI Güncelle
-        document.getElementById('panelTitle').innerText = m.title;
-        document.getElementById('panelDesc').innerText = m.desc;
-        mainInput.placeholder = m.placeholder;
-        mainInput.value = '';
-        
-        // Chips Güncelle
-        const chipsRow = document.getElementById('chipsRow');
-        chipsRow.innerHTML = '';
-        m.chips.forEach(t => {
-            const c = document.createElement('div');
-            c.className = 'chip';
-            c.innerText = t;
-            c.onclick = () => { mainInput.value = t; sendMessage(); };
-            chipsRow.appendChild(c);
-        });
+    resultsEl.insertBefore(wrap, loaderEl);
 
-        // Dock Aktiflik
-        renderDock();
-        
-        // SOHBETİ YÜKLE
-        resultsStream.innerHTML = ''; // Temizle
-        resultsStream.appendChild(loader); // Loader'ı geri koy
-        
-        const thread = chatThreads[key];
-        if (thread.length === 0) {
-            // İlk giriş: Karşılama mesajı ekle
-            const welcomeRow = createMsgElement(m.welcome, 'ai');
-            thread.push(welcomeRow);
-        }
-        
-        // Mesajları DOM'a bas
-        thread.forEach(el => {
-            resultsStream.insertBefore(el, loader);
-        });
-        
-        setTimeout(adjustLayout, 50);
+    ensureThread(currentMode);
+    threads[currentMode].push({type:"cards", cards, ts:Date.now()});
+
+    if(!silent){
+      wrap.scrollIntoView({block:"end", behavior:"smooth"});
     }
   }
 
-  async function sendMessage() {
-    const txt = mainInput.value.trim();
-    if (!txt && !currentImg) return;
-
-    // Mesajı oluştur ve thread'e ekle
-    const userRow = addMsgToThread(txt, 'user', currentImg);
-    
-    mainInput.value = '';
-    const imgData = currentImg;
-    currentImg = null;
-    document.getElementById('fileInput').value = '';
-
-    // Loader Göster
-    loader.style.display = 'block';
-    // Loader her zaman en sonda olmalı
-    resultsStream.appendChild(loader); 
-    scrollToBottom();
-
-    const payload = {
-        message: txt || "Dosya gönderildi",
-        image: imgData,
-        mode: currentMode,
-        session_id: sessionId,
-        user: { city: 'İstanbul', gender: 'neutral' }
-    };
-
-    try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        
-        loader.style.display = 'none';
-        
-        const aiText = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
-        const aiRow = addMsgToThread(aiText, 'ai');
-
-        if (data.data && Array.isArray(data.data) && (currentMode === 'shopping' || currentMode === 'food')) {
-            renderCards(data.data);
-        }
-
-    } catch(e) {
-        loader.style.display = 'none';
-        addMsgToThread("Bağlantı hatası oluştu evladım.", 'ai');
-    }
+  function scrollToBottom(immediate=false){
+    setTimeout(()=>{
+      // results’in alt padding’i var; en alta in
+      resultsEl.scrollTop = resultsEl.scrollHeight;
+      if(immediate){
+        loaderEl.scrollIntoView({block:"end"});
+      }
+    }, 60);
   }
 
-  // Mesajı hem ekrana bas hem hafızaya at
-  function addMsgToThread(text, type, imgBase64) {
-      const row = createMsgElement(text, type, imgBase64);
-      
-      // Hafızaya ekle
-      chatThreads[currentMode].push(row);
-      
-      // Ekrana bas
-      resultsStream.insertBefore(row, loader);
-      scrollToBottom();
-      return row;
+  // ---- Camera
+  function openCamera(){
+    fileEl.value = "";
+    fileEl.click();
   }
 
-  // Sadece DOM elementi oluşturur
-  function createMsgElement(text, type, imgBase64) {
-    const row = document.createElement('div');
-    row.className = `msg-row ${type}`;
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    
-    if (imgBase64) {
-      const img = document.createElement('img');
-      img.src = imgBase64;
-      img.style.maxWidth = '100%';
-      img.style.borderRadius = '10px';
-      img.style.marginBottom = '8px';
-      img.style.display = 'block';
-      bubble.appendChild(img);
-    }
-    
-    const span = document.createElement('span');
-    span.innerHTML = text.replace(/\n/g, '<br>');
-    bubble.appendChild(span);
-
-    if(type === 'ai') {
-        const btn = document.createElement('button');
-        btn.className = 'audio-play';
-        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-        const safeTxt = text.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
-        btn.onclick = () => playVoice(btn, safeTxt);
-        bubble.appendChild(btn);
-    }
-
-    row.appendChild(bubble);
-    return row;
-  }
-
-  function renderCards(cards) {
-    const scroll = document.createElement('div');
-    scroll.className = 'cards-scroll';
-    
-    cards.forEach(c => {
-        const a = document.createElement('a');
-        a.className = 'card';
-        a.href = c.url || '#';
-        a.target = '_blank';
-        
-        const img = c.image ? `<img src="${c.image}">` : '<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:8px; font-size:30px; color:#ccc;"><i class="fa-solid fa-image"></i></div>';
-        
-        a.innerHTML = `
-            ${img}
-            <div class="card-title">${c.title}</div>
-            <div class="card-price">${c.price || c.desc || ''}</div>
-        `;
-        scroll.appendChild(a);
-    });
-    
-    // Hafızaya ve ekrana ekle
-    chatThreads[currentMode].push(scroll);
-    resultsStream.insertBefore(scroll, loader);
-    scrollToBottom();
-  }
-
-  function scrollToBottom() {
-    // Son elemana odaklan
-    // resultsStream.lastElementChild.scrollIntoView({ behavior: "smooth", block: "end" });
-    // Alternatif olarak container scroll
-    setTimeout(() => {
-        mainPanel.scrollTop = mainPanel.scrollHeight;
-    }, 150);
-  }
-
-  // --- MEDYA ---
-  function triggerCam() { document.getElementById('fileInput').click(); }
-  
-  function handleFile(file) {
+  fileEl.addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
     if(!file) return;
+
+    if(file.size > 6 * 1024 * 1024){
+      alert("Fotoğraf çok büyük evladım. Daha küçük bir fotoğraf seç.");
+      return;
+    }
+
     const reader = new FileReader();
-    reader.onload = (e) => {
-      currentImg = e.target.result;
-      mainInput.value = "Fotoğraf eklendi. (Gönder)";
-      mainInput.focus();
+    reader.onload = ()=>{
+      pendingImageDataUrl = reader.result;
+      textEl.value = "Fotoğraf eklendi. (Gönder)";
+      textEl.focus();
     };
     reader.readAsDataURL(file);
-  }
+  });
 
-  function triggerMic() {
+  // ---- Mic (Speech Recognition)
+  function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return alert("Mikrofon yok.");
+    if(!SR){
+      alert("Tarayıcı mikrofonu desteklemiyor evladım.");
+      return;
+    }
     const rec = new SR();
-    rec.lang = 'tr-TR';
-    const btn = document.getElementById('micBtn');
-    
-    rec.onstart = () => { btn.classList.add('active'); mainInput.placeholder = "Dinliyorum..."; };
-    
-    let hasResult = false;
-    rec.onend = () => { 
-        btn.classList.remove('active'); 
-        if(!hasResult) mainInput.placeholder = MODES[currentMode].placeholder; 
+    rec.lang = "tr-TR";
+    micBtnEl.classList.add("mic-active");
+
+    let got = false;
+    rec.onresult = (ev)=>{
+      got = true;
+      const t = ev.results[0][0].transcript;
+      textEl.value = t;
+      sendMessage();
     };
-    
-    rec.onresult = (e) => {
-        hasResult = true;
-        const transcript = e.results[0][0].transcript;
-        mainInput.value = transcript;
-        sendMessage();
+    rec.onend = ()=>{
+      micBtnEl.classList.remove("mic-active");
+      if(!got) textEl.placeholder = MODES[currentMode].placeholder;
     };
     rec.start();
   }
 
-  async function playVoice(btn, text) {
-    if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; return; }
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    try {
-        const res = await fetch(SPEAK_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({text: text})
-        });
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        currentAudio = new Audio(url);
-        currentAudio.onended = () => { btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; };
-        await currentAudio.play();
-        btn.innerHTML='<i class="fa-solid fa-stop"></i>';
-    } catch(e) {
-        btn.innerHTML='!';
+  // ---- TTS
+  async function playVoice(btn, text){
+    const clean = (text||"").toString().replace(/<[^>]*>/g, "").trim();
+    if(!clean) return;
+
+    if(currentAudio){
+      currentAudio.pause();
+      currentAudio = null;
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+      return;
+    }
+
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+    try{
+      const res = await fetch(SPEAK_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text: clean})
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+      currentAudio.onended = ()=>{
+        currentAudio = null;
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+      };
+      await currentAudio.play();
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+    }catch(e){
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
     }
   }
 
-  function openInfo() { document.getElementById('infoModal').style.display = 'flex'; }
-  function closeInfo() { document.getElementById('infoModal').style.display = 'none'; }
+  // ---- Send
+  async function sendMessage(){
+    const text = (textEl.value || "").trim();
+    const img  = pendingImageDataUrl;
+
+    if(!text && !img) return;
+
+    // user message
+    pushMessage("user", text || "📷 Fotoğraf gönderildi", img);
+    textEl.value = "";
+    pendingImageDataUrl = null;
+
+    // loader
+    loaderEl.style.display = "block";
+    resultsEl.appendChild(loaderEl);
+    scrollToBottom(true);
+
+    const payload = {
+      message: text || "Fotoğraf gönderildi",
+      image: img || null,
+      mode: currentMode,
+      session_id: sessionId,
+      user: { city: "İstanbul", gender: "neutral" }
+    };
+
+    try{
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      loaderEl.style.display = "none";
+
+      const aiText = (data && (data.assistant_text || data.reply)) || "Bir şeyler ters gitti evladım.";
+      pushMessage("ai", aiText);
+
+      // Chips backend’den gelirse güncelle (mode’a göre)
+      if(data && Array.isArray(data.quick_replies) && data.quick_replies.length){
+        renderChips(data.quick_replies);
+      } else {
+        renderChips(MODES[currentMode].chips);
+      }
+
+      // Kartlar sadece response.data_type === "products" iken
+      if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
+        renderCards(data.data);
+      }
+
+      scrollToBottom(true);
+
+    }catch(e){
+      loaderEl.style.display = "none";
+      pushMessage("ai", "Bağlantı koptu evladım. İnternetini kontrol et.");
+    }
+  }
+
+  // ---- Menu (placeholder)
+  function toggleInfo(){
+    // şimdilik yok; istersen modal ekleriz
+    alert("Menü yakında evladım 🙂");
+  }
+
+  // ---- INIT
+  function init(){
+    ensureThread(currentMode);
+
+    // ilk açılış
+    setHeader();
+    renderDock();
+    renderChips(MODES[currentMode].chips);
+
+    welcomed[currentMode] = true;
+    pushMessage("ai", MODES[currentMode].welcome);
+
+    adjustLayout();
+    scrollToBottom(true);
+  }
 
   init();
 </script>
-
 </body>
 </html>
-
