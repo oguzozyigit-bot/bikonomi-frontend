@@ -435,63 +435,73 @@
   const MODES = {
     shopping: {
       icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
-      desc:"Bugün ne alıyoruz evladım?", placeholder:"Ürün adı yaz veya link yapıştır...",
+      desc:"Bugün ne alıyoruz? Ürün adı yaz veya fotoğraf yükle.",
+      placeholder:"Ürün adı yaz veya link yapıştır...",
       chips:["Airfryer", "iPhone 15", "Robot süpürge"],
-      welcome:"Bugün ne alıyoruz evladım? Ürün adı yaz, link at ya da fotoğrafını çek; en uygununu bulayım."
+      welcome:"Bugün ne alıyoruz? Ürün adı yaz, link at ya da fotoğrafını çek; detaylı analiz yapayım."
     },
     health: {
       icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
-      desc:"Şikayetini yaz (Acilse 112).", placeholder:"Şikayetin nedir?",
+      desc:"Şikayetini yaz (acil durumda 112).",
+      placeholder:"Şikayetin nedir?",
       chips:["Başım ağrıyor", "Boğazım yanıyor", "Grip oldum"],
-      welcome:"Ne oldu evladım, rahatsızlığın nedir? (Acil durumlarda 112’yi ara.)"
+      welcome:"Şikayetini detaylıca yaz. (Unutma, acil durumlarda 112’yi ara.)"
     },
     diet: {
       icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
-      desc:"Hedefe göre plan yapalım.", placeholder:"Hedefin ne? kilo ver / al...",
+      desc:"Hedefe göre plan yapalım.",
+      placeholder:"Hedefin ne? kilo ver / al...",
       chips:["Kilo vermek istiyorum", "Kalori hesabı", "Akşam ne yesem?"],
-      welcome:"Tamam evladım, hedefin ne? Kilo verme mi, alma mı, yoksa form mu?"
+      welcome:"Hedefini yaz: kilo verme, kilo alma, form veya sağlık."
     },
     food: {
       icon:"fa-utensils", label:"Yemek", title:"Yemek Uzmanı",
-      desc:"Ne pişirsek, ne yesek?", placeholder:"Evde ne var? Malzemeleri yaz...",
+      desc:"Evdeki malzemeleri yaz, tarif çıkaralım.",
+      placeholder:"Evde ne var? Malzemeleri yaz...",
       chips:["Akşama ne pişirsem?", "3 malzemeli tatlı", "Diyet yemek"],
-      welcome:"Haydi bakalım evladım, evde ne malzeme var? Yaz, sana mis gibi tarif çıkarayım."
+      welcome:"Evdeki malzemeleri yaz; pratik ve net tarif çıkarayım."
     },
     teacher: {
       icon:"fa-chalkboard-user", label:"Eğitim", title:"Öğretmen",
-      desc:"Hangi konuda çalışıyoruz?", placeholder:"Konuyu yaz, birlikte öğrenelim...",
+      desc:"Konu yaz, adım adım gidelim.",
+      placeholder:"Konuyu yaz, birlikte öğrenelim...",
       chips:["Matematik", "İngilizce", "Tarih"],
-      welcome:"Bugün hangi konuda ders çalışmak istersin evladım? Konuyu yaz, adım adım gidelim."
+      welcome:"Hangi konuda destek lazım? Konuyu yaz, adım adım öğrenelim."
     },
     translator: {
       icon:"fa-language", label:"Çeviri", title:"Çevirmen",
-      desc:"Metni yapıştır, çevireyim.", placeholder:"Metni buraya yaz/yapıştır...",
+      desc:"Metni yapıştır, çevireyim.",
+      placeholder:"Metni buraya yaz/yapıştır...",
       chips:["İngilizceye çevir", "Resmi çeviri", "Günlük çeviri"],
-      welcome:"Metni yapıştır evladım. Hangi dile çevireyim?"
+      welcome:"Metni yapıştır. Hangi dile çevirmemi istersin?"
     },
     economist: {
       icon:"fa-chart-line", label:"Ekonomi", title:"Ekonomist",
-      desc:"Bütçe, piyasa, plan.", placeholder:"Sorunu yaz: bütçe/yatırım...",
+      desc:"Bütçe, piyasa, plan.",
+      placeholder:"Sorunu yaz: bütçe/yatırım...",
       chips:["Altın alınır mı?", "Bütçe planla", "Dolar gündemi"],
-      welcome:"Hadi anlat evladım: bütçe mi yapıyoruz, yatırım mı konuşuyoruz?"
+      welcome:"Konuyu yaz: bütçe, yatırım veya piyasa durumu."
     },
     lawyer: {
       icon:"fa-scale-balanced", label:"Hukuk", title:"Hukuk Danışmanı",
-      desc:"Genel bilgi amaçlıdır.", placeholder:"Olayı kısaca özetle...",
+      desc:"Genel bilgi amaçlıdır.",
+      placeholder:"Olayı kısaca özetle...",
       chips:["Kiracı hakları", "Tüketici hakem", "İşe iade"],
-      welcome:"Anlat evladım, olay ne? (Genel bilgi verebilirim; resmi danışmanlık değildir.)"
+      welcome:"Olayı kısaca özetle. (Genel bilgilendirme; resmi danışmanlık değildir.)"
     },
     future: {
       icon:"fa-wand-magic-sparkles", label:"Fal", title:"Gelecek Yorumcusu",
-      desc:"Niyetini tut, falına bakayım.", placeholder:"Fotoğraf yükle veya niyet yaz...",
+      desc:"Niyet yaz veya fotoğraf yükle (eğlence amaçlı).",
+      placeholder:"Fotoğraf yükle veya niyet yaz...",
       chips:["Kahve falı (foto)", "3 kart tarot", "Günlük burç"],
-      welcome:"Hadi bakalım... Niyetini söyle ya da fincan fotoğrafını gönder. (Eğlence amaçlıdır.)"
+      welcome:"Niyetini yaz veya fincan fotoğrafı gönder. (Eğlence amaçlıdır.)"
     },
     life: {
       icon:"fa-heart", label:"Yaşam", title:"Yaşam Koçu",
-      desc:"Dertleşelim, plan yapalım.", placeholder:"İçinden geçenleri yaz...",
+      desc:"Dertleşelim, plan yapalım.",
+      placeholder:"İçinden geçenleri yaz...",
       chips:["Canım sıkkın", "Motivasyon lazım", "Bir plan yapalım"],
-      welcome:"Hoş geldin evladım. Anlat bakalım, neye takıldı gönlün?"
+      welcome:"Anlat bakalım, seni dinliyorum. Neye takıldı aklın?"
     }
   };
 
@@ -557,7 +567,6 @@
       if(m.type === "cards"){
         renderCards(m.cards, true);
       } else {
-        // speechText varsa onu da geçiyoruz
         addBubble(m.role, m.text, m.img, true, m.speechText);
       }
     }
@@ -577,7 +586,6 @@
 
     if(!welcomed[m]){
       welcomed[m] = true;
-      // İlk mesajda speechText = normal text
       pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
     }
 
@@ -588,12 +596,10 @@
   // ---- Messages
   function pushMessage(role, text, img=null, speechText=null){
     ensureThread(currentMode);
-    // Thread'e speechText'i de kaydediyoruz
     threads[currentMode].push({type:"msg", role, text, img, speechText, ts:Date.now()});
     addBubble(role, text, img, false, speechText);
   }
 
-  // addBubble artık speechText alabiliyor
   function addBubble(role, text, img=null, silent=false, speechText=null){
     const row = document.createElement("div");
     row.className = "msg " + (role === "user" ? "user" : "ai");
@@ -621,9 +627,7 @@
     }
 
     // Ses butonu (AI)
-    // Eğer speechText yoksa text'in kendisini kullan
     const textToSpeak = speechText || text || "";
-    
     if(role === "ai"){
       const btn = document.createElement("button");
       btn.className = "audio-btn";
@@ -693,7 +697,7 @@
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     if(file.size > 6 * 1024 * 1024){
-      alert("Fotoğraf çok büyük evladım. Daha küçük bir fotoğraf seç.");
+      alert("Fotoğraf çok büyük. Daha küçük bir fotoğraf seç.");
       return;
     }
     const reader = new FileReader();
@@ -772,31 +776,22 @@
 
     if(!rawText && !img) return;
 
-    // Ekranda görünecek kullanıcı mesajı
     pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
     
     textEl.value = "";
     pendingImageDataUrl = null;
 
-    // Loader
     loaderEl.style.display = "block";
     resultsEl.appendChild(loaderEl);
     scrollToBottom(true);
 
-    // --- PROMPT INJECTION (HİLE) ---
-    // Backend'e giden mesaja gizli talimat ekliyoruz.
-    // Bu sayede AI; ekrana uzun yazı yazarken, sese kısa ve şiveli metin hazırlar.
-    const injectedText = rawText + 
-      " [SİSTEM EMRİ: Cevabın metnini ('assistant_text') olabildiğince detaylı, uzun, açıklayıcı ve bilge bir dille yaz. " +
-      "Ancak seslendirme metnini ('speech_text') Trakyalı/Egeli yaşlı bir teyze ağzıyla, kısa, samimi ve şiveli hazırla. " +
-      "Seslendirme metni MUTLAKA şu cümleyle bitsin: 'Kaynanayı dinlersen pişman olmazsın evladım!']";
-
     const payload = {
-      message: injectedText, // Gizli talimatlı metin
+      message: rawText || "",
       image: img || null,
       mode: currentMode,
       session_id: sessionId,
-      user: { city: "İstanbul", gender: "neutral" }
+      user: { city: "İstanbul", gender: "neutral" },
+      response_prefs: { assistant_text: "detailed", speech_text: "short" }
     };
 
     try{
@@ -809,10 +804,9 @@
 
       loaderEl.style.display = "none";
 
-      const aiText = (data && (data.assistant_text || data.reply)) || "Bir şeyler ters gitti evladım.";
-      const speechText = data.speech_text || aiText; // Backend ayrı gönderirse onu kullan
+      const aiText = (data && (data.assistant_text || data.reply)) || "Bir şeyler ters gitti.";
+      const speechText = data.speech_text || aiText;
 
-      // Mesajı ekle (speechText'i ayrı saklayarak)
       pushMessage("ai", aiText, null, speechText);
 
       if(data && Array.isArray(data.quick_replies) && data.quick_replies.length){
@@ -829,12 +823,12 @@
 
     }catch(e){
       loaderEl.style.display = "none";
-      pushMessage("ai", "Bağlantı koptu evladım. İnternetini kontrol et.");
+      pushMessage("ai", "Bağlantı koptu. İnternetini kontrol et.");
     }
   }
 
   function toggleInfo(){
-    alert("Menü yakında evladım 🙂");
+    alert("Menü yakında 🙂");
   }
 
   // ---- INIT
