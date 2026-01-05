@@ -13,13 +13,13 @@
     --primary-light: #ECFDF5;
     --text-main: #111827;
     --text-sub: #6B7280;
-    --bg-app: #F3F4F6; /* Masaüstü arka planı gri olsun */
+    --bg-app: #F3F4F6; /* Desktop arka plan */
     --bg-white: #FFFFFF;
     --border: #E5E7EB;
-    
+
     --header-height: 60px;
     --dock-height: 72px;
-    --app-max-width: 768px; /* Desktop genişlik sınırı */
+    --app-max-width: 768px;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -31,11 +31,11 @@
     height: 100vh;
     height: 100dvh;
     display: flex;
-    justify-content: center; /* Desktopta ortala */
+    justify-content: center;
     overflow: hidden;
   }
 
-  /* --- APP CONTAINER (Desktop Sınırlayıcı) --- */
+  /* --- APP ROOT --- */
   #app-root {
     width: 100%;
     max-width: var(--app-max-width);
@@ -44,10 +44,10 @@
     flex-direction: column;
     height: 100%;
     position: relative;
-    box-shadow: 0 0 20px rgba(0,0,0,0.05); /* Desktopta hafif gölge */
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
   }
 
-  /* --- A) ÜST BAR --- */
+  /* --- TOP BAR --- */
   .top-bar {
     min-height: var(--header-height);
     background: var(--bg-white);
@@ -57,7 +57,7 @@
     justify-content: space-between;
     padding: 0 16px;
     padding-top: env(safe-area-inset-top);
-    position: absolute; /* App root içinde absolute */
+    position: absolute;
     top: 0; left: 0; right: 0;
     z-index: 60;
   }
@@ -73,44 +73,49 @@
   .logo span { color: var(--primary); }
 
   .top-menu-btn {
-    font-size: 20px; color: var(--text-sub); background: none; border: none; cursor: pointer;
+    font-size: 20px;
+    color: var(--text-sub);
+    background: none;
+    border: none;
+    cursor: pointer;
   }
 
-  /* --- B) ORTA ANA PENCERE --- */
+  /* --- MAIN PANEL --- */
   .main-panel {
     flex: 1;
-    margin-top: var(--header-height);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     scroll-behavior: smooth;
     position: relative;
-    padding-bottom: 20px;
     background: var(--bg-white);
+    /* padding üst/alt JS ile dinamik ayarlanacak */
+    padding-top: var(--header-height);
+    padding-bottom: calc(var(--dock-height) + 120px); /* fallback */
   }
 
-  /* Panel Başlığı */
   .panel-header {
     text-align: center;
     padding: 24px 16px 16px;
     background: var(--bg-white);
-    position: sticky; top: 0; z-index: 10;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid rgba(0,0,0,0.02);
   }
   .ph-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
   .ph-desc { font-size: 13px; color: var(--text-sub); }
 
-  /* Sohbet Akışı */
+  /* RESULTS STREAM */
   .results-stream {
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
-    /* Klavye açılınca içerik yukarı kaysın diye min-height */
     min-height: 300px;
   }
 
-  /* Mesaj Balonları */
-  .msg-row { display: flex; flex-direction: column; width: 100%; animation: slideUp 0.3s ease; }
+  .msg-row { display: flex; flex-direction: column; width: 100%; animation: slideUp 0.25s ease; }
   .msg-row.user { align-items: flex-end; }
   .msg-row.ai { align-items: flex-start; }
 
@@ -127,42 +132,58 @@
   .msg-row.user .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
   .msg-row.ai .bubble { background: #F3F4F6; color: var(--text-main); border-bottom-left-radius: 4px; }
 
-  /* Gelecek Modu Uyarısı */
   .disclaimer {
-    font-size: 10px; color: #9CA3AF; margin-top: 4px; font-style: italic; display: block;
+    font-size: 10px;
+    color: #9CA3AF;
+    margin-top: 6px;
+    font-style: italic;
+    display: block;
   }
 
-  /* Kartlar */
+  /* CARDS */
   .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 2px; width: 100%; scrollbar-width: none; }
   .cards-scroll::-webkit-scrollbar { display: none; }
-  
+
   .card {
-    min-width: 200px; max-width: 200px; background: white; border: 1px solid var(--border);
-    border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
-    text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    min-width: 200px; max-width: 200px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
     transition: transform 0.2s;
   }
   .card:hover { transform: translateY(-3px); }
   .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; }
-  .card-title { font-size: 13px; font-weight: 700; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;}
+  .card-title { font-size: 13px; font-weight: 700; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px; }
   .card-price { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: auto; }
 
-  /* Loader Bubble */
+  /* LOADER (stream içinde) */
   .loader-bubble {
     align-self: flex-start;
-    background: white; border: 1px solid var(--border);
-    padding: 10px 16px; border-radius: 16px; border-bottom-left-radius: 4px;
-    color: var(--text-sub); font-size: 13px; font-style: italic;
-    display: none; margin-bottom: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    color: var(--text-sub);
+    font-size: 13px;
+    font-style: italic;
+    display: none;
+    margin-bottom: 10px;
     animation: pulse 1.5s infinite;
   }
 
-  @keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+  @keyframes slideUp { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
   @keyframes pulse { 0% {opacity:0.6} 50% {opacity:1} 100% {opacity:0.6} }
 
-  /* --- C) SABİT ALT ALAN --- */
+  /* --- FIXED BOTTOM AREA --- */
   .fixed-bottom-area {
-    position: absolute; /* App root içinde absolute */
+    position: absolute;
     bottom: 0; left: 0; right: 0;
     z-index: 50;
     background: var(--bg-white);
@@ -172,7 +193,6 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* 1. Input Section */
   .input-section {
     padding: 8px 12px;
     background: var(--bg-white);
@@ -182,56 +202,85 @@
     border-bottom: 1px solid #F3F4F6;
   }
 
-  /* Chips Row (Yatay Kaydırmalı) */
   .chips-row {
-    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; height: 36px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+    height: 36px;
     align-items: center;
   }
   .chips-row::-webkit-scrollbar { display: none; }
-  
-  /* Chip (Buton Görünümlü, Mesaj Değil!) */
+
   .chip {
-    background: var(--bg-app); border: 1px solid var(--border);
-    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
-    color: var(--text-sub); white-space: nowrap; cursor: pointer; flex-shrink: 0;
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-sub);
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
     transition: 0.2s;
   }
   .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
   .chip:active { transform: scale(0.95); }
 
-  /* Input Wrapper */
   .input-wrapper {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--bg-app); border: 1px solid var(--border);
-    border-radius: 24px; padding: 8px 8px 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg-app);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 8px 8px 8px 14px;
   }
   .input-wrapper:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
 
   .tool-btn {
-    width: 32px; height: 32px; border-radius: 50%; border: none;
-    background: transparent; color: var(--text-sub); font-size: 18px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: 0.2s;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--text-sub);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: 0.2s;
   }
   .tool-btn:hover { color: var(--primary); background: rgba(0,0,0,0.05); }
   .tool-btn.active { color: #EF4444; animation: recording 1s infinite; background: #FEE2E2; }
   @keyframes recording { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
 
   .main-input {
-    flex: 1; border: none; background: transparent; font-size: 15px; outline: none; padding: 0 5px;
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    outline: none;
+    padding: 0 5px;
     min-width: 0;
   }
 
   .send-btn {
-    width: 38px; height: 38px; border-radius: 50%; border: none;
-    background: var(--primary); color: white; font-size: 16px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: 0.2s;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary);
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: 0.2s;
   }
   .send-btn:hover { background: #059669; }
   .send-btn:active { transform: scale(0.9); }
 
-  /* 2. Mode Dock */
   .mode-dock {
     height: var(--dock-height);
     background: var(--bg-white);
@@ -247,40 +296,77 @@
     flex: 1; min-width: 65px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 4px; color: var(--text-sub); cursor: pointer;
-    padding: 6px; border-radius: 8px; transition: 0.2s;
+    gap: 4px;
+    color: var(--text-sub);
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 8px;
+    transition: 0.2s;
   }
   .dock-item:hover { background: #F9FAFB; }
   .dock-item i { font-size: 20px; margin-bottom: 2px; }
   .dock-item span { font-size: 10px; font-weight: 500; text-align: center; line-height: 1.1; }
-  
   .dock-item.active { color: var(--primary); }
   .dock-item.active i { transform: translateY(-2px); }
 
-  /* Audio Play Btn */
   .audio-play {
-    margin-top: 6px; background: white; border: 1px solid var(--border);
-    border-radius: 12px; padding: 4px 10px; font-size: 11px;
-    color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 6px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: var(--text-sub);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     transition: 0.2s;
   }
   .audio-play:hover { border-color: var(--primary); color: var(--primary); }
 
   /* Modal */
   #infoModal {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
-    align-items: center; justify-content: center; backdrop-filter: blur(2px);
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
   }
   .info-content {
-    background: white; width: 90%; max-width: 320px; padding: 24px; border-radius: 20px;
-    text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    background: white;
+    width: 90%;
+    max-width: 320px;
+    padding: 24px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
   }
-  .info-links a { display: block; padding: 12px; border-bottom: 1px solid #eee; color: #333; text-decoration: none; font-size: 14px; font-weight: 500; }
+  .info-links a {
+    display: block;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+  }
   .info-links a:last-child { border-bottom: none; }
-  .close-modal { margin-top: 15px; width: 100%; padding: 12px; background: var(--bg-app); border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
+  .close-modal {
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-app);
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 
   #fileInput { display: none; }
-
 </style>
 </head>
 <body>
@@ -293,7 +379,7 @@
   </div>
 
   <div class="main-panel" id="mainPanel">
-    
+
     <div class="panel-header">
       <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
       <div class="ph-desc" id="panelDesc">Seni dinliyorum, anlat bakalım.</div>
@@ -308,7 +394,7 @@
   </div>
 
   <div class="fixed-bottom-area" id="fixedBottom">
-    
+
     <div class="input-section">
       <div class="chips-row" id="chipsRow"></div>
 
@@ -338,12 +424,12 @@
   </div>
 </div>
 
-<input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+<input type="file" id="fileInput" accept="image/*" onchange="handleFile(this.files[0])">
 
 <script>
   const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
-  
+
   // Session
   let sessionId = localStorage.getItem('caynana_sid');
   if (!sessionId) {
@@ -351,16 +437,80 @@
       localStorage.setItem('caynana_sid', sessionId);
   }
 
+  // Modes (placeholder'lar EKLENDİ -> undefined biter)
   const MODES = {
-    shopping: { icon: "fa-bag-shopping", label: "Alışveriş", title: "Alışveriş Uzmanı", desc: "En iyi fiyatı bulurum.", chips: ["Airfryer", "iPhone 15", "Robot Süpürge"] },
-    health: { icon: "fa-user-doctor", label: "Sağlık", title: "Sağlık Danışmanı", desc: "Şikayetini yaz (Acilse 112).", chips: ["Başım ağrıyor", "Grip oldum", "Vitamin önerisi"] },
-    diet: { icon: "fa-apple-whole", label: "Diyet", title: "Diyetisyen", desc: "Beslenme planı yapalım.", chips: ["Kilo vermek istiyorum", "Kalori hesabı"] },
-    food: { icon: "fa-utensils", label: "Yemek", title: "Yemek Gurmesi", desc: "Ne yesek, ne pişirsek?", chips: ["Akşama ne pişirsem?", "En yakın pizzacı"] },
-    teacher: { icon: "fa-chalkboard-user", label: "Eğitim", title: "Öğretmen", desc: "Her konuyu anlatırım.", chips: ["Matematik sorusu", "İngilizce gramer"] },
-    translator: { icon: "fa-language", label: "Çeviri", title: "Çevirmen", desc: "Dili seç, çevireyim.", chips: ["İngilizceye çevir", "Almanca nasılsın de"] },
-    lawyer: { icon: "fa-scale-balanced", label: "Hukuk", title: "Hukukçu", desc: "Haklarını öğren (Bilgi amaçlı).", chips: ["Kiracı hakları", "İşe iade"] },
-    life: { icon: "fa-heart", label: "Yaşam", title: "Yeni Nesil Yaşam Koçunuz", desc: "Danış,sor,yol haritanı birlikte çizelim. Ne alacaksan ister sesli, ister fotağrafını çekerek, istersende linkini atarak sor. Analizini yapayım öyle al. Kahve içtin, çek fincanın telvesinin fotoğrafını falına bakayım. Moralin bozluk sohbet edeyim. Ben yeni nesil Caynana yım.", chips: ["Canım sıkkın", "Motivasyon lazım"] },
-    future: { icon: "fa-wand-magic-sparkles", label: "Fal", title: "Falcı Bacı", desc: "Geleceği yorumlayalım.", chips: ["Kahve Falı (Foto)", "Tarot", "Burç"] }
+    shopping: {
+      icon: "fa-bag-shopping",
+      label: "Alışveriş",
+      title: "Alışveriş Uzmanı",
+      desc: "En iyi fiyatı bulurum.",
+      placeholder: "Ürün adı yaz veya link yapıştır...",
+      chips: ["Airfryer", "iPhone 15", "Robot Süpürge"]
+    },
+    health: {
+      icon: "fa-user-doctor",
+      label: "Sağlık",
+      title: "Sağlık Danışmanı",
+      desc: "Şikayetini yaz (Acilse 112).",
+      placeholder: "Şikayetini kısaca yaz...",
+      chips: ["Başım ağrıyor", "Grip oldum", "Vitamin önerisi"]
+    },
+    diet: {
+      icon: "fa-apple-whole",
+      label: "Diyet",
+      title: "Diyetisyen",
+      desc: "Beslenme planı yapalım.",
+      placeholder: "Hedefini yaz: kilo ver / al...",
+      chips: ["Kilo vermek istiyorum", "Kalori hesabı"]
+    },
+    food: {
+      icon: "fa-utensils",
+      label: "Yemek",
+      title: "Yemek Gurmesi",
+      desc: "Ne yesek, ne pişirsek?",
+      placeholder: "Malzemeleri yaz, tarif vereyim...",
+      chips: ["Akşama ne pişirsem?", "3 malzemeli tatlı"]
+    },
+    teacher: {
+      icon: "fa-chalkboard-user",
+      label: "Eğitim",
+      title: "Öğretmen",
+      desc: "Her konuyu anlatırım.",
+      placeholder: "Hangi konuyu öğrenmek istiyorsun?",
+      chips: ["Matematik sorusu", "İngilizce gramer"]
+    },
+    translator: {
+      icon: "fa-language",
+      label: "Çeviri",
+      title: "Çevirmen",
+      desc: "Dili seç, çevireyim.",
+      placeholder: "Metni buraya yapıştır...",
+      chips: ["İngilizceye çevir", "Almanca nasılsın de"]
+    },
+    lawyer: {
+      icon: "fa-scale-balanced",
+      label: "Hukuk",
+      title: "Hukukçu",
+      desc: "Haklarını öğren (Bilgi amaçlı).",
+      placeholder: "Olayı kısaca özetle...",
+      chips: ["Kiracı hakları", "Tüketici hakem heyeti"]
+    },
+    life: {
+      icon: "fa-heart",
+      label: "Yaşam",
+      title: "Yeni Nesil Yaşam Koçunuz",
+      desc: "Danış, sor; yol haritanı birlikte çizelim.",
+      placeholder: "İçinden geçen ne varsa yaz...",
+      chips: ["Canım sıkkın", "Motivasyon lazım"]
+    },
+    future: {
+      icon: "fa-wand-magic-sparkles",
+      label: "Fal",
+      title: "Falcı Bacı",
+      desc: "Geleceği yorumlayalım.",
+      placeholder: "Niyetini yaz veya fotoğraf yükle...",
+      chips: ["Kahve Falı (Foto)", "Tarot", "Burç"]
+    }
   };
 
   let currentMode = "life";
@@ -374,27 +524,22 @@
   const mainPanel = document.getElementById('mainPanel');
   const fixedBottom = document.getElementById('fixedBottom');
   const topBar = document.getElementById('topBar');
+  const chipsRow = document.getElementById('chipsRow');
 
-  // --- DİNAMİK YERLEŞİM (DESKTOP & MOBİL UYUMU) ---
+  // -------- Layout
   function adjustLayout() {
     const bottomHeight = fixedBottom.offsetHeight;
     const topHeight = topBar.offsetHeight;
-    
-    // Panel boşluklarını ayarla ki içerik input altında kalmasın
-    mainPanel.style.marginTop = topHeight + 'px';
-    mainPanel.style.marginBottom = bottomHeight + 'px';
+
+    // Absolute barlar flow dışı -> mainPanel padding ile korunmalı
+    mainPanel.style.paddingTop = topHeight + 'px';
+    mainPanel.style.paddingBottom = bottomHeight + 'px';
   }
 
-  window.addEventListener('resize', adjustLayout);
-  window.addEventListener('load', adjustLayout);
+  window.addEventListener('resize', () => setTimeout(adjustLayout, 50));
+  window.addEventListener('load', () => setTimeout(adjustLayout, 50));
 
-  function init() {
-    renderDock();
-    switchMode('life', true); // İlk açılış
-    addMsg("Hoş geldin evladım. Bir konu seç, sana elimden geldiğince yardımcı olayım.", 'ai');
-    adjustLayout();
-  }
-
+  // -------- UI helpers
   function renderDock() {
     const dock = document.getElementById('modeDock');
     dock.innerHTML = '';
@@ -408,95 +553,104 @@
     });
   }
 
-  function switchMode(key, isInit = false) {
-    if (key !== currentMode || isInit) {
-        currentMode = key;
-        const m = MODES[key];
-        
-        // Header
-        document.getElementById('panelTitle').innerText = m.title;
-        document.getElementById('panelDesc').innerText = m.desc;
-        
-        // Input
-        mainInput.placeholder = m.placeholder;
-        mainInput.value = '';
-        
-        // Chips (Sadece buraya render edilir, CHAT'e DEĞİL!)
-        const chipsRow = document.getElementById('chipsRow');
-        chipsRow.innerHTML = '';
-        m.chips.forEach(t => {
-            const c = document.createElement('div');
-            c.className = 'chip';
-            c.innerText = t;
-            // Tıklayınca inputa yaz ve gönder
-            c.onclick = () => { mainInput.value = t; sendMessage(); };
-            chipsRow.appendChild(c);
-        });
+  function renderChips(list) {
+    chipsRow.innerHTML = '';
+    (list || []).forEach(t => {
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.innerText = t;
+      c.onclick = () => { mainInput.value = t; sendMessage(); };
+      chipsRow.appendChild(c);
+    });
+  }
 
-        // Dock Aktiflik
-        document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
-        renderDock();
-        
-        // Mod değişince chat geçmişini SİLMİYORUZ ama spam de yapmıyoruz.
-        // İstersen sadece "Mod değişti" diye küçük bir sistem notu ekleyebiliriz ama temiz kalsın.
-        setTimeout(adjustLayout, 50);
+  function switchMode(key, isInit = false) {
+    if (!MODES[key]) return;
+
+    if (key !== currentMode || isInit) {
+      currentMode = key;
+      const m = MODES[key];
+
+      document.getElementById('panelTitle').innerText = m.title;
+      document.getElementById('panelDesc').innerText = m.desc;
+
+      mainInput.placeholder = m.placeholder || "Bir şeyler yaz...";
+      mainInput.value = '';
+
+      // İlk etapta lokal chip’ler
+      renderChips(m.chips);
+
+      // Dock state
+      renderDock();
+      setTimeout(adjustLayout, 50);
     }
   }
 
+  // -------- Messaging
   async function sendMessage() {
     const txt = mainInput.value.trim();
     if (!txt && !currentImg) return;
 
-    addMsg(txt, 'user', currentImg);
+    addMsg(txt || "📷 Fotoğraf gönderildi", 'user', currentImg);
+
     mainInput.value = '';
     const imgData = currentImg;
     currentImg = null;
     document.getElementById('fileInput').value = '';
 
-    // Loader Göster (DOM içinde display:block)
+    // Loader stream içinde en sonda dursun
     loader.style.display = 'block';
-    // Loader'ı en sona taşı (append)
-    resultsStream.appendChild(loader); 
+    resultsStream.appendChild(loader);
     scrollToBottom();
 
     const payload = {
-        message: txt || "Dosya gönderildi",
-        image: imgData,
-        mode: currentMode,
-        session_id: sessionId,
-        user: { city: 'İstanbul', gender: 'neutral' }
+      message: txt || "Dosya gönderildi",
+      image: imgData,
+      mode: currentMode,
+      session_id: sessionId,
+      user: { city: 'İstanbul', gender: 'neutral' }
     };
 
     try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        
-        loader.style.display = 'none';
-        
-        const aiText = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
-        const aiRow = addMsg(aiText, 'ai');
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
 
-        if (data.data && Array.isArray(data.data) && (currentMode === 'shopping' || currentMode === 'food')) {
-            renderCards(data.data);
-        }
+      const data = await res.json();
+      loader.style.display = 'none';
+
+      // ✅ Öncelik: assistant_text (backend sözleşmesi)
+      const aiText = (data && (data.assistant_text || data.reply)) || "Bir şeyler ters gitti.";
+      addMsg(aiText, 'ai');
+
+      // ✅ Quick replies backend’den gelirse chips’i güncelle
+      if (data && Array.isArray(data.quick_replies) && data.quick_replies.length) {
+        renderChips(data.quick_replies);
+      }
+
+      // ✅ Kartlar sadece products ise
+      if (data && data.data_type === "products" && Array.isArray(data.data) && data.data.length) {
+        renderCards(data.data);
+      }
+
+      // Shopping modunda ürün yoksa: chat akışına kart basma yok, sadece metin
+      scrollToBottom();
 
     } catch(e) {
-        loader.style.display = 'none';
-        addMsg("Bağlantı hatası oluştu evladım.", 'ai');
+      loader.style.display = 'none';
+      addMsg("Bağlantı hatası oluştu evladım.", 'ai');
     }
   }
 
   function addMsg(text, type, imgBase64) {
     const row = document.createElement('div');
     row.className = `msg-row ${type}`;
-    
+
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    
+
     if (imgBase64) {
       const img = document.createElement('img');
       img.src = imgBase64;
@@ -506,31 +660,32 @@
       img.style.display = 'block';
       bubble.appendChild(img);
     }
-    
-    // Metin
+
     const span = document.createElement('span');
-    span.innerHTML = text.replace(/\n/g, '<br>');
+    span.innerHTML = (text || "").toString().replace(/\n/g, '<br>');
     bubble.appendChild(span);
 
-    // Fal Modu Uyarısı
-    if(type === 'ai' && currentMode === 'future') {
-        const disc = document.createElement('span');
-        disc.className = 'disclaimer';
-        disc.innerText = "(Eğlence amaçlıdır, kesinlik içermez)";
-        bubble.appendChild(disc);
+    // Fal modunda uyarı
+    if (type === 'ai' && currentMode === 'future') {
+      const disc = document.createElement('span');
+      disc.className = 'disclaimer';
+      disc.innerText = "(Eğlence amaçlıdır, kesinlik içermez)";
+      bubble.appendChild(disc);
     }
 
-    if(type === 'ai') {
-        const btn = document.createElement('button');
-        btn.className = 'audio-play';
-        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
-        const safeTxt = text.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
-        btn.onclick = () => playVoice(btn, safeTxt);
-        bubble.appendChild(btn);
+    // Ses butonu
+    if (type === 'ai') {
+      const btn = document.createElement('button');
+      btn.className = 'audio-play';
+      btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+      const safeTxt = (text || "").toString().replace(/<[^>]*>?/gm, '').replace(/"/g, '');
+      btn.onclick = () => playVoice(btn, safeTxt);
+      bubble.appendChild(btn);
     }
 
     row.appendChild(bubble);
-    // Loader'dan önceye ekle
+
+    // Loader aynı parent içinde olduğu için insertBefore güvenli
     resultsStream.insertBefore(row, loader);
     scrollToBottom();
     return row;
@@ -539,36 +694,38 @@
   function renderCards(cards) {
     const scroll = document.createElement('div');
     scroll.className = 'cards-scroll';
-    
+
     cards.forEach(c => {
-        const a = document.createElement('a');
-        a.className = 'card';
-        a.href = c.url || '#';
-        a.target = '_blank';
-        
-        const img = c.image ? `<img src="${c.image}">` : '<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:8px; font-size:30px; color:#ccc;"><i class="fa-solid fa-image"></i></div>';
-        
-        a.innerHTML = `
-            ${img}
-            <div class="card-title">${c.title}</div>
-            <div class="card-price">${c.price || c.desc || ''}</div>
-        `;
-        scroll.appendChild(a);
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = c.url || '#';
+      a.target = '_blank';
+
+      const img = c.image
+        ? `<img src="${c.image}">`
+        : `<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:8px; font-size:30px; color:#ccc;"><i class="fa-solid fa-image"></i></div>`;
+
+      a.innerHTML = `
+        ${img}
+        <div class="card-title">${(c.title || 'Ürün').toString()}</div>
+        <div class="card-price">${(c.price || c.desc || '').toString()}</div>
+      `;
+      scroll.appendChild(a);
     });
-    
+
     resultsStream.insertBefore(scroll, loader);
     scrollToBottom();
   }
 
   function scrollToBottom() {
     setTimeout(() => {
-        mainPanel.scrollTop = mainPanel.scrollHeight;
+      mainPanel.scrollTop = mainPanel.scrollHeight;
     }, 100);
   }
 
-  // --- MEDYA ---
+  // -------- Media
   function triggerCam() { document.getElementById('fileInput').click(); }
-  
+
   function handleFile(file) {
     if(!file) return;
     const reader = new FileReader();
@@ -586,51 +743,63 @@
     const rec = new SR();
     rec.lang = 'tr-TR';
     const btn = document.getElementById('micBtn');
-    
+
     rec.onstart = () => { btn.classList.add('active'); mainInput.placeholder = "Dinliyorum..."; };
-    
+
     let hasResult = false;
-    rec.onend = () => { 
-        btn.classList.remove('active'); 
-        if(!hasResult) mainInput.placeholder = MODES[currentMode].placeholder; 
+    rec.onend = () => {
+      btn.classList.remove('active');
+      if(!hasResult) mainInput.placeholder = MODES[currentMode]?.placeholder || "Bir şeyler yaz...";
     };
-    
+
     rec.onresult = (e) => {
-        hasResult = true;
-        const transcript = e.results[0][0].transcript;
-        mainInput.value = transcript;
-        sendMessage();
+      hasResult = true;
+      const transcript = e.results[0][0].transcript;
+      mainInput.value = transcript;
+      sendMessage();
     };
     rec.start();
   }
 
   async function playVoice(btn, text) {
-    if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; return; }
+    if(currentAudio) {
+      currentAudio.pause();
+      currentAudio = null;
+      btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+      return;
+    }
+
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     try {
-        const res = await fetch(SPEAK_URL, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({text: text})
-        });
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        currentAudio = new Audio(url);
-        currentAudio.onended = () => { btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; };
-        await currentAudio.play();
-        btn.innerHTML='<i class="fa-solid fa-stop"></i>';
+      const res = await fetch(SPEAK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: text})
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+      currentAudio.onended = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; };
+      await currentAudio.play();
+      btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
     } catch(e) {
-        btn.innerHTML='!';
+      btn.innerHTML = '!';
     }
   }
 
   function openInfo() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfo() { document.getElementById('infoModal').style.display = 'none'; }
 
+  // -------- Init
+  function init() {
+    renderDock();
+    switchMode('life', true);
+    addMsg("Hoş geldin evladım. Bir konu seç, sana elimden geldiğince yardımcı olayım.", 'ai');
+    setTimeout(adjustLayout, 50);
+  }
+
   init();
 </script>
 
 </body>
 </html>
-
-
