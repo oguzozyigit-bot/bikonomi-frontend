@@ -270,7 +270,7 @@
     white-space:nowrap;
     text-overflow:ellipsis;
   }
-  .badge.gold{ border-color:#a7f3d0; color:#065f46; }
+  .badge.gold{ border-color:#a7f3d0; color:#065f46; background: #ecfdf5;}
 
   /* Bottom fixed area */
   #bottom{
@@ -480,11 +480,10 @@
   const micBtnEl  = document.getElementById("micBtn");
 
   // ---- STATE
-  let currentMode = "shopping"; // SADECE ALIŞVERİŞ
+  let currentMode = "shopping";
   let pendingImageDataUrl = null;
   let currentAudio = null;
 
-  // TEK MOD KİLİT
   const MODES = {
     shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
       desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
@@ -553,7 +552,6 @@
   }
 
   function switchMode(m){
-    // TEK MOD OLDUĞU İÇİN ASLINDA GEÇİŞ YOK
     if(!MODES[m]) return;
     currentMode = m;
     ensureThread(m);
@@ -562,7 +560,6 @@
     renderChips(MODES[m].chips);
     if(!welcomed[m]){
       welcomed[m]=true;
-      // İlk mesajda özel sponsorlu mesaj
       pushMessage(
         "ai", 
         "🎁 **Kaynana bugün öneriyor (Sponsorlu)**\nBugün en çok fiyat/performans çıkan ürünleri senin için tararım.\n\nAşağıdan ürününü yaz; ben yorumlayıp güvenli seçenekleri çıkarayım.", 
@@ -612,17 +609,6 @@
     if(!silent) row.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
-  function badgeClassFromLabel(label){
-    const s = (label||"").toUpperCase();
-    if(s.includes("STRONGLY")) return "gold";
-    if(s.includes("SMART")) return "blue";
-    if(s.includes("LONG")) return "purple";
-    if(s.includes("BUDGET")) return "orange";
-    if(s.includes("BE CAREFUL")) return "red";
-    return "gold";
-  }
-
-  // ✅ KART RENDER + TRACKING LİNKİ
   function renderCards(cards, silent=false){
     const wrap = document.createElement("div");
     wrap.className = "cards";
@@ -631,11 +617,13 @@
       const card = document.createElement("div");
       card.className = "card";
 
-      const trust = p.caynana_trust || {};
-      const score = (trust.score !== undefined && trust.score !== null) ? trust.score : "";
-      const badge = trust.badge || "";
-      const badgeCls = badgeClassFromLabel(badge);
-      const badgeHtml = badge ? `<div class="badge ${badgeCls}"><b>${badge}</b> • ${score}/10</div>` : "";
+      // Sponsor mu?
+      const isSponsor = p.is_sponsor === true;
+      const badgeTxt = (p.caynana_trust && p.caynana_trust.badge) 
+                       ? p.caynana_trust.badge 
+                       : (isSponsor ? "SPONSOR • KAYNANA ÖNERİSİ" : "GÜVENİLİR");
+      
+      const sponsorTag = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
 
       const imgHtml = p.image
         ? `<img src="${p.image}" alt="">`
@@ -643,21 +631,22 @@
              <i class="fa-solid fa-image"></i>
            </div>`;
 
-      // Backend ham URL ve Token döner.
-      const normalUrl = (p.url || "#").toString();
       const token = (p.track_token || "").toString();
-      const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
+      const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : (p.url||"#");
+
+      const price = p.price ? p.price : "Fiyatı görmek için tıkla";
 
       card.innerHTML = `
-        ${badgeHtml}
+        ${sponsorTag}
         ${imgHtml}
         <div class="title">${(p.title||"Ürün").toString()}</div>
-        <div class="price">${(p.price||"").toString()}</div>
+        <div class="price">${price}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
         
         <div class="cardActions">
-          <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol (Direkt)</a>
-          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana (Takipli)</a>
+          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">
+            CAYNANA ÖNERİSİ
+          </a>
         </div>
       `;
       wrap.appendChild(card);
@@ -679,7 +668,8 @@
 
   function openCamera(){
     fileEl.value = "";
-    setTimeout(()=>fileEl.click(), 0);
+    // iOS/Safari gesture fix: direkt click
+    fileEl.click();
   }
 
   fileEl.addEventListener("change", (e)=>{
@@ -824,7 +814,6 @@
     renderDock();
     renderChips(MODES[currentMode].chips);
     
-    // Tek mod olduğu için direkt switch
     switchMode("shopping");
     
     adjustLayout();
