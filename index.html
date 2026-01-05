@@ -560,12 +560,7 @@
     renderChips(MODES[m].chips);
     if(!welcomed[m]){
       welcomed[m]=true;
-      pushMessage(
-        "ai", 
-        "🎁 **Kaynana bugün öneriyor (Sponsorlu)**\nBugün en çok fiyat/performans çıkan ürünleri senin için tararım.\n\nAşağıdan ürününü yaz; ben yorumlayıp güvenli seçenekleri çıkarayım.", 
-        null, 
-        "Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma. Ben senin yanlış karar vermeni istemem."
-      );
+      pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
     }
     redrawThread();
     adjustLayout();
@@ -617,7 +612,6 @@
       const card = document.createElement("div");
       card.className = "card";
 
-      // Sponsor mu?
       const isSponsor = p.is_sponsor === true;
       const badgeTxt = (p.caynana_trust && p.caynana_trust.badge) 
                        ? p.caynana_trust.badge 
@@ -668,7 +662,6 @@
 
   function openCamera(){
     fileEl.value = "";
-    // iOS/Safari gesture fix: direkt click
     fileEl.click();
   }
 
