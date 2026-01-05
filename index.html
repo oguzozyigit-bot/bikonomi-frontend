@@ -134,14 +134,6 @@
     border:1px solid var(--border);
   }
 
-  .disclaimer{
-    display:block;
-    margin-top:8px;
-    font-size:11px;
-    color:#9CA3AF;
-    font-style:italic;
-  }
-
   .audio-btn{
     margin-top:10px;
     background:var(--white);
@@ -159,6 +151,7 @@
   }
   .audio-btn:hover{border-color:var(--primary); color:var(--primary);}
   .audio-btn.playing{color:var(--primary); border-color:var(--primary); background:#ECFDF5;}
+  .audio-btn::after{ content:" 🗣️"; }
 
   /* Loader */
   #loader{
@@ -183,7 +176,7 @@
   }
   .cards::-webkit-scrollbar{display:none;}
   .card{
-    min-width:240px; /* Butonlar sığsın diye biraz genişlettim */
+    min-width:240px;
     max-width:240px;
     background:var(--white);
     border:1px solid var(--border);
@@ -230,7 +223,6 @@
     align-items:center;
   }
 
-  /* YENİ: Kart Aksiyon Butonları */
   .cardActions{
     display:flex;
     flex-direction:column;
@@ -251,7 +243,6 @@
     transition: 0.2s;
   }
   .btnLink:hover{border-color:var(--muted);}
-  
   .btnPrimary{
     background:var(--primary);
     color:#fff;
@@ -280,10 +271,6 @@
     text-overflow:ellipsis;
   }
   .badge.gold{ border-color:#a7f3d0; color:#065f46; }
-  .badge.blue{ border-color:#bfdbfe; color:#1e3a8a; }
-  .badge.purple{ border-color:#e9d5ff; color:#5b21b6; }
-  .badge.orange{ border-color:#fed7aa; color:#9a3412; }
-  .badge.red{ border-color:#fecaca; color:#991b1b; }
 
   /* Bottom fixed area */
   #bottom{
@@ -493,70 +480,17 @@
   const micBtnEl  = document.getElementById("micBtn");
 
   // ---- STATE
-  let currentMode = "life";
+  let currentMode = "shopping"; // SADECE ALIŞVERİŞ
   let pendingImageDataUrl = null;
   let currentAudio = null;
 
+  // TEK MOD KİLİT
   const MODES = {
     shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
       desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
       placeholder:"Ürün adı yaz veya link yapıştır...",
       chips:["Airfryer","iPhone 15","Robot süpürge"],
-      welcome:"Ürün adı yaz, link at ya da fotoğraf yükle; teknik + yorum analiziyle öneri çıkarayım."
-    },
-    health: { icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
-      desc:"Şikayetini yaz (acil durumda 112).",
-      placeholder:"Şikayetin nedir?",
-      chips:["Başım ağrıyor","Boğazım yanıyor","Grip oldum"],
-      welcome:"Şikayetini yaz. (Acil durumlarda 112’yi ara.)"
-    },
-    diet: { icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
-      desc:"Hedefe göre plan yapalım.",
-      placeholder:"Hedefin ne? kilo ver / al...",
-      chips:["Kilo vermek istiyorum","Kalori hesabı","Akşam ne yesem?"],
-      welcome:"Hedefini yaz: kilo verme, kilo alma, form veya sağlık."
-    },
-    food: { icon:"fa-utensils", label:"Yemek", title:"Yemek Uzmanı",
-      desc:"Evdeki malzemeleri yaz, tarif çıkaralım.",
-      placeholder:"Evde ne var? Malzemeleri yaz...",
-      chips:["Akşama ne pişirsem?","3 malzemeli tatlı","Diyet yemek"],
-      welcome:"Evdeki malzemeleri yaz; pratik ve net tarif çıkarayım."
-    },
-    teacher: { icon:"fa-chalkboard-user", label:"Eğitim", title:"Öğretmen",
-      desc:"Konu yaz, adım adım gidelim.",
-      placeholder:"Konuyu yaz, birlikte öğrenelim...",
-      chips:["Matematik","İngilizce","Tarih"],
-      welcome:"Hangi konuda destek lazım? Konuyu yaz, adım adım öğrenelim."
-    },
-    translator: { icon:"fa-language", label:"Çeviri", title:"Çevirmen",
-      desc:"Metni yapıştır, çevireyim.",
-      placeholder:"Metni buraya yaz/yapıştır...",
-      chips:["İngilizceye çevir","Resmi çeviri","Günlük çeviri"],
-      welcome:"Metni yapıştır. Hangi dile çevirmemi istersin?"
-    },
-    economist: { icon:"fa-chart-line", label:"Ekonomi", title:"Ekonomist",
-      desc:"Bütçe, piyasa, plan.",
-      placeholder:"Sorunu yaz: bütçe/yatırım...",
-      chips:["Altın alınır mı?","Bütçe planla","Dolar gündemi"],
-      welcome:"Konuyu yaz: bütçe, yatırım veya piyasa durumu."
-    },
-    lawyer: { icon:"fa-scale-balanced", label:"Hukuk", title:"Hukuk Danışmanı",
-      desc:"Genel bilgi amaçlıdır.",
-      placeholder:"Olayı kısaca özetle...",
-      chips:["Kiracı hakları","Tüketici hakem","İşe iade"],
-      welcome:"Olayı kısaca özetle. (Genel bilgilendirme; resmi danışmanlık değildir.)"
-    },
-    future: { icon:"fa-wand-magic-sparkles", label:"Fal", title:"Gelecek Yorumcusu",
-      desc:"Niyet yaz veya fotoğraf yükle (eğlence amaçlı).",
-      placeholder:"Fotoğraf yükle veya niyet yaz...",
-      chips:["Kahve falı (foto)","3 kart tarot","Günlük burç"],
-      welcome:"Niyetini yaz veya fincan fotoğrafı gönder. (Eğlence amaçlıdır.)"
-    },
-    life: { icon:"fa-heart", label:"Yaşam", title:"Yaşam Koçu",
-      desc:"Dertleşelim, plan yapalım.",
-      placeholder:"İçinden geçenleri yaz...",
-      chips:["Canım sıkkın","Motivasyon lazım","Bir plan yapalım"],
-      welcome:"Yaz; netleştirelim, planlayalım."
+      welcome:"Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma. Ben senin yanlış karar vermeni istemem."
     }
   };
 
@@ -619,7 +553,8 @@
   }
 
   function switchMode(m){
-    if(!MODES[m] || m===currentMode) return;
+    // TEK MOD OLDUĞU İÇİN ASLINDA GEÇİŞ YOK
+    if(!MODES[m]) return;
     currentMode = m;
     ensureThread(m);
     setHeader();
@@ -627,7 +562,13 @@
     renderChips(MODES[m].chips);
     if(!welcomed[m]){
       welcomed[m]=true;
-      pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
+      // İlk mesajda özel sponsorlu mesaj
+      pushMessage(
+        "ai", 
+        "🎁 **Kaynana bugün öneriyor (Sponsorlu)**\nBugün en çok fiyat/performans çıkan ürünleri senin için tararım.\n\nAşağıdan ürününü yaz; ben yorumlayıp güvenli seçenekleri çıkarayım.", 
+        null, 
+        "Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma. Ben senin yanlış karar vermeni istemem."
+      );
     }
     redrawThread();
     adjustLayout();
@@ -657,18 +598,11 @@
     span.innerHTML = (text||"").toString().replace(/\n/g, "<br>");
     b.appendChild(span);
 
-    if(role === "ai" && currentMode === "future"){
-      const d = document.createElement("span");
-      d.className = "disclaimer";
-      d.innerText = "(Eğlence amaçlıdır, kesinlik içermez)";
-      b.appendChild(d);
-    }
-
     const textToSpeak = speechText || text || "";
     if(role === "ai"){
       const btn = document.createElement("button");
       btn.className = "audio-btn";
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
       btn.onclick = ()=>playVoice(btn, textToSpeak);
       b.appendChild(btn);
     }
@@ -709,11 +643,9 @@
              <i class="fa-solid fa-image"></i>
            </div>`;
 
-      // Backend ham URL ve Token döner. Montajı biz yaparız.
+      // Backend ham URL ve Token döner.
       const normalUrl = (p.url || "#").toString();
       const token = (p.track_token || "").toString();
-      
-      // Caynana linki = bizim domain + /r/ + token
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
 
       card.innerHTML = `
@@ -724,8 +656,8 @@
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
         
         <div class="cardActions">
-          <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol’da Gör</a>
-          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana Linkiyle Aç</a>
+          <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol (Direkt)</a>
+          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana (Takipli)</a>
         </div>
       `;
       wrap.appendChild(card);
@@ -796,7 +728,7 @@
     if(currentAudio){
       currentAudio.pause();
       currentAudio = null;
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
       btn.classList.remove("playing");
       return;
     }
@@ -808,20 +740,26 @@
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({text: clean})
       });
-      if(!res.ok) throw new Error("TTS " + res.status);
+      
+      if(!res.ok){
+          const errText = await res.text().catch(()=> "");
+          alert("TTS HATA: " + res.status + " " + errText);
+          throw new Error("TTS " + res.status);
+      }
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       currentAudio = new Audio(url);
       currentAudio.onended = ()=>{
         currentAudio = null;
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+        btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
         btn.classList.remove("playing");
       };
       await currentAudio.play();
-      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sustur`;
       btn.classList.add("playing");
     }catch(e){
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
       btn.classList.remove("playing");
       currentAudio = null;
     }
@@ -867,7 +805,6 @@
       if(data && Array.isArray(data.quick_replies) && data.quick_replies.length) renderChips(data.quick_replies);
       else renderChips(MODES[currentMode].chips);
 
-      // Kartları sadece ürün varsa render et
       if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
         renderCards(data.data);
       }
@@ -886,8 +823,10 @@
     setHeader();
     renderDock();
     renderChips(MODES[currentMode].chips);
-    welcomed[currentMode] = true;
-    pushMessage("ai", MODES[currentMode].welcome, null, MODES[currentMode].welcome);
+    
+    // Tek mod olduğu için direkt switch
+    switchMode("shopping");
+    
     adjustLayout();
     scrollToBottom(true);
   }
