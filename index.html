@@ -190,7 +190,7 @@
     flex-direction: column;
   }
   .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
-  /* .pimg classı JS ile güncellenir */
+  
   .card img.pimg{
     width:100%;
     height:130px;
@@ -266,10 +266,11 @@
     gap:6px;
     align-items:center;
     box-shadow:0 1px 6px rgba(0,0,0,.06);
-    max-width:200px;
+    max-width:210px;
     overflow:hidden;
     white-space:nowrap;
     text-overflow:ellipsis;
+    z-index: 2;
   }
   .badge.gold{ border-color:#a7f3d0; color:#065f46; background: #ecfdf5;}
 
@@ -277,41 +278,25 @@
   #bottom{
     position:absolute;
     bottom:0; left:0; right:0;
+    width:100%; /* Taşma önlemi */
     background:var(--white);
     border-top:1px solid var(--border);
     padding-bottom:env(safe-area-inset-bottom);
+    z-index: 20;
   }
 
-  /* Chips */
+  /* CHIPS GİZLENDİ */
   #chips{
-    display:flex;
-    gap:8px;
-    overflow-x:auto;
-    padding:8px 12px;
-    scrollbar-width:none;
-    align-items:center;
+    display:none !important;
   }
-  #chips::-webkit-scrollbar{display:none;}
-  .chip{
-    border:1px solid var(--border);
-    background:var(--bg);
-    color:var(--muted);
-    padding:7px 14px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:700;
-    cursor:pointer;
-    white-space:nowrap;
-    transition:.15s;
-  }
-  .chip:hover{border-color:var(--primary); color:var(--primary); background:#ECFDF5;}
-  .chip:active{transform:scale(.98);}
 
-  /* Input row */
+  /* Input row - MOBİL FIX */
   #inputRow{
     display:flex;
     gap:10px;
-    padding:8px 12px 10px;
+    padding:8px 12px;
+    /* Klavye açılınca veya iPhone safe-area için padding fix */
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
     align-items:center;
   }
   #inputWrap{
@@ -323,6 +308,7 @@
     background:var(--bg);
     border-radius:999px;
     padding:6px 10px;
+    min-width: 0; /* Flex taşmasını önler */
   }
   #inputWrap:focus-within{border-color:var(--primary); background:var(--white); box-shadow:0 0 0 2px rgba(16,185,129,.12);}
   .iconBtn{
@@ -358,7 +344,8 @@
     color:#fff;
     font-size:16px;
     cursor:pointer;
-    flex-shrink:0;
+    flex: 0 0 42px; /* Boyut sabitlenir, sıkışmaz */
+    margin-left: 0;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -371,7 +358,7 @@
   #dock{
     display:flex;
     border-top:1px solid var(--border);
-    height:72px;
+    height:60px; /* Biraz kısalttık footer için */
     overflow-x:auto;
     scrollbar-width:none;
   }
@@ -392,6 +379,38 @@
   .dockItem i{font-size:20px;}
   .dockItem span{font-size:10px; font-weight:700;}
   .dockItem.active{color:var(--primary);}
+
+  /* BRAND FOOTER */
+  #brandFooter{
+    padding: 6px 12px 8px; /* Alt boşluk */
+    text-align:center;
+    border-top:1px solid rgba(0,0,0,.04);
+    background: #FAFAFA;
+  }
+  #brandFooter .brandText{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.4px;
+    color:#9CA3AF;
+    line-height:1.2;
+    text-transform: uppercase;
+  }
+  #brandFooter .itFlag{
+    margin:6px auto 0;
+    width:fit-content;
+    display:flex;
+    border-radius:999px;
+    overflow:hidden;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  #brandFooter .itFlag span{
+    display:block;
+    width:22px; 
+    height:4px; /* İnce şerit */
+  }
+  #brandFooter .itFlag .g{ background:#009246; }
+  #brandFooter .itFlag .w{ background:#FFFFFF; }
+  #brandFooter .itFlag .r{ background:#CE2B37; }
 
   /* iOS kamera stabil */
   #fileInput{
@@ -431,8 +450,7 @@
   </div>
 
   <div id="bottom">
-    <div id="chips"></div>
-
+    
     <div id="inputRow">
       <div id="inputWrap">
         <button class="iconBtn" type="button" onclick="openCamera()" title="Fotoğraf">
@@ -449,6 +467,13 @@
     </div>
 
     <div id="dock"></div>
+    
+    <div id="brandFooter">
+      <div class="brandText">@CAYNANA BY ITALKY TECHNOLOGY</div>
+      <div class="itFlag" aria-hidden="true">
+        <span class="g"></span><span class="w"></span><span class="r"></span>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -474,7 +499,6 @@
   const bottomEl  = document.getElementById("bottom");
   const resultsEl = document.getElementById("results");
   const loaderEl  = document.getElementById("loader");
-  const chipsEl   = document.getElementById("chips");
   const dockEl    = document.getElementById("dock");
   const textEl    = document.getElementById("text");
   const fileEl    = document.getElementById("fileInput");
@@ -489,8 +513,7 @@
     shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
       desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
       placeholder:"Ürün adı yaz veya link yapıştır...",
-      chips:["Airfryer","iPhone 15","Robot süpürge"],
-      welcome:"Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma. Ben senin yanlış karar vermeni istemem."
+      welcome:"Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma."
     }
   };
 
@@ -525,16 +548,8 @@
     });
   }
 
-  function renderChips(list){
-    chipsEl.innerHTML = "";
-    (list||[]).forEach(txt=>{
-      const c = document.createElement("div");
-      c.className = "chip";
-      c.innerText = txt;
-      c.onclick = ()=>{ textEl.value = txt; sendMessage(); };
-      chipsEl.appendChild(c);
-    });
-  }
+  // CHIPS RENDER IPTAL (KAPALI)
+  function renderChips(list){ return; }
 
   function clearResults(){
     const keepLoader = loaderEl;
@@ -558,7 +573,6 @@
     ensureThread(m);
     setHeader();
     renderDock();
-    renderChips(MODES[m].chips);
     if(!welcomed[m]){
       welcomed[m]=true;
       pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
@@ -640,10 +654,14 @@
                      ? p.image 
                      : "";
 
-      // BADGE: "Güvenilir" veya "Sponsor"
-      const badgeText = isSponsor ? "SPONSOR" : "GÜVENİLİR";
-      const badgeHtml = `<div class="badge ${isSponsor ? "gold": ""}">${badgeText}</div>`;
+      // BADGE MANTIĞI
+      const badgeTxt = isSponsor 
+        ? "SPONSOR • KAYNANA ÖNERİSİ"
+        : `CAYNANA PUANI: ${score}/10 • ${trust.badge||"GÜVENİLİR"}`;
+      
+      const badgeHtml = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
 
+      // IMG LOGIC
       const imgHtml = imgSrc
         ? `<img class="pimg" src="${imgSrc}" alt="">`
         : `<div class="pimg" style="width:100%;height:130px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
@@ -657,9 +675,6 @@
         ${badgeHtml}
         ${imgHtml}
         <div class="title">${(p.title||"Ürün").toString()}</div>
-        <div style="margin-top:6px;font-size:12px;font-weight:900;color:#065f46;">
-          CAYNANA PUANI: ${score}/10
-        </div>
         <div class="price pprice">${price}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
         
@@ -672,7 +687,7 @@
 
       wrap.appendChild(card);
 
-      // LAZY ENRICH (URL BAZLI - GÜÇLÜ FALLBACK)
+      // LAZY ENRICH TRIGGER
       if(token && (isSponsor || !imgSrc || price === "Fiyatı gör")){
         lazyEnrichCard(token, p.url);
       }
@@ -685,49 +700,56 @@
     if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
-  // --- LAZY ENRICH (URL BAZLI + HATA YÖNETİMİ) ---
+  // --- LAZY ENRICH (FIXED: DOM REPLACEMENT) ---
   async function lazyEnrichCard(token, productUrl){
-    // Kartı baştan bul
     const card = document.querySelector(`.card[data-token="${token}"]`);
     if(!card) return;
 
     try{
-      // 1. URL ile dene
       let res = await fetch(`${TRACK_BASE}/api/enrich_url?url=${encodeURIComponent(productUrl || "")}`);
-      
-      // 2. Olmazsa Token ile dene
       if(!res.ok){
         res = await fetch(`${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`);
       }
-
       if(!res.ok) throw new Error("Enrich fail");
 
       const data = await res.json();
       if(!data || !data.ok) throw new Error("Data fail");
 
-      // Başarılı -> DOM güncelle
+      // FIX: IMG PLACEHOLDER REPLACEMENT
       if(data.image){
-        const img = card.querySelector("img.pimg");
-        if(img) img.src = data.image;
-        else {
-           // Placeholder varsa değiştir
-           const ph = card.querySelector(".pimg");
-           if(ph && !ph.tagName.match(/IMG/i)){
-             ph.innerHTML = `<img class="pimg" src="${data.image}" style="width:100%;height:130px;object-fit:contain;border-radius:10px;">`;
-           }
+        const existingImg = card.querySelector("img.pimg");
+        if(existingImg){
+          existingImg.src = data.image;
+        } else {
+          const ph = card.querySelector("div.pimg");
+          if(ph){
+            const newImg = document.createElement("img");
+            newImg.className = "pimg";
+            newImg.src = data.image;
+            newImg.alt = "";
+            ph.replaceWith(newImg); // DIV'i IMG ile değiştir
+          }
         }
       }
-      if(data.price){
-        const priceEl = card.querySelector(".pprice");
-        if(priceEl) priceEl.textContent = data.price;
+
+      // FIX: FIYAT GÜNCELLEME VEYA FALLBACK
+      const priceEl = card.querySelector(".pprice");
+      if(priceEl){
+        if(data.price && data.price.trim()){
+          priceEl.textContent = data.price;
+        } else if(priceEl.textContent.includes("Yükleniyor")){
+          // Eğer hala yükleniyor diyorsa ve data yoksa link ver
+          priceEl.textContent = "Trendyol'da Gör";
+        }
       }
+
       if(data.title && data.title.length > 5){
         const t = card.querySelector(".title");
         if(t) t.textContent = data.title;
       }
 
     }catch(e){
-      // HATA DURUMU -> SONSUZ YÜKLENİYOR'U BİTİR
+      // HATA DURUMU -> Yükleniyor'u kaldır
       const priceEl = card.querySelector(".pprice");
       if(priceEl && priceEl.textContent.includes("Yükleniyor")){
         priceEl.textContent = "Trendyol'da Gör";
@@ -807,9 +829,7 @@
       });
       
       if(!res.ok){
-          const errText = await res.text().catch(()=> "");
-          alert("TTS HATA: " + res.status + " " + errText);
-          throw new Error("TTS " + res.status);
+        throw new Error("TTS " + res.status);
       }
 
       const blob = await res.blob();
@@ -861,14 +881,16 @@
       const data = await res.json();
 
       loaderEl.style.display = "none";
+      
+      // DEBUG LOG
+      if(data.debug) console.log("API DEBUG:", data.debug);
 
       const aiText = (data && (data.assistant_text || data.reply)) || "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.";
       const speechText = data.speech_text || "Evladım biraz yoğunluk oldu ama ben buradayım.";
 
       pushMessage("ai", aiText, null, speechText);
 
-      if(data && Array.isArray(data.quick_replies) && data.quick_replies.length) renderChips(data.quick_replies);
-      else renderChips(MODES[currentMode].chips);
+      // CHIPS KAPALI (Render etme)
 
       if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
         renderCards(data.data);
@@ -887,10 +909,8 @@
     ensureThread(currentMode);
     setHeader();
     renderDock();
-    renderChips(MODES[currentMode].chips);
-    
+    // Chips kapalı
     switchMode("shopping");
-    
     adjustLayout();
     scrollToBottom(true);
   }
