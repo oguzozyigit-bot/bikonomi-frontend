@@ -60,7 +60,7 @@
   .msg.ai .bubble{background:#F3F4F6; color:var(--text); border-bottom-left-radius:4px;}
   .bubble img.preview { max-width: 100%; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); }
 
-  /* MARKDOWN STYLES (TABLO & LİSTE) */
+  /* MARKDOWN STYLES */
   .bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
   .bubble th { background: #E5E7EB; color: #374151; font-weight: 800; text-align: left; padding: 8px; }
   .bubble td { border-top: 1px solid #eee; padding: 8px; color: #4B5563; }
@@ -72,14 +72,12 @@
   .score-badge { background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: 900; font-size: 20px; padding: 10px; border-radius: 12px; display: block; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
   .score-label { font-size: 10px; text-transform: uppercase; opacity: 0.9; display: block; }
   
-  /* KARTLAR */
+  /* CARDS */
   .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 4px; margin-top: 10px; }
   .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
   .pimg{ width:100%; height:130px; object-fit:contain; border-radius:8px; margin-bottom:8px; background: #fff; }
   .title{ font-size:12px; font-weight:700; color: var(--text); height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; margin-bottom: 4px; }
   .price{ font-size:14px; font-weight:900; color:var(--primary); margin:4px 0; }
-  
-  /* BUTONLAR */
   .btnLink{ display:flex; align-items: center; justify-content: center; gap: 4px; text-decoration:none; padding:8px; border-radius:8px; font-size:10px; font-weight:800; color:#fff; transition:.2s; text-transform: uppercase; margin-top: auto; }
   .btnGold { background: linear-gradient(135deg, #F59E0B, #B45309); } 
   .btnSilver { background: linear-gradient(135deg, #9CA3AF, #4B5563); } 
@@ -89,7 +87,7 @@
   /* --- BOTTOM AREA --- */
   #bottom{ position:absolute; bottom:0; left:0; right:0; background:#fff; padding:0; border-top:1px solid var(--border); z-index: 50; }
   
-  /* DOCK */
+  /* DOCK (YATAY MENÜ) */
   #dock { display: flex; gap: 16px; overflow-x: auto; padding: 12px 16px; background: #fff; scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.03); }
   #dock::-webkit-scrollbar { display: none; }
   .dockItem { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; cursor: pointer; color: var(--muted); transition: 0.2s; opacity: 0.6; }
@@ -145,6 +143,8 @@
     <a href="#" class="menu-item"><i class="fa-solid fa-key"></i> Şifremi Unuttum</a>
     <hr style="border:0; border-top:1px solid #eee; width:100%; margin:10px 0;">
     <a href="#" class="menu-item"><i class="fa-solid fa-info-circle"></i> Hakkımızda</a>
+    <a href="#" class="menu-item"><i class="fa-solid fa-lock"></i> Gizlilik Politikası</a>
+    <a href="#" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S.</a>
     <a href="#" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
     <div class="gold-promo"><i class="fa-solid fa-crown"></i> Gold Üyelik Çok Yakında!</div>
   </div>
@@ -196,45 +196,19 @@
     fal: { icon: "fa-mug-hot", label: "Fal", title: "Falcı Bacı", desc: "Niyetini tut.", ph: "Niyet ettin mi?" }
   };
 
-function renderCards(list){
-    const wrap = document.createElement("div");
-    wrap.className = "cards";
-    
-    list.forEach((p, idx) => {
-        let btnClass = "btnGreen";
-        let btnText = "CAYNANA ÖNERİSİ";
-        let icon = "";
-        
-        // Alışveriş Modu İçin Butonlar
-        if(idx === 0) { btnClass = "btnGold"; btnText = "ALTIN TERCİH"; icon="<i class='fa-solid fa-trophy'></i>"; }
-        else if(idx === 1) { btnClass = "btnSilver"; btnText = "GÜMÜŞ TERCİH"; icon="<i class='fa-solid fa-medal'></i>"; }
-        else if(idx === 2) { btnClass = "btnBlue"; btnText = "FİYAT/PERF."; icon="<i class='fa-solid fa-tag'></i>"; }
-
-        const card = document.createElement("div");
-        card.className = "card";
-        
-        const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
-        
-        // KRİTİK: EĞER URL YOKSA (Burç gibi) BUTON KOYMA
-        let actionHtml = "";
-        if(p.url && p.url.startsWith("http")){
-            actionHtml = `<a href="${p.url}" target="_blank" class="btnLink ${btnClass}">${icon} ${btnText}</a>`;
-        } else {
-            actionHtml = `<div style="height:10px;"></div>`; 
-        }
-
-        card.innerHTML = `
-            <img class="pimg" src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=Hata'">
-            <div class="title">${p.title}</div>
-            <div class="price">${p.price}</div>
-            ${actionHtml}
-        `;
-        wrap.appendChild(card);
+  function renderDock(){
+    const dock = document.getElementById("dock");
+    dock.innerHTML = "";
+    Object.keys(MODES).forEach(key => {
+        const m = MODES[key];
+        const item = document.createElement("div");
+        item.className = `dockItem ${key === currentMode ? 'active' : ''}`;
+        item.onclick = () => switchMode(key);
+        item.innerHTML = `<i class="fa-solid ${m.icon}"></i><span>${m.label}</span>`;
+        dock.appendChild(item);
     });
-    
-    document.getElementById("main").appendChild(wrap);
-    setTimeout(() => { wrap.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 100);
   }
+
   function switchMode(key){
     currentMode = key;
     renderDock();
@@ -300,11 +274,8 @@ function renderCards(list){
     div.className = "msg " + role;
     let content = "";
     if(imgData) content += `<img src="${imgData}" class="preview">`;
-    
-    // Markdown ve Puan İşleme
     let processedText = text.replace(/\[PUAN:\s*(.*?)\]/g, '<div class="score-badge"><span class="score-label">Caynana Puanı</span>$1</div>');
     let htmlContent = (role === "ai" && !isLoader) ? marked.parse(processedText) : processedText;
-    
     content += htmlContent;
     div.innerHTML = `<div class="bubble">${content}</div>`;
     document.getElementById("main").appendChild(div);
@@ -333,7 +304,6 @@ function renderCards(list){
         card.className = "card";
         const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
         
-        // --- KRİTİK DÜZELTME: LİNK YOKSA BUTON KOYMA ---
         let actionHtml = "";
         if(p.url && p.url.startsWith("http")){
             actionHtml = `<a href="${p.url}" target="_blank" class="btnLink ${btnClass}">${icon} ${btnText}</a>`;
@@ -369,8 +339,8 @@ function renderCards(list){
     }catch(e){ btn.innerHTML = "Ses Hatası!"; setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`, 2000); }
   }
   
+  // Sayfa yüklendiğinde Dock'u çiz
   renderDock();
 </script>
 </body>
 </html>
-
