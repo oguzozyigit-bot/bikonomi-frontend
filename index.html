@@ -9,36 +9,20 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <style>
-  :root{ 
-    --primary: #10B981; 
-    --bg: #F9FAFB; 
-    --white: #ffffff; 
-    --text: #1F2937; 
-    --muted: #6B7280; 
-    --border: #E5E7EB;
-  }
+  :root{ --primary:#10B981; --bg:#F9FAFB; --white:#ffffff; --text:#1F2937; --muted:#6B7280; --border:#E5E7EB; }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none;}
   body{margin:0; font-family:'Inter', sans-serif; background:var(--bg); height:100dvh; display:flex; justify-content:center; overflow:hidden;}
   
   #app{width:100%; max-width:768px; height:100%; background:var(--white); position:relative; display:flex; flex-direction:column; box-shadow: 0 0 40px rgba(0,0,0,0.05);}
   
-  /* --- HEADER --- */
-  #topbar{
-    height:64px; display:flex; align-items:center; justify-content:space-between; 
-    padding:0 20px; border-bottom:1px solid var(--border);
-    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 20;
-  }
+  /* HEADER */
+  #topbar{ height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 20px; border-bottom:1px solid var(--border); background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); z-index: 20; }
   .brand{ font-weight:800; color:var(--text); font-size:22px; display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px; cursor: pointer; } 
-  .brand i { color: var(--primary); font-size: 20px; } 
-  .brand span{color:var(--primary);}
+  .brand i { color: var(--primary); font-size: 20px; } .brand span{color:var(--primary);}
   .menu-btn { font-size: 20px; color: var(--text); cursor: pointer; padding: 8px; transition: 0.2s; }
   
-  /* --- SIDE MENU --- */
-  #sideMenu {
-    position: absolute; top:0; right:-100%; width: 280px; height: 100%;
-    background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-    z-index: 100; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 0; display: flex; flex-direction: column;
-  }
+  /* SIDE MENU */
+  #sideMenu { position: absolute; top:0; right:-100%; width: 280px; height: 100%; background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); z-index: 100; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 0; display: flex; flex-direction: column; }
   #sideMenu.open { right: 0; }
   .menu-header { padding: 24px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;}
   .close-btn { font-size: 24px; color: var(--muted); cursor: pointer; }
@@ -46,13 +30,11 @@
   .menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; color: var(--text); font-weight: 600; font-size: 15px; cursor: pointer; transition: 0.2s; }
   .menu-item:hover { color: var(--primary); transform: translateX(5px); }
   .menu-item i { width: 24px; text-align: center; color: var(--muted); }
-  
   #overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.3); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
   #overlay.active { display: block; opacity: 1; }
 
-  /* --- CHAT AREA --- */
+  /* CHAT AREA */
   #main{flex:1; overflow-y:auto; padding:20px; padding-bottom:180px; scroll-behavior: smooth;}
-  
   .welcome-box { text-align: center; margin-top: 40px; padding: 20px; animation: fadeIn 0.5s ease; }
   .welcome-icon { font-size: 40px; color: var(--primary); margin-bottom: 15px; background: #ECFDF5; width: 80px; height: 80px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
   .welcome-title { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
@@ -67,76 +49,60 @@
   .msg.ai .bubble{background:#F3F4F6; color:var(--text); border-bottom-left-radius:4px;}
   .bubble img.preview { max-width: 100%; border-radius: 12px; margin-bottom: 8px; }
 
-  /* --- KARTLAR VE TABLO --- */
-  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-  .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; }
-  .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:8px; }
-  .title{ font-size:13px; font-weight:600; height:36px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; margin-bottom: 4px; }
-  .price{ font-size:14px; font-weight:800; color:var(--primary); }
-  .btnLink{ background:var(--primary); color:#fff; padding:8px; border-radius:8px; text-align:center; font-size:11px; font-weight:700; text-decoration:none; margin-top:auto; display:block; }
-  .score-badge { background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: 900; font-size: 20px; padding: 10px; border-radius: 12px; display: block; margin-bottom: 15px; text-align: center; }
-  .score-label { font-size: 10px; text-transform: uppercase; opacity: 0.9; display: block; }
-  
-  /* MARKDOWN TABLO STİLİ */
+  /* AUDIO BUTTON (Eski Stil Geri Geldi) */
+  .audio-btn { 
+    margin-top: 10px; padding: 10px 16px; 
+    background: linear-gradient(135deg, #8B5CF6, #6D28D9); 
+    color: #fff; border-radius: 25px; 
+    font-size: 13px; font-weight: 700; 
+    display: inline-flex; align-items: center; gap: 8px; 
+    cursor: pointer; box-shadow: 0 4px 10px rgba(109, 40, 217, 0.3); 
+    transition: 0.2s; border: none;
+  }
+  .audio-btn.playing { background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); animation: pulse 1.5s infinite; }
+
+  /* MARKDOWN & CARDS */
   .bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
   .bubble th { background: #E5E7EB; color: #374151; font-weight: 800; text-align: left; padding: 8px; }
   .bubble td { border-top: 1px solid #eee; padding: 8px; color: #4B5563; }
-  .bubble h3 { font-size: 14px; margin-top: 15px; margin-bottom: 5px; font-weight: 800; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+  .pimg{ width:100%; height:120px; object-fit:contain; border-radius:8px; margin-bottom:8px; background: #fff; }
+  .title{ font-size:13px; font-weight:600; height:36px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; margin-bottom: 4px; }
+  .price{ font-size:14px; font-weight:800; color:var(--primary); margin:4px 0; }
+  .btnLink{ background:var(--primary); color:#fff; padding:8px; border-radius:8px; text-align:center; font-size:11px; font-weight:700; text-decoration:none; margin-top:auto; display:block; }
 
-  /* --- BOTTOM AREA --- */
-  #bottom{ position:absolute; bottom:0; left:0; right:0; background:#fff; padding:0; z-index: 50; border-top: 1px solid var(--border); }
-  
-  /* DOCK & SCROLL BUTONLARI (YENİ: MASAÜSTÜ İÇİN OKLAR) */
+  /* BOTTOM AREA */
+  #bottom{ position:absolute; bottom:0; left:0; right:0; background:#fff; padding:0; border-top:1px solid var(--border); z-index: 50; }
   .dock-wrapper { position: relative; display: flex; align-items: center; background: #fff; padding: 5px 0; }
-  .scroll-btn { 
-    background: #fff; border: none; font-size: 16px; color: var(--muted); 
-    width: 30px; height: 100%; cursor: pointer; z-index: 2; 
-    display: flex; align-items: center; justify-content: center;
-  }
-  .scroll-btn:hover { color: var(--primary); }
-  
+  .scroll-btn { background: #fff; border: none; font-size: 16px; color: var(--muted); width: 30px; height: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   #dock { display: flex; gap: 10px; overflow-x: auto; padding: 8px 5px; background: #fff; scrollbar-width: none; flex: 1; scroll-behavior: smooth; }
   #dock::-webkit-scrollbar { display: none; }
-  
-  .chip { 
-    display: flex; align-items: center; gap: 6px; 
-    padding: 8px 14px; border-radius: 20px; 
-    font-size: 13px; font-weight: 600; cursor: pointer; 
-    white-space: nowrap; transition: 0.2s; border: 1px solid var(--border); color: var(--muted);
-    background: #fff;
-  }
-  .chip i { font-size: 14px; }
+  .chip { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: 0.2s; border: 1px solid var(--border); color: var(--muted); background: #fff; }
   .chip.active { color: #fff; border-color: transparent; transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-  /* Renkler JS'den gelecek */
-
-  /* INPUT */
+  
   #inputArea { padding: 10px 16px; display:flex; gap:10px; align-items: center; background: #fff; }
   .actionBtn { width: 40px; height: 40px; border-radius: 50%; background: #F3F4F6; color: var(--muted); border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .mic-active { background: #FEE2E2; color: #EF4444; animation: pulse 1s infinite; }
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}70%{box-shadow:0 0 0 10px rgba(239,68,68,0)}}
-  
   #text { flex:1; padding:12px 16px; border:1px solid var(--border); border-radius:24px; font-size:15px; outline:none; }
-  #text:focus { border-color: var(--primary); }
   #sendBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-  /* FOOTER (BAYRAKLI - GERİ GELDİ) */
+  /* FOOTER (BAYRAKLI) */
   #brandFooter { padding-bottom: 12px; padding-top: 8px; width: 100%; background: #FAFAFA; border-top: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; }
   .footer-content { display: inline-block; text-align: center; }
   .brandText { font-size:10px; font-weight: 800; color:#9CA3AF; padding: 4px 0; letter-spacing: 0.5px; }
   .itFlag { width: 100%; height: 6px; display: flex; border-radius: 3px; overflow: hidden; margin-top: 4px; opacity: 0.8; }
   .itFlag span { flex: 1; height: 100%; } .itFlag .g{ background:#009246; } .itFlag .w{ background:#FFFFFF; border-left:1px solid #eee; border-right:1px solid #eee; } .itFlag .r{ background:#CE2B37; }
-
-  .audio-btn{ margin-top: 8px; padding: 8px 14px; background: #F3F4F6; color: var(--text); border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid var(--border); }
-  .audio-btn.playing { background: #FEF2F2; color: #EF4444; border-color: #EF4444; }
-  #fileInput { display: none; }
   
   /* MODAL */
-  .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
+  .modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); }
   .modal.active { display: flex; animation: fadeIn 0.2s; }
-  .modal-box { background: #fff; width: 100%; max-width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); animation: slideUp 0.3s forwards; }
+  .modal-box { background: #fff; width: 100%; max-width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: translateY(20px); animation: slideUp 0.3s forwards; }
   @keyframes slideUp { to { transform: translateY(0); } }
-  .modal-header { padding: 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center; font-weight: 700; }
+  .modal-header { padding: 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 16px; }
   .modal-body { padding: 25px; text-align: center; color: var(--text); line-height: 1.5; font-size: 14px; }
+  #fileInput { display: none; }
 </style>
 </head>
 <body>
@@ -155,11 +121,14 @@
         <div class="brand" style="font-size:18px;"><i class="fa-solid fa-wand-magic-sparkles"></i> CAYNANA</div>
         <div class="close-btn" onclick="toggleMenu()">&times;</div>
     </div>
-    <div class="menu-content">
-        <div class="menu-item" onclick="showModal('soon', 'Üyelik')"><i class="fa-regular fa-user"></i> Üye Ol / Giriş</div>
-        <div class="menu-item" onclick="showModal('about')"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
-        <div class="menu-item" onclick="showModal('privacy')"><i class="fa-solid fa-shield-halved"></i> Gizlilik</div>
-        <div class="menu-item" onclick="showModal('contact')"><i class="fa-regular fa-envelope"></i> İletişim</div>
+    <div class="menu-content" style="padding:20px;">
+        <div class="menu-item" onclick="showModal('soon', 'Üyelik')"><i class="fa-solid fa-user-plus"></i> Üye Ol</div>
+        <div class="menu-item" onclick="showModal('soon', 'Giriş Yap')"><i class="fa-solid fa-sign-in-alt"></i> Giriş Yap</div>
+        <hr style="border:0; border-top:1px solid #eee; width:100%; margin:15px 0;">
+        <div class="menu-item" onclick="showModal('about')"><i class="fa-solid fa-info-circle"></i> Hakkımızda</div>
+        <div class="menu-item" onclick="showModal('privacy')"><i class="fa-solid fa-lock"></i> Gizlilik Politikası</div>
+        <div class="menu-item" onclick="showModal('faq')"><i class="fa-solid fa-circle-question"></i> S.S.S.</div>
+        <div class="menu-item" onclick="showModal('contact')"><i class="fa-solid fa-envelope"></i> İletişim</div>
     </div>
     <div class="gold-promo" style="margin:20px; padding:15px; background:#FFFBEB; border:1px solid #FCD34D; border-radius:10px; text-align:center; font-size:12px; color:#B45309;">
         <i class="fa-solid fa-crown"></i> Gold Üyelik Çok Yakında!
@@ -178,9 +147,8 @@
 
   <div id="main">
     <div class="welcome-box">
-        <div class="welcome-icon"><i class="fa-solid fa-comments"></i></div>
-        <div class="welcome-title" id="welcomeTitle">Dert Ortağı</div>
-        <div class="welcome-desc" id="welcomeDesc">Canın mı sıkkın? Gel iki lafın belini kıralım.</div>
+        <div class="welcome-title" id="welcomeTitle">Alışveriş Uzmanı</div>
+        <div class="welcome-desc" id="welcomeDesc">Aradığın ürünü yaz, en iyisini bulayım.</div>
     </div>
   </div>
 
@@ -194,7 +162,7 @@
     <div id="inputArea">
       <button class="actionBtn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></button>
       <button class="actionBtn" id="micBtn" onclick="startMic()"><i class="fa-solid fa-microphone"></i></button>
-      <input id="text" placeholder="Naber Caynana?" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
+      <input id="text" placeholder="Ne arıyorsun evladım?" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
       <button id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
     
@@ -216,39 +184,42 @@
   let sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
   let currentAudio = null;
   let pendingImage = null;
-  let currentMode = "chat"; // Varsayılan SOHBET
+  let currentMode = "shopping";
 
-  // MOD LİSTESİ (Placeholderlar güncellendi)
   const MODES = {
-    chat: { label: "Sohbet", icon: "fa-comments", title: "Dert Ortağı", desc: "Canın mı sıkkın? Gel iki lafın belini kıralım.", ph: "Naber Caynana?", color: "#6366F1" },
-    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", title: "Alışveriş Uzmanı", desc: "En uygun fiyatı ve en iyi yorumu bulurum.", ph: "Ne lazım evladım?", color: "#10B981" },
-    health: { label: "Sağlık", icon: "fa-heart-pulse", title: "Sağlık Köşesi", desc: "Şikayetini söyle, nane-limon tadında tavsiye vereyim.", ph: "Neren ağrıyor?", color: "#EF4444" },
-    diet: { label: "Diyet", icon: "fa-carrot", title: "Diyetisyen", desc: "Boyunu kilonu yaz, sana özel menü çıkarayım.", ph: "Boy kilo kaç?", color: "#84CC16" },
+    chat: { label: "Sohbet", icon: "fa-comments", title: "Dert Ortağı", desc: "Canın mı sıkkın? Gel konuşalım.", ph: "Naber?", color: "#6366F1" },
+    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", title: "Alışveriş Uzmanı", desc: "Aradığın ürünü yaz, bulayım.", ph: "Ne lazım?", color: "#10B981" },
+    health: { label: "Sağlık", icon: "fa-heart-pulse", title: "Sağlık Köşesi", desc: "Şikayetini söyle, tavsiye vereyim.", ph: "Neren ağrıyor?", color: "#EF4444" },
+    diet: { label: "Diyet", icon: "fa-carrot", title: "Diyetisyen", desc: "Boyunu kilonu yaz, diyet vereyim.", ph: "Boy kilo kaç?", color: "#84CC16" },
     food: { label: "Yemek", icon: "fa-utensils", title: "Mutfak Cadısı", desc: "Dolapta ne var söyle, yemek uydurayım.", ph: "Malzeme ne?", color: "#F59E0B" },
-    law: { label: "Hukuk", icon: "fa-scale-balanced", title: "Adliye Teyzesi", desc: "Derdini anlat, yol yordam göstereyim.", ph: "Mahkemelik mi oldun?", color: "#3B82F6" },
+    law: { label: "Hukuk", icon: "fa-scale-balanced", title: "Adliye Teyzesi", desc: "Derdini anlat, yol göstereyim.", ph: "Mahkemelik mi oldun?", color: "#3B82F6" },
     translate: { label: "Çeviri", icon: "fa-language", title: "Tercüman", desc: "Yazıyı veya resmi gönder, çevireyim.", ph: "Ne yazıyor orada?", color: "#64748B" },
-    astro: { label: "Burç", icon: "fa-star", title: "Yıldızlar", desc: "Burcunu söyle, bugünü yorumlayayım.", ph: "Hangi burçsun?", color: "#D946EF" },
+    astro: { label: "Burç", icon: "fa-star", title: "Yıldızlar", desc: "Burcunu söyle, yorumlayayım.", ph: "Hangi burçsun?", color: "#D946EF" },
     dream: { label: "Rüya", icon: "fa-cloud-moon", title: "Rüya Tabiri", desc: "Rüyanı anlat, hayra yoralım.", ph: "Ne gördün?", color: "#0EA5E9" },
-    fal: { label: "Fal", icon: "fa-mug-hot", title: "Falcı Bacı", desc: "Kahve içtiysen falına baktır, geleceğini söyleyeyim.", ph: "Fincanı kapattın mı?", color: "#8B5CF6" }
+    fal: { label: "Fal", icon: "fa-mug-hot", title: "Falcı Bacı", desc: "Kahve içtiysen falına baktır, geleceğini söyleyeyim.", ph: "Fincan hazır mı?", color: "#8B5CF6" }
   };
 
-  // --- DOCK VE SCROLL ---
+  const staticContent = {
+    about: "<h3>Biz Kimiz?</h3><p>Ben Caynana! Italky Teknoloji A.Ş. tarafından geliştirildim.</p>",
+    privacy: "<h3>Gizlilik</h3><p>Verilerin benimle güvende evladım.</p>",
+    faq: "<h3>Sıkça Sorulanlar</h3><p>Şimdilik bedava.</p>",
+    contact: "<h3>İletişim</h3><p>destek@caynana.com</p>",
+    soon: "<h3>Hoşgeldin!</h3><p>Senin için hazırlanıyorum evladım. Şimdilik üyelik yok, keyfini çıkart, bol bol konuşalım.</p>"
+  };
+
   function renderDock(){
     const dock = document.getElementById("dock");
     dock.innerHTML = "";
     Object.keys(MODES).forEach(key => {
         const m = MODES[key];
         const chip = document.createElement("div");
-        chip.className = `chip ${key} ${key === currentMode ? 'active' : ''}`;
+        chip.className = `chip ${key === currentMode ? 'active' : ''}`;
         chip.onclick = () => switchMode(key);
-        
-        // Aktifse renkli, değilse gri
         if(key === currentMode) {
             chip.style.backgroundColor = m.color;
             chip.style.color = "#fff";
             chip.style.borderColor = m.color;
         }
-        
         chip.innerHTML = `<i class="fa-solid ${m.icon}"></i> ${m.label}`;
         dock.appendChild(chip);
     });
@@ -261,12 +232,9 @@
 
   function switchMode(key){
     currentMode = key;
-    renderDock(); // Renkleri güncelle
-    
+    renderDock();
     const m = MODES[key];
-    document.getElementById("text").placeholder = m.ph; // Input yazısını değiştir
-    
-    // Welcome ekranını güncelle
+    document.getElementById("text").placeholder = m.ph;
     document.getElementById("main").innerHTML = `
         <div class="welcome-box">
             <div class="welcome-icon" style="color:${m.color}"><i class="fa-solid ${m.icon}"></i></div>
@@ -276,30 +244,35 @@
     `;
   }
 
-  // --- RESİM YÜKLEME (AKILLI METİN) ---
   const fileEl = document.getElementById("fileInput");
   function openCamera(){ fileEl.value = ""; fileEl.click(); }
-  
   fileEl.addEventListener("change", (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
     reader.onload = ()=>{ 
         pendingImage = reader.result; 
-        
-        // MODA GÖRE METİN AYARLA
         let autoTxt = "📷 Fotoğraf eklendi";
         if(currentMode === "shopping") autoTxt = "Bu ürünü bul";
-        else if(currentMode === "fal") autoTxt = "Bu fotoğraftaki fala bak"; // DÜZELTİLDİ
+        else if(currentMode === "fal") autoTxt = "Bu fotoğraftaki fala bak";
         else if(currentMode === "translate") autoTxt = "Bunu çevir";
-        
         document.getElementById("text").value = autoTxt; 
         send();
     };
     reader.readAsDataURL(file);
   });
 
-  // --- MESAJLAŞMA ---
+  function startMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) { alert("Mikrofon için tarayıcı izni veya HTTPS gerekli."); return; }
+    const rec = new SR(); rec.lang = "tr-TR";
+    const btn = document.getElementById("micBtn");
+    btn.classList.add("mic-active");
+    rec.onresult = (e) => { document.getElementById("text").value = e.results[0][0].transcript; btn.classList.remove("mic-active"); send(); };
+    rec.onend = () => btn.classList.remove("mic-active");
+    rec.start();
+  }
+
   async function send(){
     const txtEl = document.getElementById("text");
     let val = txtEl.value.trim();
@@ -319,7 +292,7 @@
       loader.remove();
       addBubble("ai", data.assistant_text, false, data.speech_text);
       if(data.data && data.data.length) renderCards(data.data);
-    }catch(e){ loader.innerHTML = "İnternet gitti galiba evladım."; }
+    }catch(e){ loader.innerHTML = "Bağlantı hatası."; }
   }
 
   function addBubble(role, text, isLoader=false, speech=null, imgData=null){
@@ -333,9 +306,9 @@
     setTimeout(() => { div.scrollIntoView({behavior:"smooth", block:"start"}); }, 100);
     
     if(speech && role === "ai" && !isLoader){
-        const btn = document.createElement("div");
+        const btn = document.createElement("button");
         btn.className = "audio-btn";
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
         btn.onclick = () => playAudio(speech, btn);
         div.querySelector(".bubble").appendChild(btn);
     }
@@ -367,13 +340,13 @@
   }
 
   async function playAudio(text, btn){
-    if(currentAudio) { currentAudio.pause(); currentAudio = null; btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`; return; }
+    if(currentAudio) { currentAudio.pause(); currentAudio = null; btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`; return; }
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
     try{
         const res = await fetch(SPEAK_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({text}) });
         const blob = await res.blob();
         currentAudio = new Audio(URL.createObjectURL(blob));
-        currentAudio.onended = () => { btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`; currentAudio = null; };
+        currentAudio.onended = () => { btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`; currentAudio = null; };
         await currentAudio.play();
         btn.classList.add("playing");
         btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
@@ -391,9 +364,8 @@
     toggleMenu();
     document.getElementById('modalTitle').innerText = title || "Bilgi";
     document.getElementById('infoModal').classList.add('active');
-    document.getElementById('modalContent').innerHTML = (type==='soon' ? "Çok Yakında!" : "İçerik...");
+    document.getElementById('modalContent').innerHTML = staticContent[type] || "İçerik...";
   }
-  function startMic(){ alert("Mikrofon için HTTPS gerekli."); } // Basit uyarı
 
   renderDock();
 </script>
