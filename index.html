@@ -2,215 +2,298 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FFFFFF">
 <title>CAYNANA.AI</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-:root{
-  --primary:#00C897;
-  --text:#1a1a1a;
-}
+  :root{ 
+    --primary: #00C897; 
+    --text-main: #1A1A1A;
+    --text-muted: #4A4A4A;
+    --font-main: 'Outfit', sans-serif;
+  }
 
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  font-family:'Outfit',sans-serif;
-  height:100vh;
-  background:#000;
-  display:flex;
-  justify-content:center;
-}
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; }
+  body { 
+    font-family: var(--font-main);
+    height: 100dvh; display: flex; justify-content: center;
+    background: #000; /* kenarlar */
+    color: var(--text-main); 
+    overflow: hidden;
+  }
 
-#app{
-  width:100%;
-  max-width:480px;
-  height:100%;
-  position:relative;
-  background-image:url("/images/hero-shopping.png");
-  background-size:cover;
-  background-position:center bottom;
-  background-repeat:no-repeat;
-  overflow:hidden;
-}
+  /* --- SAHNE --- */
+  #app { 
+    width: 100%; max-width: 480px; height: 100%;
+    position: relative; display: flex; flex-direction: column;
+    background-color: #fff;
+    background-position: center bottom;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: background-image .25s ease-in-out;
+    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
 
-/* üst beyaz degrade */
-#app::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to bottom,
-    rgba(255,255,255,.95) 0%,
-    rgba(255,255,255,.6) 35%,
-    rgba(255,255,255,0) 65%
-  );
-  z-index:1;
-}
+  /* Üst yazı okunurluğu için hafif overlay (çok bastırmayacak!) */
+  #app::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to bottom, 
+      rgba(255,255,255,0.70) 0%, 
+      rgba(255,255,255,0.25) 35%, 
+      rgba(255,255,255,0) 70%
+    );
+    pointer-events: none; z-index: 0;
+  }
 
-/* HEADER */
-header{
-  height:60px;
-  padding:0 16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  position:relative;
-  z-index:2;
-}
-.logo{
-  font-size:22px;
-  font-weight:800;
-}
-.logo span{color:var(--primary)}
-.menu{
-  width:40px;height:40px;
-  display:flex;align-items:center;justify-content:center;
-  border-radius:50%;
-  background:rgba(255,255,255,.6);
-}
+  /* --- HEADER --- */
+  #topbar {
+    height: 60px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px; z-index: 20; position: relative;
+  }
+  .brand { 
+    font-weight: 800; color: var(--text-main); font-size: 22px;
+    display: flex; align-items: center; gap: 8px; letter-spacing: -0.5px;
+    cursor: pointer;
+  } 
+  .brand i { color: var(--primary); font-size: 20px; } 
+  .brand span { color: var(--primary); }
+  .menu-btn { 
+    font-size: 20px; color: var(--text-main); cursor: pointer;
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.55); border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
 
-/* HERO METİN */
-.hero{
-  position:relative;
-  z-index:2;
-  padding:30px 20px 0;
-}
-.hero h1{
-  font-size:34px;
-  line-height:1.1;
-  font-weight:800;
-}
-.hero p{
-  margin-top:8px;
-  font-size:16px;
-  color:#444;
-}
+  /* --- ORTA ALAN --- */
+  #main { 
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 0 18px 220px 18px; /* bottom alanı için boşluk */
+    position: relative; z-index: 10;
+    display: flex; flex-direction: column;
+  }
 
-/* ALT SABİT ALAN */
-.bottom{
-  position:absolute;
-  left:0;right:0;bottom:0;
-  z-index:3;
-  background:rgba(255,255,255,.92);
-  backdrop-filter:blur(14px);
-  border-top:1px solid #eee;
-}
+  /* Hero Metin */
+  .hero-content {
+    margin-top: 38px;
+    animation: fadeIn .6s ease;
+  }
+  .hero-title { 
+    font-size: 34px; font-weight: 800; line-height: 1.08; margin-bottom: 10px;
+    color: var(--text-main); letter-spacing: -1px;
+    text-shadow: 0 2px 10px rgba(255,255,255,0.7);
+  }
+  .hero-desc { 
+    font-size: 16px; font-weight: 600; color: var(--text-muted);
+    line-height: 1.35;
+    text-shadow: 0 1px 8px rgba(255,255,255,0.7);
+  }
 
-/* slogan */
-.tip{
-  margin:-18px auto 8px;
-  background:#fff;
-  color:var(--primary);
-  padding:8px 16px;
-  border-radius:20px;
-  width:max-content;
-  font-size:13px;
-  font-weight:600;
-  box-shadow:0 6px 15px rgba(0,0,0,.08);
-}
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* arama */
-.search{
-  display:flex;
-  gap:10px;
-  padding:10px 16px;
-}
-.search input{
-  flex:1;
-  height:52px;
-  border-radius:26px;
-  border:1px solid #ddd;
-  padding:0 16px;
-  font-size:15px;
-}
-.search button{
-  width:52px;height:52px;
-  border-radius:50%;
-  border:none;
-  background:var(--primary);
-  color:#fff;
-  font-size:20px;
-}
+  /* --- BOTTOM --- */
+  #bottom { 
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    z-index: 50;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 
-/* MODÜL BAR */
-.dock{
-  display:flex;
-  justify-content:space-around;
-  padding:10px 0 16px;
-}
-.dock-item{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  font-size:11px;
-  color:#666;
-  opacity:.5;
-}
-.dock-item.active{
-  opacity:1;
-  color:var(--primary);
-}
-.dock-item i{
-  font-size:20px;
-}
+  .suggestion-box {
+    background: #fff; color: var(--primary);
+    font-size: 13px; font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 999px;
+    margin: -16px auto 10px auto;
+    width: max-content; max-width: 92%;
+    text-align: center;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.10);
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+
+  .input-wrapper { padding: 10px 18px; display: flex; gap: 10px; align-items: center; }
+  .search-bar {
+    flex: 1; height: 54px; background: #fff; border: 1px solid rgba(0,0,0,0.10);
+    border-radius: 27px; display: flex; align-items: center; padding: 0 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    transition: 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 4px 18px rgba(0,200,151,0.18); }
+  #text { flex: 1; border: none; background: transparent; font-size: 16px; margin: 0 10px; color: #333; }
+
+  #sendBtn {
+    width: 54px; height: 54px; border-radius: 50%; border: none;
+    background: var(--primary); color: #fff; font-size: 20px;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    box-shadow: 0 8px 18px rgba(0,200,151,0.30);
+    transition: 0.15s;
+  }
+  #sendBtn:active { transform: scale(0.92); }
+
+  .tool-btn { color: #999; font-size: 18px; padding: 5px; cursor: pointer; }
+  #fileInput { display: none; }
+
+  /* Dock */
+  .dock-container { padding: 10px 18px 16px 18px; overflow-x: auto; display: flex; gap: 18px; scrollbar-width: none; }
+  .dock-container::-webkit-scrollbar { display: none; }
+  .dock-item { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 64px; opacity: 0.45; transition: 0.2s; cursor: pointer; }
+  .dock-item.active { opacity: 1; transform: translateY(-2px); }
+  .dock-icon-box { width: 48px; height: 48px; background: rgba(0,0,0,0.04); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #666; transition: 0.2s; }
+  .dock-item.active .dock-icon-box { background: var(--primary); color: #fff; box-shadow: 0 10px 18px rgba(0,200,151,0.25); }
+  .dock-label { font-size: 11px; font-weight: 800; color: #333; }
+
 </style>
 </head>
 
 <body>
-
 <div id="app">
 
-<header>
-  <div class="logo">CAYNANA<span>.AI</span></div>
-  <div class="menu"><i class="fa-solid fa-bars"></i></div>
-</header>
+  <header id="topbar">
+    <div class="brand" onclick="switchMode('shopping')">
+      <i class="fa-solid fa-wand-magic-sparkles"></i> CAYNANA<span>.AI</span>
+    </div>
+    <div class="menu-btn"><i class="fa-solid fa-bars"></i></div>
+  </header>
 
-<section class="hero">
-  <h1 id="heroTitle">Almadan önce<br>Caynana’ya sor.</h1>
-  <p id="heroDesc">Sonra “keşke” dememek için buradayım.</p>
-</section>
+  <main id="main">
+    <div id="heroContent" class="hero-content">
+      <h1 class="hero-title" id="heroTitle">Almadan önce<br>Caynana’ya sor.</h1>
+      <p class="hero-desc" id="heroDesc">Sonra “keşke” dememek için buradayım.</p>
+    </div>
+  </main>
 
-<footer class="bottom">
-  <div class="tip" id="tipText">Her indirime atlayan sonunda pahalı öder.</div>
+  <footer id="bottom">
+    <div class="suggestion-box" id="tipText">Her indirime atlayan sonunda pahalı öder.</div>
 
-  <div class="search">
-    <input id="query" placeholder="Ürün adı ya da bütçeni yaz">
-    <button><i class="fa-solid fa-paper-plane"></i></button>
-  </div>
+    <div class="input-wrapper">
+      <div class="search-bar">
+        <div class="tool-btn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
+        <input id="text" placeholder="Ürün adı ya da bütçeni yaz" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
+      </div>
+      <button id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
 
-  <div class="dock">
-    <div class="dock-item active" onclick="switchMode('shopping')"><i class="fa-solid fa-bag-shopping"></i>Alışveriş</div>
-    <div class="dock-item" onclick="switchMode('chat')"><i class="fa-solid fa-comments"></i>Sohbet</div>
-    <div class="dock-item" onclick="switchMode('fal')"><i class="fa-solid fa-mug-hot"></i>Fal</div>
-    <div class="dock-item" onclick="switchMode('health')"><i class="fa-solid fa-heart-pulse"></i>Sağlık</div>
-    <div class="dock-item" onclick="switchMode('diet')"><i class="fa-solid fa-carrot"></i>Diyet</div>
-  </div>
-</footer>
+    <div class="dock-container">
+      <div class="dock-item active" onclick="switchMode('shopping', this)">
+        <div class="dock-icon-box"><i class="fa-solid fa-bag-shopping"></i></div>
+        <div class="dock-label">Alışveriş</div>
+      </div>
+
+      <div class="dock-item" onclick="switchMode('chat', this)">
+        <div class="dock-icon-box"><i class="fa-solid fa-comments"></i></div>
+        <div class="dock-label">Sohbet</div>
+      </div>
+
+      <div class="dock-item" onclick="switchMode('fal', this)">
+        <div class="dock-icon-box"><i class="fa-solid fa-mug-hot"></i></div>
+        <div class="dock-label">Fal</div>
+      </div>
+
+      <div class="dock-item" onclick="switchMode('health', this)">
+        <div class="dock-icon-box"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div class="dock-label">Sağlık</div>
+      </div>
+
+      <div class="dock-item" onclick="switchMode('diet', this)">
+        <div class="dock-icon-box"><i class="fa-solid fa-carrot"></i></div>
+        <div class="dock-label">Diyet</div>
+      </div>
+    </div>
+  </footer>
 
 </div>
 
+<input type="file" id="fileInput" accept="image/*" capture="environment">
+
 <script>
-const modes = {
-  shopping:{img:"hero-shopping.png",title:"Almadan önce<br>Caynana’ya sor.",desc:"Sonra “keşke” dememek için buradayım.",tip:"Her indirime atlayan sonunda pahalı öder."},
-  chat:{img:"hero-chat.png",title:"Caynana ile<br>iki lafın belini kır.",desc:"Biraz dur bakalım…",tip:"Benim zamanımda her şey daha güzeldi ah ah…"},
-  fal:{img:"hero-fal.png",title:"Kahveni içtin mi?<br>Gel falına bakayım.",desc:"Fal eğlencedir evladım.",tip:"Hemen inanma ama kulak da tıka."},
-  health:{img:"hero-health.png",title:"Caynana Sağlık’la<br>kendine dikkat et.",desc:"Neren ağrıyor söyle.",tip:"Çay üstüne soğuk su içme."},
-  diet:{img:"hero-diet.png",title:"Caynana Diyet’le<br>hafifle.",desc:"Açlıktan değil keyiften.",tip:"Ekmek değil yeşillik ye."}
-};
+  // Repo dosya isimlerine göre ayarlandı:
+  // - Alışveriş: images/hero-shopping.png
+  // - Diğerleri: images/mode_*.png (sende var)
 
-function switchMode(m){
-  const mode=modes[m];
-  document.getElementById("app").style.backgroundImage=`url('/images/${mode.img}')`;
-  document.getElementById("heroTitle").innerHTML=mode.title;
-  document.getElementById("heroDesc").innerText=mode.desc;
-  document.getElementById("tipText").innerText=mode.tip;
+  const MODES = {
+    shopping: {
+      bg: "/images/hero-shopping.png",
+      color: "#00C897",
+      title: "Almadan önce<br>Caynana’ya sor.",
+      desc: "Sonra “keşke” dememek için buradayım.",
+      tip: "Her indirime atlayan sonunda pahalı öder."
+    },
+    chat: {
+      bg: "/mode_chat.png",
+      color: "#FFB300",
+      title: "Caynana ile<br>iki lafın belini kır.",
+      desc: "Biraz dur bakalım, neler anlatacaksın?",
+      tip: "Benim zamanımda her şey daha güzeldi ah ah…"
+    },
+    fal: {
+      bg: "/mode_fal.png",
+      color: "#8B5CF6",
+      title: "Kahveni içtin mi?<br>Gel falına bakayım.",
+      desc: "Fal eğlencedir evladım.",
+      tip: "Hemen inanma ama kulak da tıka."
+    },
+    health: {
+      bg: "/mode_health.png",
+      color: "#EF4444",
+      title: "Caynana Sağlık’la<br>kendine dikkat et.",
+      desc: "Neren ağrıyor söyle bakayım?",
+      tip: "Çay üstüne soğuk su içme."
+    },
+    diet: {
+      bg: "/mode_diet.png",
+      color: "#84CC16",
+      title: "Caynana Diyet’le<br>hafifle.",
+      desc: "Açlıktan değil keyiften.",
+      tip: "Ekmek değil yeşillik ye."
+    }
+  };
 
-  document.querySelectorAll(".dock-item").forEach(d=>d.classList.remove("active"));
-  event.currentTarget.classList.add("active");
-}
+  function applyMode(m){
+    const mode = MODES[m] || MODES.shopping;
+    const app = document.getElementById("app");
+    app.style.backgroundImage = `url("${mode.bg}")`;
+
+    document.documentElement.style.setProperty("--primary", mode.color);
+    document.getElementById("heroTitle").innerHTML = mode.title;
+    document.getElementById("heroDesc").innerText = mode.desc;
+    document.getElementById("tipText").innerText = mode.tip;
+  }
+
+  function switchMode(m, el){
+    applyMode(m);
+
+    // active state
+    document.querySelectorAll(".dock-item").forEach(x => x.classList.remove("active"));
+    if (el) el.classList.add("active");
+  }
+
+  // Kamera (şimdilik sadece seçtir)
+  const fileEl = document.getElementById("fileInput");
+  function openCamera(){ fileEl.value=""; fileEl.click(); }
+
+  fileEl.addEventListener("change", (e)=>{
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    document.getElementById("text").value = "📷 Fotoğraf eklendi";
+  });
+
+  function send(){
+    // Bu sürüm sadece tasarım + background doğrulama için.
+    // Senin eski API/logic kodunu bunun üstüne geri bağlayacağız.
+    const v = document.getElementById("text").value.trim();
+    if(!v) return;
+    alert("Şimdilik UI kontrol: '" + v + "' (API bağlayınca burada çalışacak)");
+  }
+
+  // İlk açılışta kesin background
+  applyMode("shopping");
 </script>
-
 </body>
 </html>
