@@ -12,33 +12,21 @@
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.min.js"></script>
 
 <style>
-  :root{
-    --primary:#00C897;
-    --bg-dark:#0b0f18;
-    --font:'Plus Jakarta Sans',sans-serif;
-  }
-
+  :root{ --primary:#00C897; --bg-dark:#0b0f18; --font:'Plus Jakarta Sans',sans-serif; }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body{ height:100%; margin:0; }
 
-  /* ✅ WEB: ortala ve telefon gibi göster */
   body{
     font-family:var(--font);
     background:#000;
     overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    display:flex; align-items:center; justify-content:center;
   }
 
   #app{
-    width:100%;
-    height:100%;
-    max-width:480px;
-    max-height:920px;
-    aspect-ratio: 9 / 19.5;
-    border-radius:24px;
-    overflow:hidden;
+    width:100%; height:100%;
+    max-width:480px; max-height:920px; aspect-ratio: 9 / 19.5;
+    border-radius:24px; overflow:hidden;
     box-shadow:0 0 50px rgba(0,0,0,0.55);
 
     position:relative;
@@ -49,21 +37,14 @@
     transition: background-image 0.25s ease-in-out, background-position .25s ease;
   }
 
-  /* ✅ MOBİL: tam ekran */
   @media (max-width:520px){
     body{ display:block; }
     #app{
-      max-width:none;
-      max-height:none;
-      aspect-ratio:auto;
-      border-radius:0;
-      width:100vw;
-      height:100vh;
-      box-shadow:none;
+      max-width:none; max-height:none; aspect-ratio:auto;
+      border-radius:0; width:100vw; height:100vh; box-shadow:none;
     }
   }
 
-  /* overlay – yazı okunur ama resim boğulmaz */
   #app::after{
     content:'';
     position:absolute; inset:0;
@@ -78,83 +59,47 @@
   }
 
   header{
-    position:relative;
-    z-index:10;
+    position:relative; z-index:10;
     padding:16px 20px;
     padding-top:max(16px, env(safe-area-inset-top));
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:14px;
+    display:flex; justify-content:space-between; align-items:flex-start; gap:14px;
   }
-
   .brand-group{ display:flex; flex-direction:column; gap:4px; }
-  .logo{
-    font-weight:800;
-    font-size:24px;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    line-height:1;
-  }
+  .logo{ font-weight:800; font-size:24px; color:#fff; display:flex; align-items:center; gap:10px; line-height:1; }
   .logo i{ color:var(--primary); }
   .logo span{ color:var(--primary); }
-
-  .slogan{
-    font-size:11px;
-    font-weight:700;
-    color:rgba(255,255,255,0.80);
-  }
-
+  .slogan{ font-size:11px; font-weight:700; color:rgba(255,255,255,0.80); }
   .menu-btn{
-    width:42px; height:42px;
-    border-radius:50%;
+    width:42px; height:42px; border-radius:50%;
     background:rgba(255,255,255,0.14);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#fff;
-    border:1px solid rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; border:1px solid rgba(255,255,255,0.12);
     margin-top:2px;
   }
 
   #container{
-    position:relative;
-    z-index:5;
+    position:relative; z-index:5;
     height:100%;
     overflow-y:auto;
     padding:20px;
-    padding-bottom:320px; /* ✅ bottom sabit + safe area payı */
+    padding-bottom:320px;
     scrollbar-width:none;
     -webkit-overflow-scrolling:touch;
   }
   #container::-webkit-scrollbar{ display:none; }
 
-  #hero-text{
-    text-align:center;
-    margin-top:64px;
-    transition:opacity .25s ease;
-  }
-
+  #hero-text{ text-align:center; margin-top:64px; transition:opacity .25s ease; }
   #hero-title{
-    font-size:36px;
-    font-weight:800;
-    line-height:1.1;
-    color:#fff;
+    font-size:36px; font-weight:800; line-height:1.1; color:#fff;
     text-shadow:0 6px 22px rgba(0,0,0,0.65);
     margin-bottom:10px;
   }
   #hero-desc{
-    font-size:16px;
-    color:rgba(255,255,255,0.92);
-    font-weight:600;
+    font-size:16px; color:rgba(255,255,255,0.92); font-weight:600;
     text-shadow:0 4px 18px rgba(0,0,0,0.55);
   }
 
-  /* Chat */
   #chat-area{ margin-top:18px; display:none; }
   .msg-row{ display:flex; margin-bottom:16px; }
   .msg-row.user{ justify-content:flex-end; }
@@ -162,45 +107,43 @@
     max-width:85%;
     padding:14px 18px;
     border-radius:20px;
-    font-size:15px;
-    line-height:1.5;
+    font-size:15px; line-height:1.5;
     word-wrap:break-word;
     font-weight:650;
   }
-  .msg-row.ai .bubble{
-    background:rgba(255,255,255,0.95);
-    color:#1a1a1a;
-    border-bottom-left-radius:6px;
+  .msg-row.ai .bubble{ background:rgba(255,255,255,0.95); color:#1a1a1a; border-bottom-left-radius:6px; }
+  .msg-row.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:6px; }
+
+  .audio-btn{
+    margin-top:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,0.10);
+    background:#fff;
+    color:var(--primary);
+    font-weight:900;
+    font-size:12px;
+    cursor:pointer;
+    user-select:none;
   }
-  .msg-row.user .bubble{
-    background:var(--primary);
-    color:#fff;
-    border-bottom-right-radius:6px;
-  }
+  .audio-btn.playing{ background:#ffeaea; color:#d32f2f; border-color:#d32f2f; }
 
   .image-preview{ width:100%; border-radius:12px; margin-bottom:10px; }
 
-  /* Cards */
   .cards-wrapper{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; }
   .card{
-    background:#fff;
-    border-radius:16px;
-    padding:10px;
-    display:flex;
-    flex-direction:column;
+    background:#fff; border-radius:16px; padding:10px;
+    display:flex; flex-direction:column;
     box-shadow:0 5px 15px rgba(0,0,0,0.12);
-    position:relative;
-    overflow:hidden;
+    position:relative; overflow:hidden;
   }
   .badge{
-    position:absolute;
-    top:10px; left:0;
-    padding:4px 10px;
-    font-size:10px;
-    font-weight:900;
-    color:#fff;
-    border-top-right-radius:10px;
-    border-bottom-right-radius:10px;
+    position:absolute; top:10px; left:0;
+    padding:4px 10px; font-size:10px; font-weight:900; color:#fff;
+    border-top-right-radius:10px; border-bottom-right-radius:10px;
     z-index:2;
   }
   .badge.gold{ background:linear-gradient(90deg,#FFD700,#FFA500); }
@@ -212,41 +155,27 @@
   .card-price{ font-size:14px; font-weight:900; color:var(--primary); margin-bottom:8px; }
   .card-btn{
     margin-top:auto;
-    background:#111;
-    color:#fff;
-    text-align:center;
-    padding:9px;
-    border-radius:10px;
-    font-size:11px;
-    font-weight:900;
-    text-decoration:none;
+    background:#111; color:#fff;
+    text-align:center; padding:9px; border-radius:10px;
+    font-size:11px; font-weight:900; text-decoration:none;
   }
 
-  /* ✅ Bottom fixed — mobilde ok kaybolmaz */
   #bottom-bar{
     position:fixed;
     left:0; right:0; bottom:0;
     z-index:20;
     background:rgba(255,255,255,0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top:1px solid rgba(255,255,255,0.35);
     padding-bottom:calc(env(safe-area-inset-bottom) + 18px);
     padding-top:14px;
   }
-
-  /* bottom içini app ile hizala */
-  #bottom-bar .inner{
-    max-width:480px;
-    margin:0 auto;
-    width:100%;
-  }
+  #bottom-bar .inner{ max-width:480px; margin:0 auto; width:100%; }
   @media (max-width:520px){ #bottom-bar .inner{ max-width:none; } }
 
   #suggestion{
     position:absolute;
-    top:-44px;
-    left:50%;
+    top:-44px; left:50%;
     transform:translateX(-50%);
     background:#fff;
     padding:9px 16px;
@@ -258,112 +187,39 @@
     white-space:nowrap;
   }
 
-  .input-area{
-    padding:0 15px;
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
+  .input-area{ padding:0 15px; display:flex; align-items:center; gap:10px; }
   .input-box{
-    flex:1;
-    height:52px;
-    background:#fff;
-    border-radius:26px;
-    display:flex;
-    align-items:center;
-    padding:0 6px;
+    flex:1; height:52px; background:#fff; border-radius:26px;
+    display:flex; align-items:center; padding:0 6px;
     border:1px solid rgba(0,0,0,0.06);
   }
-  .tool-btn{
-    width:40px; height:40px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#666;
-    cursor:pointer;
-  }
-  #user-input{
-    flex:1;
-    border:none;
-    outline:none;
-    font-size:15px;
-    padding:0 8px;
-    font-family:var(--font);
-    background:transparent;
-  }
+  .tool-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#666; cursor:pointer; }
+  #user-input{ flex:1; border:none; outline:none; font-size:15px; padding:0 8px; font-family:var(--font); background:transparent; }
+
   #send-btn{
-    width:52px; height:52px;
-    border-radius:50%;
-    border:none;
-    background:var(--primary);
-    color:#fff;
-    font-size:18px;
-    cursor:pointer;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    width:52px; height:52px; border-radius:50%;
+    border:none; background:var(--primary); color:#fff;
+    font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
     box-shadow:0 10px 22px rgba(0,200,151,0.25);
   }
   #send-btn:active{ transform:scale(0.92); }
 
-  .dock{
-    display:flex;
-    gap:12px;
-    padding:10px 15px 0 15px;
-    overflow-x:auto;
-    scrollbar-width:none;
-  }
+  .dock{ display:flex; gap:12px; padding:10px 15px 0 15px; overflow-x:auto; scrollbar-width:none; }
   .dock::-webkit-scrollbar{ display:none; }
-  .dock-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:4px;
-    opacity:0.45;
-    transition:0.25s;
-    cursor:pointer;
-    min-width:64px;
-  }
+  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:4px; opacity:0.45; transition:0.25s; cursor:pointer; min-width:64px; }
   .dock-item.active{ opacity:1; transform:translateY(-2px); }
-  .dock-icon{
-    width:46px; height:46px;
-    border-radius:16px;
-    background:rgba(0,0,0,0.06);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-    color:#333;
-  }
-  .dock-item.active .dock-icon{
-    background:var(--primary);
-    color:#fff;
-    box-shadow:0 8px 18px rgba(0,0,0,0.18);
-  }
+  .dock-icon{ width:46px; height:46px; border-radius:16px; background:rgba(0,0,0,0.06); display:flex; align-items:center; justify-content:center; font-size:18px; color:#333; }
+  .dock-item.active .dock-icon{ background:var(--primary); color:#fff; box-shadow:0 8px 18px rgba(0,0,0,0.18); }
   .dock-label{ font-size:10px; font-weight:900; color:#333; }
 
-  .footer-info{
-    text-align:center;
-    font-size:10px;
-    color:#777;
-    font-weight:800;
-    margin-top:8px;
-    padding-bottom:2px;
-  }
-  .it-flag-line{
-    width:62px; height:4px;
-    margin:6px auto 0;
-    border-radius:3px;
-    overflow:hidden;
-    display:flex;
-  }
+  .footer-info{ text-align:center; font-size:10px; color:#777; font-weight:800; margin-top:8px; padding-bottom:2px; }
+  .it-flag-line{ width:62px; height:4px; margin:6px auto 0; border-radius:3px; overflow:hidden; display:flex; }
   .it-flag-line span{ flex:1; }
   .it-flag-line .g{ background:#009246; }
   .it-flag-line .w{ background:#fff; }
   .it-flag-line .r{ background:#ce2b37; }
 
-  /* ✅ “Dosya seç” asla görünmesin */
   #file-upload{ display:none !important; }
 </style>
 </head>
@@ -410,28 +266,30 @@
 <input type="file" id="file-upload" accept="image/*" capture="environment">
 
 <script>
-  // ✅ Eğer backend aynı domain'de ise (caynana.ai) bunu kullan:
+  // ✅ aynı domain: "/api/chat" — Render ayrıysa URL yaz
   const API_BASE_URL = "/api/chat";
-
-  // Eğer Render gibi ayrıysa bunu yap:
-  // const API_BASE_URL = "https://YOUR-RENDER-URL/api/chat";
+  const SPEAK_URL = "/api/speak";
 
   const MODES = {
-    shopping: { label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", img:"images/hero-shopping.png", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", sugg:"Her indirime atlayan sonunda pahalı öder.", ph:"Neye bakmıştın evladım?" },
-    chat: { label:"Sohbet", icon:"fa-comments", color:"#FFB300", img:"images/hero-chat.png", title:"Caynana ile<br>dertleş.", desc:"Anlat bakalım, canını sıkan ne?", sugg:"Eskiden komşuluk vardı, şimdi wifi var…", ph:"Naber Caynana?" },
-    fal: { label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", img:"images/hero-fal.png", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Neyse halin, çıksın falin.", sugg:"Kapat fincanı, fotoğrafını çek gönder.", ph:"Fincanı çektin mi?" },
-    health: { label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", img:"images/hero-health.png", title:"Sağlık olsun<br>gerisi boş.", desc:"Neren ağrıyor evladım?", sugg:"Terli terli soğuk su içme!", ph:"Şikâyetin ne?" },
-    diet: { label:"Diyet", icon:"fa-apple-whole", color:"#84CC16", img:"images/hero-diet.png", title:"Sağlıklı beslen<br>zinde kal.", desc:"Aç kalarak değil, dengeli ye.", sugg:"Akşam 7'den sonra buzdolabına küs.", ph:"Hedefin ne?" },
-    food: { label:"Yemek", icon:"fa-utensils", color:"#F97316", img:"images/hero-food.png", title:"Bugün ne<br>pişirsem?", desc:"Dolapta ne var söyle, tarif vereyim.", sugg:"Malzemeyi ziyan etme, bereket kaçar.", ph:"Hangi malzemeler var?" },
-    law: { label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", img:"images/hero-law.png", title:"Hakkını<br>yedirme.", desc:"Danışmadan imza atma evladım.", sugg:"Söz uçar yazı kalır.", ph:"Sorun nedir?" },
-    astro: { label:"Burç", icon:"fa-star", color:"#D946EF", img:"images/hero-astro.png", title:"Yıldızlar<br>ne diyor?", desc:"Merkür retrosuna dikkat.", sugg:"Yıldıznameye baktım, yolun açık.", ph:"Burcun ne?" },
-    translate: { label:"Çeviri", icon:"fa-language", color:"#64748B", img:"images/hero-translate.png", title:"Dil bilmek<br>altın bileziktir.", desc:"Anlamadığın yazıyı göster çevireyim.", sugg:"Turist gelince mahcup olma.", ph:"Çevrilecek metin ne?" },
-    dream: { label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", img:"images/hero-dream.png", title:"Rüyalar<br>haberci olabilir.", desc:"Hayırdır inşallah…", sugg:"Suya anlat derler ama sen bana anlat.", ph:"Rüyanda ne gördün?" },
+    shopping:  { label:"Alışveriş", icon:"fa-bag-shopping",  color:"#00C897", img:"images/hero-shopping.png",  title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", sugg:"Her indirime atlayan sonunda pahalı öder.", ph:"Neye bakmıştın evladım?" },
+    chat:      { label:"Sohbet",   icon:"fa-comments",      color:"#FFB300", img:"images/hero-chat.png",      title:"Caynana ile<br>dertleş.", desc:"Anlat bakalım, canını sıkan ne?", sugg:"Eskiden komşuluk vardı, şimdi wifi var…", ph:"Naber Caynana?" },
+    fal:       { label:"Fal",      icon:"fa-mug-hot",       color:"#8B5CF6", img:"images/hero-fal.png",       title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Neyse halin, çıksın falin.", sugg:"Kapat fincanı, fotoğrafını çek gönder.", ph:"Fincanı çektin mi?" },
+    health:    { label:"Sağlık",   icon:"fa-heart-pulse",   color:"#EF4444", img:"images/hero-health.png",    title:"Sağlık olsun<br>gerisi boş.", desc:"Neren ağrıyor evladım?", sugg:"Terli terli soğuk su içme!", ph:"Şikâyetin ne?" },
+    diet:      { label:"Diyet",    icon:"fa-apple-whole",   color:"#84CC16", img:"images/hero-diet.png",      title:"Sağlıklı beslen<br>zinde kal.", desc:"Aç kalarak değil, dengeli ye.", sugg:"Akşam 7'den sonra buzdolabına küs.", ph:"Hedefin ne?" },
+    food:      { label:"Yemek",    icon:"fa-utensils",      color:"#F97316", img:"images/hero-food.png",      title:"Bugün ne<br>pişirsem?", desc:"Dolapta ne var söyle, tarif vereyim.", sugg:"Malzemeyi ziyan etme, bereket kaçar.", ph:"Hangi malzemeler var?" },
+    law:       { label:"Hukuk",    icon:"fa-scale-balanced",color:"#3B82F6", img:"images/hero-law.png",       title:"Hakkını<br>yedirme.", desc:"Danışmadan imza atma evladım.", sugg:"Söz uçar yazı kalır.", ph:"Sorun nedir?" },
+    astro:     { label:"Burç",     icon:"fa-star",          color:"#D946EF", img:"images/hero-astro.png",     title:"Yıldızlar<br>ne diyor?", desc:"Merkür retrosuna dikkat.", sugg:"Yıldıznameye baktım, yolun açık.", ph:"Burcun ne?" },
+    translate: { label:"Çeviri",   icon:"fa-language",      color:"#64748B", img:"images/hero-translate.png", title:"Dil bilmek<br>altın bileziktir.", desc:"Anlamadığın yazıyı göster çevireyim.", sugg:"Turist gelince mahcup olma.", ph:"Çevrilecek metin ne?" },
+    dream:     { label:"Rüya",     icon:"fa-cloud-moon",    color:"#6366F1", img:"images/hero-dream.png",     title:"Rüyalar<br>haberci olabilir.", desc:"Hayırdır inşallah…", sugg:"Suya anlat derler ama sen bana anlat.", ph:"Rüyanda ne gördün?" },
   };
 
   let currentMode="shopping";
   let pendingImage=null;
   let chatHistory={};
+
+  let currentAudio = null;       // server audio
+  let speakingBtn = null;        // active button
+  let synthSpeaking = false;     // browser TTS state
 
   marked.setOptions({ mangle:false, headerIds:false });
 
@@ -452,6 +310,9 @@
 
   function switchMode(mode){
     if(!MODES[mode]) return;
+
+    stopAnyAudio(); // ✅ mod değişince ses kes
+
     const chatArea=document.getElementById("chat-area");
     chatHistory[currentMode]=chatArea.innerHTML;
 
@@ -464,7 +325,6 @@
     document.getElementById("suggestion").innerText=m.sugg;
     document.getElementById("user-input").placeholder=m.ph;
 
-    // bg
     document.getElementById("app").style.backgroundImage=`url('${m.img}?v=${Date.now()}')`;
     renderDock();
 
@@ -479,7 +339,7 @@
     document.getElementById("chat-area").style.display=show?"none":"block";
   }
 
-  function addMessage(role, text, imgData){
+  function addMessage(role, text, imgData, speechText){
     const area=document.getElementById("chat-area");
     const row=document.createElement("div");
     row.className=`msg-row ${role}`;
@@ -488,8 +348,17 @@
     if(imgData) content += `<img src="${imgData}" class="image-preview">`;
 
     if(role==="ai"){
-      const html = DOMPurify.sanitize(marked.parse(text||""));
-      content += html;
+      content += DOMPurify.sanitize(marked.parse(text||""));
+
+      // ✅ Ses butonu ekle
+      const s = (speechText || text || "").toString().trim();
+      if(s){
+        content += `
+          <div class="audio-btn" data-speech="${escapeAttr(s)}">
+            <i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor
+          </div>
+        `;
+      }
     }else{
       content += DOMPurify.sanitize(text||"");
     }
@@ -497,6 +366,10 @@
     row.innerHTML=`<div class="bubble">${content}</div>`;
     area.appendChild(row);
     document.getElementById("container").scrollTo(0, document.getElementById("container").scrollHeight);
+  }
+
+  function escapeAttr(s){
+    return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
   function addLoading(){
@@ -514,7 +387,6 @@
   async function sendMessage(){
     const input=document.getElementById("user-input");
     const txt=input.value.trim();
-
     if(!txt && !pendingImage) return;
 
     toggleHero(false);
@@ -527,7 +399,6 @@
     input.value="";
 
     const loadingId = addLoading();
-
     const payload = { message: txt, mode: currentMode, image: pendingImage };
     pendingImage=null;
 
@@ -539,8 +410,11 @@
       });
       const data = await res.json();
       removeLoading(loadingId);
-      addMessage("ai", data.assistant_text || "Bir şey diyemedim evladım…");
+
+      addMessage("ai", data.assistant_text || "Bir şey diyemedim evladım…", null, data.speech_text || data.assistant_text);
+
       if(data.data && data.data.length) renderCards(data.data);
+
     }catch(e){
       removeLoading(loadingId);
       addMessage("ai", "Backend adresini kontrol et evladım. API_BASE_URL yanlış.");
@@ -553,13 +427,14 @@
     const wrapper=document.createElement("div");
     wrapper.className="cards-wrapper";
 
-    list.forEach(item=>{
+    (list||[]).forEach(item=>{
       const badgeClass = (item.badge || "silver");
       const badgeText =
         badgeClass==="gold" ? "ÖNERİLEN" :
         badgeClass==="value" ? "F/P" : "SEÇİM";
 
       const safeUrl = (item.url && (item.url.startsWith("http://") || item.url.startsWith("https://"))) ? item.url : "#";
+
       const card=document.createElement("div");
       card.className="card";
       card.innerHTML = `
@@ -604,6 +479,140 @@
   }
 
   document.getElementById("user-input").addEventListener("keypress",(e)=>{ if(e.key==="Enter") sendMessage(); });
+
+  // ✅ Event delegation: ses butonları
+  document.getElementById("chat-area").addEventListener("click", async (e)=>{
+    const btn = e.target.closest(".audio-btn");
+    if(!btn) return;
+    const speech = btn.getAttribute("data-speech") || "";
+    await speakToggle(speech, btn);
+  });
+
+  function stopAnyAudio(){
+    // stop server audio
+    if(currentAudio){
+      try{ currentAudio.pause(); }catch(_){}
+      currentAudio = null;
+    }
+    // stop browser TTS
+    if(window.speechSynthesis){
+      window.speechSynthesis.cancel();
+      synthSpeaking = false;
+    }
+    // reset UI
+    if(speakingBtn){
+      speakingBtn.classList.remove("playing");
+      speakingBtn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+      speakingBtn = null;
+    }
+  }
+
+  async function speakToggle(text, btn){
+    text = (text||"").trim();
+    if(!text) return;
+
+    // aynı butona basıldıysa durdur
+    if(speakingBtn === btn && btn.classList.contains("playing")){
+      stopAnyAudio();
+      return;
+    }
+
+    // başka bir şey çalıyorsa kes
+    stopAnyAudio();
+
+    speakingBtn = btn;
+    btn.classList.add("playing");
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...`;
+
+    // 1) önce backend dene
+    const ok = await tryServerTTS(text, btn);
+    if(ok) return;
+
+    // 2) backend yoksa tarayıcı TTS
+    await speakBrowser(text, btn);
+  }
+
+  async function tryServerTTS(text, btn){
+    try{
+      const res = await fetch(SPEAK_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      // 204 → server TTS yok, fallback
+      if(res.status === 204) return false;
+
+      if(!res.ok) return false;
+
+      const blob = await res.blob();
+      if(!blob || blob.size < 2000) return false;
+
+      currentAudio = new Audio(URL.createObjectURL(blob));
+      currentAudio.onended = ()=>{
+        if(btn){
+          btn.classList.remove("playing");
+          btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+        }
+        currentAudio = null;
+        speakingBtn = null;
+      };
+
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sus Kız!`;
+      await currentAudio.play();
+      return true;
+
+    }catch(e){
+      return false;
+    }
+  }
+
+  async function speakBrowser(text, btn){
+    if(!window.speechSynthesis){
+      btn.classList.remove("playing");
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+      speakingBtn = null;
+      return;
+    }
+
+    btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sus Kız!`;
+
+    const utter = new SpeechSynthesisUtterance(text);
+
+    // Türkçe + mümkünse kadın sesi seç
+    utter.lang = "tr-TR";
+    const voices = window.speechSynthesis.getVoices();
+    const trVoices = voices.filter(v => (v.lang||"").toLowerCase().startsWith("tr"));
+    const preferred =
+      trVoices.find(v => /female|kadın|woman/i.test(v.name)) ||
+      trVoices.find(v => /tr/i.test(v.name)) ||
+      trVoices[0];
+
+    if(preferred) utter.voice = preferred;
+
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+
+    utter.onend = ()=>{
+      synthSpeaking = false;
+      if(btn){
+        btn.classList.remove("playing");
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+      }
+      speakingBtn = null;
+    };
+    utter.onerror = ()=>{
+      synthSpeaking = false;
+      if(btn){
+        btn.classList.remove("playing");
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+      }
+      speakingBtn = null;
+    };
+
+    synthSpeaking = true;
+    window.speechSynthesis.speak(utter);
+  }
 
   init();
 </script>
