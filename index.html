@@ -15,14 +15,13 @@
     :root{
       --primary:#00C897;
       --bg:#ffffff;
-      --text:#111827;
-      --muted:#6b7280;
       --safeB: env(safe-area-inset-bottom);
       --safeT: env(safe-area-inset-top);
       --font:'Plus Jakarta Sans', sans-serif;
     }
     *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
     html,body{ height:100%; }
+
     body{
       font-family:var(--font);
       background:#0b0f18;
@@ -47,14 +46,9 @@
     }
     @media (max-width:520px){
       body{ display:block; background:#0b0f18; }
-      #app{
-        max-width:none; max-height:none; aspect-ratio:auto;
-        width:100vw; height:100dvh;
-        border-radius:0; box-shadow:none;
-      }
+      #app{ max-width:none; max-height:none; aspect-ratio:auto; width:100vw; height:100dvh; border-radius:0; box-shadow:none; }
     }
 
-    /* HERO */
     #hero{
       flex:0 0 46%;
       position:relative;
@@ -77,79 +71,59 @@
       pointer-events:none;
     }
 
-    /* HEADER */
     header{
-      position:absolute;
-      top:0; left:0; right:0;
+      position:absolute; top:0; left:0; right:0;
       padding: calc(14px + var(--safeT)) 16px 10px 16px;
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      z-index:6;
-      pointer-events:none;
+      display:flex; align-items:flex-start; justify-content:space-between;
+      z-index:6; pointer-events:none;
     }
     .brand{
       display:flex; flex-direction:column; gap:6px;
-      pointer-events:auto;
-      cursor:pointer;
+      pointer-events:auto; cursor:pointer;
     }
     .brand .top{
       display:flex; align-items:center; gap:10px;
-      font-weight:900; font-size:22px;
-      color:#fff;
+      font-weight:900; font-size:22px; color:#fff;
       text-shadow:0 10px 28px rgba(0,0,0,.45);
       letter-spacing:-.3px;
     }
     .brand .top i{ color:var(--primary); }
     .brand .top span{ color:var(--primary); }
     .brand .sub{
-      font-size:12px;
-      font-weight:900;
-      color:rgba(255,255,255,.86);
+      font-size:12px; font-weight:900; color:rgba(255,255,255,.86);
       text-shadow:0 10px 28px rgba(0,0,0,.40);
     }
     .menu-btn{
-      width:44px; height:44px;
-      border-radius:999px;
+      width:44px; height:44px; border-radius:999px;
       background:rgba(255,255,255,.16);
       border:1px solid rgba(255,255,255,.24);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       display:flex; align-items:center; justify-content:center;
-      color:#fff;
-      pointer-events:auto;
+      color:#fff; pointer-events:auto;
     }
 
-    /* HERO TEXT */
     .hero-text{
-      position:absolute;
-      left:16px; right:16px;
-      top: 112px;
-      z-index:6;
-      pointer-events:none;
+      position:absolute; left:16px; right:16px;
+      top:112px; z-index:6; pointer-events:none;
     }
     .hero-text h1{
-      font-size:34px;
-      font-weight:950;
-      line-height:1.05;
-      color:#fff;
-      letter-spacing:-.8px;
+      font-size:34px; font-weight:950; line-height:1.05;
+      color:#fff; letter-spacing:-.8px;
       text-shadow:0 14px 30px rgba(0,0,0,.50);
     }
     .hero-text p{
       margin-top:10px;
-      font-size:15px;
-      font-weight:900;
+      font-size:15px; font-weight:900;
       color:rgba(255,255,255,.88);
       text-shadow:0 12px 26px rgba(0,0,0,.42);
       max-width: 92%;
     }
 
-    /* MAIN */
     #main{
       flex:1;
       background: var(--bg);
-      padding:16px 16px 280px 16px;
+      padding:16px 16px 330px 16px;
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -171,13 +145,7 @@
       color:#fff;
       border-color: transparent;
     }
-
-    .msg img{
-      width:100%;
-      border-radius:14px;
-      margin-bottom:10px;
-      display:block;
-    }
+    .msg img{ width:100%; border-radius:14px; margin-bottom:10px; display:block; }
 
     .audio-btn{
       margin-top:10px;
@@ -193,13 +161,20 @@
       cursor:pointer;
       user-select:none;
     }
-    .audio-btn.playing{
-      background:#ffebee;
-      color:#d32f2f;
-      border-color:#d32f2f;
+    .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#d32f2f; }
+
+    .chip{
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:950;
+      font-size:12px;
+      cursor:pointer;
+      white-space:nowrap;
+      box-shadow:0 8px 16px rgba(0,0,0,.06);
     }
 
-    /* CARDS */
     .cards{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:10px 0 16px; }
     .card{
       background:#fff;
@@ -214,10 +189,7 @@
     }
     .card-badge{
       position:absolute; top:10px; left:0;
-      padding:4px 10px;
-      font-size:10px;
-      font-weight:950;
-      color:#fff;
+      padding:4px 10px; font-size:10px; font-weight:950; color:#fff;
       border-radius:0 10px 10px 0;
     }
     .card-badge.gold{ background:linear-gradient(90deg,#FFB300,#FF8F00); }
@@ -241,10 +213,8 @@
     .plink.btn-silver{ background:#9E9E9E; }
     .plink.btn-blue{ background:#00C897; }
 
-    /* BOTTOM */
     #bottom{
-      position:absolute;
-      left:0; right:0; bottom:0;
+      position:absolute; left:0; right:0; bottom:0;
       background:rgba(255,255,255,.96);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -267,13 +237,24 @@
       text-align:center;
     }
 
+    .langRow{ padding: 0 16px 10px 16px; display:none; }
+    .langRow select{
+      width:100%;
+      height:44px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      font-weight:900;
+      padding:0 12px;
+      outline:none;
+    }
+
     .row{
       padding:12px 16px;
       display:flex;
       align-items:center;
       gap:10px;
     }
-
     .iconBtn{
       width:44px; height:44px;
       display:flex; align-items:center; justify-content:center;
@@ -282,7 +263,6 @@
       flex:0 0 44px;
       cursor:pointer;
     }
-
     .inputBox{
       flex:1;
       height:52px;
@@ -306,7 +286,6 @@
       padding:0 6px;
       min-width: 0;
     }
-
     .sendBtn{
       width:52px; height:52px;
       border:none;
@@ -321,23 +300,6 @@
     }
     .sendBtn:disabled{ opacity:.65; }
 
-    /* Translate language select */
-    .langRow{
-      padding: 0 16px 10px 16px;
-      display:none;
-    }
-    .langRow select{
-      width:100%;
-      height:44px;
-      border-radius:14px;
-      border:1px solid rgba(0,0,0,.08);
-      background:#fff;
-      font-weight:900;
-      padding:0 12px;
-      outline:none;
-    }
-
-    /* Fal special */
     #falUI{ display:none; padding:12px 16px 14px 16px; }
     .bigFalBtn{
       width:100%;
@@ -356,20 +318,9 @@
       box-shadow:0 14px 26px rgba(0,0,0,.18);
     }
 
-    /* Dock */
-    .dockWrap{
-      padding: 8px 12px 0 12px;
-      overflow-x:auto;
-      scrollbar-width:none;
-      scroll-snap-type: x mandatory;
-    }
+    .dockWrap{ padding: 8px 12px 0 12px; overflow-x:auto; scrollbar-width:none; scroll-snap-type: x mandatory; }
     .dockWrap::-webkit-scrollbar{ display:none; }
-    .dock{
-      display:flex;
-      gap:14px;
-      width:max-content;
-      padding: 0 4px 8px 4px;
-    }
+    .dock{ display:flex; gap:14px; width:max-content; padding: 0 4px 8px 4px; }
     .tab{
       min-width:62px;
       display:flex;
@@ -402,19 +353,10 @@
       transform: translateY(-2px);
     }
 
-    .footer{
-      text-align:center;
-      font-size:11px;
-      font-weight:950;
-      color:#666;
-      padding:8px 0 10px;
-    }
+    .footer{ text-align:center; font-size:11px; font-weight:950; color:#666; padding:8px 0 10px; }
     .flag{
-      width:64px; height:4px;
-      margin:6px auto 0;
-      display:flex;
-      border-radius:4px;
-      overflow:hidden;
+      width:64px; height:4px; margin:6px auto 0; display:flex;
+      border-radius:4px; overflow:hidden;
     }
     .flag span{ flex:1; }
     .g{ background:#009246; }
@@ -447,21 +389,30 @@
     <div id="bottom">
       <div id="tip">Her indirime atlayan sonunda pahalı öder.</div>
 
-      <!-- Translator only -->
+      <!-- Quick chat chips (sadece chat mode) -->
+      <div id="quickChips" style="display:none; padding: 0 16px 10px 16px;">
+        <div style="display:flex; gap:10px; overflow:auto; padding-bottom:6px;">
+          <button class="chip" data-chip="Naber Caynana?">Naber?</button>
+          <button class="chip" data-chip="Bugün moral ver.">Moral ver</button>
+          <button class="chip" data-chip="Beni gaza getir, kısa konuş.">Gaza getir</button>
+          <button class="chip" data-chip="Bana kısa bir şaka yap.">Şaka 😄</button>
+          <button class="chip" data-chip="Bir derdim var, dinler misin?">Derdim var</button>
+        </div>
+      </div>
+
       <div class="langRow" id="langRow">
         <select id="langSelect">
-          <option value="tr">Türkçe</option>
-          <option value="en">English</option>
-          <option value="de">Deutsch</option>
-          <option value="fr">Français</option>
-          <option value="it">Italiano</option>
-          <option value="es">Español</option>
-          <option value="ru">Русский</option>
-          <option value="ar">العربية</option>
+          <option value="Türkçe">Türkçe</option>
+          <option value="English">English</option>
+          <option value="Deutsch">Deutsch</option>
+          <option value="Français">Français</option>
+          <option value="Italiano">Italiano</option>
+          <option value="Español">Español</option>
+          <option value="Русский">Русский</option>
+          <option value="العربية">العربية</option>
         </select>
       </div>
 
-      <!-- Standard UI -->
       <div class="row" id="standardUI">
         <div class="iconBtn" id="btnCamera" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
         <div class="iconBtn" id="btnDoc" onclick="openDoc()"><i class="fa-solid fa-paperclip"></i></div>
@@ -474,7 +425,6 @@
         <button class="sendBtn" id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
 
-      <!-- Fal UI -->
       <div id="falUI">
         <button class="bigFalBtn" onclick="takeFalPhoto()">
           <i class="fa-solid fa-camera"></i> Fincanını Çek ve Yorumla
@@ -496,11 +446,11 @@
   </div>
 
 <script>
-  // Backend
   const API_URL   = "https://bikonomi-api-2.onrender.com/api/chat";
+  const STREAM_URL= "https://bikonomi-api-2.onrender.com/api/chat_stream";
   const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
-
   const HERO_BASE = "images/";
+
   marked.setOptions({ mangle:false, headerIds:false });
 
   const dockOrder = ["shopping","chat","fal","dream","health","diet","food","law","astro","translate"];
@@ -511,79 +461,67 @@
     astro:"fa-star", translate:"fa-language"
   };
 
-  // Mode capabilities
   const MODE = {
-    shopping:  { color:"#00C897", img:"hero-shopping.png",  pos:"center 18%", top:112,
+    shopping:{ color:"#00C897", img:"hero-shopping.png", pos:"center 18%", top:112,
       title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.",
-      tip:"Her indirime atlayan sonunda pahalı öder.",
-      placeholder:"Ne arıyorsun evladım?",
+      tip:"Her indirime atlayan sonunda pahalı öder.", placeholder:"Ne arıyorsun evladım?",
       caps:{ text:true, mic:true, camera:true, doc:false, lang:false, falBtn:false } },
 
-    chat:      { color:"#FFB300", img:"hero-chat.png",      pos:"center 22%", top:118,
+    chat:{ color:"#FFB300", img:"hero-chat.png", pos:"center 22%", top:118,
       title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?",
-      tip:"Benim zamanımda her şey daha güzeldi ah ah…",
-      placeholder:"Naber Caynana?",
+      tip:"Benim zamanımda her şey daha güzeldi ah ah…", placeholder:"Naber Caynana?",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    fal:       { color:"#D4AF37", img:"hero-fal.png",       pos:"center 20%", top:118,
+    fal:{ color:"#D4AF37", img:"hero-fal.png", pos:"center 20%", top:118,
       title:"Falına bakalım mı?", desc:"Fincanı çek, ben yorumlayayım.",
-      tip:"Fincanı kapattın mı? Çek gönder bakalım.",
-      placeholder:"",
+      tip:"Fincanı kapattın mı? Çek gönder bakalım.", placeholder:"",
       caps:{ text:false, mic:false, camera:true, doc:false, lang:false, falBtn:true } },
 
-    dream:     { color:"#6366F1", img:"hero-dream.png",     pos:"center 16%", top:110,
+    dream:{ color:"#6366F1", img:"hero-dream.png", pos:"center 16%", top:110,
       title:"Rüyada ne gördün?", desc:"Anlat, tabir edeyim.",
-      tip:"Hayırdır inşallah…",
-      placeholder:"Ne gördün rüyanda?",
+      tip:"Hayırdır inşallah…", placeholder:"Ne gördün rüyanda?",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    health:    { color:"#EF4444", img:"hero-health.png",    pos:"center 18%", top:110,
+    health:{ color:"#EF4444", img:"hero-health.png", pos:"center 18%", top:110,
       title:"Caynana Sağlık’la<br>alışkanlık kazan.", desc:"Neren ağrıyor söyle bakayım?",
-      tip:"Sağlık ihmale gelmez.",
-      placeholder:"Neren ağrıyor?",
+      tip:"Sağlık ihmale gelmez.", placeholder:"Neren ağrıyor?",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    diet:      { color:"#84CC16", img:"hero-diet.png",      pos:"center 18%", top:110,
+    diet:{ color:"#84CC16", img:"hero-diet.png", pos:"center 18%", top:110,
       title:"Caynana Diyet’le<br>sağlıklı beslen!", desc:"Açlıktan değil, keyiften yiyin.",
-      tip:"Ekmek değil, yeşillik ye.",
-      placeholder:"Kilonu, boyunu, yaşını ve cinsiyetini söyle…",
+      tip:"Kilonu, boyunu, yaşını ve cinsiyetini söyle.", placeholder:"Kilonu, boyunu, yaşını ve cinsiyetini söyle…",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    food:      { color:"#F97316", img:"hero-food.png",      pos:"center 18%", top:110,
+    food:{ color:"#F97316", img:"hero-food.png", pos:"center 18%", top:110,
       title:"Caynana Yemek’le<br>ne pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.",
-      tip:"Malzemeyi ziyan etme, bereket kaçar.",
-      placeholder:"Dolapta ne var?",
+      tip:"Dolapta ne var?", placeholder:"Dolapta ne var?",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    law:       { color:"#3B82F6", img:"hero-law.png",       pos:"center 18%", top:110,
+    law:{ color:"#3B82F6", img:"hero-law.png", pos:"center 18%", top:110,
       title:"Caynana Hukuk’la<br>kim haklı öğren.", desc:"Ben avukat değilim ama çok dava gördüm.",
-      tip:"Sözleşmeye bakmadan imza atma!",
-      placeholder:"Kısaca anlat, yol göstereyim.",
+      tip:"Dosya/foto ekleyebilirsin.", placeholder:"Kısaca anlat, yol göstereyim.",
       caps:{ text:true, mic:true, camera:true, doc:true, lang:false, falBtn:false } },
 
-    astro:     { color:"#D946EF", img:"hero-astro.png",     pos:"center 18%", top:110,
+    astro:{ color:"#D946EF", img:"hero-astro.png", pos:"center 18%", top:110,
       title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.",
-      tip:"Yıldıznameye baktım, yolun açık.",
-      placeholder:"Burcunu söyle…",
+      tip:"Burcunu söyle.", placeholder:"Burcunu söyle…",
       caps:{ text:true, mic:true, camera:false, doc:false, lang:false, falBtn:false } },
 
-    translate: { color:"#9CA3AF", img:"hero-translate.png", pos:"center 18%", top:110,
+    translate:{ color:"#9CA3AF", img:"hero-translate.png", pos:"center 18%", top:110,
       title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır, ben hallederim.",
-      tip:"Dil bilmek altın bileziktir.",
-      placeholder:"Metni yapıştır…",
+      tip:"Hedef dili seç.", placeholder:"Metni yapıştır…",
       caps:{ text:true, mic:true, camera:true, doc:true, lang:true, falBtn:false } }
   };
 
-  // State
   let currentMode = "shopping";
   let isSending = false;
   let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
 
-  let pendingImage = null;   // base64
-  let pendingDoc = null;     // base64
+  let pendingImage = null;
+  let pendingDoc = null;
   let pendingDocName = null;
-
   let currentAudio = null;
+  let sx = 0;
 
   const $ = (id)=>document.getElementById(id);
 
@@ -597,10 +535,7 @@
     hero.style.backgroundPosition = pos || "center 28%";
     const url = `${HERO_BASE}${file}?v=${Date.now()}`;
     const img = new Image();
-    img.onload = () => {
-      lastBg = `url("${url}")`;
-      hero.style.backgroundImage = lastBg;
-    };
+    img.onload = () => { lastBg = `url("${url}")`; hero.style.backgroundImage = lastBg; };
     img.onerror = () => { if(lastBg) hero.style.backgroundImage = lastBg; };
     img.src = url;
   }
@@ -626,26 +561,22 @@
   }
 
   function applyCapabilities(){
-    const m = MODE[currentMode];
-    const c = m.caps;
+    const c = MODE[currentMode].caps;
 
-    // show/hide fal UI
     $("falUI").style.display = c.falBtn ? "block" : "none";
     $("standardUI").style.display = c.falBtn ? "none" : "flex";
 
-    // buttons
     $("btnCamera").style.display = c.camera ? "flex" : "none";
     $("btnDoc").style.display    = c.doc    ? "flex" : "none";
     $("btnMic").style.display    = c.mic    ? "flex" : "none";
 
-    // input
     $("userInput").style.display = c.text ? "block" : "none";
-    $("userInput").placeholder = m.placeholder || "";
+    $("userInput").placeholder = MODE[currentMode].placeholder || "";
 
-    // lang selector
     $("langRow").style.display = c.lang ? "block" : "none";
 
-    // clear pending attachments when mode changes (avoid surprises)
+    $("quickChips").style.display = (currentMode === "chat") ? "block" : "none";
+
     pendingImage = null;
     pendingDoc = null;
     pendingDocName = null;
@@ -656,23 +587,19 @@
     currentMode = modeName;
     const m = MODE[modeName];
 
-    // stop audio
     stopAllAudio();
-
     setTheme(m.color);
     setHeroBackground(m.img, m.pos);
     setHeroText(m.top, m.title, m.desc);
     setTip(m.tip);
+
     applyCapabilities();
     renderDock();
-
-    // Mode change: keep messages, but in shopping clear old product cards on next send (handled in send)
   }
 
   function escapeHtml(s){
     return String(s).replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
   }
-
   function safeLink(u){
     try{
       const url = new URL(u, location.href);
@@ -692,23 +619,17 @@
     const main = $("main");
     const div = document.createElement("div");
     div.className = "msg" + (role==="user" ? " user" : "");
-
     let html = "";
-    if(imgBase64){
-      html += `<img src="${imgBase64}" alt="image">`;
-    }
+    if(imgBase64) html += `<img src="${imgBase64}" alt="image">`;
 
-    // AI: markdown + sanitize, USER: escape
     if(role === "ai"){
       const raw = marked.parse(text || "");
       html += DOMPurify.sanitize(raw, { USE_PROFILES: { html:true } });
-    } else {
+    }else{
       html += escapeHtml(text || "");
     }
-
     div.innerHTML = html;
 
-    // speech button
     if(speechText){
       const btn = document.createElement("div");
       btn.className = "audio-btn";
@@ -719,6 +640,19 @@
 
     main.appendChild(div);
     main.scrollTo({ top: main.scrollHeight, behavior:"smooth" });
+    return div;
+  }
+
+  function pickBadge(p, idx){
+    const t = (p.caynana_trust?.badge || p.badge || p.rank || p.type || p.tag || "").toString().toLowerCase();
+    if (t.includes("sponsor")) return { key:"gold", text:"SPONSORLU" };
+    if (t.includes("gold") || t.includes("altın") || t.includes("efsane")) return { key:"gold", text:"ALTIN ÖNERİ" };
+    if (t.includes("silver") || t.includes("gümüş") || t.includes("iyi")) return { key:"silver", text:"GÜMÜŞ SEÇİM" };
+    if (t.includes("perf") || t.includes("fiyat") || t.includes("value")) return { key:"value", text:"FİYAT/PERF" };
+    if (idx===0) return { key:"gold", text:"ALTIN ÖNERİ" };
+    if (idx===1) return { key:"silver", text:"GÜMÜŞ SEÇİM" };
+    if (idx===2) return { key:"value", text:"FİYAT/PERF" };
+    return null;
   }
 
   function renderCards(list){
@@ -753,7 +687,6 @@
         ${priceHTML}
         ${linkHTML}
       `;
-
       wrap.appendChild(card);
     });
 
@@ -761,114 +694,6 @@
     main.scrollTo({ top: main.scrollHeight, behavior:"smooth" });
   }
 
-  function pickBadge(p, idx){
-    const t = (p.caynana_trust?.badge || p.badge || p.rank || p.type || p.tag || "").toString().toLowerCase();
-    if (t.includes("sponsor")) return { key:"gold", text:"SPONSORLU" };
-    if (t.includes("gold") || t.includes("altın") || t.includes("efsane")) return { key:"gold", text:"ALTIN ÖNERİ" };
-    if (t.includes("silver") || t.includes("gümüş") || t.includes("iyi")) return { key:"silver", text:"GÜMÜŞ SEÇİM" };
-    if (t.includes("perf") || t.includes("fiyat") || t.includes("value")) return { key:"value", text:"FİYAT/PERF" };
-    if (idx===0) return { key:"gold", text:"ALTIN ÖNERİ" };
-    if (idx===1) return { key:"silver", text:"GÜMÜŞ SEÇİM" };
-    if (idx===2) return { key:"value", text:"FİYAT/PERF" };
-    return null;
-  }
-
-  // SEND (tek endpoint)
-  async function send(){
-    if(isSending) return;
-
-    const m = MODE[currentMode];
-    const caps = m.caps;
-
-    // Fal modunda yazı yok; foto zorunlu
-    let text = ($("userInput")?.value || "").trim();
-
-    if(!caps.text) text = "";
-
-    if(currentMode === "fal" && !pendingImage){
-      // fal butonuna basılmadan gönderme olmasın
-      return;
-    }
-
-    if(!text && !pendingImage && !pendingDoc) return;
-
-    // shopping: yeni aramada eski ürün kartlarını temizle (mesajlar kalsın)
-    if(currentMode === "shopping"){
-      document.querySelectorAll("#main .cards").forEach(el=>el.remove());
-    }
-
-    isSending = true;
-    $("sendBtn").disabled = true;
-
-    // user bubble
-    const shownText = text || (pendingImage ? "📷 Fotoğraf gönderdim" : pendingDoc ? "📎 Dosya yükledim" : "");
-    addMsg("user", shownText, null, pendingImage);
-
-    if(caps.text) $("userInput").value = "";
-
-    // loader
-    const loaderId = "ldr_" + Date.now();
-    const main = $("main");
-    const ldiv = document.createElement("div");
-    ldiv.className = "msg";
-    ldiv.id = loaderId;
-    ldiv.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bakıyorum…`;
-    main.appendChild(ldiv);
-    main.scrollTo({ top: main.scrollHeight, behavior:"smooth" });
-
-    // payload
-    const payload = {
-      message: text,
-      session_id: sessionId,
-      mode: currentMode
-    };
-
-    // translator target language
-    if(currentMode === "translate"){
-      payload.target_language = $("langSelect").value;
-    }
-
-    // attach
-    if(pendingImage) payload.image = pendingImage;
-    if(pendingDoc){
-      payload.file = pendingDoc;
-      payload.file_name = pendingDocName || "document";
-    }
-
-    // clear pending now (so next send clean)
-    pendingImage = null;
-    pendingDoc = null;
-    pendingDocName = null;
-
-    try{
-      const res = await fetch(API_URL, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      const data = await res.json().catch(()=> ({}));
-      document.getElementById(loaderId)?.remove();
-
-      const aText = data.assistant_text || "Bir şey diyemedim evladım…";
-      const sText = data.speech_text || null;
-
-      addMsg("ai", aText, (MODE[currentMode].caps.mic ? sText : null));
-
-      if(data.data && Array.isArray(data.data) && data.data.length){
-        renderCards(data.data);
-      }
-
-    }catch(e){
-      const el = document.getElementById(loaderId);
-      if(el) el.innerText = "Bağlantı koptu evladım.";
-    }finally{
-      isSending = false;
-      $("sendBtn").disabled = false;
-    }
-  }
-
-  // AUDIO
   function stopAllAudio(){
     if(currentAudio){
       try{ currentAudio.pause(); }catch(e){}
@@ -882,7 +707,6 @@
 
   async function playAudio(text, btn){
     const wasPlayingThis = btn.classList.contains("playing");
-
     stopAllAudio();
     if(wasPlayingThis) return;
 
@@ -895,7 +719,6 @@
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({ text })
       });
-
       const blob = await res.blob();
       currentAudio = new Audio(URL.createObjectURL(blob));
       currentAudio.onended = () => {
@@ -903,7 +726,6 @@
         btn.classList.remove("playing");
         currentAudio = null;
       };
-
       await currentAudio.play();
       btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sus Kız!`;
       btn.classList.add("playing");
@@ -913,31 +735,159 @@
     }
   }
 
-  // Event delegation for audio buttons
-  document.addEventListener("click",(e)=>{
-    const btn = e.target.closest(".audio-btn");
-    if(!btn) return;
-    const speech = btn.getAttribute("data-speech");
-    if(speech) playAudio(speech, btn);
-  });
+  // ✅ STREAMING CHAT (ChatGPT gibi akan yazı)
+  async function sendChatStreaming(message){
+    // user bubble
+    addMsg("user", message);
 
-  // FILE / CAMERA
+    // ai bubble placeholder
+    const aiDiv = addMsg("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Yazıyor…");
+
+    const res = await fetch(STREAM_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ message, mode:"chat", fast:true })
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let buffer = "";
+    let fullText = "";
+    let speechText = "";
+
+    const updateAI = (txt)=>{
+      aiDiv.innerHTML = DOMPurify.sanitize(marked.parse(txt), { USE_PROFILES:{ html:true } });
+    };
+
+    while(true){
+      const {value, done} = await reader.read();
+      if(done) break;
+
+      buffer += decoder.decode(value, {stream:true});
+      const blocks = buffer.split("\n\n");
+      buffer = blocks.pop() || "";
+
+      for(const block of blocks){
+        const lines = block.split("\n");
+        const evLine = lines.find(l=>l.startsWith("event:")) || "";
+        const dataLine = lines.find(l=>l.startsWith("data:")) || "";
+        const ev = evLine.replace("event:","").trim();
+        const dataStr = dataLine.replace("data:","").trim();
+        if(!dataStr) continue;
+
+        const payload = JSON.parse(dataStr);
+
+        if(ev === "delta"){
+          fullText += payload.delta;
+          updateAI(fullText);
+        }
+
+        if(ev === "final"){
+          speechText = payload.speech_text || "";
+          if(speechText){
+            const btn = document.createElement("div");
+            btn.className = "audio-btn";
+            btn.setAttribute("data-speech", speechText);
+            btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+            aiDiv.appendChild(btn);
+          }
+        }
+      }
+    }
+
+    $("main").scrollTo({ top: $("main").scrollHeight, behavior:"smooth" });
+  }
+
+  async function send(){
+    if(isSending) return;
+
+    const m = MODE[currentMode];
+    const caps = m.caps;
+
+    // CHAT => streaming
+    if(currentMode === "chat"){
+      const txt = ($("userInput").value || "").trim();
+      if(!txt) return;
+      $("userInput").value = "";
+      await sendChatStreaming(txt);
+      return;
+    }
+
+    // others => normal
+    let text = ($("userInput")?.value || "").trim();
+    if(!caps.text) text = "";
+
+    if(currentMode === "fal" && !pendingImage) return;
+    if(!text && !pendingImage && !pendingDoc) return;
+
+    if(currentMode === "shopping"){
+      document.querySelectorAll("#main .cards").forEach(el=>el.remove());
+    }
+
+    isSending = true;
+    $("sendBtn").disabled = true;
+
+    const shownText = text || (pendingImage ? "📷 Fotoğraf gönderdim" : pendingDoc ? "📎 Dosya yükledim" : "");
+    addMsg("user", shownText, null, pendingImage);
+
+    if(caps.text) $("userInput").value = "";
+
+    const loaderDiv = addMsg("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Bakıyorum…");
+
+    const payload = { message: text, session_id: sessionId, mode: currentMode, fast: true };
+
+    if(currentMode === "translate"){
+      payload.target_language = $("langSelect").value;
+    }
+    if(pendingImage) payload.image = pendingImage;
+    if(pendingDoc){
+      payload.file = pendingDoc;
+      payload.file_name = pendingDocName || "document";
+    }
+
+    pendingImage = null;
+    pendingDoc = null;
+    pendingDocName = null;
+
+    try{
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(()=> ({}));
+      loaderDiv.remove();
+
+      const aText = data.assistant_text || "Bir şey diyemedim evladım…";
+      const sText = data.speech_text || null;
+
+      addMsg("ai", aText, (caps.mic ? sText : null));
+
+      if(data.data && Array.isArray(data.data) && data.data.length){
+        renderCards(data.data);
+      }
+
+    }catch(e){
+      loaderDiv.innerText = "Bağlantı koptu evladım.";
+    }finally{
+      isSending = false;
+      $("sendBtn").disabled = false;
+    }
+  }
+
   function openCamera(){
     if(!MODE[currentMode].caps.camera) return;
     $("fileInput").value = "";
     $("fileInput").click();
   }
-
   function openDoc(){
     if(!MODE[currentMode].caps.doc) return;
     $("docInput").value = "";
     $("docInput").click();
   }
-
-  function takeFalPhoto(){
-    // fal için kamera aç
-    openCamera();
-  }
+  function takeFalPhoto(){ openCamera(); }
 
   $("fileInput").addEventListener("change",(e)=>{
     const file = e.target.files && e.target.files[0];
@@ -945,7 +895,6 @@
     const reader = new FileReader();
     reader.onload = ()=> {
       pendingImage = reader.result;
-      // fal modunda foto seçildiği an otomatik gönder
       if(currentMode === "fal") send();
     };
     reader.readAsDataURL(file);
@@ -955,38 +904,43 @@
     const file = e.target.files && e.target.files[0];
     if(!file) return;
 
-    // Çok büyük dosyayı JSON base64 taşımak riskli → yine de pratikte küçük dosya öner
     if(file.size > 3 * 1024 * 1024){
-      alert("Dosya büyük. 3MB altı dosya yükle (PDF/TXT/DOCX) evladım.");
+      alert("Dosya büyük. 3MB altı yükle evladım.");
       return;
     }
-
     pendingDocName = file.name;
     const reader = new FileReader();
-    reader.onload = ()=> {
-      pendingDoc = reader.result; // data:...base64
-    };
+    reader.onload = ()=> { pendingDoc = reader.result; };
     reader.readAsDataURL(file);
   });
 
-  // MIC (şimdilik browser speech-to-text; istersen kapatırız)
   function startMic(){
     if(!MODE[currentMode].caps.mic) return;
-
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR){ alert("Mikrofon desteklenmiyor."); return; }
-
     const rec = new SR();
     rec.lang = "tr-TR";
-    rec.onresult = (e)=>{
-      $("userInput").value = e.results[0][0].transcript;
-      // otomatik göndermeyelim; kullanıcı isterse “ok”a bassın
-    };
+    rec.onresult = (e)=>{ $("userInput").value = e.results[0][0].transcript; };
     rec.start();
   }
 
-  // HERO swipe
-  let sx = 0;
+  document.addEventListener("click",(e)=>{
+    const ab = e.target.closest(".audio-btn");
+    if(ab){
+      const speech = ab.getAttribute("data-speech");
+      if(speech) playAudio(speech, ab);
+      return;
+    }
+    const chip = e.target.closest(".chip");
+    if(chip){
+      const txt = chip.getAttribute("data-chip") || "";
+      $("userInput").value = txt;
+      send();
+      return;
+    }
+  });
+
+  // swipe hero
   $("hero").addEventListener("touchstart",(e)=>{ sx=e.touches[0].clientX; }, {passive:true});
   $("hero").addEventListener("touchend",(e)=>{
     const dx = e.changedTouches[0].clientX - sx;
@@ -996,10 +950,36 @@
     if(dx > 0 && i > 0) switchMode(dockOrder[i-1]);
   }, {passive:true});
 
-  // Enter to send
-  $("userInput").addEventListener("keydown",(e)=>{
-    if(e.key === "Enter") send();
-  });
+  $("userInput").addEventListener("keydown",(e)=>{ if(e.key === "Enter") send(); });
+
+  function switchMode(modeName){
+    if(!MODE[modeName]) return;
+    currentMode = modeName;
+    const m = MODE[modeName];
+
+    stopAllAudio();
+    setTheme(m.color);
+    setHeroBackground(m.img, m.pos);
+    setHeroText(m.top, m.title, m.desc);
+    setTip(m.tip);
+
+    $("langRow").style.display = m.caps.lang ? "block" : "none";
+    $("quickChips").style.display = (modeName === "chat") ? "block" : "none";
+
+    $("falUI").style.display = m.caps.falBtn ? "block" : "none";
+    $("standardUI").style.display = m.caps.falBtn ? "none" : "flex";
+
+    $("btnCamera").style.display = m.caps.camera ? "flex" : "none";
+    $("btnDoc").style.display = m.caps.doc ? "flex" : "none";
+    $("btnMic").style.display = m.caps.mic ? "flex" : "none";
+
+    $("userInput").style.display = m.caps.text ? "block" : "none";
+    $("userInput").placeholder = m.placeholder || "";
+
+    pendingImage = null; pendingDoc = null; pendingDocName = null;
+
+    renderDock();
+  }
 
   // INIT
   renderDock();
