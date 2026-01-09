@@ -28,7 +28,6 @@
     max-width:480px; max-height:920px; aspect-ratio: 9 / 19.5;
     border-radius:24px; overflow:hidden;
     box-shadow:0 0 50px rgba(0,0,0,0.55);
-
     position:relative;
     background-color:var(--bg-dark);
     background-size:cover;
@@ -266,9 +265,11 @@
 <input type="file" id="file-upload" accept="image/*" capture="environment">
 
 <script>
-  // ✅ aynı domain: "/api/chat" — Render ayrıysa URL yaz
+  // ✅ aynı domain ise böyle kalsın. Render ayrıysa tam URL ver:
+  // const API_BASE_URL = "https://SENIN-RENDER-URL/api/chat";
+  // const SPEAK_URL    = "https://SENIN-RENDER-URL/api/speak";
   const API_BASE_URL = "/api/chat";
-  const SPEAK_URL = "/api/speak";
+  const SPEAK_URL    = "/api/speak";
 
   const MODES = {
     shopping:  { label:"Alışveriş", icon:"fa-bag-shopping",  color:"#00C897", img:"images/hero-shopping.png",  title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", sugg:"Her indirime atlayan sonunda pahalı öder.", ph:"Neye bakmıştın evladım?" },
@@ -291,9 +292,45 @@
   let speakingBtn = null;        // active button
   let synthSpeaking = false;     // browser TTS state
 
+  // Voice cache (SpeechSynthesis geç yüklenebiliyor)
+  let cachedVoices = [];
+  function loadVoices(){
+    if(!window.speechSynthesis) return [];
+    const v = window.speechSynthesis.getVoices() || [];
+    cachedVoices = v;
+    return v;
+  }
+  function waitVoices(timeoutMs=1200){
+    return new Promise((resolve)=>{
+      if(!window.speechSynthesis) return resolve([]);
+      const now = loadVoices();
+      if(now && now.length) return resolve(now);
+
+      let done=false;
+      const t = setTimeout(()=>{
+        if(done) return;
+        done=true;
+        resolve(loadVoices());
+      }, timeoutMs);
+
+      window.speechSynthesis.onvoiceschanged = ()=>{
+        if(done) return;
+        clearTimeout(t);
+        done=true;
+        resolve(loadVoices());
+      };
+    });
+  }
+
   marked.setOptions({ mangle:false, headerIds:false });
 
-  function init(){ renderDock(); switchMode("shopping"); setupSwipe(); }
+  function init(){
+    renderDock();
+    switchMode("shopping");
+    setupSwipe();
+    // erken çağır: bazı cihazlarda voice listesi böyle geliyor
+    try{ loadVoices(); }catch(_){}
+  }
 
   function renderDock(){
     const dock=document.getElementById("dock-container");
@@ -339,6 +376,14 @@
     document.getElementById("chat-area").style.display=show?"none":"block";
   }
 
+  function escapeAttr(s){
+    return (s||"")
+      .replace(/&/g,"&amp;")
+      .replace(/"/g,"&quot;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;");
+  }
+
   function addMessage(role, text, imgData, speechText){
     const area=document.getElementById("chat-area");
     const row=document.createElement("div");
@@ -350,7 +395,6 @@
     if(role==="ai"){
       content += DOMPurify.sanitize(marked.parse(text||""));
 
-      // ✅ Ses butonu ekle
       const s = (speechText || text || "").toString().trim();
       if(s){
         content += `
@@ -366,10 +410,6 @@
     row.innerHTML=`<div class="bubble">${content}</div>`;
     area.appendChild(row);
     document.getElementById("container").scrollTo(0, document.getElementById("container").scrollHeight);
-  }
-
-  function escapeAttr(s){
-    return s.replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
   function addLoading(){
@@ -389,6 +429,7 @@
     const txt=input.value.trim();
     if(!txt && !pendingImage) return;
 
+    stopAnyAudio(); // ✅ yeni mesajda konuşmayı kes
     toggleHero(false);
 
     if(currentMode==="shopping"){
@@ -408,6 +449,7 @@
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify(payload)
       });
+
       const data = await res.json();
       removeLoading(loadingId);
 
@@ -496,7 +538,7 @@
     }
     // stop browser TTS
     if(window.speechSynthesis){
-      window.speechSynthesis.cancel();
+      try{ window.speechSynthesis.cancel(); }catch(_){}
       synthSpeaking = false;
     }
     // reset UI
@@ -524,7 +566,7 @@
     btn.classList.add("playing");
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...`;
 
-    // 1) önce backend dene
+    // 1) önce backend dene (ElevenLabs mp3)
     const ok = await tryServerTTS(text, btn);
     if(ok) return;
 
@@ -542,18 +584,26 @@
 
       // 204 → server TTS yok, fallback
       if(res.status === 204) return false;
-
       if(!res.ok) return false;
 
       const blob = await res.blob();
       if(!blob || blob.size < 2000) return false;
 
-      currentAudio = new Audio(URL.createObjectURL(blob));
+      const audioUrl = URL.createObjectURL(blob);
+      currentAudio = new Audio(audioUrl);
+
       currentAudio.onended = ()=>{
+        try{ URL.revokeObjectURL(audioUrl); }catch(_){}
         if(btn){
           btn.classList.remove("playing");
           btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
         }
+        currentAudio = null;
+        speakingBtn = null;
+      };
+
+      currentAudio.onerror = ()=>{
+        try{ URL.revokeObjectURL(audioUrl); }catch(_){}
         currentAudio = null;
         speakingBtn = null;
       };
@@ -578,20 +628,22 @@
     btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sus Kız!`;
 
     const utter = new SpeechSynthesisUtterance(text);
-
-    // Türkçe + mümkünse kadın sesi seç
     utter.lang = "tr-TR";
-    const voices = window.speechSynthesis.getVoices();
-    const trVoices = voices.filter(v => (v.lang||"").toLowerCase().startsWith("tr"));
+
+    const voices = (cachedVoices && cachedVoices.length) ? cachedVoices : await waitVoices();
+    const tr = (voices||[]).filter(v => (v.lang||"").toLowerCase().startsWith("tr"));
+
+    // Türkçe + mümkünse kadın/olgun isim yakalama (cihazdan cihaza değişir)
     const preferred =
-      trVoices.find(v => /female|kadın|woman/i.test(v.name)) ||
-      trVoices.find(v => /tr/i.test(v.name)) ||
-      trVoices[0];
+      tr.find(v => /female|kadın|woman/i.test(v.name)) ||
+      tr.find(v => /tr/i.test(v.name)) ||
+      tr[0] ||
+      voices[0];
 
     if(preferred) utter.voice = preferred;
 
-    utter.rate = 1.0;
-    utter.pitch = 1.0;
+    utter.rate = 0.98;   // biraz daha “sakin”
+    utter.pitch = 0.95;  // çok tiz olmasın
 
     utter.onend = ()=>{
       synthSpeaking = false;
