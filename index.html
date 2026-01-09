@@ -1,373 +1,533 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Caynana.ai</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f18" />
+  <title>CAYNANA.AI</title>
 
-    <style>
-        :root {
-            --primary: #D4AF37; /* Altın */
-            --bg: #F9F9F9;
-            --text: #1a1a1a;
-            --font: 'Plus Jakarta Sans', sans-serif;
-            --safe-bottom: env(safe-area-inset-bottom);
-        }
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-        /* --- 1. GENEL YAPILANDIRMA --- */
-        html, body {
-            height: 100%; margin: 0; padding: 0;
-            font-family: var(--font);
-            background-color: #0b0f18; /* PC arka planı koyu */
-            display: flex; justify-content: center; align-items: center;
-            overflow: hidden; user-select: none; /* Metin seçimini engelle (app hissi) */
-        }
+  <style>
+    :root{
+      --primary:#00C897;
+      --bg:#ffffff;
+      --text:#1a1a1a;
+      --muted:#6b7280;
+      --safe: env(safe-area-inset-bottom);
+      --font:'Plus Jakarta Sans', sans-serif;
+    }
 
-        #app {
-            width: 100%; height: 100%;
-            max-width: 480px; max-height: 920px; aspect-ratio: 9 / 19.5;
-            background-color: var(--bg); position: relative;
-            display: flex; flex-direction: column;
-            box-shadow: 0 0 60px rgba(0,0,0,0.5);
-            border-radius: 24px; overflow: hidden;
-        }
+    *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html,body{ height:100%; }
 
-        @media (max-width: 520px) {
-            body { display: block; background-color: var(--bg); }
-            #app {
-                max-width: none; max-height: none; border-radius: 0;
-                box-shadow: none; width: 100vw; height: 100dvh;
-            }
-        }
+    /* WEB: telefon gibi ortala */
+    body{
+      font-family:var(--font);
+      background:#0b0f18;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-        /* --- HERO GÖRSEL ALANI (Swipe Destekli) --- */
-        #hero {
-            flex: 0 0 45%;
-            background-size: cover; background-position: center;
-            position: relative; transition: background-image 0.4s ease-in-out;
-            background-image: url('images/hero-shopping.png');
-            cursor: grab;
-        }
-        #hero:active { cursor: grabbing; }
+    /* APP: webde telefon çerçevesi, mobilde full */
+    #app{
+      width:100%;
+      height:100%;
+      max-width:480px;
+      max-height:920px;
+      aspect-ratio: 9 / 19.5;
+      background:#0b0f18;
+      border-radius:24px;
+      overflow:hidden;
+      box-shadow:0 0 60px rgba(0,0,0,.55);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    @media (max-width:520px){
+      body{ display:block; }
+      #app{
+        max-width:none; max-height:none; aspect-ratio:auto;
+        width:100vw; height:100dvh; border-radius:0; box-shadow:none;
+      }
+    }
 
-        #hero::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
-            background: linear-gradient(to top, var(--bg), transparent);
-            pointer-events: none; /* Dokunmayı engellemesin */
-        }
+    /* HERO */
+    #hero{
+      flex:0 0 45%;
+      position:relative;
+      background-size:cover;
+      background-position:center 28%; /* yüz üstüne yazı binmesin */
+      background-repeat:no-repeat;
+      transition: background-image .35s ease, background-position .35s ease;
+      touch-action: pan-y;
+    }
+    #hero::after{
+      content:"";
+      position:absolute; inset:0;
+      background: linear-gradient(to bottom,
+        rgba(0,0,0,.55) 0%,
+        rgba(0,0,0,.18) 35%,
+        rgba(255,255,255,0) 72%,
+        rgba(255,255,255,.90) 100%
+      );
+      pointer-events:none;
+    }
 
-        /* Header */
-        header {
-            position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box;
-            display: flex; justify-content: space-between; align-items: center; z-index: 10;
-        }
-        .logo {
-            font-weight: 800; font-size: 20px; color: #1a1a1a;
-            text-shadow: 0 2px 10px rgba(255,255,255,0.8);
-            display: flex; align-items: center; gap: 8px;
-        }
-        .logo span { color: var(--primary); }
+    /* HEADER */
+    header{
+      position:absolute;
+      top:0; left:0; right:0;
+      padding:18px 18px 10px 18px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      z-index:5;
+      pointer-events:none;
+    }
+    .brand{
+      display:flex; flex-direction:column; gap:6px;
+      pointer-events:auto;
+      cursor:pointer;
+    }
+    .brand .top{
+      display:flex; align-items:center; gap:10px;
+      font-weight:900; font-size:22px;
+      color:#fff;
+      text-shadow:0 8px 22px rgba(0,0,0,.35);
+    }
+    .brand .top i{ color:var(--primary); }
+    .brand .top span{ color:var(--primary); }
+    .brand .sub{
+      font-size:12px;
+      font-weight:800;
+      color:rgba(255,255,255,.86);
+      text-shadow:0 8px 22px rgba(0,0,0,.35);
+    }
+    .menu-btn{
+      width:44px; height:44px;
+      border-radius:999px;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.22);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff;
+      pointer-events:auto;
+    }
 
-        /* --- MESAJ ALANI --- */
-        #main {
-            flex: 1; overflow-y: auto; padding: 20px 20px 180px 20px;
-            position: relative; z-index: 5; scroll-behavior: smooth;
-        }
-        .msg {
-            max-width: 80%; padding: 14px 18px; border-radius: 18px; margin-bottom: 12px;
-            font-size: 15px; line-height: 1.4;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .bot { background: #fff; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); align-self: flex-start; }
-        .user { background: #1a1a1a; color: #fff; border-bottom-right-radius: 4px; margin-left: auto; }
+    /* HERO TEXT */
+    .hero-text{
+      position:absolute;
+      left:18px; right:18px;
+      top:110px;
+      z-index:6;
+      pointer-events:none;
+    }
+    .hero-text h1{
+      font-size:34px;
+      font-weight:900;
+      line-height:1.05;
+      color:#fff;
+      letter-spacing:-.8px;
+      text-shadow:0 10px 26px rgba(0,0,0,.45);
+    }
+    .hero-text p{
+      margin-top:10px;
+      font-size:15px;
+      font-weight:800;
+      color:rgba(255,255,255,.88);
+      text-shadow:0 10px 26px rgba(0,0,0,.35);
+    }
 
-        /* --- ALT PANEL --- */
-        #bottom {
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(0,0,0,0.05); z-index: 20;
-            display: flex; flex-direction: column;
-            padding-bottom: calc(var(--safe-bottom) + 10px); 
-        }
+    /* MAIN */
+    #main{
+      flex:1;
+      background: var(--bg);
+      padding:16px 16px 250px 16px; /* alt bar payı */
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-        /* Standart Input Alanı */
-        .input-area {
-            padding: 15px 20px; display: flex; align-items: center; gap: 10px;
-        }
-        .input-box {
-            flex: 1; background: #f0f2f5; border-radius: 25px; padding: 4px 6px;
-            display: flex; align-items: center; transition: 0.3s;
-        }
-        .input-box input {
-            flex: 1; border: none; background: transparent; padding: 12px;
-            font-size: 15px; outline: none; font-family: var(--font);
-        }
-        #sendBtn {
-            width: 48px; height: 48px; background: var(--primary); color: #fff;
-            border: none; border-radius: 50%; display: flex; justify-content: center;
-            align-items: center; cursor: pointer; font-size: 18px;
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-        }
+    /* Quick cards */
+    .qwrap{ display:flex; flex-direction:column; gap:12px; }
+    .qcard{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:18px;
+      padding:16px 16px;
+      font-size:15px;
+      font-weight:800;
+      color:#2a2a2a;
+      box-shadow:0 8px 20px rgba(0,0,0,.06);
+    }
 
-        /* --- ÖZEL FAL BUTONU (GİZLİ BAŞLAR) --- */
-        #fal-ui {
-            display: none; /* JS ile açılacak */
-            padding: 15px 20px;
-            justify-content: center;
-        }
-        .big-fal-btn {
-            width: 100%; background: linear-gradient(135deg, #D4AF37, #B48F26);
-            color: white; border: none; padding: 15px; border-radius: 50px;
-            font-size: 16px; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
-            transition: transform 0.2s;
-        }
-        .big-fal-btn:active { transform: scale(0.98); }
-        .big-fal-btn i { font-size: 22px; }
+    /* BOTTOM */
+    #bottom{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      background:rgba(255,255,255,.96);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top:1px solid rgba(0,0,0,.06);
+      padding-bottom: calc(var(--safe) + 14px);
+      z-index:20;
+    }
 
-        /* --- MENÜ (TAB BAR) --- */
-        .tab-bar-container {
-            width: 100%; overflow-x: auto; padding-bottom: 5px;
-        }
-        .tab-bar-container::-webkit-scrollbar { display: none; }
+    #tip{
+      width:max-content;
+      max-width:92%;
+      margin:-18px auto 10px auto;
+      padding:10px 18px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.06);
+      box-shadow:0 10px 24px rgba(0,0,0,.10);
+      font-weight:900;
+      color:var(--primary);
+      text-align:center;
+    }
 
-        .tab-bar {
-            display: flex; padding: 10px 15px; gap: 15px; width: max-content;
-        }
+    /* Standard input */
+    #standardUI{
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .iconBtn{
+      width:44px; height:44px;
+      display:flex; align-items:center; justify-content:center;
+      color:#6b7280;
+      border-radius:14px;
+      flex:0 0 44px;
+    }
+    .inputBox{
+      flex:1;
+      height:52px;
+      background:#f3f4f6;
+      border:1px solid rgba(0,0,0,.06);
+      border-radius:26px;
+      display:flex;
+      align-items:center;
+      padding:0 10px;
+      gap:8px;
+    }
+    .inputBox input{
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      font-size:15px;
+      font-weight:800;
+      color:#111;
+      padding:0 6px;
+    }
+    .sendBtn{
+      width:52px; height:52px;
+      border:none;
+      border-radius:50%;
+      background:var(--primary);
+      color:#fff;
+      font-size:18px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 10px 22px rgba(0,0,0,.10);
+      cursor:pointer;
+      flex:0 0 52px;
+    }
 
-        .tab {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-            color: #999; font-size: 11px; cursor: pointer; transition: 0.3s;
-            min-width: 55px; user-select: none;
-            /* Drag işlemi için stil */
-            touch-action: none; 
-        }
-        .tab i { font-size: 20px; margin-bottom: 2px; pointer-events: none; }
-        .tab span { pointer-events: none; }
-        
-        .tab.active { color: var(--primary); font-weight: 600; }
-        .tab.active i { transform: scale(1.1); color: var(--primary); }
-        
-        /* Sürüklenirken oluşan stil */
-        .sortable-ghost { opacity: 0.4; background: #f0f0f0; border-radius: 10px; }
-        .sortable-drag { cursor: grabbing; opacity: 1; transform: scale(1.1); }
+    /* Fal special */
+    #falUI{
+      display:none;
+      padding:12px 16px 14px 16px;
+    }
+    .bigFalBtn{
+      width:100%;
+      border:none;
+      border-radius:999px;
+      padding:16px 16px;
+      font-size:16px;
+      font-weight:900;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      cursor:pointer;
+      background: linear-gradient(135deg, var(--primary), #b88f23);
+      box-shadow:0 14px 26px rgba(0,0,0,.18);
+    }
 
-        .icon-btn {
-            width: 40px; height: 40px; color: #666;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-        }
+    /* Dock */
+    .dockWrap{
+      padding: 8px 12px 0 12px;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .dockWrap::-webkit-scrollbar{ display:none; }
+    .dock{
+      display:flex;
+      gap:14px;
+      width:max-content;
+      padding: 0 4px 8px 4px;
+    }
+    .tab{
+      min-width:62px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      color:#9aa0a6;
+      font-size:11px;
+      font-weight:900;
+      user-select:none;
+      cursor:pointer;
+      opacity:.75;
+      transition:.2s;
+    }
+    .tab i{
+      width:48px; height:48px;
+      border-radius:16px;
+      display:flex; align-items:center; justify-content:center;
+      background:#f3f4f6;
+      color:#9aa0a6;
+      font-size:20px;
+      transition:.2s;
+    }
+    .tab.active{ opacity:1; color:#222; }
+    .tab.active i{
+      background:var(--primary);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(0,0,0,.10);
+      transform: translateY(-2px);
+    }
 
-        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    /* Footer */
+    .footer{
+      text-align:center;
+      font-size:11px;
+      font-weight:900;
+      color:#666;
+      padding:8px 0 10px;
+    }
+    .flag{
+      width:64px; height:4px;
+      margin:6px auto 0;
+      display:flex;
+      border-radius:4px;
+      overflow:hidden;
+    }
+    .flag span{ flex:1; }
+    .g{ background:#009246; }
+    .w{ background:#fff; }
+    .r{ background:#CE2B37; }
+
+    /* hidden file input */
+    #fileInput{ display:none !important; }
+  </style>
 </head>
+
 <body>
+  <div id="app">
+    <header>
+      <div class="brand" onclick="switchMode('shopping')">
+        <div class="top"><i class="fa-solid fa-wand-magic-sparkles"></i> CAYNANA<span>.AI</span></div>
+        <div class="sub">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
+      <div class="menu-btn"><i class="fa-solid fa-bars"></i></div>
+    </header>
 
-    <div id="app">
-        <header>
-            <div class="logo"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary)"></i> CAYNANA<span>.AI</span></div>
-            <div class="icon-btn"><i class="fa-solid fa-bars"></i></div>
-        </header>
-
-        <div id="hero"></div>
-
-        <div id="main">
-            <div class="msg bot">
-                Almadan önce bana sor evladım, sonra "keşke" deme.
-            </div>
-        </div>
-
-        <div id="bottom">
-            <div id="standard-ui" class="input-area">
-                <div class="icon-btn"><i class="fa-solid fa-camera"></i></div>
-                <div class="input-box">
-                    <input type="text" id="userInput" placeholder="Ne danışmak istersin?">
-                    <div class="icon-btn"><i class="fa-solid fa-microphone"></i></div>
-                </div>
-                <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-            </div>
-
-            <div id="fal-ui">
-                <button class="big-fal-btn" onclick="takeFalPhoto()">
-                    <i class="fa-solid fa-camera"></i>
-                    Fincanını Çek ve Yorumla
-                </button>
-            </div>
-
-            <div class="tab-bar-container">
-                <div class="tab-bar" id="sortable-tabs">
-                    <div class="tab active" data-id="shopping">
-                        <i class="fa-solid fa-bag-shopping"></i><span>Alışveriş</span>
-                    </div>
-                    <div class="tab" data-id="chat">
-                        <i class="fa-regular fa-comments"></i><span>Sohbet</span>
-                    </div>
-                    <div class="tab" data-id="fal">
-                        <i class="fa-solid fa-mug-hot"></i><span>Fal</span>
-                    </div>
-                    <div class="tab" data-id="dream">
-                        <i class="fa-solid fa-moon"></i><span>Rüya</span>
-                    </div>
-                    <div class="tab" data-id="health">
-                        <i class="fa-solid fa-heart-pulse"></i><span>Sağlık</span>
-                    </div>
-                    <div class="tab" data-id="diet">
-                        <i class="fa-solid fa-apple-whole"></i><span>Diyet</span>
-                    </div>
-                    <div class="tab" data-id="food">
-                        <i class="fa-solid fa-utensils"></i><span>Yemek</span>
-                    </div>
-                    <div class="tab" data-id="law">
-                        <i class="fa-solid fa-scale-balanced"></i><span>Hukuk</span>
-                    </div>
-                    <div class="tab" data-id="translate">
-                        <i class="fa-solid fa-language"></i><span>Çeviri</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div id="hero">
+      <div class="hero-text">
+        <h1 id="heroTitle">Almadan önce<br>Caynana’ya sor.</h1>
+        <p id="heroDesc">Sonra “keşke” dememek için buradayım.</p>
+      </div>
     </div>
 
-    <script>
-        // --- 1. VERİ & AYARLAR ---
-        const modes = {
-            shopping: { img: 'images/hero-shopping.png', msg: 'İndirimleri tarıyorum. Ne alacağız?' },
-            chat: { img: 'images/hero-chat.png', msg: 'Anlat dinliyorum, canını sıkan ne?' },
-            fal: { img: 'images/hero-fal.png', msg: 'Fincanı kapattın mı? Çek gönder bakalım.' }, // input yok
-            dream: { img: 'images/hero-dream.jpg', msg: 'Hayırdır inşallah... Rüyanda ne gördün?' },
-            health: { img: 'images/hero-health.png', msg: 'Neyin var evladım? Sağlık ihmale gelmez.' },
-            diet: { img: 'images/hero-diet.png', msg: 'Sağlıklı zayıflamanın yolunu bulalım.' },
-            food: { img: 'images/hero-food.png', msg: 'Dolapta ne var? Sana harika bir tarif vereyim.' },
-            law: { img: 'images/hero-law.png', msg: 'Hukuki bir mesele mi? Danış bakalım.' },
-            astro: { img: 'images/hero-astro.png', msg: 'Yıldızlar bugün senin için ne diyor?' },
-            translate: { img: 'images/hero-translate.png', msg: 'Okuyamadığın yazıyı göster çevireyim.' }
-        };
+    <div id="main">
+      <div class="qwrap" id="quickCards"></div>
+    </div>
 
-        let currentMode = 'shopping';
+    <div id="bottom">
+      <div id="tip">Her indirime atlayan sonunda pahalı öder.</div>
 
-        // --- 2. MODÜL DEĞİŞTİRME MANTIĞI ---
-        function switchMode(modeName) {
-            currentMode = modeName;
-            const modeData = modes[modeName];
-            
-            // Görseli Güncelle
-            document.getElementById('hero').style.backgroundImage = `url('${modeData.img}')`;
+      <div id="standardUI">
+        <div class="iconBtn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
+        <div class="inputBox">
+          <input id="userInput" placeholder="Ne danışmak istersin?" />
+          <div class="iconBtn"><i class="fa-solid fa-microphone"></i></div>
+        </div>
+        <button class="sendBtn" id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
 
-            // Tab Aktifliği
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            // data-id'si eşleşen tab'ı bul ve active yap
-            const activeTab = document.querySelector(`.tab[data-id="${modeName}"]`);
-            if(activeTab) activeTab.classList.add('active');
+      <div id="falUI">
+        <button class="bigFalBtn" onclick="takeFalPhoto()">
+          <i class="fa-solid fa-camera"></i> Fincanını Çek ve Yorumla
+        </button>
+      </div>
 
-            // UI Değişikliği (FAL MODU ÖZEL)
-            const standardUI = document.getElementById('standard-ui');
-            const falUI = document.getElementById('fal-ui');
+      <div class="dockWrap">
+        <div class="dock" id="dock"></div>
+      </div>
 
-            if (modeName === 'fal') {
-                standardUI.style.display = 'none';
-                falUI.style.display = 'flex';
-            } else {
-                standardUI.style.display = 'flex';
-                falUI.style.display = 'none';
-            }
+      <div class="footer">
+        @CaynanaAI by Italky Technology
+        <div class="flag"><span class="g"></span><span class="w"></span><span class="r"></span></div>
+      </div>
+    </div>
 
-            // Mesaj At
-            setTimeout(() => addMessage(modeData.msg, 'bot'), 300);
-        }
+    <input type="file" id="fileInput" accept="image/*" capture="environment" />
+  </div>
 
-        // --- 3. SWIPE (KAYDIRMA) MANTIĞI ---
-        const hero = document.getElementById('hero');
-        let touchStartX = 0;
-        let touchEndX = 0;
+<script>
+  const HERO_BASE = "images/";
 
-        hero.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
+  const modes = {
+    shopping:  { color:"#00C897", img:"hero-shopping.png",  tip:"İndirimleri tarıyorum. Ne alacağız?",                 title:"Almadan önce<br>Caynana’ya sor.",           desc:"Sonra “keşke” dememek için buradayım.", top:110,
+                 cards:["İndirimleri tarıyorum. Ne alacağız?","Bütçeni söyle, en iyisini bulayım.","Sponsor varsa saklamam."] },
 
-        hero.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        });
+    chat:      { color:"#FFB300", img:"hero-chat.png",      tip:"Anlat dinliyorum, canını sıkan ne?",                  title:"Caynana ile<br>iki lafın belini kır.",       desc:"Biraz dur bakalım, neler anlatacaksın?", top:110,
+                 cards:["Anlat dinliyorum, canını sıkan ne?","Bugün neyi dert ettin?","Ben buradayım, dökül…"] },
 
-        function handleSwipe() {
-            // Şu anki sıralamayı DOM'dan al (Kullanıcı sırayı değiştirmiş olabilir!)
-            const tabs = Array.from(document.querySelectorAll('.tab'));
-            const currentOrder = tabs.map(t => t.dataset.id);
-            const currentIndex = currentOrder.indexOf(currentMode);
+    fal:       { color:"#D4AF37", img:"hero-fal.png",       tip:"Fincanı kapattın mı? Çek gönder bakalım.",            title:"Falına bakalım mı?",                         desc:"Fincanı çek, ben yorumlayayım.", top:120,
+                 cards:["Fincanı kapattın mı? Çek gönder bakalım.","Niyetini söyle, ona göre bakayım.","Korkma… ama doğruyu söylerim."] },
 
-            if (touchEndX < touchStartX - 50) {
-                // Sola Kaydır -> SONRAKİ MODÜL
-                let nextIndex = (currentIndex + 1) % currentOrder.length;
-                switchMode(currentOrder[nextIndex]);
-            }
-            if (touchEndX > touchStartX + 50) {
-                // Sağa Kaydır -> ÖNCEKİ MODÜL
-                let prevIndex = (currentIndex - 1 + currentOrder.length) % currentOrder.length;
-                switchMode(currentOrder[prevIndex]);
-            }
-        }
+    dream:     { color:"#6366F1", img:"hero-dream.png",     tip:"Hayırdır inşallah… Rüyanda ne gördün?",               title:"Rüyada ne gördün?",                          desc:"Anlat, tabir edeyim.", top:110,
+                 cards:["Hayırdır inşallah… Rüyanda ne gördün?","Detayı söyle, tabiri netleşir.","Sabaha kadar konuşuruz, sıkıntı yok."] },
 
-        // --- 4. DRAG & DROP (SIRALAMA) MANTIĞI ---
-        const tabBar = document.getElementById('sortable-tabs');
-        
-        new Sortable(tabBar, {
-            animation: 150,
-            delay: 200, // 200ms basılı tutunca sürükle başlar (mobilde scroll engellememek için)
-            delayOnTouchOnly: true,
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-drag',
-            onEnd: function (evt) {
-                // Sıralama değişince burası çalışır
-                console.log("Yeni sıra kaydedildi.");
-                // İstersen burada yeni sırayı LocalStorage'a kaydedebilirsin.
-            }
-        });
+    health:    { color:"#EF4444", img:"hero-health.png",    tip:"Neyin var evladım? Sağlık ihmale gelmez.",            title:"Caynana Sağlık’la<br>alışkanlık kazan.",      desc:"Neren ağrıyor söyle bakayım?", top:110,
+                 cards:["Neyin var evladım? Sağlık ihmale gelmez.","Belirtiyi yaz, ben yönlendireyim.","Önce sakin ol… anlat."] },
 
-        // Tablara Tıklama Eventi (Sortable içindeki onclick bazen karışabilir, manuel ekliyoruz)
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', (e) => {
-                // Eğer sürükleme yapmıyorsak tıkla
-                switchMode(tab.dataset.id);
-            });
-        });
+    diet:      { color:"#84CC16", img:"hero-diet.png",      tip:"Sağlıklı zayıflamanın yolunu bulalım.",               title:"Caynana Diyet’le<br>sağlıklı beslen!",        desc:"Açlıktan değil, keyiften yiyin.", top:110,
+                 cards:["Sağlıklı zayıflamanın yolunu bulalım.","Boy-kilo yaz, hedef koyalım.","Ekmek değil, yeşillik ye."] },
 
+    food:      { color:"#F97316", img:"hero-food.png",      tip:"Dolapta ne var? Sana harika bir tarif vereyim.",      title:"Caynana Yemek’le<br>ne pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", top:110,
+                 cards:["Dolapta ne var? Sana harika bir tarif vereyim.","Malzemeyi yaz, menü çıkarayım.","Ziyan etme, bereket kaçar."] },
 
-        // --- 5. MESAJLAŞMA FONKSİYONLARI ---
-        const main = document.getElementById('main');
-        const userInput = document.getElementById('userInput');
+    law:       { color:"#3B82F6", img:"hero-law.png",       tip:"Sözleşmeye bakmadan imza atma!",                      title:"Caynana Hukuk’la<br>kim haklı öğren.",         desc:"Ben avukat değilim ama çok dava gördüm.", top:110,
+                 cards:["Sözleşmeye bakmadan imza atma!","Kısaca anlat, yol göstereyim.","Evrak varsa foto at."] },
 
-        function addMessage(text, sender) {
-            const div = document.createElement('div');
-            div.className = `msg ${sender}`;
-            div.textContent = text;
-            main.appendChild(div);
-            main.scrollTo(0, main.scrollHeight);
-        }
+    astro:     { color:"#D946EF", img:"hero-astro.png",     tip:"Yıldıznameye baktım, yolun açık.",                    title:"Yıldızlar senin için<br>ne diyor?",           desc:"Merkür retrosu falan… dikkat et.", top:110,
+                 cards:["Yıldıznameye baktım, yolun açık.","Burcunu yaz, yorumlayayım.","Bugün enerjin yüksek… ama temkinli ol."] },
 
-        document.getElementById('sendBtn').addEventListener('click', () => {
-            if (userInput.value.trim() !== '') {
-                const txt = userInput.value;
-                addMessage(txt, 'user');
-                userInput.value = '';
-                setTimeout(() => addMessage("Hele dur, bir bakayım...", 'bot'), 1000);
-            }
-        });
-        
-        userInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('sendBtn').click();
-        });
+    translate: { color:"#9CA3AF", img:"hero-translate.png", tip:"Dil bilmek altın bileziktir.",                         title:"Çeviri lazım mı?<br>Söyle çevireyim.",         desc:"Metni yapıştır, ben hallederim.", top:110,
+                 cards:["Metni yapıştır, ben hallederim.","Fotoğraf da atabilirsin.","Kısa mı uzun mu? söyle."] }
+  };
 
-        // Fal butonu aksiyonu
-        function takeFalPhoto() {
-            addMessage("📸 Fincan fotoğrafları çekildi...", "user");
-            setTimeout(() => {
-                addMessage("Hmmm... Yolların var, dur yorumluyorum...", "bot");
-            }, 1000);
-        }
+  const dockOrder = ["shopping","chat","fal","dream","health","diet","food","law","astro","translate"];
+  const dockLabels = { shopping:"Alışveriş", chat:"Sohbet", fal:"Fal", dream:"Rüya", health:"Sağlık", diet:"Diyet", food:"Yemek", law:"Hukuk", astro:"Burç", translate:"Çeviri" };
+  const dockIcons  = {
+    shopping:"fa-bag-shopping", chat:"fa-comments", fal:"fa-mug-hot", dream:"fa-moon",
+    health:"fa-heart-pulse", diet:"fa-apple-whole", food:"fa-utensils", law:"fa-scale-balanced",
+    astro:"fa-star", translate:"fa-language"
+  };
 
-    </script>
+  let currentMode = "shopping";
+  let sx = 0;
+
+  const $ = (id)=>document.getElementById(id);
+
+  function setHeroBackground(img){
+    $("hero").style.backgroundImage = `url('${HERO_BASE}${img}?v=${Date.now()}')`;
+  }
+
+  function setTheme(color){
+    document.documentElement.style.setProperty("--primary", color);
+  }
+
+  function setFalUI(isFal){
+    $("standardUI").style.display = isFal ? "none" : "flex";
+    $("falUI").style.display = isFal ? "block" : "none";
+  }
+
+  function setHeroText(topPx, title, desc){
+    document.querySelector(".hero-text").style.top = (topPx||110) + "px";
+    $("heroTitle").innerHTML = title;
+    $("heroDesc").innerText = desc;
+  }
+
+  function setTip(t){ $("tip").innerText = t; }
+
+  function renderDock(){
+    const dock = $("dock");
+    dock.innerHTML = "";
+    dockOrder.forEach(k=>{
+      const tab = document.createElement("div");
+      tab.className = "tab" + (k===currentMode ? " active":"");
+      tab.innerHTML = `<i class="fa-solid ${dockIcons[k]}"></i><span>${dockLabels[k]}</span>`;
+      tab.onclick = ()=> switchMode(k);
+      dock.appendChild(tab);
+    });
+  }
+
+  function renderQuickCards(arr){
+    const wrap = $("quickCards");
+    wrap.innerHTML = "";
+    (arr||[]).forEach(t=>{
+      const div = document.createElement("div");
+      div.className = "qcard";
+      div.textContent = t;
+      wrap.appendChild(div);
+    });
+  }
+
+  function switchMode(modeName){
+    if(!modes[modeName]) return;
+    currentMode = modeName;
+    const m = modes[modeName];
+
+    setTheme(m.color);
+    setHeroBackground(m.img);
+    setHeroText(m.top, m.title, m.desc);
+    setTip(m.tip);
+    setFalUI(modeName==="fal");
+    renderQuickCards(m.cards);
+    renderDock();
+
+    // placeholder
+    $("userInput").placeholder =
+      (modeName==="translate") ? "Metni yapıştır." :
+      (modeName==="health")    ? "Neren ağrıyor?" :
+      (modeName==="diet")      ? "Boy kilo kaç evladım?" :
+      (modeName==="food")      ? "Dolapta ne var?" :
+      (modeName==="law")       ? "Derdini kısaca anlat." :
+      (modeName==="dream")     ? "Ne gördün rüyanda?" :
+      (modeName==="fal")       ? "" :
+      "Ne danışmak istersin?";
+  }
+
+  function send(){
+    const val = $("userInput").value.trim();
+    if(!val) return;
+    renderQuickCards([`Sen: ${val}`, "Hele dur… bir bakayım…"]);
+    $("userInput").value = "";
+  }
+
+  function openCamera(){ $("fileInput").value=""; $("fileInput").click(); }
+
+  $("fileInput").addEventListener("change",(e)=>{
+    const f = e.target.files && e.target.files[0];
+    if(!f) return;
+    renderQuickCards([`📷 Fotoğraf seçildi: ${f.name}`, "Tamam… yorumluyorum…"]);
+  });
+
+  function takeFalPhoto(){ openCamera(); }
+
+  // Swipe hero
+  $("hero").addEventListener("touchstart",(e)=>{ sx=e.touches[0].clientX; }, {passive:true});
+  $("hero").addEventListener("touchend",(e)=>{
+    const dx = e.changedTouches[0].clientX - sx;
+    if(Math.abs(dx) < 60) return;
+    const i = dockOrder.indexOf(currentMode);
+    if(dx < 0 && i < dockOrder.length-1) switchMode(dockOrder[i+1]);
+    if(dx > 0 && i > 0) switchMode(dockOrder[i-1]);
+  }, {passive:true});
+
+  // Init
+  switchMode("shopping");
+</script>
 </body>
 </html>
