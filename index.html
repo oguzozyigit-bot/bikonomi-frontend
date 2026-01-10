@@ -54,7 +54,10 @@
   .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
   .brand i{ color:var(--primary); font-size:18px; } .brand span{ color:var(--primary); }
   .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
+  
+  .top-actions { display:flex; gap: 10px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
+  .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
   #main{ 
     position:relative; z-index:8; flex:1; 
@@ -111,35 +114,21 @@
   #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
   
   #suggestionText{ 
-    position: absolute; 
-    top: -15px; 
-    left:50%; transform:translateX(-50%); 
-    background:#fff; color:var(--primary); 
-    padding:6px 14px; border-radius:20px; 
-    font-size:12px; font-weight:800; 
-    box-shadow:0 -5px 15px rgba(0,0,0,.08); 
-    white-space:nowrap; z-index:25; 
-    opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
+    position: absolute; top: -15px; left:50%; transform:translateX(-50%); 
+    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px; 
+    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08); 
+    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
   }
   
   .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
   
-  /* GÜNCELLENEN ARAMA ÇUBUĞU TASARIMI */
   .search-bar{ 
-    flex:1; height:50px; 
-    background:#ffffff; /* Tam Beyaz */
-    border-radius:25px; 
+    flex:1; height:50px; background:#ffffff; border-radius:25px; 
     display:flex; align-items:center; padding:0 5px 0 15px; 
-    /* İnce Çerçeve */
-    border:1px solid #e0e0e0; 
-    transition:0.3s; min-width: 0; 
-    /* Hafif gölge ile öne çıkarma */
+    border:1px solid #e0e0e0; transition:0.3s; min-width: 0; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
-  .search-bar:focus-within{ 
-    border-color:var(--primary); 
-    box-shadow:0 5px 15px rgba(0,0,0,.1); 
-  }
+  .search-bar:focus-within{ border-color:var(--primary); box-shadow:0 5px 15px rgba(0,0,0,.1); }
   
   #text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; min-width: 0; user-select:text; }
   .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; } .tool-btn:active{ color:var(--primary); }
@@ -160,6 +149,33 @@
   .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-black{ background:#222; }
 
+  /* PERSONA (MOD) SEÇİM MODALI */
+  #personaModal {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+  }
+  #personaModal.show { display: flex; animation: fadeIn 0.2s ease; }
+  
+  .persona-content {
+    background: #fff; width: 85%; max-width: 320px;
+    border-radius: 24px; padding: 25px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .persona-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #333; }
+  .persona-opt {
+    padding: 15px; border-radius: 16px; background: #f9f9f9; margin-bottom: 12px;
+    font-weight: 700; cursor: pointer; transition: 0.2s; border: 2px solid transparent;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 14px;
+  }
+  .persona-opt:active { transform: scale(0.98); }
+  .persona-opt.selected { border-color: var(--primary); background: #fff8e1; color: var(--primary); }
+  .persona-opt i { font-size: 16px; }
+  .persona-close { margin-top: 15px; color: #999; font-size: 13px; font-weight: 700; cursor: pointer; padding: 10px;}
+
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
   #drawer{ position:absolute; top:0; right:0; height:100%; width:280px; background:#fff; z-index:60; padding:20px; transform:translateX(100%); transition:0.3s; }
   #drawer.open{ transform:translateX(0); } #drawerMask.show{ display:block; }
@@ -173,6 +189,34 @@
 <div id="app">
   <img id="heroImage" src="" alt="Hero Background">
 
+  <div id="personaModal" onclick="closePersonaMenu(event)">
+    <div class="persona-content">
+      <div class="persona-title">Caynana Modunu Seç</div>
+      
+      <div class="persona-opt selected" onclick="selectPersona('huysuz', this)">
+        <span>👵 Huysuz Kaynana</span>
+        <i class="fa-solid fa-check" style="display:block"></i>
+      </div>
+      
+      <div class="persona-opt" onclick="selectPersona('sevecen', this)">
+        <span>🥰 Sevecen Kaynana</span>
+        <i class="fa-solid fa-check" style="display:none"></i>
+      </div>
+      
+      <div class="persona-opt" onclick="selectPersona('itirazci', this)">
+        <span>😤 İtirazcı Kaynana</span>
+        <i class="fa-solid fa-check" style="display:none"></i>
+      </div>
+
+      <div class="persona-opt" onclick="selectPersona('kizgin', this)">
+        <span>😡 Kızgın Kaynana</span>
+        <i class="fa-solid fa-check" style="display:none"></i>
+      </div>
+
+      <div class="persona-close" onclick="document.getElementById('personaModal').classList.remove('show')">Kapat</div>
+    </div>
+  </div>
+
   <div id="drawerMask"></div>
   <div id="drawer">
     <h3 style="margin-bottom:20px;">Menü</h3>
@@ -185,7 +229,15 @@
       <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
       <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
     </div>
-    <div class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></div>
+    
+    <div class="top-actions">
+      <div class="menu-btn" onclick="openPersonaMenu()">
+        <i class="fa-solid fa-masks-theater"></i>
+      </div>
+      <div class="menu-btn" id="menuBtn">
+        <i class="fa-solid fa-bars"></i>
+      </div>
+    </div>
   </div>
 
   <div id="main">
@@ -233,6 +285,7 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
+  let currentPersona = "huysuz"; // Varsayılan Mod
   let isSending = false;
   const chatHistory = {};
 
@@ -280,11 +333,9 @@
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
     chat.innerHTML = chatHistory[newMode] || "";
-    // Chat doluysa hero yazısını gizle
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
     chat.style.display = hasContent ? "block" : "none";
-    
     renderDock();
   }
 
@@ -351,7 +402,11 @@
     document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
     addBubble("user", val, false, null, pendingImage); input.value = "";
     const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode }; pendingImage = null;
+    
+    // GÜNCELLEME: Persona bilgisini gönderiyoruz
+    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona }; 
+    pendingImage = null;
+    
     try{
       const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
       const data = await res.json(); document.getElementById(loaderId)?.remove();
@@ -365,7 +420,12 @@
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; });
     const oldHtml = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
     try{
-      const r = await fetch(SPEAK_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({text})});
+      // Persona bilgisini ses isteğine de ekliyoruz
+      const r = await fetch(SPEAK_URL, {
+          method:"POST", 
+          headers:{"Content-Type":"application/json"}, 
+          body:JSON.stringify({text, persona: currentPersona})
+      });
       const blob = await r.blob(); currentAudio = new Audio(URL.createObjectURL(blob));
       currentAudio.onended = ()=>{ btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; };
       await currentAudio.play(); btn.classList.add("playing"); btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
@@ -385,22 +445,31 @@
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
-  // DOUBLE CLICK INTERACTION
+  // == PERSONA (MOD) MENÜSÜ İŞLEMLERİ ==
+  function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
+  function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
+  function selectPersona(personaId, el){
+    currentPersona = personaId;
+    document.querySelectorAll('.persona-opt').forEach(opt => {
+        opt.classList.remove('selected');
+        opt.querySelector('i').style.display = 'none';
+    });
+    el.classList.add('selected');
+    el.querySelector('i').style.display = 'block';
+    setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
+  }
+
+  // DOUBLE CLICK
   const appContainer = document.getElementById("app");
   function cycleMode(direction){
     const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
     idx = (idx + direction + keys.length) % keys.length; switchMode(keys[idx]);
   }
-  
-  // DBLCLICK (Çift Tıklama)
   appContainer.addEventListener("dblclick", (e) => {
-    // Sadece Hero alanına çift tıklanınca çalışsın
     if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
-    const heroVisible = document.getElementById("heroContent").style.display !== "none";
-    if(heroVisible) cycleMode(1);
+    const heroVisible = document.getElementById("heroContent").style.display !== "none"; if(heroVisible) cycleMode(1);
   });
-
-  // SWIPE (Kaydırma)
+  // SWIPE
   let startX = 0, startY = 0;
   appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
   appContainer.addEventListener("touchend", e => {
@@ -409,7 +478,6 @@
     if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
   }, {passive:true});
 
-  // Init
   renderDock();
   switchMode("chat");
 </script>
