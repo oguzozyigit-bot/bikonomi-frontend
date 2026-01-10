@@ -2,6 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
+/* Viewport fit cover eklendi, yükseklik ayarı dvh oldu */
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#0b0f18" />
 <title>CAYNANA.AI</title>
@@ -14,42 +15,39 @@
 <style>
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  html,body{ height:100%; width: 100%; }
+  /* Mobil tarayıcı çubukları için dvh (dynamic viewport height) kullanıyoruz */
+  html,body{ height:100dvh; width: 100%; }
 
   body{
     font-family:var(--font);
-    background:#050505; /* Masaüstü arka planı */
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    background:#050505;
+    display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
 
   /* WEB: telefon çerçevesi */
   #app{
-    width:100%;
-    height:100%;
-    max-width:440px; 
-    max-height:880px;
-    border-radius:24px;
-    overflow:hidden;
-    position:relative;
-    display:flex;
-    flex-direction:column;
+    width:100%; height:100%;
+    max-width:440px; max-height:880px;
+    border-radius:24px; overflow:hidden;
+    position:relative; display:flex; flex-direction:column;
     box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8); 
     background:#0b0f18;
     background-position:center; background-size:cover; background-repeat:no-repeat;
     transition:background-image .25s ease;
   }
 
-  /* MOBİL: Full Ekran */
+  /* MOBİL: Full Ekran ve Taşma Çözümü */
   @media (max-width:500px){
     body{ background:#000; }
     #app{
-      width:100vw; height:100vh; /* Mobil taşmayı engeller */
+      width:100vw;
+      height:100dvh; /* Dinamik yükseklik */
       max-width:none; max-height:none;
       border-radius:0; box-shadow:none;
     }
+    /* Mobilde üst barı biraz küçültüp yer açalım */
+    #topbar { height: 60px; padding: 8px 18px; }
   }
 
   /* Overlay */
@@ -62,8 +60,9 @@
   /* HEADER */
   #topbar{
     position:relative; z-index:10;
-    height:70px; padding:12px 18px;
+    height:70px; padding:12px 18px; /* Mobilde media query ile değişir */
     display:flex; justify-content:space-between; align-items:center;
+    flex-shrink: 0; /* Küçülmesini engelle */
   }
   .brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor: pointer; }
   .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
@@ -79,10 +78,9 @@
   /* MAIN AREA */
   #main{
     position:relative; z-index:8;
-    flex:1; /* Kalan alanı doldur */
-    overflow-y:auto; /* Sadece bu alan scroll olsun */
-    -webkit-overflow-scrolling:touch;
-    padding:0 18px 240px 18px; /* Alt boşluk */
+    flex:1;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:0 18px 260px 18px; /* Alt boşluk arttırıldı */
     display:flex; flex-direction:column;
   }
   #heroContent{ margin-top:40px; text-align:left; max-width:90%; }
@@ -126,7 +124,9 @@
     z-index:20; background:rgba(255,255,255,.95);
     backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
     border-top-left-radius: 24px; border-top-right-radius: 24px;
-    padding:15px 18px 25px 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15);
+    /* Alt padding güvenli alan için */
+    padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; 
+    box-shadow:0 -10px 40px rgba(0,0,0,.15);
   }
   #suggestionText{
     position: absolute; top:-45px; left:50%; transform:translateX(-50%);
@@ -154,10 +154,10 @@
   /* DOCK (Modes) - Drag-to-Scroll */
   #dock{
     display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px;
-    scrollbar-width:none; cursor: grab; /* Sürükleme imleci */
+    scrollbar-width:none; cursor: grab;
   }
   #dock::-webkit-scrollbar{ display:none; }
-  #dock.dragging { cursor: grabbing; } /* Sürüklenirken imleç */
+  #dock.dragging { cursor: grabbing; }
   .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; }
   .dock-item.active{ opacity:1; transform:translateY(-3px); }
   .icon-box{
@@ -167,24 +167,26 @@
   .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); }
   .dock-label{ font-size:10px; font-weight:800; color:#444; }
 
-  /* NEW FOOTER (Logoya Göre) */
+  /* NEW FOOTER (İstenilen Tasarım) */
   .brand-footer{
-    margin-top:5px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; /* Gap arttı */
-    width: fit-content; margin-left: auto; margin-right: auto;
+    margin-top:12px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px;
+    width: 100%;
   }
-  .footer-text-1{
-    font-size:16px; font-weight:800; color:#333; letter-spacing:1px; line-height: 1.2;
+  .footer-text-line1{
+    font-size:14px; font-weight:800; color:#333; letter-spacing:0.5px;
   }
-  .footer-text-2{
-    font-size:13px; font-weight:500; color:#666; letter-spacing:0.5px;
+  .footer-text-line2{
+    font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px;
   }
   
   .oz-lines{
-    display:flex; gap:0; height:6px; width: 100%; /* Kalınlık arttı, genişlik yazıya eşitlendi */
+    display:flex; gap:6px; /* Bölmeler arası boşluk */
+    height:5px; width: 80%; max-width: 200px;
   }
-  .oz-lines span{ height:100%; flex:1; } /* Eşit bölündü */
+  .oz-lines span{ height:100%; flex:1; border-radius:3px; }
   .oz-l-black{ background:#222; }
-  .oz-l-gray{ background:#aaa; }
+  /* Beyazın görünmesi için hafif bir çerçeve ekledim */
+  .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-red{ background:#D32F2F; }
 
   /* DRAWER */
@@ -237,16 +239,14 @@
     <div id="dock"></div>
 
     <div class="brand-footer">
-      <div style="display: flex; flex-direction: column; align-items: center;">
-          <div class="footer-text-1">CAYNANA</div>
-          <div class="footer-text-2">by Ozyigits - 2026</div>
-      </div>
+      <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
       <div class="oz-lines">
         <span class="oz-l-black"></span>
-        <span class="oz-l-gray"></span>
+        <span class="oz-l-white"></span>
         <span class="oz-l-red"></span>
         <span class="oz-l-black"></span>
       </div>
+      <div class="footer-text-line2">2026</div>
     </div>
   </div>
 </div>
@@ -379,15 +379,10 @@
   // == DRAG TO SCROLL (Masaüstü İçin) ==
   const dock = document.getElementById('dock');
   let isDown = false, startX, scrollLeft;
-  dock.addEventListener('mousedown', (e) => {
-    isDown = true; dock.classList.add('dragging'); startX = e.pageX - dock.offsetLeft; scrollLeft = dock.scrollLeft;
-  });
+  dock.addEventListener('mousedown', (e) => { isDown = true; dock.classList.add('dragging'); startX = e.pageX - dock.offsetLeft; scrollLeft = dock.scrollLeft; });
   dock.addEventListener('mouseleave', () => { isDown = false; dock.classList.remove('dragging'); });
   dock.addEventListener('mouseup', () => { isDown = false; dock.classList.remove('dragging'); });
-  dock.addEventListener('mousemove', (e) => {
-    if(!isDown) return; e.preventDefault();
-    const x = e.pageX - dock.offsetLeft; const walk = (x - startX) * 2; dock.scrollLeft = scrollLeft - walk;
-  });
+  dock.addEventListener('mousemove', (e) => { if(!isDown) return; e.preventDefault(); const x = e.pageX - dock.offsetLeft; const walk = (x - startX) * 2; dock.scrollLeft = scrollLeft - walk; });
 
   // Init
   renderDock();
