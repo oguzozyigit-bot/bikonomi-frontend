@@ -267,9 +267,9 @@
 <input type="file" id="file-upload" accept="image/*" capture="environment">
 
 <script>
-  const API_BASE = ""; // backend aynı host ise boş bırak
-  const CHAT_URL = API_BASE + "/api/chat";
-
+ const API_BASE = "https://bikonomi-api-2.onrender.com";
+const API_URL = API_BASE + "/api/chat";
+const SPEAK_URL = API_BASE + "/api/speak";
   const MODES = {
     shopping:  { label:"Alışveriş", icon:"fa-bag-shopping",  color:"#00C897", img:"images/hero-shopping.png",  title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", sugg:"Her indirime atlayan sonunda pahalı öder.", ph:"Neye bakmıştın evladım?" },
     chat:      { label:"Sohbet",   icon:"fa-comments",      color:"#FFB300", img:"images/hero-chat.png",      title:"Caynana ile<br>dertleş.", desc:"Anlat bakalım, canını sıkan ne?", sugg:"Eskiden komşuluk vardı, şimdi wifi var…", ph:"Naber Caynana?" },
@@ -520,3 +520,4 @@
 </script>
 </body>
 </html>
+
