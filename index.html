@@ -78,11 +78,8 @@
   }
   #chatContainer::-webkit-scrollbar { display: none; }
 
-  /* MESAJ KUTUSU YAPISI */
-  .msg{ display:flex; margin-bottom:15px; animation: fadeIn 0.3s ease; flex-direction: column; }
-  .msg.user{ align-items: flex-end; } 
-  .msg.ai{ align-items: flex-start; }
-  
+  .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
+  .msg.user{ align-items: flex-end; } .msg.ai{ align-items: flex-start; }
   @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
   .bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
@@ -92,18 +89,11 @@
   .typing-cursor::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* SES BUTONU - BALONUN ALTINA GELECEK */
   .audio-btn{
-    margin-top:6px; /* Balonla arası */
-    margin-left: 4px; /* Hafif içerde dursun */
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 14px; border-radius:20px; 
-    background:#fff; 
-    color: var(--primary); 
-    font-size:12px; font-weight:800; cursor:pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: transform 0.2s;
-    width: fit-content;
+    margin-top:6px; margin-left: 4px; display:inline-flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:20px; background:#fff; color: var(--primary); 
+    font-size:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s; width: fit-content;
   }
   .audio-btn i { font-size: 14px; }
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
@@ -118,8 +108,22 @@
   .price{ font-size:14px; font-weight:900; color:var(--primary); }
   .btnLink{ margin-top:6px; padding:6px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; }
 
+  /* BOTTOM AREA */
   #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
-  #suggestionText{ position: absolute; top:-45px; left:50%; transform:translateX(-50%); background:#fff; color:var(--primary); padding:8px 16px; border-radius:20px; font-size:12px; font-weight:800; box-shadow:0 5px 20px rgba(0,0,0,.15); white-space:nowrap; z-index:5; opacity:0.95; transition: all 0.3s ease; pointer-events: none; }
+  
+  /* SUGGESTION TEXT - GÜNCELLENDİ: Alt kısımla bütünleşti */
+  #suggestionText{ 
+    position: absolute; 
+    top: -15px; /* Yukarıdan aşağıya indirildi, sınırda duruyor */
+    left:50%; transform:translateX(-50%); 
+    background:#fff; color:var(--primary); 
+    padding:6px 14px; border-radius:20px; 
+    font-size:12px; font-weight:800; 
+    box-shadow:0 -5px 15px rgba(0,0,0,.08); /* Gölge yukarı verildi */
+    white-space:nowrap; z-index:25; /* Bottom'un üstünde */
+    opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
+  }
+  
   .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
   .search-bar{ flex:1; height:50px; background:#f4f4f4; border-radius:25px; display:flex; align-items:center; padding:0 5px 0 15px; border:1px solid transparent; transition:0.3s; min-width: 0; }
   .search-bar:focus-within{ background:#fff; border-color:var(--primary); box-shadow:0 5px 15px rgba(0,0,0,.05); }
@@ -180,6 +184,7 @@
 
   <div id="bottom">
     <div id="suggestionText"></div>
+    
     <div class="input-wrapper">
       <div class="search-bar">
         <div class="tool-btn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
