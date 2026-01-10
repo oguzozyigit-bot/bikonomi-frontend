@@ -28,30 +28,29 @@
     width:100%; height:100%; max-width:440px; max-height:880px;
     border-radius:24px; overflow:hidden; position:relative; display:flex; flex-direction:column;
     box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8); 
-    background:#0b0f18; /* Arka plan rengi */
-    /* Background image buradan kaldırıldı, img etiketine taşındı */
+    background:#0b0f18;
   }
 
-  /* MOBİL DÜZELTME */
+  /* MOBİL */
   @media (max-width:500px){
     body{ display: block; background:#000; }
     #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
   }
 
-  /* HERO RESMİ (Yeni Etiket Stili) */
+  /* HERO RESMİ (Etkileşim Alanı) */
   #heroImage {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: cover; /* Resmi alana doldur */
-    z-index: 0; /* En arkada */
-    transition: opacity 0.3s ease, object-position 0.3s ease;
-    cursor: pointer; /* Tıklanabilir olduğunu göster */
+    object-fit: cover;
+    z-index: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer; /* Tıklanabilir */
   }
 
-  /* KARARTMA KATMANI (Overlay) */
+  /* KARARTMA */
   #app::before{
     content:""; position:absolute; inset:0;
     background:linear-gradient(to bottom, rgba(0,0,0,.60) 0%, rgba(0,0,0,.30) 25%, rgba(0,0,0,.10) 50%, rgba(0,0,0,0) 70%);
-    pointer-events:none; z-index:1; /* Resmin üstünde */
+    pointer-events:none; z-index:1;
   }
 
   /* HEADER */
@@ -64,11 +63,13 @@
 
   /* MAIN CONTENT */
   #main{ position:relative; z-index:8; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 18px 260px 18px; display:flex; flex-direction:column; }
-  #heroContent{ margin-top:40px; text-align:left; max-width:90%; pointer-events: none; /* Yazıların arkasındaki resme tıklanabilsin */ }
+  
+  /* Hero Content - Pointer Events None: Tıklamalar arkadaki resme geçsin */
+  #heroContent{ margin-top:40px; text-align:left; max-width:90%; pointer-events: none; }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
-  /* CHAT & CARDS */
+  /* CHAT */
   #chatContainer{ display:none; margin-top:10px; padding-bottom: 20px; }
   .msg{ display:flex; margin-bottom:12px; } .msg.user{ justify-content:flex-end; } .msg.ai{ justify-content:flex-start; }
   .bubble{ max-width:85%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
@@ -101,22 +102,34 @@
   .icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:0.3s; }
   .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); } .dock-label{ font-size:10px; font-weight:800; color:#444; }
 
-  /* NEW FOOTER (Antrasit Renk ve Yeni Çizgiler) */
-  .brand-footer{ margin-top:12px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:8px; width: 100%; }
+  /* NEW FOOTER (Fit Content & Renk Düzeltmeleri) */
+  .brand-footer{
+    margin-top:12px;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    /* KRİTİK: Genişliği içeriğe uydur ve ortala */
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
   .footer-text-line1{
     font-size:13px; font-weight:800;
-    color:#36454F; /* ANTRASİT RENK */
+    color:#36454F; /* Antrasit */
     letter-spacing:0.5px;
+    white-space: nowrap; /* Satır kırmayı engelle */
   }
   .footer-text-line2{ font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px; }
   
-  /* RENKLİ ÇİZGİLER (Yeşil, Kırmızı, Beyaz, Siyah) */
-  .oz-lines{ display:flex; gap:6px; height:5px; width: 80%; max-width: 200px; }
+  .oz-lines{
+    display:flex; gap:6px; height:5px;
+    width: 100%; /* Üstteki yazının genişliğini tam kapla */
+  }
   .oz-lines span{ height:100%; flex:1; border-radius:3px; }
-  .oz-l-green{ background:#00C897; } /* Yeşil */
-  .oz-l-red{ background:#D32F2F; }   /* Kırmızı */
-  .oz-l-white{ background:#ffffff; border: 1px solid #eee; } /* Beyaz */
-  .oz-l-black{ background:#222; }     /* Siyah */
+  
+  /* RENKLER */
+  .oz-l-green{ background:#84CC16; } /* Diyet Yeşili */
+  .oz-l-red{ background:#D32F2F; }
+  .oz-l-white{ background:#ffffff; border: 1px solid #eee; }
+  .oz-l-black{ background:#222; }
 
   /* DRAWER */
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
@@ -225,14 +238,11 @@
     });
   }
   
-  // GÜNCELLENMİŞ setBackground (Img etiketi için)
   function setBackground(mode){
     const imgEl = document.getElementById("heroImage");
-    // Basit bir geçiş efekti
     imgEl.style.opacity = 0; 
     setTimeout(()=>{
       imgEl.src = mode.img;
-      // CSS'de object-fit:cover olduğu için pos'a çok gerek kalmıyor ama yine de ekleyelim
       imgEl.style.objectPosition = mode.pos || "center";
       imgEl.style.opacity = 1;
     }, 150);
@@ -250,7 +260,6 @@
     renderDock();
   }
 
-  // Helpers & Actions
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   function renderCards(list){
     const wrap = document.createElement("div"); wrap.className="cards";
@@ -316,27 +325,26 @@
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
-  // == MOD DEĞİŞTİRME FONKSİYONLARI (Tıkla & Kaydır) ==
+  // == HERO RESİM ETKİLEŞİMİ (Tıkla & Kaydır) ==
   const heroImg = document.getElementById("heroImage");
 
-  // Yardımcı: Modları döngüsel değiştir
   function cycleMode(direction){
     const keys = Object.keys(MODES);
     let idx = keys.indexOf(currentMode);
-    idx = (idx + direction + keys.length) % keys.length; // Döngüsel geçiş hesabı
+    idx = (idx + direction + keys.length) % keys.length;
     switchMode(keys[idx]);
   }
 
-  // 1. Tıklama ile değiştir
-  heroImg.addEventListener("click", () => cycleMode(1)); // Sonraki moda geç
+  // Tıklama
+  heroImg.addEventListener("click", () => cycleMode(1));
 
-  // 2. Kaydırma (Swipe) ile değiştir
+  // Kaydırma (Swipe)
   let heroStartX = 0;
   heroImg.addEventListener("touchstart", e => { heroStartX = e.touches[0].clientX; }, {passive:true});
   heroImg.addEventListener("touchend", e => {
       const diff = e.changedTouches[0].clientX - heroStartX;
-      if(Math.abs(diff) > 50) { // 50px'den fazla kaydırılırsa tetikle
-           cycleMode(diff > 0 ? -1 : 1); // Sola kaydır -> İleri, Sağa kaydır -> Geri
+      if(Math.abs(diff) > 50) {
+           cycleMode(diff > 0 ? -1 : 1);
       }
   }, {passive:true});
 
