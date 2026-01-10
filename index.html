@@ -149,7 +149,7 @@
   .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-black{ background:#222; }
 
-  /* PERSONA (MOD) SEÇİM MODALI */
+  /* PERSONA (MOD) SEÇİM MODALI - GÜNCELLENDİ */
   #personaModal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); z-index: 100;
@@ -193,23 +193,23 @@
     <div class="persona-content">
       <div class="persona-title">Caynana Modunu Seç</div>
       
-      <div class="persona-opt selected" onclick="selectPersona('huysuz', this)">
-        <span>👵 Huysuz Kaynana</span>
+      <div class="persona-opt selected" onclick="selectPersona('sevecen', this)">
+        <span>🥰 Anne Tadında Kaynana</span>
         <i class="fa-solid fa-check" style="display:block"></i>
       </div>
       
-      <div class="persona-opt" onclick="selectPersona('sevecen', this)">
-        <span>🥰 Sevecen Kaynana</span>
+      <div class="persona-opt" onclick="selectPersona('kizgin', this)">
+        <span>😠 Kaynana Gibi Kaynana</span>
         <i class="fa-solid fa-check" style="display:none"></i>
       </div>
       
-      <div class="persona-opt" onclick="selectPersona('itirazci', this)">
-        <span>😤 İtirazcı Kaynana</span>
+      <div class="persona-opt" onclick="selectPersona('huysuz', this)">
+        <span>👵 Bir Ayağı Çukurda Kaynana</span>
         <i class="fa-solid fa-check" style="display:none"></i>
       </div>
 
-      <div class="persona-opt" onclick="selectPersona('kizgin', this)">
-        <span>😡 Kızgın Kaynana</span>
+      <div class="persona-opt" onclick="selectPersona('itirazci', this)">
+        <span>😤 Herşeye Muhalif Kaynana</span>
         <i class="fa-solid fa-check" style="display:none"></i>
       </div>
 
@@ -285,7 +285,7 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
-  let currentPersona = "huysuz"; // Varsayılan Mod
+  let currentPersona = "sevecen"; // VARSAYILAN MOD: SEVECEN
   let isSending = false;
   const chatHistory = {};
 
@@ -403,7 +403,6 @@
     addBubble("user", val, false, null, pendingImage); input.value = "";
     const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
     
-    // GÜNCELLEME: Persona bilgisini gönderiyoruz
     const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona }; 
     pendingImage = null;
     
@@ -420,7 +419,6 @@
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; });
     const oldHtml = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
     try{
-      // Persona bilgisini ses isteğine de ekliyoruz
       const r = await fetch(SPEAK_URL, {
           method:"POST", 
           headers:{"Content-Type":"application/json"}, 
