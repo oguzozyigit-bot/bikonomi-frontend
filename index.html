@@ -56,54 +56,32 @@
   .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
 
-  /* MAIN CONTENT - DÜZELTİLDİ */
   #main{ 
     position:relative; z-index:8; flex:1; 
-    /* justify-content: flex-end; KALDIRILDI. */
-    display:flex; flex-direction:column; 
-    padding: 0 18px; 
+    display:flex; flex-direction:column; justify-content: flex-end;
+    padding: 20px 18px 260px 18px; 
     overflow: hidden; 
   }
   
-  /* HERO TEXT - YENİ POZİSYON */
-  #heroContent{ 
-    /* Mutlak pozisyon ile ekranın ortasına (yüzün altına) sabitlendi */
-    position: absolute;
-    top: 52%; /* Yüzün altına, göğüs hizasına */
-    left: 18px;
-    right: 18px;
-    transform: translateY(-50%);
-    text-align:left; 
-    pointer-events: none; 
-    z-index: 9;
-  }
+  #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 40px; }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
-  /* CHAT - SOHBET BAŞLAYINCA DEVREYE GİRER */
   #chatContainer{ 
-    display:none; 
-    width: 100%;
-    /* En alta yapışık */
-    margin-top: auto; 
-    margin-bottom: 220px; /* Alt barın üstüne gelmesi için boşluk */
-    
-    max-height: 80vh; 
-    overflow-y: auto; 
-    padding: 20px;
-    
-    /* Buzlu Cam */
+    display:none; width: 100%;
+    max-height: 82vh; 
+    overflow-y: auto; padding: 20px; margin-bottom: 10px; 
     background: rgba(0, 0, 0, 0.25); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px; 
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    
+    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); 
     scrollbar-width: none;
   }
   #chatContainer::-webkit-scrollbar { display: none; }
 
-  .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
-  .msg.user{ align-items: flex-end; } .msg.ai{ align-items: flex-start; }
+  /* MESAJ KUTUSU YAPISI */
+  .msg{ display:flex; margin-bottom:15px; animation: fadeIn 0.3s ease; flex-direction: column; }
+  .msg.user{ align-items: flex-end; } 
+  .msg.ai{ align-items: flex-start; }
   
   @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
@@ -114,17 +92,17 @@
   .typing-cursor::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* SES BUTONU - GÖRÜNÜR YAPILDI */
+  /* SES BUTONU - BALONUN ALTINA GELECEK */
   .audio-btn{
-    margin-top:8px; display:inline-flex; align-items:center; gap:8px;
+    margin-top:6px; /* Balonla arası */
+    margin-left: 4px; /* Hafif içerde dursun */
+    display:inline-flex; align-items:center; gap:8px;
     padding:8px 14px; border-radius:20px; 
-    background:#fff; /* Beyaz zemin */
-    color: var(--primary); /* Modül rengi yazı */
+    background:#fff; 
+    color: var(--primary); 
     font-size:12px; font-weight:800; cursor:pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transition: transform 0.2s;
-    border: 1px solid #eee;
-    /* Balonun dışında, altında dursun */
     width: fit-content;
   }
   .audio-btn i { font-size: 14px; }
@@ -228,6 +206,7 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
+  // API CONFIG
   const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
   const API_URL = `${BASE_DOMAIN}/api/chat`;
   const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
@@ -283,9 +262,11 @@
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
     chat.innerHTML = chatHistory[newMode] || "";
+    // Chat doluysa hero yazısını gizle
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
     chat.style.display = hasContent ? "block" : "none";
+    
     renderDock();
   }
 
@@ -332,13 +313,14 @@
       bubbleContent.innerHTML += htmlContent;
     }
 
-    // SES BUTONU EKLEME
+    // SES BUTONU EKLEME (Balonun dışında, altında)
     if(speech && role==="ai"){
       const btn = document.createElement("div"); 
       btn.className="audio-btn"; 
       btn.setAttribute("data-speech", speech);
       btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
-      div.appendChild(btn); // Balonun dışına, altına ekle
+      // Balonun hemen sonrasına ekle
+      setTimeout(() => div.appendChild(btn), text.length * 20 + 500);
     }
 
     document.getElementById("chatContainer").appendChild(div);
@@ -404,6 +386,7 @@
     if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
   }, {passive:true});
 
+  // Init
   renderDock();
   switchMode("chat");
 </script>
