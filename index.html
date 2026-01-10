@@ -15,7 +15,7 @@
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
   
-  html,body{ height:100%; width: 100%; overflow: hidden; /* Sayfa kaymasın */ }
+  html,body{ height:100%; width: 100%; overflow: hidden; }
 
   body{
     font-family:var(--font); background:#050505;
@@ -59,27 +59,28 @@
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  /* ANA İÇERİK ALANI - FLEX YAPISI */
+  /* ANA İÇERİK ALANI - DÜZELTİLDİ */
   #main{ 
-    position:relative; z-index:8; 
-    flex:1; /* Kalan boşluğu doldur */
+    position:relative; z-index:8; flex:1; 
     display:flex; flex-direction:column; 
-    overflow: hidden; /* Taşan içeriği chatContainer'a bırak */
-    padding-bottom: 160px; /* Alt bar için boşluk */
+    overflow: hidden; 
+    /* justify-content: flex-end; SİLİNDİ - Ekranı aşağı itmemesi için */
+    padding-bottom: 160px;
   }
   
+  /* Hero Content - Ortada/Altta Durması İçin Margin Auto */
   #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 20px; margin-top: auto; padding: 0 18px; }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
   #chatContainer{ 
     display:none; width: 100%; height: 100%;
-    overflow-y: auto; /* DİKEY KAYDIRMA AÇIK */
-    -webkit-overflow-scrolling: touch; /* Mobil yumuşak kaydırma */
-    padding: 20px 20px 40px 20px; /* İç boşluk */
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+    padding: 20px 20px 40px 20px; 
     background: rgba(0, 0, 0, 0.25); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
     scrollbar-width: none;
   }
   #chatContainer::-webkit-scrollbar { display: none; }
@@ -287,9 +288,11 @@
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
     chat.innerHTML = chatHistory[newMode] || "";
+    // Chat doluysa hero yazısını gizle
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
     chat.style.display = hasContent ? "block" : "none";
+    
     renderDock();
   }
 
