@@ -422,7 +422,40 @@
       div.className="card";
       div.innerHTML = `
         ${bHtml}
-        <img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder.com/300x300?text=Image'">
+        <function safeImg(u){
+  u = (u || "").trim();
+  if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
+  if(u.startsWith("//")) return "https:" + u;
+  return u;
+}
+
+function renderCards(list){
+  const wrap = document.createElement("div");
+  wrap.className="cards";
+
+  (list||[]).forEach((p, idx)=>{
+    const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
+    const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+
+    const imgSrc = safeImg(p.image);
+
+    const div = document.createElement("div");
+    div.className="card";
+    div.innerHTML = `
+      ${bHtml}
+      <img class="pimg" src="${imgSrc}"
+           onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Gorsel+Yok';">
+      <div class="title">${escapeHtml(p.title||'')}</div>
+      <div class="price">${escapeHtml(p.price||'')}</div>
+      <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
+    `;
+    wrap.appendChild(div);
+  });
+
+  document.getElementById("chatContainer").appendChild(wrap);
+  scrollToBottom(true);
+}
+img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder.com/300x300?text=Image'">
         <div class="title">${escapeHtml(p.title||'')}</div>
         <div class="price">${escapeHtml(p.price||'')}</div>
         <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
@@ -676,3 +709,4 @@
 </script>
 </body>
 </html>
+
