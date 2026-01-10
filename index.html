@@ -286,7 +286,7 @@
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
-  // ✅ Güvenli Resim Yükleme
+  // ✅ Güvenli Resim Yükleme Fonksiyonu (YENİ EKLENDİ)
   function safeImg(u){
     u = (u || "").trim();
     if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
@@ -327,13 +327,16 @@
     });
   }
 
-  // ✅ Kartları Ekrana Bas
+  // ✅ Geliştirilmiş renderCards (YENİ EKLENDİ)
   function renderCards(list){
     const wrap = document.createElement("div"); wrap.className="cards";
     (list||[]).forEach((p, idx)=>{
       const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
       const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+      
+      // Güvenli resim linki al
       const imgSrc = safeImg(p.image);
+
       const div = document.createElement("div"); div.className="card";
       div.innerHTML = `
         ${bHtml}
@@ -375,63 +378,6 @@
     return div;
   }
 
-  // --- MODLAR ----
-  const MODES = {
-    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
-    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
-    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
-  };
-
-  function renderDock(){
-    const dock = document.getElementById("dock"); dock.innerHTML = "";
-    Object.keys(MODES).forEach(key=>{
-      const m = MODES[key]; const div = document.createElement("div");
-      div.className = "dock-item " + (key===currentMode ? "active":"");
-      div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); };
-      div.innerHTML = `<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
-      dock.appendChild(div);
-    });
-  }
-  
-  function setBackground(mode){
-    const imgEl = document.getElementById("heroImage");
-    imgEl.style.opacity = 0; 
-    setTimeout(()=>{
-      imgEl.src = mode.img; imgEl.style.objectPosition = mode.pos || "center"; imgEl.style.opacity = 1;
-    }, 150);
-  }
-
-  function applyHeroStyle(m){
-    const hero = document.getElementById("heroContent");
-    Object.assign(hero.style, {
-      position: "absolute", pointerEvents: "none", padding: "0 24px", zIndex: "9",
-      transition: "all 0.4s ease", width: "100%", top: "100px", left: "0", textAlign: "left", maxWidth: "100%"
-    });
-    if (m.heroStyle) Object.assign(hero.style, m.heroStyle);
-  }
-
-  function switchMode(newMode){
-    const chat = document.getElementById("chatContainer"); chatHistory[currentMode] = chat.innerHTML;
-    currentMode = newMode; const m = MODES[newMode];
-    document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
-    document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
-    document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
-    applyHeroStyle(m);
-    chat.innerHTML = chatHistory[newMode] || "";
-    const hasContent = chat.innerHTML.trim().length > 0;
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
-    chat.style.display = hasContent ? "block" : "none";
-    renderDock();
-    scrollToBottom(true);
-  }
-
   // --- GÜVENLİK ---
   function localSecurityCheck(text){
     const lower = text.toLowerCase();
@@ -466,6 +412,20 @@
       if(data.data && data.data.length) renderCards(data.data);
     } catch(e){ document.getElementById(loaderId).innerHTML = "Bağlantı hatası."; } finally{ isSending = false; document.getElementById("sendBtn").disabled = false; }
   }
+
+  // --- MODLAR ----
+  const MODES = {
+    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
+    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
+    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
+    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
+    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
+    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
+  };
 
   // --- FOTOĞRAF ONAY MODALI ---
   const fileEl = document.getElementById("fileInput");
