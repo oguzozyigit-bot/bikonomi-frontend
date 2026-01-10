@@ -70,6 +70,7 @@
     overflow: hidden; 
   }
   
+  /* Hero Content */
   #heroContent{ 
     position: absolute; 
     pointer-events: none; 
@@ -88,8 +89,8 @@
     display:none; width: 100%; height: 100%;
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
-    /* Padding-bottom ARTIRILDI (240px) - İçeriğin altta kalmaması için */
-    padding: 20px 20px 240px 20px; 
+    /* Padding-bottom ARTIRILDI (230px) */
+    padding: 20px 20px 230px 20px; 
     background: rgba(0, 0, 0, 0.4); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
     border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
@@ -260,6 +261,7 @@
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
 
+  // ---- HER MODA ÖZEL HERO KONUMU ----
   const MODES = {
     chat:{ 
       label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%",
@@ -337,9 +339,7 @@
     document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
     document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
-    
     applyHeroStyle(m);
-
     chat.innerHTML = chatHistory[newMode] || "";
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
@@ -349,23 +349,34 @@
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   
-  // -- SCROLL HELPER --
-  function scrollToBottom(){
+  // ---- AKILLI SCROLL YAMASI (YENİ) ----
+  function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
-    if(c) c.scrollTop = c.scrollHeight;
+    if(!c) return;
+    // Eğer kullanıcı yukarıda bir şey okuyorsa zorla aşağı çekme (force=true hariç)
+    const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 150;
+    if(!nearBottom && !force) return;
+
+    requestAnimationFrame(()=>{
+      c.scrollTop = c.scrollHeight;
+      requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; });
+    });
   }
+
+  // Window resize (klavye açılması vb.) durumunda zorla aşağı çek
+  window.addEventListener("resize", ()=> scrollToBottom(true));
 
   function typeWriterEffect(element, text, speed=50) {
     let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
     function type() {
       if (i < text.length) {
         element.textContent += text.charAt(i); i++;
-        scrollToBottom();
+        scrollToBottom(false); // Yazarken yumuşak takip
         setTimeout(type, speed);
       } else {
         element.classList.remove("typing-cursor");
         element.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        scrollToBottom();
+        scrollToBottom(true); // Bittiğinde zorla en alta
       }
     }
     type();
@@ -381,7 +392,7 @@
       wrap.appendChild(div);
     });
     document.getElementById("chatContainer").appendChild(wrap);
-    scrollToBottom();
+    scrollToBottom(true); // Kartlar gelince zorla aşağı
   }
 
   function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
@@ -396,12 +407,13 @@
     if(speech && role==="ai"){
       const btn = document.createElement("div"); btn.className="audio-btn"; btn.setAttribute("data-speech", speech);
       btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
-      setTimeout(() => { div.appendChild(btn); scrollToBottom(); }, Math.min(text.length * 20 + 500, 2500));
+      // Buton sonradan eklendiğinde scroll'u tetikle
+      setTimeout(() => { div.appendChild(btn); scrollToBottom(true); }, Math.min(text.length * 20 + 500, 2500));
     }
     document.getElementById("chatContainer").appendChild(div);
     document.getElementById("heroContent").style.display = "none";
     document.getElementById("chatContainer").style.display = "block";
-    scrollToBottom();
+    scrollToBottom(true);
   }
 
   async function send(){
