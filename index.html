@@ -120,25 +120,8 @@
   .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:5px; background:#f9f9f9; border-radius:8px;}
   .title{ font-size:11px; font-weight:700; height:32px; overflow:hidden; margin-bottom:4px; color:#222; line-height:1.3; }
   .price{ font-size:13px; font-weight:900; color:var(--primary); }
-
-  .score{
-    margin-top:4px;
-    font-size:11px;
-    font-weight:900;
-    color:#111;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:6px;
-  }
-  .score .pill{
-    padding:3px 8px;
-    border-radius:999px;
-    background:rgba(0,0,0,0.06);
-    font-size:10px;
-    font-weight:900;
-  }
-
+  .score{ margin-top:4px; font-size:11px; font-weight:900; color:#111; display:flex; align-items:center; justify-content:space-between; gap:6px; }
+  .score .pill{ padding:3px 8px; border-radius:999px; background:rgba(0,0,0,0.06); font-size:10px; font-weight:900; }
   .btnLink{ margin-top:auto; padding:8px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display:block; cursor:pointer; }
 
   #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius:24px; border-top-right-radius:24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
@@ -209,47 +192,16 @@
   .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; }
   @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
 
-  /* ✅ FAL MODE: sadece kamera */
+  /* ✅ FAL MODE UI */
   .fal-only{ display:none; }
   body.fal-mode #bottom .input-wrapper{ display:none !important; }
   body.fal-mode .fal-only{ display:block; }
-
-  .fal-cam-wrap{
-    width:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding: 14px 0 6px 0;
-  }
-  .fal-cam-btn{
-    width:86px;
-    height:86px;
-    border-radius:28px;
-    border:none;
-    background: var(--primary);
-    color:#fff;
-    font-size:34px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    box-shadow:0 14px 30px rgba(0,0,0,.25);
-    cursor:pointer;
-  }
+  .fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding: 14px 0 6px 0; }
+  .fal-cam-btn{ width:86px; height:86px; border-radius:28px; border:none; background: var(--primary); color:#fff; font-size:34px;
+    display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
   .fal-cam-btn:active{ transform: scale(0.96); }
-  .fal-step-text{
-    margin-top:10px;
-    text-align:center;
-    font-weight:900;
-    font-size:12px;
-    color:#222;
-  }
-  .fal-step-sub{
-    margin-top:4px;
-    text-align:center;
-    font-weight:700;
-    font-size:11px;
-    color:#666;
-  }
+  .fal-step-text{ margin-top:10px; text-align:center; font-weight:900; font-size:12px; color:#222; }
+  .fal-step-sub{ margin-top:4px; text-align:center; font-weight:700; font-size:11px; color:#666; }
 </style>
 </head>
 
@@ -312,7 +264,7 @@
   <div id="bottom">
     <div id="suggestionText"></div>
 
-    <!-- ✅ Fal Modu: sadece fotoğraf -->
+    <!-- ✅ Fal Modu -->
     <div class="fal-only">
       <div class="fal-cam-wrap">
         <button class="fal-cam-btn" onclick="openFalCamera()" aria-label="Fal fotoğraf çek">
@@ -323,7 +275,6 @@
       <div class="fal-step-sub" id="falStepSub">1/3: Üstten çek</div>
     </div>
 
-    <!-- normal input (fal modunda gizlenir) -->
     <div class="input-wrapper">
       <div class="search-bar">
         <div class="tool-btn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
@@ -368,13 +319,6 @@
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-
-  function safeImg(u){
-    u = (u || "").trim();
-    if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
-    if(u.startsWith("//")) return "https:" + u;
-    return u;
-  }
 
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
@@ -431,8 +375,7 @@
     if(role==="ai" && !isLoader){
       await typeWriterEffect(bubble, text);
     } else {
-      if(role==="user"){ bubble.innerHTML += escapeHtml(text); }
-      else { bubble.innerHTML += text; }
+      bubble.innerHTML += (role==="user") ? escapeHtml(text) : text;
       scrollToBottom(true);
     }
 
@@ -444,16 +387,7 @@
       div.appendChild(btn);
       scrollToBottom(true);
     }
-
     return div;
-  }
-
-  function localSecurityCheck(text){
-    const lower = (text||"").toLowerCase();
-    const badWords = ["küfür","hakaret","aptal","salak","gerizekalı","porno","sex","silah","uyuşturucu","bonzai","metamfetamin","bahis","kumar","terörist","darbe"];
-    if (badWords.some(w => lower.includes(w))) return "Terbiyem müsaade etmez evladım, düzgün konuşalım.";
-    if (/(.)\1{4,}/.test(lower)) return "Kedi mi yürüdü klavyede evladım?";
-    return null;
   }
 
   function saveCurrentModeChat(){
@@ -474,10 +408,6 @@
     }
   }
 
-  function resetFalCapture(){
-    falImages = [];
-    setFalStepUI();
-  }
   function setFalStepUI(){
     const t = document.getElementById("falStepText");
     const s = document.getElementById("falStepSub");
@@ -490,6 +420,10 @@
       s.textContent = "Yorum hazırlanıyor";
     }
   }
+  function resetFalCapture(){
+    falImages = [];
+    setFalStepUI();
+  }
 
   async function send(){
     if(isSending) return;
@@ -498,16 +432,6 @@
     let val = input.value.trim();
     if(pendingImage && val==="") val = "Bu resmi yorumla";
     if(!val && !pendingImage) return;
-
-    const badCheck = localSecurityCheck(val);
-    if(badCheck){
-      await addBubble("user", val, false, null, pendingImage);
-      input.value = "";
-      pendingImage = null;
-      setTimeout(()=> addBubble("ai", badCheck), 250);
-      saveCurrentModeChat();
-      return;
-    }
 
     isSending = true;
     document.getElementById("sendBtn").disabled = true;
@@ -533,31 +457,37 @@
       const data = await res.json();
 
       document.getElementById(loaderId)?.remove();
-
       await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
 
-      scrollToBottom(true);
       saveCurrentModeChat();
-    } catch(e){
+      scrollToBottom(true);
+    }catch(e){
       document.getElementById(loaderId)?.remove();
       await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.");
       saveCurrentModeChat();
-    } finally{
+    }finally{
       isSending = false;
       document.getElementById("sendBtn").disabled = false;
     }
   }
 
+  // ✅ TÜM MODLAR GERİ (bozulmayacak)
   const MODES = {
     chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fincan + tabak. 3 açı çek, ben bakayım.", img: asset("images/hero-fal.png"), ph:"", sugg:"Sadece fincan ve tabak kabul ederim.", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
+    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fincan + tabak. 3 açı çek, ben bakayım.", img: asset("images/hero-fal.png"), ph:"", sugg:"Sadece fincan ve tabak kabul ederim.", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
+    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
+    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
+    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
+    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
   };
 
   function applyHero(modeKey){
     const m = MODES[modeKey] || MODES.chat;
     document.documentElement.style.setProperty("--primary", m.color);
-
     document.getElementById("heroImage").src = m.img;
     document.getElementById("heroTitle").innerHTML = m.title;
     document.getElementById("heroDesc").innerHTML = m.desc;
@@ -577,27 +507,21 @@
 
   function switchMode(modeKey){
     if(modeKey === currentMode) return;
-
     saveCurrentModeChat();
     currentMode = modeKey;
-
     document.querySelectorAll(".dock-item").forEach(el=>{
       el.classList.toggle("active", el.getAttribute("data-mode") === modeKey);
     });
-
     applyHero(modeKey);
     loadModeChat(modeKey);
 
     document.body.classList.toggle("fal-mode", modeKey === "fal");
-    if(modeKey === "fal"){
-      resetFalCapture();
-    }
+    if(modeKey === "fal") resetFalCapture();
   }
 
   function renderDock(){
     const dock = document.getElementById("dock");
     dock.innerHTML = "";
-
     Object.keys(MODES).forEach(k=>{
       const m = MODES[k];
       const item = document.createElement("div");
@@ -612,7 +536,7 @@
     });
   }
 
-  // FOTO
+  // CAMERA
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
@@ -672,7 +596,6 @@
         setTimeout(()=> openFalCamera(), 220);
         return;
       }
-
       const collage = await makeFalCollage(falImages);
       pendingImage = collage;
 
@@ -692,8 +615,7 @@
     const imgs = await Promise.all(imgList.map(loadImage));
     const W = 900, H = 900;
     const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
+    canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0,0,W,H);
@@ -717,20 +639,13 @@
       im.src = src;
     });
   }
-
   function drawContain(ctx, img, x, y, w, h){
     const iw = img.width, ih = img.height;
     const ir = iw/ih;
     const r = w/h;
-
     let dw=w, dh=h, dx=x, dy=y;
-    if(ir > r){
-      dh = w/ir;
-      dy = y + (h - dh)/2;
-    }else{
-      dw = h*ir;
-      dx = x + (w - dw)/2;
-    }
+    if(ir > r){ dh = w/ir; dy = y + (h - dh)/2; }
+    else { dw = h*ir; dx = x + (w - dw)/2; }
 
     ctx.save();
     roundRect(ctx, x, y, w, h, 16);
@@ -745,7 +660,6 @@
     roundRect(ctx, x, y, w, h, 16);
     ctx.stroke();
   }
-
   function roundRect(ctx, x, y, w, h, r){
     ctx.beginPath();
     ctx.moveTo(x+r, y);
@@ -756,7 +670,6 @@
     ctx.closePath();
   }
 
-  // Persona menu
   function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
@@ -770,7 +683,23 @@
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
-  // INIT minimal dock (chat, shopping, fal)
+  function startMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return alert("Tarayıcı desteklemiyor");
+    const r = new SR();
+    r.lang="tr-TR";
+    const mic = document.getElementById("micBtn");
+    mic.classList.add("mic-active");
+    r.onresult = e=>{
+      document.getElementById("text").value = e.results[0][0].transcript;
+      mic.classList.remove("mic-active");
+      send();
+    };
+    r.onend = ()=> mic.classList.remove("mic-active");
+    r.start();
+  }
+
+  // INIT
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
