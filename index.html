@@ -11,6 +11,9 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
+<!-- ✅ Google Identity Services (One Tap / Button) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <style>
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; touch-action: manipulation; }
@@ -85,6 +88,21 @@
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
   .audio-btn:active { transform: scale(0.95); }
 
+  /* --- ALIŞVERİŞ KARTLARI --- */
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; padding-bottom:10px; width:100%; }
+  .card{ background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.15); position:relative; display:flex; flex-direction:column; min-height:220px; }
+  .card-badge{ position:absolute; top:8px; left:0; padding:4px 8px; font-size:10px; font-weight:800; color:#fff; border-radius:0 6px 6px 0; z-index:2; }
+  .card-badge.gold{ background:#FFA000; } 
+  .card-badge.silver{ background:#9E9E9E; }
+  .pimg{ width:100%; height:130px; object-fit:contain; background:#f9f9f9; padding:5px; border-bottom:1px solid #eee; }
+  .card-body{ padding:10px; display:flex; flex-direction:column; flex:1; }
+  .card .title{ font-size:11px; font-weight:700; color:#333; line-height:1.3; height:28px; overflow:hidden; margin-bottom:4px; }
+  .card .price{ font-size:14px; font-weight:900; color:var(--primary); margin-bottom:6px; }
+  .score-wrap{ display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:700; color:#666; margin-bottom:8px; }
+  .score-pill{ background:#eee; padding:2px 6px; border-radius:8px; color:#111; font-weight:800; }
+  .btnLink{ margin-top:auto; display:block; text-align:center; background:#111; color:#fff; padding:8px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:800; transition:0.2s; }
+  .btnLink:active { transform:scale(0.96); }
+
   #bottom{
     position:absolute; bottom:0; left:0; right:0; z-index:20;
     background:rgba(255,255,255,.95);
@@ -135,13 +153,13 @@
 
   #personaModal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter: blur(8px); }
   #personaModal.show { display:flex; animation: fadeIn 0.2s ease; }
-  .persona-content { background:#fff; width:85%; max-width:320px; border-radius:24px; padding:25px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center; }
-  .persona-title { font-size:20px; font-weight:800; margin-bottom:20px; color:#333; }
-  .persona-opt { padding:15px; border-radius:16px; background:#f9f9f9; margin-bottom:12px; font-weight:700; cursor:pointer; transition: 0.2s; border:2px solid transparent; display:flex; align-items:center; justify-content:space-between; font-size:14px; }
+  .persona-content { background:#fff; width:85%; max-width:320px; border-radius:24px; padding:22px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center; }
+  .persona-title { font-size:18px; font-weight:900; margin-bottom:14px; color:#222; }
+  .persona-opt { padding:14px; border-radius:16px; background:#f9f9f9; margin-bottom:10px; font-weight:800; cursor:pointer; transition: 0.2s; border:2px solid transparent; display:flex; align-items:center; justify-content:space-between; font-size:13px; }
   .persona-opt:active { transform: scale(0.98); }
   .persona-opt.selected { border-color: var(--primary); background:#fff8e1; color:var(--primary); }
   .persona-opt.locked { opacity:0.5; cursor:not-allowed; }
-  .persona-close { margin-top:15px; color:#999; font-size:13px; font-weight:700; cursor:pointer; padding:10px; }
+  .persona-close { margin-top:10px; color:#999; font-size:13px; font-weight:800; cursor:pointer; padding:10px; }
 
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
   #drawer{ position:absolute; top:0; right:0; height:100%; width:280px; background:#fff; z-index:60; padding:20px; transform:translateX(100%); transition:0.3s; }
@@ -166,9 +184,9 @@
     display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
   .fal-cam-btn:active{ transform: scale(0.96); }
   .fal-step-text{ margin-top:10px; text-align:center; font-weight:900; font-size:12px; color:#222; }
-  .fal-step-sub{ margin-top:4px; text-align:center; font-weight:700; font-size:11px; color:#666; }
+  .fal-step-sub{ margin-top:4px; text-align:center; font-weight:800; font-size:11px; color:#666; }
 
-  /* Chat içindeki görsel tıklaması mod/başka click tetiklemesin */
+  /* click/gesture guard */
   .chat-img{ touch-action:none; -webkit-user-drag:none; user-select:none; }
 </style>
 </head>
@@ -213,7 +231,7 @@
         <button class="photoBtn" id="photoCancelBtn">Vazgeç</button>
         <button class="photoBtn" id="photoOkBtn">Tamam</button>
       </div>
-      <div id="photoHint" style="margin-top:10px; font-size:12px; color:#666; font-weight:700;">
+      <div id="photoHint" style="margin-top:10px; font-size:12px; color:#666; font-weight:800;">
         Tamam deyince Caynana hemen yoruma başlayacak.
       </div>
     </div>
@@ -298,7 +316,16 @@
 
       <button id="authSubmit" style="width:100%; height:46px; border-radius:14px; border:none; background:#FFB300; color:#fff; font-weight:900; cursor:pointer;">Giriş Yap</button>
 
-      <div id="authStatus" style="margin-top:10px; font-size:12px; color:#666; font-weight:700;"></div>
+      <!-- ✅ Google button container -->
+      <div style="margin-top:10px;">
+        <div style="font-size:12px; color:#666; font-weight:800; margin-bottom:6px;">Google ile giriş:</div>
+        <div id="googleBtn"></div>
+        <div id="googleNote" style="margin-top:6px;font-size:11px;color:#777;font-weight:700;">
+          (Caynana hesabın otomatik açılır.)
+        </div>
+      </div>
+
+      <div id="authStatus" style="margin-top:10px; font-size:12px; color:#666; font-weight:800;"></div>
 
       <div style="display:flex; gap:10px; margin-top:12px;">
         <button class="photoBtn" id="authLogout" style="flex:1; border:1px solid #eee; background:#fff;">Çıkış</button>
@@ -309,12 +336,12 @@
 
   <!-- PAGE MODAL -->
   <div id="pageModal" style="position:absolute; inset:0; z-index:210; display:none; background:rgba(0,0,0,.65); backdrop-filter: blur(8px);">
-    <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:90%; max-width:380px; max-height:78%; overflow:auto; background:#fff; border-radius:22px; padding:16px;">
+    <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:90%; max-width:390px; max-height:78%; overflow:auto; background:#fff; border-radius:22px; padding:16px;">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
         <div id="pageTitle" style="font-weight:900; font-size:16px; color:#222;"></div>
         <div id="pageClose" style="cursor:pointer; font-weight:900; color:#111;">Kapat ✕</div>
       </div>
-      <div id="pageBody" style="font-size:13px; line-height:1.55; color:#333; font-weight:600;"></div>
+      <div id="pageBody" style="font-size:13px; line-height:1.55; color:#333; font-weight:700;"></div>
     </div>
   </div>
 </div>
@@ -322,10 +349,16 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
+  // ✅ BURAYI KENDİ API DOMAIN'İNLE DEĞİŞTİR
   const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
+
+  // ✅ BURAYA GOOGLE CLIENT ID
+  const GOOGLE_CLIENT_ID = "BURAYA_CLIENT_ID";
+
   const API_URL = `${BASE_DOMAIN}/api/chat`;
   const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
   const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
+  const GOOGLE_AUTH_URL = `${BASE_DOMAIN}/api/auth/google`;
 
   // AUTH TOKEN
   const TOKEN_KEY = "caynana_token";
@@ -339,7 +372,7 @@
     return t ? {"Authorization":"Bearer " + t} : {};
   }
 
-  // Plan state (backend memory.profile.plan)
+  // Plan state
   let currentPlan = "free"; // free | plus | pro
   const PLAN_PERSONAS = {
     free: ["normal"],
@@ -394,6 +427,42 @@
     });
   }
 
+  function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+  // ✅ KART BASMA
+  function renderCards(list){
+    const wrap = document.createElement("div");
+    wrap.className="cards";
+    (list||[]).forEach((p, idx)=>{
+      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
+      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+      const score = p.caynana_score || 70;
+
+      const div = document.createElement("div");
+      div.className="card";
+      div.innerHTML = `
+        ${bHtml}
+        <img class="pimg" src="${p.image}"
+             onclick="event.stopPropagation();event.preventDefault();"
+             onpointerdown="event.stopPropagation();"
+             onerror="this.onerror=null;this.src='https://via.placeholder.com/300?text=Urun';">
+        <div class="card-body">
+          <div class="title">${escapeHtml(p.title||"")}</div>
+          <div class="price">${escapeHtml(p.price||"")}</div>
+          <div class="score-wrap">
+             <span>Caynana Puanı</span>
+             <span class="score-pill">${score}</span>
+          </div>
+          <a class="btnLink" href="${p.url}" target="_blank" onclick="event.stopPropagation();">İNCELE</a>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+
+    document.getElementById("chatContainer").appendChild(wrap);
+    scrollToBottom(true);
+  }
+
   async function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
     const div = document.createElement("div");
     div.className = "msg " + role;
@@ -401,7 +470,10 @@
 
     let content = "";
     if(imgData){
-      content += `<img class="chat-img" src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;" onclick="event.stopPropagation()">`;
+      content += `<img class="chat-img" src="${imgData}"
+        style="max-width:100%; border-radius:12px; margin-bottom:8px;"
+        onclick="event.stopPropagation()"
+        onpointerdown="event.stopPropagation()">`;
     }
 
     div.innerHTML = `<div class="bubble">${content}</div>`;
@@ -426,15 +498,12 @@
       const btn = document.createElement("div");
       btn.className="audio-btn";
       btn.setAttribute("data-speech", sp);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
       div.appendChild(btn);
       scrollToBottom(true);
     }
-
     return div;
   }
-
-  function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
   function saveCurrentModeChat(){
     const c = document.getElementById("chatContainer");
@@ -466,29 +535,28 @@
       s.textContent = "Yorum hazırlanıyor";
     }
   }
-  function resetFalCapture(){
-    falImages = [];
-    setFalStepUI();
-  }
+  function resetFalCapture(){ falImages = []; setFalStepUI(); }
 
-  // ====== PLAN + PERSONA UI ======
-  function allowedPersonas(){
-    return PLAN_PERSONAS[currentPlan] || ["normal"];
-  }
+  // ===== PLAN + PERSONA =====
+  function allowedPersonas(){ return PLAN_PERSONAS[currentPlan] || ["normal"]; }
+
   function refreshPersonaLocks(){
     const allow = new Set(allowedPersonas());
     document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
       const id = opt.getAttribute("data-persona");
       const icon = opt.querySelector("i");
+
       if(id === currentPersona){
         opt.classList.add("selected");
-        if(icon) { icon.className="fa-solid fa-check"; icon.style.display="block"; }
+        if(icon){ icon.className="fa-solid fa-check"; icon.style.display="block"; }
+        opt.classList.remove("locked");
         return;
       }
+
       opt.classList.remove("selected");
       if(!allow.has(id)){
         opt.classList.add("locked");
-        if(icon) { icon.className="fa-solid fa-lock"; icon.style.display="block"; }
+        if(icon){ icon.className="fa-solid fa-lock"; icon.style.display="block"; }
       } else {
         opt.classList.remove("locked");
         if(icon) icon.style.display="none";
@@ -498,14 +566,11 @@
 
   async function pullPlanFromBackend(){
     const t = getToken();
-    if(!t) { currentPlan="free"; refreshPersonaLocks(); return; }
+    if(!t){ currentPlan="free"; refreshPersonaLocks(); return; }
     try{
-      const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, {
-        method:"GET",
-        headers: { ...authHeaders() }
-      });
+      const r = await fetch(`${BASE_DOMAIN}/api/auth/me`, { method:"GET", headers:{...authHeaders()} });
       const j = await r.json();
-      const plan = ((j.profile||{}).plan || "free").toLowerCase();
+      const plan = ((j.plan||"free")+"").toLowerCase();
       currentPlan = (plan==="plus"||plan==="pro") ? plan : "free";
     }catch(e){
       currentPlan="free";
@@ -513,7 +578,7 @@
     refreshPersonaLocks();
   }
 
-  // ====== SEND ======
+  // ===== SEND =====
   async function send(){
     if(isSending) return;
 
@@ -547,6 +612,11 @@
 
       document.getElementById(loaderId)?.remove();
       await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
+
+      if(currentMode === "shopping" && data.data && data.data.length > 0){
+        renderCards(data.data);
+      }
+
       scrollToBottom(true);
       saveCurrentModeChat();
     } catch(e){
@@ -629,13 +699,12 @@
     });
   }
 
-  // Dock: drag ile click'i ayır
+  // Dock: drag ile click ayrımı
   (function dockDragClickGuard(){
     const dock = document.getElementById("dock");
     if(!dock) return;
 
     let downX=0, downY=0, moved=false;
-
     dock.addEventListener("pointerdown", (e)=>{ downX=e.clientX; downY=e.clientY; moved=false; }, {passive:true});
     dock.addEventListener("pointermove", (e)=>{
       if(Math.abs(e.clientX-downX)>10 || Math.abs(e.clientY-downY)>10) moved=true;
@@ -649,7 +718,7 @@
     }, true);
   })();
 
-  // FOTO / FAL
+  // FOTO/FAL
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
@@ -668,8 +737,7 @@
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ image: dataUrl })
       });
-      const j = await r.json();
-      return j;
+      return await r.json();
     }catch(e){
       return { ok:false, reason:"Kontrol edemedim, tekrar dene." };
     }
@@ -737,13 +805,11 @@
         setTimeout(()=> openFalCamera(), 220);
         return;
       }
-
       const collage = await makeFalCollage(falImages);
       pendingImage = collage;
 
       const input = document.getElementById("text");
       if(input) input.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
-
       await send();
       resetFalCapture();
       return;
@@ -819,7 +885,7 @@
     if(currentAudio){ currentAudio.pause(); currentAudio=null; }
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{
       b.classList.remove("playing");
-      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
+      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
     });
 
     const oldHtml = btn.innerHTML;
@@ -835,8 +901,7 @@
       currentAudio = new Audio(URL.createObjectURL(blob));
       currentAudio.onended = ()=>{
         btn.classList.remove("playing");
-        btn.inner_toggle = false;
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
       };
       await currentAudio.play();
       btn.classList.add("playing");
@@ -876,15 +941,9 @@
     const allow = new Set(allowedPersonas());
     if(!allow.has(personaId)){
       document.getElementById('personaModal').classList.remove('show');
-      showPage("Üyelik", `
-        <p><b>Bu mod ücretli evladım.</b></p>
-        <p>Plus (79,99 TL): Sevecen + Kızgın açılır.</p>
-        <p>Pro (119,99 TL): Huysuz + İtirazcı dahil tüm modlar.</p>
-        <p style="margin-top:10px;color:#666"><i>Ödemeler Google Play üzerinden yapılır.</i></p>
-      `);
+      showPage("Caynana Premium", planHtml());
       return;
     }
-
     currentPersona = personaId;
     refreshPersonaLocks();
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
@@ -896,10 +955,9 @@
     document.getElementById("authModal").style.display = "flex";
     const t = getToken();
     document.getElementById("authStatus").textContent = t ? "Bağlı ✅" : "Bağlı değil ❌";
+    initGoogleButton();
   }
-  function closeAuth(){
-    document.getElementById("authModal").style.display = "none";
-  }
+  function closeAuth(){ document.getElementById("authModal").style.display = "none"; }
   document.getElementById("accountBtn").onclick = openAuth;
   document.getElementById("authClose").onclick = closeAuth;
 
@@ -937,8 +995,7 @@
       if(!r.ok) throw new Error(j.detail || "Hata");
 
       setToken(j.token);
-      out.textContent = `Bağlandı ✅ (${j.email})`;
-
+      out.textContent = `Bağlandı ✅`;
       await pullPlanFromBackend();
       setTimeout(closeAuth, 500);
     }catch(e){
@@ -954,6 +1011,50 @@
     document.getElementById("authStatus").textContent = "Çıkış yapıldı ❌";
   };
 
+  // ✅ GOOGLE LOGIN FLOW
+  function initGoogleButton(){
+    try{
+      if(!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("BURAYA")) return;
+
+      const el = document.getElementById("googleBtn");
+      if(!el) return;
+      el.innerHTML = "";
+
+      google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (resp)=>{
+          const out = document.getElementById("authStatus");
+          out.textContent = "Google ile giriş yapıyorum…";
+          try{
+            const r = await fetch(GOOGLE_AUTH_URL, {
+              method:"POST",
+              headers:{ "Content-Type":"application/json" },
+              body: JSON.stringify({ id_token: resp.credential })
+            });
+            const j = await r.json();
+            if(!r.ok) throw new Error(j.detail || "Google giriş hatası");
+            setToken(j.token);
+            out.textContent = "Bağlandı ✅";
+            await pullPlanFromBackend();
+            setTimeout(closeAuth, 500);
+          }catch(e){
+            out.textContent = "Hata: " + (e.message || "Google giriş olmadı");
+          }
+        }
+      });
+
+      google.accounts.id.renderButton(el, {
+        theme: "outline",
+        size: "large",
+        width: 320,
+        text: "continue_with",
+        shape: "pill"
+      });
+    }catch(e){
+      // sessiz geç
+    }
+  }
+
   // PAGE MODAL
   function showPage(title, html){
     document.getElementById("pageTitle").textContent = title;
@@ -964,6 +1065,49 @@
   function hidePage(){ document.getElementById("pageModal").style.display = "none"; }
   document.getElementById("pageClose").onclick = hidePage;
   document.getElementById("pageModal").addEventListener("click",(e)=>{ if(e.target.id==="pageModal") hidePage(); });
+
+  // ✅ Premium (görsel kartlı) HTML
+  function planHtml(){
+    return `
+      <div style="font-weight:900;font-size:14px;color:#111;margin-bottom:10px;">
+        Caynana Premium (Google Play)
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        ${planCard("FREE", "Ücretsiz", "Günde 2 fal • ~30 dk sohbet • Sadece Normal Kaynana", "#f5f5f5", "Normal Kaynana")}
+        ${planCard("PLUS", "79,99 TL / ay", "Günde 5 fal • ~120 dk sohbet • Sevecen + Kızgın", "#fff8e1", "Sevecen • Kızgın")}
+        ${planCard("PRO", "119,99 TL / ay", "Sınırsız fal/sohbet • Tüm kaynana modları", "#111", "Huysuz • İtirazcı + Hepsi", true)}
+      </div>
+
+      <div style="margin-top:12px; padding:10px; border-radius:14px; background:#f7f7f7; font-size:12px; color:#444; font-weight:700;">
+        Ödemeler uygulama içinden <b>Google Play</b> ile yapılır. Kart bilgisi bizde tutulmaz.
+      </div>
+
+      <div style="margin-top:10px; font-size:12px; color:#666; font-weight:700;">
+        İptal: Google Play → Abonelikler → Caynana Premium
+      </div>
+    `;
+  }
+
+  function planCard(tag, price, desc, bg, mods, dark=false){
+    const txt = dark ? "#fff" : "#111";
+    const sub = dark ? "rgba(255,255,255,.85)" : "#555";
+    const badgeBg = dark ? "rgba(255,255,255,.18)" : "rgba(0,0,0,.07)";
+    return `
+      <div style="background:${bg}; color:${txt}; border-radius:16px; padding:12px; box-shadow:0 6px 18px rgba(0,0,0,.08);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="font-weight:900; font-size:13px; letter-spacing:.6px;">${tag}</div>
+          <div style="font-weight:900; font-size:13px;">${price}</div>
+        </div>
+        <div style="margin-top:6px; font-weight:800; font-size:12px; color:${sub}; line-height:1.35;">
+          ${desc}
+        </div>
+        <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+          ${mods.split("•").map(m=>`<span style="padding:4px 8px; border-radius:999px; background:${badgeBg}; font-size:11px; font-weight:900;">${m.trim()}</span>`).join("")}
+        </div>
+      </div>
+    `;
+  }
 
   const ABOUT_HTML = `
     <p><b>Caynana</b>, “Yapay zekânın geleneksel aklı”. Sohbet, fal ve yorum içerikleri eğlence ve rehberlik amaçlıdır.</p>
@@ -978,21 +1122,18 @@
   const CONTACT_HTML = `<p>Destek: <b>support@caynana.ai</b></p><p>Geri bildirim: Uygulama içinden veya e-posta ile.</p>`;
   const PRIVACY_HTML = `
     <p><b>Gizlilik</b><br>Minimum veri prensibiyle çalışırız. Hesap için e-posta saklanır.</p>
-    <p>Ödeme işlemleri Google Play üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>
+    <p>Ödeme işlemleri uygulama mağazası (Google Play) üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>
   `;
 
   document.getElementById("aboutBtn").onclick = ()=> showPage("Hakkımızda", ABOUT_HTML);
   document.getElementById("faqBtn").onclick = ()=> showPage("Sık Sorulan Sorular", FAQ_HTML);
   document.getElementById("contactBtn").onclick = ()=> showPage("İletişim", CONTACT_HTML);
   document.getElementById("privacyBtn").onclick = ()=> showPage("Gizlilik", PRIVACY_HTML);
-  document.getElementById("planBtn").onclick = ()=> showPage("Üyelik", `
-    <p><b>Free</b> — Günde 2 fal, ~30 dk sohbet, sadece Normal Kaynana</p>
-    <p><b>Plus (79,99 TL)</b> — Günde 5 fal, ~120 dk sohbet, Sevecen + Kızgın</p>
-    <p><b>Pro (119,99 TL)</b> — Sınırsız fal/sohbet, Huysuz + İtirazcı dahil tüm modlar</p>
-    <p style="margin-top:10px;color:#666"><i>Ödemeler Google Play üzerinden yapılır.</i></p>
-  `);
+  document.getElementById("planBtn").onclick = ()=> showPage("Caynana Premium", planHtml());
 
   // INIT
+  function cycleMode(){ /* eski davranışı koru: istersen sonra kapatırız */ }
+
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
