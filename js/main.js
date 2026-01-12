@@ -12,6 +12,63 @@ const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 // Google OAuth Client ID (senin verdiğin)
 const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
 
+function showAuthError(err){
+  const out = document.getElementById("authStatus");
+  if(!out) return;
+  if(typeof err === "string") out.textContent = "Hata: " + err;
+  else if(err?.message) out.textContent = "Hata: " + err.message;
+  else out.textContent = "Hata: " + JSON.stringify(err);
+}
+
+async function googleLoginWithCredential(credential){
+  const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
+    method:"POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ credential })
+  });
+  const j = await r.json().catch(()=> ({}));
+  if(!r.ok) throw new Error(j.detail || "Google giriş başarısız");
+  setToken(j.token);
+  document.getElementById("authStatus").textContent = `Bağlandı ✅ (${j.email || "Google"})`;
+  await pullPlanFromBackend();
+  setTimeout(()=> document.getElementById("authModal").style.display="none", 500);
+}
+
+function initGoogleButton(){
+  const el = document.getElementById("googleBtn");
+  if(!el) return;
+
+  if(!window.google || !google.accounts || !google.accounts.id){
+    showAuthError("Google script yüklenmedi (WebView/Chrome güncel mi?)");
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: async (resp) => {
+      try{
+        await googleLoginWithCredential(resp.credential);
+      }catch(e){
+        showAuthError(e);
+      }
+    }
+  });
+
+  google.accounts.id.renderButton(el, {
+    theme: "outline",
+    size: "large",
+    shape: "pill",
+    text: "continue_with"
+  });
+}
+
+// Auth modal açılınca butonu bas
+function openAuth(){
+  document.getElementById("authModal").style.display = "flex";
+  document.getElementById("authStatus").textContent = getToken() ? "Bağlı ✅" : "Bağlı değil ❌";
+  setTimeout(initGoogleButton, 50);
+}
+
 // Web kilidi (webden kullanım istemiyorsan true bırak)
 const WEB_LOCK = false; // true yaparsan webde açılmaz, sadece uygulama
 
