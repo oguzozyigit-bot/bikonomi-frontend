@@ -298,3 +298,50 @@ body.fal-mode .fal-only{ display:block; }
 .lockBtn{ display:block; text-align:center; padding:12px; border-radius:14px; text-decoration:none; font-weight:1000; color:#111; background:#fff; border:1px solid #eee; }
 .lockBtn.primary{ background:var(--primary); color:#fff; border:none; }
 .lockHint{ margin-top:10px; font-size:12px; color:#666; font-weight:900; }
+/* ===== HOTFIX: Topbar & file input visibility ===== */
+
+/* Topbar her şeyin üstünde kalsın */
+#topbar{
+  position: relative !important;
+  z-index: 9999 !important;
+}
+
+/* Topbar içindeki ikonlar kesin görünsün */
+#topbar .menu-btn{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+
+  width:40px !important;
+  height:40px !important;
+  border-radius:999px !important;
+
+  color:#fff !important;
+  background:rgba(0,0,0,.35) !important;   /* hero üstünde kaybolmasın */
+  border:1px solid rgba(255,255,255,.18) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+
+  cursor:pointer !important;
+}
+
+/* Menü butonu tıklanabilir olsun */
+#menuBtn, #personaBtn{
+  pointer-events:auto !important;
+}
+
+/* File input kesinlikle görünmesin ("Dosya Seç" buradan geliyor) */
+#fileInput{
+  display:none !important;
+  visibility:hidden !important;
+  width:0 !important;
+  height:0 !important;
+  opacity:0 !important;
+  position:absolute !important;
+  left:-9999px !important;
+}
+
+/* Bazı tarayıcılar input'u wrapper gibi basıyor: onu da bastıralım */
+input[type="file"]{
+  display:none !important;
+}
