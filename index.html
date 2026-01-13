@@ -15,14 +15,17 @@
   <!-- Google Identity -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <link rel="stylesheet" href="./css/app.css?v=3000" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/app.css?v=3001" />
 </head>
 
 <body>
   <div id="app">
     <img id="heroImage" src="" alt="Hero Background">
 
-    <!-- Persona Modal -->
+    <!-- =========================
+         PERSONA MODAL
+    ========================== -->
     <div id="personaModal" class="modalMask">
       <div class="persona-content">
         <div class="persona-title">Caynana Modunu Seç</div>
@@ -47,7 +50,9 @@
       </div>
     </div>
 
-    <!-- Photo Modal -->
+    <!-- =========================
+         PHOTO MODAL
+    ========================== -->
     <div id="photoModal" class="modalMask">
       <div class="photoBox">
         <div class="photoTitle" id="photoTitle">Fotoğraf hazır</div>
@@ -60,8 +65,11 @@
       </div>
     </div>
 
-    <!-- Drawer -->
+    <!-- =========================
+         DRAWER
+    ========================== -->
     <div id="drawerMask" class="drawerMask"></div>
+
     <div id="drawer" class="drawer">
       <div class="drawerTop">
         <div class="drawerTitle">Menü</div>
@@ -85,7 +93,7 @@
         </div>
       </div>
 
-      <!-- Hesap (offline/online otomatik) -->
+      <!-- Hesap -->
       <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Üyelik / Hesap</div>
       <div class="drawerItem" id="planBtn"><i class="fa-solid fa-crown"></i> Üyelik</div>
 
@@ -112,15 +120,23 @@
       </div>
     </div>
 
-    <!-- Topbar -->
+    <!-- =========================
+         TOPBAR
+         NOT: Burada kritik düzeltme:
+         topActions -> topUser (CSS ile uyumlu)
+    ========================== -->
     <div id="topbar">
       <div class="topbarGlass">
         <div class="brand-wrap" id="brandTap" title="Mod değiştir (çift tık / swipe)">
-          <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
+          <div class="brand">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            CAYNANA<span>.AI</span>
+          </div>
           <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
         </div>
 
-        <div class="topActions">
+        <!-- ✅ topActions yerine topUser -->
+        <div class="topUser">
           <!-- Bildirim -->
           <div class="menu-btn" id="notifIconBtn" title="Bildirimler">
             <i class="fa-solid fa-bell"></i>
@@ -140,6 +156,9 @@
       </div>
     </div>
 
+    <!-- =========================
+         MAIN
+    ========================== -->
     <div id="main">
       <div id="heroContent">
         <div id="heroTitle"></div>
@@ -148,6 +167,9 @@
       <div id="chatContainer"></div>
     </div>
 
+    <!-- =========================
+         BOTTOM
+    ========================== -->
     <div id="bottom">
       <div id="suggestionText"></div>
 
@@ -175,7 +197,7 @@
       <div class="brand-footer">
         <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
 
-        <!-- ✅ 4 çizgi: aktif mod + sıradaki 3 mod -->
+        <!-- 4 çizgi -->
         <div class="oz-lines">
           <span id="ozLine0"></span>
           <span id="ozLine1"></span>
@@ -187,7 +209,9 @@
       </div>
     </div>
 
-    <!-- Auth Modal -->
+    <!-- =========================
+         AUTH MODAL
+    ========================== -->
     <div id="authModal" class="modalMask">
       <div class="authBox">
         <div class="authTop">
@@ -220,7 +244,9 @@
       </div>
     </div>
 
-    <!-- Profile Modal -->
+    <!-- =========================
+         PROFILE MODAL
+    ========================== -->
     <div id="profileModal" class="modalMask">
       <div class="profileBox">
         <div class="profileTop">
@@ -268,7 +294,7 @@
 
           <label>Avatar Yükle</label>
           <input id="pfAvatarFile" type="file" accept="image/*">
-          <div class="profileHint">Foto seçersen otomatik avatar olarak kaydeder (Google avatarı da değişir).</div>
+          <div class="profileHint">Foto seçersen otomatik avatar olarak kaydeder.</div>
         </div>
 
         <div class="profileActions">
@@ -280,7 +306,9 @@
       </div>
     </div>
 
-    <!-- Notifications Modal -->
+    <!-- =========================
+         NOTIFICATIONS MODAL
+    ========================== -->
     <div id="notifModal" class="modalMask">
       <div class="notifBox">
         <div class="notifTop">
@@ -291,7 +319,9 @@
       </div>
     </div>
 
-    <!-- Page Modal -->
+    <!-- =========================
+         PAGE MODAL
+    ========================== -->
     <div id="pageModal" class="modalMask">
       <div class="pageBox">
         <div class="pageTop">
@@ -302,7 +332,9 @@
       </div>
     </div>
 
-    <!-- Web Lock -->
+    <!-- =========================
+         WEB LOCK
+    ========================== -->
     <div id="webLock" class="modalMask">
       <div class="lockBox">
         <div class="lockTitle">Caynana sadece uygulamada 👵</div>
@@ -317,9 +349,9 @@
 
   </div>
 
-  <!-- ✅ “Dosya Seç” asla görünmesin -->
+  <!-- “Dosya Seç” asla görünmesin (CSS gizleyecek) -->
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-  <script type="module" src="./js/main.js?v=3000"></script>
+  <script type="module" src="./js/main.js?v=3001"></script>
 </body>
 </html>
