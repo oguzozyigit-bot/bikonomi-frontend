@@ -15,7 +15,7 @@
   <!-- Google Identity -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <link rel="stylesheet" href="./css/app.css?v=1100" />
+  <link rel="stylesheet" href="./css/app.css?v=3000" />
 </head>
 
 <body>
@@ -81,15 +81,15 @@
           </div>
         </div>
         <div class="dpRight">
-          <button class="dpEdit" id="openProfileBtn" title="Profil">Düzenle</button>
+          <button class="dpEdit" id="openProfileBtn" title="Profil">Profil</button>
         </div>
       </div>
 
-      <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Hesap</div>
+      <!-- Hesap (offline/online otomatik) -->
+      <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Üyelik / Hesap</div>
       <div class="drawerItem" id="planBtn"><i class="fa-solid fa-crown"></i> Üyelik</div>
 
-      <div class="drawerItem" id="dedikoduBtn"><i class="fa-solid fa-people-group"></i> Dedikodu Odası</div>
-
+      <!-- Bildirimler -->
       <div class="drawerItem" id="notifBtn">
         <i class="fa-solid fa-bell"></i> Bildirimler
         <span class="pill" id="notifPill" style="display:none;">0</span>
@@ -101,34 +101,41 @@
       <div class="drawerItem" id="privacyBtn"><i class="fa-solid fa-shield-halved"></i> Gizlilik</div>
 
       <div class="drawerSep"></div>
-      <div class="drawerMuted">Ayarlar (yakında)</div>
-    </div>
 
-    <!-- Topbar (Sade) -->
-    <div id="topbar">
-      <div class="brand-wrap" id="brandTap" title="Mod değiştir">
-        <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
-        <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
+      <div class="drawerItem" id="safeLogoutBtn" style="display:none;">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i> Güvenli Çıkış
       </div>
 
-      <div class="topActions">
-        <button class="menu-btn" id="notifIconBtn" title="Bildirimler" type="button">
-          <i class="fa-solid fa-bell"></i>
-          <span class="notifBadge" id="notifBadge" style="display:none;">0</span>
-        </button>
+      <div class="drawerMuted" style="text-align:center; line-height:1.4; margin-top:8px;">
+        <div style="font-weight:1000;color:#444;">@CaynanaAI By Ozyigits</div>
+        <div style="font-weight:900;color:#777;">2026</div>
+      </div>
+    </div>
 
-        <button class="menu-btn" id="personaBtn" title="Kaynana Modu" type="button">
-          <i class="fa-solid fa-masks-theater"></i>
-        </button>
+    <!-- Topbar -->
+    <div id="topbar">
+      <div class="topbarGlass">
+        <div class="brand-wrap" id="brandTap" title="Mod değiştir (çift tık / swipe)">
+          <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
+          <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
+        </div>
 
-        <button class="menu-btn" id="menuBtn" title="Menü" type="button">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        <div class="topActions">
+          <!-- Bildirim -->
+          <div class="menu-btn" id="notifIconBtn" title="Bildirimler">
+            <i class="fa-solid fa-bell"></i>
+            <span class="notifBadge" id="notifBadge" style="display:none;">0</span>
+          </div>
 
-        <!-- küçük durum etiketi: ikonların ALTINDA (mobilde saklanır) -->
-        <div class="topMiniStatus" id="topMiniStatus">
-          <div class="msName" id="msName">Misafir</div>
-          <div class="msPlan" id="msPlan">Free</div>
+          <!-- Kaynana Modları -->
+          <div class="menu-btn" id="personaBtn" title="Kaynana Modları">
+            <i class="fa-solid fa-masks-theater"></i>
+          </div>
+
+          <!-- Menü -->
+          <div class="menu-btn" id="menuBtn" title="Menü">
+            <i class="fa-solid fa-bars"></i>
+          </div>
         </div>
       </div>
     </div>
@@ -167,7 +174,15 @@
 
       <div class="brand-footer">
         <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
-        <div class="oz-lines"><span class="oz-l-dynamic"></span><span class="oz-l-red"></span><span class="oz-l-white"></span><span class="oz-l-black"></span></div>
+
+        <!-- ✅ 4 çizgi: aktif mod + sıradaki 3 mod -->
+        <div class="oz-lines">
+          <span id="ozLine0"></span>
+          <span id="ozLine1"></span>
+          <span id="ozLine2"></span>
+          <span id="ozLine3"></span>
+        </div>
+
         <div class="footer-text-line2">2026</div>
       </div>
     </div>
@@ -176,7 +191,7 @@
     <div id="authModal" class="modalMask">
       <div class="authBox">
         <div class="authTop">
-          <div class="authTitle">Hesap</div>
+          <div class="authTitle">Üyelik / Hesap</div>
           <div class="authClose" id="authCloseX">✕</div>
         </div>
 
@@ -248,8 +263,12 @@
           <label>Kilo (kg)</label>
           <input id="pfWeight" type="number" placeholder="Örn: 86">
 
-          <label>Avatar URL</label>
+          <label>Avatar URL (istersen)</label>
           <input id="pfAvatar" placeholder="https://...">
+
+          <label>Avatar Yükle</label>
+          <input id="pfAvatarFile" type="file" accept="image/*">
+          <div class="profileHint">Foto seçersen otomatik avatar olarak kaydeder (Google avatarı da değişir).</div>
         </div>
 
         <div class="profileActions">
@@ -298,9 +317,9 @@
 
   </div>
 
-  <!-- file input kesin gizli -->
+  <!-- ✅ “Dosya Seç” asla görünmesin -->
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-  <script type="module" src="./js/main.js?v=1100"></script>
+  <script type="module" src="./js/main.js?v=3000"></script>
 </body>
 </html>
