@@ -644,4 +644,62 @@ html, body {
   /* file input asla görünmesin */
 #fileInput { 
   display: none !important; 
+}/* ===== FIX-2: Hamburger kesin görünür + topbar taşma bitir ===== */
+
+html, body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden !important;
+}
+
+#app{
+  position:relative;
+  overflow:hidden;
+}
+
+/* Topbar her zaman app içinde */
+#topbar{
+  position:absolute !important;
+  top:0; left:0; right:0;
+  width:100%;
+  z-index:5000;
+  box-sizing:border-box;
+}
+
+/* Marka alanı sağdaki butonları itmesin */
+#topbar .brand-wrap{
+  max-width: calc(100% - 170px);
+  overflow:hidden;
+}
+
+/* Sağ butonlar sabit sağa */
+#topbar .top-actions{
+  position:absolute;
+  right:12px;
+  top:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  z-index:6000;
+}
+
+/* Persona + Menu butonları kesin görünür */
+#personaBtn, #menuBtn{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+}
+
+/* Menü butonu (hamburger) ekstra garanti */
+#menuBtn{
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+/* File input asla görünmesin (Dosya seç yazısı) */
+#fileInput{
+  display:none !important;
 }
