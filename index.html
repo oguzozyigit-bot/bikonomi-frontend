@@ -68,15 +68,38 @@
         <div class="drawerClose" id="drawerClose">✕</div>
       </div>
 
+      <!-- Drawer Profile Card -->
+      <div class="drawerProfile" id="drawerProfile">
+        <div class="dpLeft">
+          <img id="dpAvatar" class="dpAvatar" alt="avatar" />
+        </div>
+        <div class="dpMid">
+          <div class="dpName" id="dpName">Misafir</div>
+          <div class="dpPlanRow">
+            <span class="dpPlan" id="dpPlan">Free</span>
+            <span class="dpCN" id="dpCN">CN-????</span>
+          </div>
+        </div>
+        <div class="dpRight">
+          <button class="dpEdit" id="openProfileBtn" title="Profil">Düzenle</button>
+        </div>
+      </div>
+
       <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Hesap</div>
       <div class="drawerItem" id="planBtn"><i class="fa-solid fa-crown"></i> Üyelik</div>
+
+      <!-- Dedikodu / Altın -->
+      <div class="drawerItem" id="dedikoduBtn"><i class="fa-solid fa-people-group"></i> Dedikodu Odası</div>
+
+      <!-- Bildirimler -->
+      <div class="drawerItem" id="notifBtn"><i class="fa-solid fa-bell"></i> Bildirimler <span class="pill" id="notifPill" style="display:none;">0</span></div>
+
       <div class="drawerItem" id="aboutBtn"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
       <div class="drawerItem" id="faqBtn"><i class="fa-solid fa-circle-question"></i> Sık Sorulan Sorular</div>
       <div class="drawerItem" id="contactBtn"><i class="fa-solid fa-envelope"></i> İletişim</div>
       <div class="drawerItem" id="privacyBtn"><i class="fa-solid fa-shield-halved"></i> Gizlilik</div>
 
       <div class="drawerSep"></div>
-
       <div class="drawerMuted">Ayarlar (yakında)</div>
     </div>
 
@@ -86,9 +109,24 @@
         <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
         <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
       </div>
-      <div class="top-actions">
-        <div class="menu-btn" id="personaBtn"><i class="fa-solid fa-masks-theater"></i></div>
-        <div class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></div>
+
+      <!-- ✅ USER CHIP -->
+      <div class="topUser">
+        <div class="userChip" id="userChip" title="Profil">
+          <img id="chipAvatar" class="chipAvatar" alt="a" />
+          <div class="chipText">
+            <div class="chipName" id="chipName">Misafir</div>
+            <div class="chipPlan" id="chipPlan">Free</div>
+          </div>
+        </div>
+
+        <div class="menu-btn" id="notifIconBtn" title="Bildirimler">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notifBadge" id="notifBadge" style="display:none;">0</span>
+        </div>
+
+        <div class="menu-btn" id="personaBtn" title="Kaynana Modu"><i class="fa-solid fa-masks-theater"></i></div>
+        <div class="menu-btn" id="menuBtn" title="Menü"><i class="fa-solid fa-bars"></i></div>
       </div>
     </div>
 
@@ -164,6 +202,73 @@
       </div>
     </div>
 
+    <!-- ✅ Profile Modal -->
+    <div id="profileModal" class="modalMask">
+      <div class="profileBox">
+        <div class="profileTop">
+          <div class="profileTitle">Profil</div>
+          <div class="profileClose" id="profileClose">✕</div>
+        </div>
+
+        <div class="profileHead">
+          <img id="profileAvatarPreview" class="profileAvatar" alt="avatar" />
+          <div class="profileHeadText">
+            <div class="profileMainName" id="profileMainName">Misafir</div>
+            <div class="profileMeta">
+              <span class="dpPlan" id="profilePlanTag">Free</span>
+              <span class="dpCN" id="profileCNTag">CN-????</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="formGrid">
+          <label>Takma Ad</label>
+          <input id="pfNick" placeholder="Örn: Oğuz Başkan">
+
+          <label>Ad Soyad</label>
+          <input id="pfName" placeholder="Örn: Oğuz Özyiğit">
+
+          <label>Yaş</label>
+          <input id="pfAge" type="number" placeholder="Örn: 34">
+
+          <label>Cinsiyet</label>
+          <select id="pfGender">
+            <option value="">Seç</option>
+            <option value="male">Erkek</option>
+            <option value="female">Kadın</option>
+            <option value="other">Diğer</option>
+          </select>
+
+          <label>Boy (cm)</label>
+          <input id="pfHeight" type="number" placeholder="Örn: 178">
+
+          <label>Kilo (kg)</label>
+          <input id="pfWeight" type="number" placeholder="Örn: 86">
+
+          <label>Avatar URL</label>
+          <input id="pfAvatar" placeholder="https://...">
+        </div>
+
+        <div class="profileActions">
+          <button id="pfSave" class="profileBtn primary">Kaydet</button>
+          <button id="pfCloseBtn" class="profileBtn">Kapat</button>
+        </div>
+
+        <div class="profileNote" id="pfStatus"></div>
+      </div>
+    </div>
+
+    <!-- ✅ Notifications Modal -->
+    <div id="notifModal" class="modalMask">
+      <div class="notifBox">
+        <div class="notifTop">
+          <div class="notifTitle">Bildirimler</div>
+          <div class="notifClose" id="notifClose">✕</div>
+        </div>
+        <div class="notifList" id="notifList"></div>
+      </div>
+    </div>
+
     <!-- Page Modal -->
     <div id="pageModal" class="modalMask">
       <div class="pageBox">
@@ -175,25 +280,22 @@
       </div>
     </div>
 
-    <!-- Web Lock (Siteyi webde kilitle) -->
+    <!-- Web Lock -->
     <div id="webLock" class="modalMask">
       <div class="lockBox">
         <div class="lockTitle">Caynana sadece uygulamada 👵</div>
-        <div class="lockText">
-          Evladım, webden olmaz. Uygulamayı indir, kapıyı ben açarım.
-        </div>
+        <div class="lockText">Evladım, webden olmaz. Uygulamayı indir, kapıyı ben açarım.</div>
         <div class="lockBtns">
           <a class="lockBtn primary" id="lockAndroidBtn" href="#" target="_blank">Android (Google Play)</a>
           <a class="lockBtn" id="lockApkBtn" href="#" target="_blank">APK indir</a>
         </div>
-        <div class="lockHint">Not: Bu ekranı kaldırmak için <b>js/main.js</b> içindeki WEB_LOCK ayarını kapatabilirsin.</div>
+        <div class="lockHint">Not: Bu ekranı kaldırmak için <b>js/main.js</b> içindeki WEB_LOCK ayarını kapat.</div>
       </div>
     </div>
 
   </div>
 
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
-
   <script type="module" src="./js/main.js"></script>
 </body>
 </html>
