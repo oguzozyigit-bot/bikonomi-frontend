@@ -63,6 +63,15 @@ function panelHtml(){
   `;
 }
 
+function US(msg){
+  return `
+    <div style="font-weight:1000;color:#111;">Hata</div>
+    <div style="margin-top:8px;color:#444;font-weight:900;">
+      ${window.App.escapeHtml(msg || "")}
+    </div>
+  `;
+}
+
 function renderInbox(){
   const el = document.getElementById("ddInbox");
   if(!el) return;
@@ -92,22 +101,22 @@ function renderInbox(){
       const act = btn.dataset.act;
       const nid = Number(btn.dataset.id);
       const inviteId = Number(btn.dataset.invite);
+
       try{
         if(act==="accept") await apiPOST(ACCEPT_URL, { invite_id: inviteId });
         if(act==="reject") await apiPOST(REJECT_URL, { invite_id: inviteId });
+
         await apiPOST(NOTIF_READ_URL, { id: nid });
         await refreshInbox();
         refreshBadge();
+
         window.App.showPage("Dedikodu Odası", `<div style="font-weight:1000;color:#111;">İşlem tamam ✅</div>`);
       }catch(e){
-        window.App.showPage("Dedikodu Odası", `<US(e.message));
+        // ✅ BURASI DÜZELTİLDİ
+        window.App.showPage("Dedikodu Odası", US(e.message));
       }
     };
   });
-}
-
-function US(msg){
-  return `<div style="font-weight:1000;color:#111;">Hata</div><div style="margin-top:8px;color:#444;font-weight:900;">${window.App.escapeHtml(msg||"")}</div>`;
 }
 
 async function refreshInbox(){
@@ -128,8 +137,12 @@ function refreshBadge(){
   const badge = document.getElementById("dedikoduBadge");
   if(!badge) return;
   const n = inbox.length;
-  if(n>0){ badge.style.display="inline-block"; badge.textContent = String(n>99?"99+":n); }
-  else { badge.style.display="none"; }
+  if(n>0){
+    badge.style.display="inline-block";
+    badge.textContent = String(n>99 ? "99+" : n);
+  } else {
+    badge.style.display="none";
+  }
 }
 
 function bindPanel(){
@@ -161,6 +174,7 @@ async function openPanel(){
   }
 
   window.App.showPage("Dedikodu Odası", panelHtml());
+
   setTimeout(async ()=>{
     try{
       await refreshInbox();
