@@ -15,7 +15,8 @@
   <!-- Google Identity -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <link rel="stylesheet" href="./css/app.css?v=4000" />
+  <!-- CSS -->
+  <link rel="stylesheet" href="./css/app.css?v=5000" />
 </head>
 
 <body>
@@ -68,7 +69,7 @@
         <div class="drawerClose" id="drawerClose">✕</div>
       </div>
 
-      <!-- Drawer Profile Card (MENÜ İÇİNDE) -->
+      <!-- Drawer Profile Card -->
       <div class="drawerProfile">
         <img id="dpAvatar" class="dpAvatar" alt="avatar" />
         <div class="dpMid">
@@ -81,7 +82,6 @@
         <button class="dpEdit" id="openProfileBtn" title="Profil">Profil</button>
       </div>
 
-      <!-- Üyelik/Hesap (offline/online otomatik) -->
       <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Üye Girişi / Üye Ol</div>
       <div class="drawerItem" id="planBtn"><i class="fa-solid fa-crown"></i> Üyelik</div>
 
@@ -102,7 +102,7 @@
       </div>
     </div>
 
-    <!-- Topbar (LOGO + 3 ICON) -->
+    <!-- Topbar -->
     <div id="topbar">
       <div class="topbarGlass">
         <div class="brand-wrap" id="brandTap" title="Mod değiştir (çift tık / swipe)">
@@ -138,6 +138,7 @@
     <div id="bottom">
       <div id="suggestionText"></div>
 
+      <!-- Fal UI (sadece fal-mode iken görünür) -->
       <div class="fal-only">
         <div class="fal-cam-wrap">
           <button class="fal-cam-btn" id="falCamBtn" aria-label="Fal fotoğraf çek">
@@ -204,7 +205,7 @@
       </div>
     </div>
 
-    <!-- Page Modal (pages/*.html buraya gelir) -->
+    <!-- Page Modal -->
     <div id="pageModal" class="modalMask">
       <div class="pageBox">
         <div class="pageTop">
@@ -228,9 +229,9 @@
 
   </div>
 
-  <!-- “Dosya Seç” asla görünmez (CSS + hidden) -->
+  <!-- Tek file input (kamera için) -->
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-  <script type="module" src="./js/main.js?v=4000"></script>
+  <script type="module" src="./js/main.js?v=5000"></script>
 </body>
 </html>
