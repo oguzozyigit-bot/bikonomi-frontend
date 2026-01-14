@@ -1,11 +1,13 @@
-// CAYNANA WEB - main.js (SAFE v5000 - FIXED)
+// CAYNANA WEB - main.js (SAFE v5001 - FINAL FIX)
 // Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
+// Hedef: chat POST kesin çalışsın, hata olursa gerçek sebebi yazsın, placeholder hataları bitsin.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
 const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 const NOTIF_URL = `${BASE_DOMAIN}/api/notifications`;
+const PROFILE_ME_URL = `${BASE_DOMAIN}/api/profile/me`;
 
 const GOOGLE_CLIENT_ID =
   "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
@@ -155,7 +157,8 @@ function scrollToBottom(force = false) {
     requestAnimationFrame(() => (chatContainer.scrollTop = chatContainer.scrollHeight));
     return;
   }
-  const near = (chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight) < 260;
+  const near =
+    chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 260;
   if (!near) return;
   requestAnimationFrame(() => (chatContainer.scrollTop = chatContainer.scrollHeight));
 }
@@ -184,6 +187,66 @@ async function typeWriterEffect(el, text, speed = 22) {
 
 function assetUrl(relPath) {
   return new URL(`../${relPath}`, import.meta.url).href;
+}
+
+// ---- SAFE FETCH (gerçek hata döndürür) ----
+async function apiFetch(url, opts = {}, timeoutMs = 20000) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+
+  const headers = { ...(opts.headers || {}) };
+  const method = (opts.method || "GET").toUpperCase();
+
+  // JSON body varsa otomatik content-type
+  if (opts.body && !headers["Content-Type"] && !headers["content-type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  try {
+    const res = await fetch(url, {
+      ...opts,
+      method,
+      headers,
+      signal: controller.signal,
+      cache: "no-store",
+    });
+
+    // 204 vb.
+    if (res.status === 204) return { ok: true, status: 204, data: null };
+
+    const ct = (res.headers.get("content-type") || "").toLowerCase();
+    const isJson = ct.includes("application/json");
+
+    const data = isJson ? await res.json().catch(() => ({})) : await res.text().catch(() => "");
+
+    if (!res.ok) {
+      const msg =
+        (typeof data === "object" && (data.detail || data.message)) ||
+        (typeof data === "string" && data) ||
+        `HTTP ${res.status}`;
+      const err = new Error(msg);
+      err.status = res.status;
+      err.data = data;
+      throw err;
+    }
+
+    return { ok: true, status: res.status, data };
+  } catch (e) {
+    // CORS / network tipik “TypeError: Failed to fetch”
+    if (String(e?.name || "").toLowerCase() === "aborterror") {
+      const err = new Error("Zaman aşımı (sunucu yanıt vermedi).");
+      err.code = "TIMEOUT";
+      throw err;
+    }
+    if ((e && e.message === "Failed to fetch") || /failed to fetch/i.test(String(e?.message || ""))) {
+      const err = new Error("Sunucuya erişemedim (CORS / ağ / SSL).");
+      err.code = "FAILED_FETCH";
+      throw err;
+    }
+    throw e;
+  } finally {
+    clearTimeout(t);
+  }
 }
 
 // ---- Pages ----
@@ -420,15 +483,49 @@ async function pullPlanFromBackend() {
     return;
   }
   try {
-    const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, {
+    const r = await apiFetch(`${BASE_DOMAIN}/api/memory/get`, {
       method: "GET",
       headers: { ...authHeaders() },
     });
-    const j = await r.json().catch(() => ({}));
+    const j = r.data || {};
     const plan = ((j.profile || {}).plan || "free").toLowerCase();
     currentPlan = plan === "plus" || plan === "pro" ? plan : "free";
   } catch {
     currentPlan = "free";
+  }
+}
+
+const FALLBACK_AVATAR =
+  "data:image/svg+xml;charset=utf-8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" rx="20" fill="#222"/><text x="40" y="50" font-size="26" text-anchor="middle" fill="#fff" font-family="Arial">👵</text></svg>`
+  );
+
+async function pullProfileToDrawer() {
+  if (!getToken()) return;
+
+  try {
+    const r = await apiFetch(PROFILE_ME_URL, {
+      method: "GET",
+      headers: { ...authHeaders() },
+    });
+
+    const me = r.data || {};
+    const display = (me.display_name || me.email || "Üye").trim();
+    const cn = me.caynana_id || "CN-????";
+    const plan = (me.plan || currentPlan || "free").toUpperCase();
+    const avatar = (me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
+
+    if (dpName) dpName.textContent = display || "Üye";
+    if (dpPlan) dpPlan.textContent = plan;
+    if (dpCN) dpCN.textContent = cn;
+
+    if (dpAvatar) {
+      dpAvatar.src = avatar || FALLBACK_AVATAR;
+      dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
+    }
+  } catch {
+    // sessiz geç
   }
 }
 
@@ -438,12 +535,11 @@ function setDrawerProfileUI() {
   if (dpPlan) dpPlan.textContent = (currentPlan || "free").toUpperCase();
   if (dpCN) dpCN.textContent = "CN-????";
   if (dpAvatar) {
-    dpAvatar.src = "https://placehold.co/80x80/png";
-    dpAvatar.onerror = () => {
-      dpAvatar.src = "https://placehold.co/80x80/png";
-    };
+    dpAvatar.src = FALLBACK_AVATAR;
+    dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
   }
 }
+
 function updateLoginUI() {
   const logged = !!getToken();
   if (safeLogoutBtn) safeLogoutBtn.style.display = logged ? "flex" : "none";
@@ -464,18 +560,21 @@ function ensureGoogleButton() {
     callback: async (resp) => {
       try {
         setAuthStatus("Google ile giriş yapılıyor…");
-        const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
+        const r = await apiFetch(`${BASE_DOMAIN}/api/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id_token: resp.credential }),
         });
-        const j = await r.json().catch(() => ({}));
-        if (!r.ok) throw new Error(j.detail || "Google giriş başarısız");
+        const j = r.data || {};
+        if (!j.token) throw new Error(j.detail || "Google giriş başarısız");
         setToken(j.token);
+
         setAuthStatus("Bağlandı ✅");
         await pullPlanFromBackend();
         setDrawerProfileUI();
         updateLoginUI();
+        await pullProfileToDrawer();
+
         setTimeout(() => hideModal(authModal), 350);
       } catch (e) {
         showAuthError(e);
@@ -500,25 +599,29 @@ async function handleAuthSubmit() {
 
   try {
     const endpoint = authMode === "register" ? "/api/auth/register" : "/api/auth/login";
-    const r = await fetch(`${BASE_DOMAIN}${endpoint}`, {
+    const r = await apiFetch(`${BASE_DOMAIN}${endpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.detail || "Hata");
+    const j = r.data || {};
+    if (!j.token) throw new Error(j.detail || "Hata");
+
     setToken(j.token);
     setAuthStatus("Bağlandı ✅");
+
     await pullPlanFromBackend();
     setDrawerProfileUI();
     updateLoginUI();
+    await pullProfileToDrawer();
+
     setTimeout(() => hideModal(authModal), 350);
   } catch (e) {
     showAuthError(e);
   }
 }
 
-// ---- Notifications (açılışta değil, tıklayınca) ----
+// ---- Notifications (tıklayınca) ----
 async function openNotifications() {
   showModal(notifModal);
   if (!notifList) return;
@@ -531,10 +634,8 @@ async function openNotifications() {
   notifList.innerHTML = `<div style="font-weight:900;color:#444;">Yükleniyor…</div>`;
 
   try {
-    const r = await fetch(NOTIF_URL, { method: "GET", headers: { ...authHeaders() } });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(j.detail || "Bildirim alınamadı");
-
+    const r = await apiFetch(NOTIF_URL, { method: "GET", headers: { ...authHeaders() } });
+    const j = r.data || {};
     const items = j.items || [];
     const n = items.length;
 
@@ -549,14 +650,16 @@ async function openNotifications() {
     }
 
     notifList.innerHTML = items
-      .map(
-        (it) => `
-      <div class="notifItem">
-        <div class="notifItemTitle">${escapeHtml(it.title || "Bildirim")}</div>
-        <div class="notifItemBody">${escapeHtml(it.text || it.message || "")}</div>
-      </div>
-    `
-      )
+      .map((it) => {
+        const title = it.title || "Bildirim";
+        const body = it.text || it.body || it.message || "";
+        return `
+          <div class="notifItem">
+            <div class="notifItemTitle">${escapeHtml(title)}</div>
+            <div class="notifItemBody">${escapeHtml(body)}</div>
+          </div>
+        `;
+      })
       .join("");
   } catch (e) {
     notifList.innerHTML = `<div style="font-weight:900;color:#b00;">${escapeHtml(e.message || "Hata")}</div>`;
@@ -579,6 +682,14 @@ function startMic() {
 // ---- Fal UI ----
 function setFalStepUI() {
   if (!falStepText || !falStepSub) return;
+
+  // Fal modunda değilsek alanı “boş” tut
+  if (currentMode !== "fal") {
+    falStepText.textContent = "";
+    falStepSub.textContent = "";
+    return;
+  }
+
   if (falImages.length < 3) {
     falStepText.textContent = "Fal için 3 fotoğraf çek";
     falStepSub.textContent = FAL_STEPS[falImages.length] || "1/3: Üstten çek";
@@ -593,12 +704,12 @@ function resetFalCapture() {
 }
 async function falCheckOneImage(dataUrl) {
   try {
-    const r = await fetch(FAL_CHECK_URL, {
+    const r = await apiFetch(FAL_CHECK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ image: dataUrl }),
     });
-    return await r.json();
+    return r.data || { ok: false, reason: "Kontrol edilemedi." };
   } catch {
     return { ok: false, reason: "Kontrol edemedim, tekrar dene." };
   }
@@ -655,12 +766,16 @@ if (photoCancelBtn) photoCancelBtn.onclick = resetModalOnly;
 if (photoOkBtn) {
   photoOkBtn.onclick = async () => {
     hideModal(photoModal);
+
     if (currentMode === "fal" && falImages.length < 3) {
       setTimeout(() => openFalCamera(), 180);
       return;
     }
-    if (currentMode === "fal" && textInput)
+
+    if (currentMode === "fal" && textInput) {
       textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
+    }
+
     await send();
     if (currentMode === "fal") resetFalCapture();
   };
@@ -684,7 +799,11 @@ async function addBubble(role, text, isLoader = false, speech = "") {
   else bubble.innerHTML = role === "user" ? escapeHtml(text) : text;
 
   if (role === "ai") {
-    const sp = (speech && speech.trim()) ? speech : (text || "").replace(/[*_`#>-]/g, "").slice(0, 260);
+    const sp =
+      speech && speech.trim()
+        ? speech
+        : (text || "").replace(/[*_`#>-]/g, "").slice(0, 260);
+
     const btn = document.createElement("div");
     btn.className = "audio-btn";
     btn.dataset.speech = sp;
@@ -712,12 +831,26 @@ async function playAudio(text, btn) {
   const old = btn.innerHTML;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
   try {
-    const r = await fetch(SPEAK_URL, {
+    const r = await apiFetch(SPEAK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ text, persona: currentPersona }),
     });
-    const blob = await r.blob();
+
+    // speak endpoint binary döndürüyor olabilir: apiFetch json/text okur.
+    // Bu yüzden speak için normal fetch kullanıyoruz:
+  } catch {
+    // ignore
+  }
+
+  try {
+    const res = await fetch(SPEAK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ text, persona: currentPersona }),
+    });
+    if (!res.ok) throw new Error("TTS çalışmadı");
+    const blob = await res.blob();
     currentAudio = new Audio(URL.createObjectURL(blob));
     currentAudio.onended = () => (btn.innerHTML = old);
     await currentAudio.play();
@@ -727,7 +860,7 @@ async function playAudio(text, btn) {
   }
 }
 
-// ---- Send ----
+// ---- Send (ASIL FIX) ----
 async function send() {
   if (isSending) return;
 
@@ -749,23 +882,43 @@ async function send() {
   chatContainer.appendChild(loader);
   scrollToBottom(true);
 
-  const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona };
+  const payload = {
+    message: val,
+    session_id: sessionId,
+    image: pendingImage,
+    mode: currentMode,
+    persona: currentPersona,
+  };
   pendingImage = null;
 
   try {
-    const res = await fetch(API_URL, {
+    const r = await apiFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(payload),
-    });
-    const data = await res.json().catch(() => ({}));
+    }, 25000);
+
+    const data = r.data || {};
+
     const l = document.getElementById(loaderId);
     if (l) l.remove();
-    await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
-  } catch {
+
+    await addBubble(
+      "ai",
+      data.assistant_text || "Bir şey diyemedim evladım.",
+      false,
+      data.speech_text || ""
+    );
+  } catch (e) {
     const l = document.getElementById(loaderId);
     if (l) l.remove();
-    await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.", false, "");
+
+    // gerçek hatayı göster
+    const msg =
+      e?.message ||
+      "Bağlantı hatası oldu evladım. Bir daha dene.";
+
+    await addBubble("ai", `Bağlantı sorunu: ${msg}`, false, "");
   } finally {
     isSending = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -877,14 +1030,16 @@ function bindEvents() {
 
 // ---- Init ----
 async function init() {
-  // ✅ Fal UI asla her modda görünmesin
+  // Fal UI düz: sadece fal’da
   document.body.classList.remove("fal-mode");
   falImages = [];
-  setFalStepUI();
 
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
+
+  // fal yazıları fal değilken boş kalsın
+  setFalStepUI();
 
   bindSwipe();
   bindEvents();
@@ -892,5 +1047,8 @@ async function init() {
   await pullPlanFromBackend();
   setDrawerProfileUI();
   updateLoginUI();
+
+  // token varsa profil çek
+  await pullProfileToDrawer();
 }
 init();
