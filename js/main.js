@@ -1,6 +1,8 @@
-// CAYNANA WEB - main.js (SAFE v5001 - FINAL FIX)
+// CAYNANA WEB - main.js (SAFE v5002 - FINAL)
 // Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
-// Hedef: chat POST kesin çalışsın, hata olursa gerçek sebebi yazsın, placeholder hataları bitsin.
+// KURALLAR:
+// 1) Giriş yoksa: chat gönderme yok, mod değişimi yok, persona yok, kamera/mic yok.
+// 2) Giriş varsa: tüm modlar + persona serbest (kilit yok).
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -138,7 +140,7 @@ function setAuthStatus(msg) {
   if (authStatus) authStatus.textContent = msg;
 }
 function showAuthError(err) {
-  const m = typeof err === "string" ? err : (err?.message || "Hata");
+  const m = typeof err === "string" ? err : err?.message || "Hata";
   if (authStatus) authStatus.textContent = "Hata: " + m;
 }
 export function escapeHtml(s) {
@@ -197,7 +199,6 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   const headers = { ...(opts.headers || {}) };
   const method = (opts.method || "GET").toUpperCase();
 
-  // JSON body varsa otomatik content-type
   if (opts.body && !headers["Content-Type"] && !headers["content-type"]) {
     headers["Content-Type"] = "application/json";
   }
@@ -211,12 +212,10 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
       cache: "no-store",
     });
 
-    // 204 vb.
     if (res.status === 204) return { ok: true, status: 204, data: null };
 
     const ct = (res.headers.get("content-type") || "").toLowerCase();
     const isJson = ct.includes("application/json");
-
     const data = isJson ? await res.json().catch(() => ({})) : await res.text().catch(() => "");
 
     if (!res.ok) {
@@ -232,7 +231,6 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
 
     return { ok: true, status: res.status, data };
   } catch (e) {
-    // CORS / network tipik “TypeError: Failed to fetch”
     if (String(e?.name || "").toLowerCase() === "aborterror") {
       const err = new Error("Zaman aşımı (sunucu yanıt vermedi).");
       err.code = "TIMEOUT";
@@ -247,6 +245,13 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   } finally {
     clearTimeout(t);
   }
+}
+
+// ---- LOGIN GATE ----
+async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") {
+  await addBubble("ai", reasonText, false, "");
+  showModal(authModal);
+  setTimeout(ensureGoogleButton, 120);
 }
 
 // ---- Pages ----
@@ -398,6 +403,12 @@ function loadModeChat(modeKey) {
 }
 
 function switchMode(modeKey) {
+  // ⛔ GİRİŞ YOKSA MOD YOK
+  if (!getToken()) {
+    requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
+    return;
+  }
+
   if (modeKey === currentMode) return;
 
   saveModeChat();
@@ -424,7 +435,9 @@ function switchMode(modeKey) {
 function bindSwipe() {
   const area = $("main");
   if (!area) return;
-  let sx = 0, sy = 0, active = false;
+  let sx = 0,
+    sy = 0,
+    active = false;
 
   area.addEventListener(
     "pointerdown",
@@ -441,6 +454,13 @@ function bindSwipe() {
     (e) => {
       if (!active) return;
       active = false;
+
+      // ⛔ GİRİŞ YOKSA SWIPE MOD YOK
+      if (!getToken()) {
+        requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
+        return;
+      }
+
       const dx = e.clientX - sx;
       const dy = e.clientY - sy;
       if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
@@ -457,6 +477,11 @@ function bindSwipe() {
     brandTap.addEventListener("click", () => {
       const now = Date.now();
       if (now - last < 300) {
+        // ⛔ GİRİŞ YOKSA TAP MOD YOK
+        if (!getToken()) {
+          requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
+          return;
+        }
         const idx = MODE_KEYS.indexOf(currentMode);
         const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
         switchMode(next);
@@ -514,7 +539,7 @@ async function pullProfileToDrawer() {
     const display = (me.display_name || me.email || "Üye").trim();
     const cn = me.caynana_id || "CN-????";
     const plan = (me.plan || currentPlan || "free").toUpperCase();
-    const avatar = (me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
+    const avatar = me.profile && me.profile.avatar_url ? me.profile.avatar_url : "";
 
     if (dpName) dpName.textContent = display || "Üye";
     if (dpPlan) dpPlan.textContent = plan;
@@ -668,6 +693,10 @@ async function openNotifications() {
 
 // ---- Mic ----
 function startMic() {
+  if (!getToken()) {
+    requireLogin("Evladım, mikrofon için önce giriş yap.");
+    return;
+  }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return alert("Tarayıcı desteklemiyor");
   const r = new SR();
@@ -683,7 +712,6 @@ function startMic() {
 function setFalStepUI() {
   if (!falStepText || !falStepSub) return;
 
-  // Fal modunda değilsek alanı “boş” tut
   if (currentMode !== "fal") {
     falStepText.textContent = "";
     falStepSub.textContent = "";
@@ -704,17 +732,25 @@ function resetFalCapture() {
 }
 async function falCheckOneImage(dataUrl) {
   try {
-    const r = await apiFetch(FAL_CHECK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    });
+    const r = await apiFetch(
+      FAL_CHECK_URL,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: dataUrl }),
+      },
+      25000
+    );
     return r.data || { ok: false, reason: "Kontrol edilemedi." };
   } catch {
     return { ok: false, reason: "Kontrol edemedim, tekrar dene." };
   }
 }
 function openCamera() {
+  if (!getToken()) {
+    requireLogin("Evladım, fotoğraf göndermek için önce giriş yap.");
+    return;
+  }
   if (fileEl) {
     fileEl.value = "";
     fileEl.click();
@@ -824,24 +860,17 @@ if (chatContainer) {
 }
 
 async function playAudio(text, btn) {
+  if (!getToken()) {
+    requireLogin("Evladım, ses için önce giriş yap.");
+    return;
+  }
+
   if (currentAudio) {
     currentAudio.pause();
     currentAudio = null;
   }
   const old = btn.innerHTML;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
-  try {
-    const r = await apiFetch(SPEAK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ text, persona: currentPersona }),
-    });
-
-    // speak endpoint binary döndürüyor olabilir: apiFetch json/text okur.
-    // Bu yüzden speak için normal fetch kullanıyoruz:
-  } catch {
-    // ignore
-  }
 
   try {
     const res = await fetch(SPEAK_URL, {
@@ -860,9 +889,17 @@ async function playAudio(text, btn) {
   }
 }
 
-// ---- Send (ASIL FIX) ----
+// ---- Send (GİRİŞ KİLİDİ + NET HATA) ----
 async function send() {
   if (isSending) return;
+
+  // ⛔ GİRİŞ YOKSA CHAT YOK
+  if (!getToken()) {
+    if (sendBtn) sendBtn.disabled = false;
+    isSending = false;
+    await requireLogin("Evladım, önce giriş yapacaksın. Üyelik olmadan sohbet yok.");
+    return;
+  }
 
   let val = (textInput?.value || "").trim();
   if (pendingImage && !val) val = "Bu resmi yorumla";
@@ -892,11 +929,15 @@ async function send() {
   pendingImage = null;
 
   try {
-    const r = await apiFetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify(payload),
-    }, 25000);
+    const r = await apiFetch(
+      API_URL,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...authHeaders() },
+        body: JSON.stringify(payload),
+      },
+      25000
+    );
 
     const data = r.data || {};
 
@@ -913,11 +954,7 @@ async function send() {
     const l = document.getElementById(loaderId);
     if (l) l.remove();
 
-    // gerçek hatayı göster
-    const msg =
-      e?.message ||
-      "Bağlantı hatası oldu evladım. Bir daha dene.";
-
+    const msg = e?.message || "Bağlantı hatası oldu evladım. Bir daha dene.";
     await addBubble("ai", `Bağlantı sorunu: ${msg}`, false, "");
   } finally {
     isSending = false;
@@ -932,25 +969,42 @@ function bindEvents() {
   if (drawerClose) drawerClose.onclick = closeDrawer;
   if (drawerMask) drawerMask.onclick = closeDrawer;
 
-  // persona
-  if (personaBtn) personaBtn.onclick = () => showModal(personaModal);
+  // persona (⛔ giriş yoksa açılmaz)
+  if (personaBtn) {
+    personaBtn.onclick = () => {
+      if (!getToken()) {
+        requireLogin("Evladım, kaynana modları için önce giriş yap.");
+        return;
+      }
+      showModal(personaModal);
+    };
+  }
+
   if (personaClose) personaClose.onclick = () => hideModal(personaModal);
   if (personaModal)
     personaModal.addEventListener("click", (e) => {
       if (e.target === personaModal) hideModal(personaModal);
     });
 
+  // ✅ Persona kilidi KALDIRILDI (locked kontrolü yok)
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     opt.addEventListener("click", () => {
-      if (opt.classList.contains("locked")) return;
-      document.querySelectorAll("#personaModal .persona-opt").forEach((x) => x.classList.remove("selected"));
+      if (!getToken()) {
+        requireLogin("Evladım, kaynana modları için önce giriş yap.");
+        return;
+      }
+
+      document
+        .querySelectorAll("#personaModal .persona-opt")
+        .forEach((x) => x.classList.remove("selected"));
+
       opt.classList.add("selected");
       currentPersona = opt.getAttribute("data-persona") || "normal";
       setTimeout(() => hideModal(personaModal), 150);
     });
   });
 
-  // auth open
+  // auth open (menüden)
   if (accountBtn) {
     accountBtn.onclick = () => {
       showModal(authModal);
@@ -1024,7 +1078,10 @@ function bindEvents() {
   if (camBtn) camBtn.onclick = openCamera;
   if (falCamBtn) falCamBtn.onclick = openFalCamera;
   if (micBtn) micBtn.onclick = startMic;
-  if (textInput) textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
+  if (textInput)
+    textInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") send();
+    });
   if (sendBtn) sendBtn.onclick = send;
 }
 
@@ -1038,7 +1095,6 @@ async function init() {
   applyHero("chat");
   loadModeChat("chat");
 
-  // fal yazıları fal değilken boş kalsın
   setFalStepUI();
 
   bindSwipe();
@@ -1048,7 +1104,9 @@ async function init() {
   setDrawerProfileUI();
   updateLoginUI();
 
-  // token varsa profil çek
   await pullProfileToDrawer();
+
+  // ⛔ giriş yoksa ilk açılışta modlar açık gibi görünmesin (UI var ama işlev yok)
+  // İstersen burada direkt login modal da açtırırız.
 }
 init();
