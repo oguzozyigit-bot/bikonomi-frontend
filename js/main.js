@@ -1,9 +1,7 @@
-// CAYNANA WEB - main.js (FINAL v7000)
-// ✅ Tek dosya, çakışma yok, JS içine "ham CSS" yazılmaz.
-// ✅ Giriş yoksa: chat gönderme yok, mod yok, persona yok, kamera/mic yok.
-// ✅ Giriş varsa: tüm modlar + persona serbest.
-// ✅ Shopping: TEK TEK premium kart + "Caynana Yıldızları" rozeti (puan/sıra yok).
-// ✅ Çift tık: native dblclick (sağlam). Swipe: giriş varsa çalışır.
+// CAYNANA WEB - main.js (FINAL v7001 - Premium Design)
+// ✅ Tek dosya, çakışma yok.
+// ✅ "Caynana Yıldızları" kart tasarımı yenilendi (Premium Look).
+// ✅ Tüm fonksiyonlar korundu.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -30,7 +28,7 @@ export function authHeaders() {
 }
 
 // -------------------------
-// GLOBAL FAILSAFE (JS patlarsa siyah ekran yerine hata kutusu)
+// GLOBAL FAILSAFE
 // -------------------------
 window.addEventListener("error", (e) => {
   try {
@@ -278,7 +276,7 @@ async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") 
 }
 
 // -------------------------
-// STYLE injection (shopping kart stilleri)
+// STYLE injection (PREMIUM TASARIM - CSS)
 // -------------------------
 function ensureShoppingStyles() {
   if (document.getElementById("caynanaShopStyles")) return;
@@ -286,86 +284,209 @@ function ensureShoppingStyles() {
   const s = document.createElement("style");
   s.id = "caynanaShopStyles";
   s.textContent = `
-  .shopWrap{ margin-top:12px; display:flex; flex-direction:column; gap:12px; }
-  .shopCard{
-    background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,1));
-    border:1px solid rgba(0,0,0,.06);
-    border-radius:18px;
-    overflow:hidden;
-    box-shadow:0 14px 34px rgba(0,0,0,.18);
-    position:relative;
+  /* Animasyon Tanımı */
+  @keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
-  .shopGlow{
-    position:absolute; inset:-40px -40px auto -40px;
-    height:140px;
-    filter:blur(28px);
-    opacity:.55;
-    pointer-events:none;
+
+  .shopWrap {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 20px;
   }
-  .shopTop{ display:flex; gap:12px; align-items:flex-start; padding:12px; }
-  .shopImgBox{
-    width:106px; min-width:106px; height:106px;
-    border-radius:18px;
-    background:rgba(0,0,0,.04);
-    border:1px solid rgba(0,0,0,.08);
-    display:flex; align-items:center; justify-content:center;
-    overflow:hidden;
+
+  /* KART GÖVDESİ */
+  .shopCard {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+      0 10px 40px -10px rgba(0,0,0,0.08),
+      0 0 0 1px rgba(255,255,255,0.8) inset;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  .shopImgBox img{ width:100%; height:100%; object-fit:contain; }
-  .shopMeta{ flex:1; min-width:0; }
-  .shopTitle{
-    font-weight:1000;
-    color:#111;
-    font-size:14px;
-    line-height:1.25;
-    max-height:38px;
-    overflow:hidden;
+  
+  .shopCard:active {
+    transform: scale(0.985);
   }
-  .shopBadges{ display:flex; align-items:center; gap:8px; margin:8px 0 0 0; flex-wrap:wrap; }
-  .starBadge{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    font-weight:1000;
-    font-size:11px;
-    color:#111;
-    border:1px solid rgba(0,0,0,.10);
-    background:rgba(255,255,255,.9);
-    box-shadow:0 8px 22px rgba(0,0,0,.12);
+
+  /* ARKADAKİ GLOW EFEKTİ */
+  .shopGlow {
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,179,0,0.15) 0%, rgba(255,255,255,0) 70%);
+    filter: blur(40px);
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 0;
   }
-  .starPill{
-    width:30px; height:30px;
-    border-radius:999px;
-    display:flex; align-items:center; justify-content:center;
-    color:#fff;
-    font-size:14px;
-    box-shadow:0 10px 22px rgba(0,0,0,.18);
+
+  /* ÜST KISIM (Resim + Başlık) */
+  .shopTop {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+    padding: 16px;
+    position: relative;
+    z-index: 1;
   }
-  .stars{ letter-spacing:1px; font-size:11px; }
-  .shopWhy{
-    margin:0 12px 12px 12px;
-    padding:10px 12px;
-    border-radius:16px;
-    background:#f7f7f8;
-    border:1px solid rgba(0,0,0,.06);
-    font-weight:850;
-    font-size:12px;
-    line-height:1.35;
-    color:#333;
+
+  /* RESİM KUTUSU */
+  .shopImgBox {
+    width: 100px;
+    min-width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
   }
-  .shopBtn{
-    margin:0 12px 12px 12px;
-    display:flex; align-items:center; justify-content:center;
-    gap:8px;
-    text-decoration:none;
-    height:46px;
-    border-radius:14px;
-    background:var(--primary);
-    color:#fff;
-    font-weight:1000;
-    box-shadow:0 12px 26px rgba(0,0,0,.18);
+  
+  .shopImgBox img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
   }
-  .shopBtn:active{ transform:scale(.98); }
+  
+  .shopCard:active .shopImgBox img {
+    transform: scale(1.05);
+  }
+
+  .shopMeta {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .shopTitle {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 800;
+    color: #1a1a1a;
+    font-size: 15px;
+    line-height: 1.35;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  .shopPrice {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--primary, #00C897);
+    margin-top: 4px;
+    letter-spacing: -0.5px;
+  }
+
+  /* ROZETLER */
+  .shopBadges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+
+  .starBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border-radius: 99px;
+    background: #f9f9f9;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  }
+
+  .starPill {
+    width: 24px; 
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .starBadge > span:nth-child(2) {
+    font-weight: 700;
+    font-size: 11px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .stars {
+    color: #FFB300;
+    font-size: 12px;
+    margin-left: 2px;
+    letter-spacing: -1px;
+  }
+
+  /* CAYNANA'NIN NOTU */
+  .shopWhy {
+    margin: 0 16px 16px 16px;
+    padding: 12px 16px;
+    border-radius: 16px;
+    background: #FFFBF0;
+    border: 1px solid rgba(255, 179, 0, 0.15);
+    border-left: 4px solid #FFB300;
+    font-weight: 600;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #5D4037;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* BUTON */
+  .shopBtn {
+    margin: 0 16px 16px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    height: 50px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary, #333), #000);
+    color: #fff;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .shopBtn:hover {
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.4);
+    transform: translateY(-1px);
+  }
+  
+  .shopBtn:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 10px -4px rgba(0,0,0,0.3);
+  }
   `;
   document.head.appendChild(s);
 }
@@ -572,7 +693,7 @@ async function pullProfileToDrawer() {
   } catch {}
 }
 
-// Persona UI (girişten sonra kilit kalksın)
+// Persona UI
 function lockPersonaUI() {
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     const k = opt.getAttribute("data-persona");
@@ -633,7 +754,7 @@ function ensureGoogleButton() {
   });
 }
 
-// email auth (opsiyonel)
+// email auth
 let authMode = "login";
 async function handleAuthSubmit() {
   const email = (authEmail?.value || "").trim();
@@ -872,7 +993,7 @@ async function playAudio(text, btn) {
 }
 
 // -------------------------
-// SHOPPING: Caynana Yıldızları (puan/sıra yok)
+// SHOPPING
 // -------------------------
 function normStr(x) { return (x == null ? "" : String(x)).trim(); }
 function pickUrl(p) { return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
@@ -920,7 +1041,7 @@ function starsText(n) {
 
 function renderShoppingCards(products) {
   if (!chatContainer) return;
-  ensureShoppingStyles();
+  ensureShoppingStyles(); // ✅ PREMIUM STİL BURADA YÜKLENİR
 
   const wrap = document.createElement("div");
   wrap.className = "shopWrap";
@@ -929,7 +1050,7 @@ function renderShoppingCards(products) {
     const url = pickUrl(p);
     const title = pickTitle(p);
     const img = pickImg(p);
-    const price = pickPrice(p); // fiyat yoksa göstermeyeceğiz
+    const price = pickPrice(p);
 
     const why = buildWhyText(p, i);
     const badge = starPackByIndex(i);
@@ -937,13 +1058,14 @@ function renderShoppingCards(products) {
     const card = document.createElement("div");
     card.className = "shopCard";
 
-    // renkli glow
+    // glow efekti
     const glow = document.createElement("div");
     glow.className = "shopGlow";
-    glow.style.background = badge ? badge.grad : "linear-gradient(135deg, rgba(0,200,151,.28), rgba(255,179,0,.18))";
+    // Badge yoksa varsayılan sarı glow
+    if (!badge) glow.style.background = "radial-gradient(circle, rgba(255,179,0,0.1) 0%, rgba(255,255,255,0) 70%)";
     card.appendChild(glow);
 
-    // görsel box
+    // görsel
     const imgBox = document.createElement("div");
     imgBox.className = "shopImgBox";
     if (img) {
@@ -951,11 +1073,11 @@ function renderShoppingCards(products) {
       im.src = img;
       im.alt = "img";
       im.onerror = () => {
-        imgBox.innerHTML = `<div style="font-weight:1000;color:#777;font-size:12px;">Görsel yok</div>`;
+        imgBox.innerHTML = `<div style="font-weight:700;color:#ccc;font-size:10px;">Görsel Yok</div>`;
       };
       imgBox.appendChild(im);
     } else {
-      imgBox.innerHTML = `<div style="font-weight:1000;color:#777;font-size:12px;">Görsel yok</div>`;
+      imgBox.innerHTML = `<div style="font-weight:700;color:#ccc;font-size:10px;">Görsel Yok</div>`;
     }
 
     const meta = document.createElement("div");
@@ -965,7 +1087,7 @@ function renderShoppingCards(products) {
       ${price ? `<div class="shopPrice">${escapeHtml(price)}</div>` : ``}
     `;
 
-    // rozet
+    // rozet alanı
     const badges = document.createElement("div");
     badges.className = "shopBadges";
     if (badge) {
@@ -977,8 +1099,6 @@ function renderShoppingCards(products) {
         <span class="stars">${escapeHtml(starsText(badge.stars))}</span>
       `;
       badges.appendChild(b);
-    } else {
-      // son kartlar: rozet yok
     }
     meta.appendChild(badges);
 
@@ -998,13 +1118,12 @@ function renderShoppingCards(products) {
 
     if (url) {
       btn.href = url;
-      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Caynana Öneriyor — Ürüne Git`;
+      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> İncele & Satın Al`;
     } else {
       btn.href = "#";
-      btn.style.background = "#ddd";
-      btn.style.color = "#666";
+      btn.style.opacity = "0.6";
       btn.style.pointerEvents = "none";
-      btn.textContent = "Link yok (kaynak gelmedi)";
+      btn.textContent = "Link Yok";
     }
 
     card.appendChild(top);
