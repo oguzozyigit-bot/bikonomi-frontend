@@ -16,7 +16,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- CSS -->
-  <link rel="stylesheet" href="./css/app.css?v=5000" />
+  <link rel="stylesheet" href="./css/app.css?v=5001" />
 </head>
 
 <body>
@@ -28,20 +28,21 @@
       <div class="personaBox">
         <div class="persona-title">Caynana Modunu Seç</div>
 
+        <!-- ✅ KİLİT KALKTI: locked class yok, lock ikon yok -->
         <div class="persona-opt selected" data-persona="normal">
           <span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i>
         </div>
-        <div class="persona-opt locked" data-persona="sevecen">
-          <span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-lock"></i>
+        <div class="persona-opt" data-persona="sevecen">
+          <span>🥰 Anne Tadında Kaynana</span>
         </div>
-        <div class="persona-opt locked" data-persona="kizgin">
-          <span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-lock"></i>
+        <div class="persona-opt" data-persona="kizgin">
+          <span>😠 Kaynana Gibi Kaynana</span>
         </div>
-        <div class="persona-opt locked" data-persona="huysuz">
-          <span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-lock"></i>
+        <div class="persona-opt" data-persona="huysuz">
+          <span>🤕 Bir Ayağı Çukurda Kaynana</span>
         </div>
-        <div class="persona-opt locked" data-persona="itirazci">
-          <span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-lock"></i>
+        <div class="persona-opt" data-persona="itirazci">
+          <span>😤 Herşeye Muhalif Kaynana</span>
         </div>
 
         <div class="persona-close" id="personaClose">Kapat</div>
@@ -105,6 +106,7 @@
     <!-- Topbar -->
     <div id="topbar">
       <div class="topbarGlass">
+        <!-- Not: swipe/doubletap mod geçişi index'te değil, main.js içinden çalışır -->
         <div class="brand-wrap" id="brandTap" title="Mod değiştir (çift tık / swipe)">
           <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
           <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
@@ -232,6 +234,6 @@
   <!-- Tek file input (kamera için) -->
   <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-  <script type="module" src="./js/main.js?v=5000"></script>
+  <script type="module" src="./js/main.js?v=5001"></script>
 </body>
 </html>
