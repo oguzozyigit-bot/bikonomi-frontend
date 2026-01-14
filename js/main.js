@@ -1,7 +1,9 @@
-// CAYNANA WEB - main.js (FINAL v7001 - Premium Design)
+// CAYNANA WEB - main.js (FINAL v7002)
 // ✅ Tek dosya, çakışma yok.
-// ✅ "Caynana Yıldızları" kart tasarımı yenilendi (Premium Look).
-// ✅ Tüm fonksiyonlar korundu.
+// ✅ Giriş yoksa: chat yok, mod yok, persona yok, kamera/mic yok.
+// ✅ Giriş varsa: tüm modlar + persona serbest.
+// ✅ Shopping: TEK SÜTUN premium kart + "Caynana Yıldızları" (puan/sıra yok).
+// ✅ PC: dblclick, Mobil: double-tap (çift tık) + swipe.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -11,7 +13,7 @@ const NOTIF_URL = `${BASE_DOMAIN}/api/notifications`;
 const PROFILE_ME_URL = `${BASE_DOMAIN}/api/profile/me`;
 
 const GOOGLE_CLIENT_ID =
-  "1030744341756-bo7iqng4lftnmcm4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
+  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
 
 const TOKEN_KEY = "caynana_token";
 
@@ -28,7 +30,7 @@ export function authHeaders() {
 }
 
 // -------------------------
-// GLOBAL FAILSAFE
+// GLOBAL FAILSAFE (JS patlarsa siyah ekran yerine kutu)
 // -------------------------
 window.addEventListener("error", (e) => {
   try {
@@ -276,7 +278,19 @@ async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") 
 }
 
 // -------------------------
-// STYLE injection (PREMIUM TASARIM - CSS)
+// Drawer
+// -------------------------
+function openDrawer() {
+  if (drawerMask) drawerMask.classList.add("show");
+  if (drawer) drawer.classList.add("open");
+}
+function closeDrawer() {
+  if (drawerMask) drawerMask.classList.remove("show");
+  if (drawer) drawer.classList.remove("open");
+}
+
+// -------------------------
+// Style injection (Premium Shopping Cards)
 // -------------------------
 function ensureShoppingStyles() {
   if (document.getElementById("caynanaShopStyles")) return;
@@ -284,209 +298,172 @@ function ensureShoppingStyles() {
   const s = document.createElement("style");
   s.id = "caynanaShopStyles";
   s.textContent = `
-  /* Animasyon Tanımı */
   @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    from { opacity: 0; transform: translateY(18px) scale(0.99); }
     to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   .shopWrap {
-    margin-top: 16px;
+    margin-top: 14px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding-bottom: 20px;
+    gap: 14px;
+    padding-bottom: 18px;
   }
 
-  /* KART GÖVDESİ */
   .shopCard {
     background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.04);
-    border-radius: 24px;
-    position: relative;
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 22px;
     overflow: hidden;
-    box-shadow: 
-      0 10px 40px -10px rgba(0,0,0,0.08),
-      0 0 0 1px rgba(255,255,255,0.8) inset;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  }
-  
-  .shopCard:active {
-    transform: scale(0.985);
+    position: relative;
+    box-shadow:
+      0 14px 34px rgba(0,0,0,0.14),
+      0 0 0 1px rgba(255,255,255,0.65) inset;
+    animation: slideUpFade 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* ARKADAKİ GLOW EFEKTİ */
   .shopGlow {
     position: absolute;
-    top: -50px; right: -50px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(255,179,0,0.15) 0%, rgba(255,255,255,0) 70%);
-    filter: blur(40px);
-    opacity: 0.8;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    filter: blur(44px);
+    opacity: .9;
     pointer-events: none;
     z-index: 0;
   }
 
-  /* ÜST KISIM (Resim + Başlık) */
   .shopTop {
     display: flex;
-    gap: 16px;
-    align-items: stretch;
-    padding: 16px;
+    gap: 14px;
+    padding: 14px;
     position: relative;
     z-index: 1;
+    align-items: center;
   }
 
-  /* RESİM KUTUSU */
   .shopImgBox {
-    width: 100px;
-    min-width: 100px;
-    height: 100px;
-    border-radius: 20px;
+    width: 110px;
+    min-width: 110px;
+    height: 110px;
+    border-radius: 18px;
     background: #fff;
     border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.08);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.04);
   }
-  
   .shopImgBox img {
-    width: 90%;
-    height: 90%;
+    width: 92%;
+    height: 92%;
     object-fit: contain;
-    transition: transform 0.3s ease;
-  }
-  
-  .shopCard:active .shopImgBox img {
-    transform: scale(1.05);
   }
 
-  .shopMeta {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
+  .shopMeta { flex: 1; min-width: 0; }
   .shopTitle {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    font-weight: 800;
-    color: #1a1a1a;
+    font-weight: 950;
+    color: #151515;
     font-size: 15px;
-    line-height: 1.35;
-    margin-bottom: 4px;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    letter-spacing: -0.01em;
   }
 
   .shopPrice {
+    margin-top: 6px;
     font-size: 18px;
-    font-weight: 900;
+    font-weight: 1000;
     color: var(--primary, #00C897);
-    margin-top: 4px;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.6px;
   }
 
-  /* ROZETLER */
   .shopBadges {
+    margin-top: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 10px;
     flex-wrap: wrap;
   }
 
   .starBadge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px 4px 4px;
-    border-radius: 99px;
-    background: #f9f9f9;
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.88);
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+    backdrop-filter: blur(10px);
   }
 
   .starPill {
-    width: 24px; 
-    height: 24px;
-    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
-    font-size: 12px;
-    font-weight: bold;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    font-size: 14px;
+    font-weight: 1000;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.18);
   }
 
-  .starBadge > span:nth-child(2) {
-    font-weight: 700;
+  .starLabel {
+    font-weight: 1000;
     font-size: 11px;
-    color: #444;
+    color: #2b2b2b;
+    letter-spacing: .3px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .stars {
-    color: #FFB300;
-    font-size: 12px;
-    margin-left: 2px;
-    letter-spacing: -1px;
+    white-space: nowrap;
   }
 
-  /* CAYNANA'NIN NOTU */
+  .stars {
+    font-weight: 1000;
+    font-size: 12px;
+    letter-spacing: -1px;
+    color: #FFB300;
+    white-space: nowrap;
+  }
+
   .shopWhy {
-    margin: 0 16px 16px 16px;
-    padding: 12px 16px;
-    border-radius: 16px;
+    margin: 0 14px 14px 14px;
+    padding: 12px 14px;
+    border-radius: 18px;
     background: #FFFBF0;
-    border: 1px solid rgba(255, 179, 0, 0.15);
-    border-left: 4px solid #FFB300;
-    font-weight: 600;
+    border: 1px solid rgba(255,179,0,0.14);
+    border-left: 5px solid #FFB300;
+    font-weight: 850;
     font-size: 13px;
-    line-height: 1.5;
-    color: #5D4037;
+    line-height: 1.45;
+    color: #4e3a2f;
     position: relative;
     z-index: 1;
   }
 
-  /* BUTON */
   .shopBtn {
-    margin: 0 16px 16px 16px;
+    margin: 0 14px 14px 14px;
+    height: 50px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     text-decoration: none;
-    height: 50px;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--primary, #333), #000);
     color: #fff;
-    font-weight: 700;
-    font-size: 14px;
-    box-shadow: 0 8px 20px -6px rgba(0,0,0,0.3);
-    transition: all 0.2s ease;
+    font-weight: 1000;
+    background: linear-gradient(135deg, var(--primary, #00C897), #111);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.20);
     position: relative;
     z-index: 1;
   }
-  
-  .shopBtn:hover {
-    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.4);
-    transform: translateY(-1px);
-  }
-  
-  .shopBtn:active {
-    transform: translateY(1px);
-    box-shadow: 0 4px 10px -4px rgba(0,0,0,0.3);
-  }
+  .shopBtn:active { transform: scale(.99); }
   `;
   document.head.appendChild(s);
 }
@@ -595,12 +572,13 @@ function switchMode(modeKey) {
 }
 
 // -------------------------
-// Swipe + dblclick
+// Swipe + Double Tap (mobil) + dblclick (PC)
 // -------------------------
 function bindSwipeAndDoubleTap() {
   const area = mainEl || $("main");
   if (!area) return;
 
+  // swipe
   let sx = 0, sy = 0, active = false;
 
   area.addEventListener("pointerdown", (e) => {
@@ -626,7 +604,7 @@ function bindSwipeAndDoubleTap() {
     switchMode(next);
   }, { passive:true });
 
-  // ✅ gerçek çift tık
+  // PC dblclick
   if (brandTap) {
     brandTap.addEventListener("dblclick", (e) => {
       e.preventDefault();
@@ -636,13 +614,35 @@ function bindSwipeAndDoubleTap() {
       switchMode(next);
     });
   }
-}
 
-// -------------------------
-// Drawer
-// -------------------------
-function openDrawer() { if (drawerMask) drawerMask.classList.add("show"); if (drawer) drawer.classList.add("open"); }
-function closeDrawer() { if (drawerMask) drawerMask.classList.remove("show"); if (drawer) drawer.classList.remove("open"); }
+  // Mobil double-tap
+  if (brandTap) {
+    let lastTap = 0;
+    let lastX = 0, lastY = 0;
+
+    brandTap.addEventListener("pointerup", (e) => {
+      const now = Date.now();
+      const dx = Math.abs((e.clientX || 0) - lastX);
+      const dy = Math.abs((e.clientY || 0) - lastY);
+
+      const isQuick = (now - lastTap) < 320;
+      const isSameSpot = dx < 18 && dy < 18;
+
+      if (isQuick && isSameSpot) {
+        if (!getToken()) { requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım."); return; }
+        const idx = MODE_KEYS.indexOf(currentMode);
+        const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
+        switchMode(next);
+        lastTap = 0;
+        return;
+      }
+
+      lastTap = now;
+      lastX = e.clientX || 0;
+      lastY = e.clientY || 0;
+    }, { passive:true });
+  }
+}
 
 // -------------------------
 // Profile/Plan
@@ -754,7 +754,7 @@ function ensureGoogleButton() {
   });
 }
 
-// email auth
+// email auth (opsiyonel)
 let authMode = "login";
 async function handleAuthSubmit() {
   const email = (authEmail?.value || "").trim();
@@ -786,7 +786,7 @@ async function handleAuthSubmit() {
 }
 
 // -------------------------
-// Notifications
+// Notifications (tam fonksiyon)
 // -------------------------
 async function openNotifications() {
   showModal(notifModal);
@@ -884,6 +884,7 @@ function resetModalOnly() {
   hideModal(photoModal);
   if (fileEl) fileEl.value = "";
 }
+
 if (fileEl) {
   fileEl.addEventListener("change", async (e) => {
     const f = e.target.files?.[0];
@@ -993,7 +994,7 @@ async function playAudio(text, btn) {
 }
 
 // -------------------------
-// SHOPPING
+// SHOPPING: Caynana Yıldızları (puan/sıra yok)
 // -------------------------
 function normStr(x) { return (x == null ? "" : String(x)).trim(); }
 function pickUrl(p) { return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
@@ -1018,30 +1019,26 @@ function buildWhyText(p, idx) {
   if (!hints.length) hints.push("fiyat/performans dengesi");
 
   const variants = [
-    `Evladım bunu öne aldım çünkü ${hints[0]} tarafı daha dengeli duruyor. Bir de satıcı yorumlarına göz at, sonra “keşke” demeyelim.`,
-    `Şuna “temiz tercih” derim: ${hints[0]} iyi görünüyor. Ölçünü ve kullanım yerini yazarsan daha da nokta atışı yaparım.`,
-    `Bu seçenek ${hints[0]} açısından daha güven veriyor. Aşırı ucuzun peşine düşme; dayanım önemli.`,
-    `Bunu alternatif diye koydum: ${hints[0]} fena değil. Ama karar vermeden önce ölçü ve kurulumu kontrol et.`,
+    `Evladım bunu öne aldım çünkü ${hints[0]} tarafı daha temiz duruyor. Ölçünü yazarsan daha da nokta atışı seçeriz.`,
+    `Şuna “temiz tercih” derim: ${hints[0]} iyi. Satıcı yorumlarına bir bak, sonra “keşke” demeyelim.`,
+    `Bu seçenek ${hints[0]} açısından daha güven veriyor. Aşırı ucuzun peşine düşme, dayanım önemli.`,
+    `Bunu alternatif diye koydum: ${hints[0]} fena değil. Kurulum/yerleşimi kontrol edersen tadından yenmez.`,
   ];
   return variants[idx % variants.length];
 }
 
 function starPackByIndex(i) {
-  // 0->5 yıldız, 1->4, 2->3, 3->2, 4+->rozet yok
   if (i === 0) return { stars: 5, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#FFB300,#FF6A00)" };
   if (i === 1) return { stars: 4, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#00C897,#00B3FF)" };
   if (i === 2) return { stars: 3, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#8B5CF6,#FF4FD8)" };
   if (i === 3) return { stars: 2, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#111827,#6B7280)" };
   return null;
 }
-
-function starsText(n) {
-  return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
-}
+function starsText(n) { return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n); }
 
 function renderShoppingCards(products) {
   if (!chatContainer) return;
-  ensureShoppingStyles(); // ✅ PREMIUM STİL BURADA YÜKLENİR
+  ensureShoppingStyles();
 
   const wrap = document.createElement("div");
   wrap.className = "shopWrap";
@@ -1050,34 +1047,30 @@ function renderShoppingCards(products) {
     const url = pickUrl(p);
     const title = pickTitle(p);
     const img = pickImg(p);
-    const price = pickPrice(p);
-
+    const price = pickPrice(p); // gelirse göster, gelmezse hiç yazma
     const why = buildWhyText(p, i);
     const badge = starPackByIndex(i);
 
     const card = document.createElement("div");
     card.className = "shopCard";
 
-    // glow efekti
     const glow = document.createElement("div");
     glow.className = "shopGlow";
-    // Badge yoksa varsayılan sarı glow
-    if (!badge) glow.style.background = "radial-gradient(circle, rgba(255,179,0,0.1) 0%, rgba(255,255,255,0) 70%)";
+    glow.style.background = badge
+      ? `radial-gradient(circle, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 55%), ${badge.grad}`
+      : "radial-gradient(circle, rgba(255,179,0,0.18) 0%, rgba(255,255,255,0) 70%)";
     card.appendChild(glow);
 
-    // görsel
     const imgBox = document.createElement("div");
     imgBox.className = "shopImgBox";
     if (img) {
       const im = document.createElement("img");
       im.src = img;
       im.alt = "img";
-      im.onerror = () => {
-        imgBox.innerHTML = `<div style="font-weight:700;color:#ccc;font-size:10px;">Görsel Yok</div>`;
-      };
+      im.onerror = () => { imgBox.innerHTML = `<div style="font-weight:900;color:#777;font-size:12px;">Görsel yok</div>`; };
       imgBox.appendChild(im);
     } else {
-      imgBox.innerHTML = `<div style="font-weight:700;color:#ccc;font-size:10px;">Görsel Yok</div>`;
+      imgBox.innerHTML = `<div style="font-weight:900;color:#777;font-size:12px;">Görsel yok</div>`;
     }
 
     const meta = document.createElement("div");
@@ -1087,7 +1080,6 @@ function renderShoppingCards(products) {
       ${price ? `<div class="shopPrice">${escapeHtml(price)}</div>` : ``}
     `;
 
-    // rozet alanı
     const badges = document.createElement("div");
     badges.className = "shopBadges";
     if (badge) {
@@ -1095,7 +1087,7 @@ function renderShoppingCards(products) {
       b.className = "starBadge";
       b.innerHTML = `
         <span class="starPill" style="background:${badge.grad}">★</span>
-        <span>${escapeHtml(badge.label)}</span>
+        <span class="starLabel">${escapeHtml(badge.label)}</span>
         <span class="stars">${escapeHtml(starsText(badge.stars))}</span>
       `;
       badges.appendChild(b);
@@ -1118,12 +1110,12 @@ function renderShoppingCards(products) {
 
     if (url) {
       btn.href = url;
-      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> İncele & Satın Al`;
+      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Caynana Öneriyor — Ürüne Git`;
     } else {
       btn.href = "#";
-      btn.style.opacity = "0.6";
+      btn.style.opacity = "0.55";
       btn.style.pointerEvents = "none";
-      btn.textContent = "Link Yok";
+      btn.textContent = "Link yok (kaynak gelmedi)";
     }
 
     card.appendChild(top);
@@ -1196,7 +1188,7 @@ async function send() {
 }
 
 // -------------------------
-// Events
+// Persona UI lock/unlock + Events
 // -------------------------
 function bindEvents() {
   // drawer
@@ -1215,7 +1207,6 @@ function bindEvents() {
   if (personaModal) personaModal.addEventListener("click", (e) => {
     if (e.target === personaModal) hideModal(personaModal);
   });
-
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     opt.addEventListener("click", () => {
       if (!getToken()) return requireLogin("Evladım, kaynana modları için önce giriş yap.");
@@ -1226,7 +1217,7 @@ function bindEvents() {
     });
   });
 
-  // auth open
+  // auth modal open
   if (accountBtn) {
     accountBtn.onclick = () => {
       showModal(authModal);
@@ -1255,6 +1246,7 @@ function bindEvents() {
   }
   if (authSubmit) authSubmit.onclick = handleAuthSubmit;
 
+  // logout
   if (authLogout) {
     authLogout.onclick = () => {
       setToken("");
@@ -1299,7 +1291,6 @@ function bindEvents() {
   if (camBtn) camBtn.onclick = openCamera;
   if (falCamBtn) falCamBtn.onclick = openFalCamera;
   if (micBtn) micBtn.onclick = startMic;
-
   if (textInput) textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
   if (sendBtn) sendBtn.onclick = send;
 }
