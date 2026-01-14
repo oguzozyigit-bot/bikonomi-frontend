@@ -1,11 +1,11 @@
-// CAYNANA WEB - main.js (SAFE v5004 - FULL FIXED)
-// Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
+// CAYNANA WEB - main.js (SAFE v5004 - FULL)
+// Tek dosya, çakışma yok.
 // KURALLAR:
 // 1) Giriş yoksa: chat gönderme yok, mod değişimi yok, persona yok, kamera/mic yok.
 // 2) Giriş varsa: tüm modlar + persona serbest.
+// 3) Shopping: AI yazısı + ürün kartları (ALTIN/GÜMÜŞ/BRONZ) + farklı “neden önerdim” metni.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
-
 const API_URL = `${BASE_DOMAIN}/api/chat`;
 const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
@@ -17,7 +17,6 @@ const GOOGLE_CLIENT_ID =
 
 const TOKEN_KEY = "caynana_token";
 
-// -------------------- TOKEN --------------------
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || "";
 }
@@ -30,7 +29,7 @@ export function authHeaders() {
   return t ? { Authorization: "Bearer " + t } : {};
 }
 
-// -------------------- STATE --------------------
+// ---- STATE ----
 let sessionId = "sess_" + Math.random().toString(36).slice(2, 10);
 let pendingImage = null;
 let currentAudio = null;
@@ -42,6 +41,7 @@ let currentPersona = "normal";
 let currentPlan = "free";
 export const IS_ALTIN = () => (currentPlan || "free").toLowerCase() === "pro";
 
+// fal
 let falImages = [];
 const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
 
@@ -49,7 +49,10 @@ if (window.marked) marked.setOptions({ mangle: false, headerIds: false });
 
 const $ = (id) => document.getElementById(id);
 
-// -------------------- DOM --------------------
+// ---- DOM ----
+const appEl = $("app");
+const mainEl = $("main");
+
 const heroImage = $("heroImage");
 const heroContent = $("heroContent");
 const heroTitle = $("heroTitle");
@@ -59,7 +62,6 @@ const suggestionText = $("suggestionText");
 const chatContainer = $("chatContainer");
 const textInput = $("text");
 const sendBtn = $("sendBtn");
-
 const dock = $("dock");
 const fileEl = $("fileInput");
 
@@ -128,7 +130,7 @@ const oz1 = $("ozLine1");
 const oz2 = $("ozLine2");
 const oz3 = $("ozLine3");
 
-// -------------------- UI HELPERS --------------------
+// ---- UI helpers ----
 function showModal(el) {
   if (el) el.classList.add("show");
 }
@@ -136,12 +138,13 @@ function hideModal(el) {
   if (el) el.classList.remove("show");
 }
 function setAuthStatus(msg) {
-  if (authStatus) authStatus.textContent = msg || "";
+  if (authStatus) authStatus.textContent = msg;
 }
 function showAuthError(err) {
   const m = typeof err === "string" ? err : err?.message || "Hata";
   if (authStatus) authStatus.textContent = "Hata: " + m;
 }
+
 export function escapeHtml(s) {
   return (s || "").replace(/[&<>"']/g, (m) => ({
     "&": "&amp;",
@@ -165,7 +168,7 @@ function scrollToBottom(force = false) {
 }
 window.addEventListener("resize", () => scrollToBottom(true));
 
-async function typeWriterEffect(el, text, speed = 20) {
+async function typeWriterEffect(el, text, speed = 22) {
   return new Promise((resolve) => {
     let i = 0;
     el.innerHTML = "";
@@ -190,7 +193,7 @@ function assetUrl(relPath) {
   return new URL(`../${relPath}`, import.meta.url).href;
 }
 
-// -------------------- SAFE FETCH --------------------
+// ---- SAFE FETCH ----
 async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
@@ -235,7 +238,10 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
       err.code = "TIMEOUT";
       throw err;
     }
-    if ((e && e.message === "Failed to fetch") || /failed to fetch/i.test(String(e?.message || ""))) {
+    if (
+      (e && e.message === "Failed to fetch") ||
+      /failed to fetch/i.test(String(e?.message || ""))
+    ) {
       const err = new Error("Sunucuya erişemedim (CORS / ağ / SSL).");
       err.code = "FAILED_FETCH";
       throw err;
@@ -246,96 +252,20 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   }
 }
 
-// -------------------- SHOPPING STYLE (JS ile <style>) --------------------
-function injectShoppingStyles() {
-  if (document.getElementById("caynanaShoppingStyle")) return;
-  const style = document.createElement("style");
-  style.id = "caynanaShoppingStyle";
-  style.textContent = `
-    .cards{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:12px;
-      padding-bottom:4px;
-    }
-    .card{
-      background:#fff;
-      border:1px solid rgba(0,0,0,.08);
-      border-radius:14px;
-      overflow:hidden;
-      box-shadow:0 6px 18px rgba(0,0,0,.15);
-      display:flex;
-      flex-direction:column;
-      min-height:220px;
-    }
-    .card img{
-      width:100%;
-      height:120px;
-      object-fit:contain;
-      background:#f8f8f8;
-      border-bottom:1px solid rgba(0,0,0,.06);
-      padding:6px;
-    }
-    .cardBody{ padding:10px; display:flex; flex-direction:column; gap:6px; flex:1; }
-    .card .title{
-      font-size:11px;
-      font-weight:900;
-      color:#111;
-      line-height:1.25;
-      max-height:30px;
-      overflow:hidden;
-    }
-    .card .price{
-      font-size:14px;
-      font-weight:1000;
-      color:var(--primary);
-    }
-    .card .score{
-      font-size:11px;
-      font-weight:900;
-      color:#444;
-    }
-    .card-why{
-      font-size:11px;
-      font-weight:800;
-      color:#333;
-      line-height:1.3;
-      background:#f4f4f4;
-      border-radius:12px;
-      padding:8px 10px;
-    }
-    .btnLink{
-      margin-top:auto;
-      display:block;
-      text-align:center;
-      background:#111;
-      color:#fff !important;
-      padding:9px;
-      border-radius:10px;
-      text-decoration:none;
-      font-size:11px;
-      font-weight:1000;
-    }
-    .btnLink:active{ transform:scale(.98); }
-  `;
-  document.head.appendChild(style);
-}
-
-// -------------------- LOGIN GATE --------------------
+// ---- LOGIN GATE ----
 async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") {
   await addBubble("ai", reasonText, false, "");
   showModal(authModal);
   setTimeout(ensureGoogleButton, 120);
 }
 
-// -------------------- PAGES --------------------
+// ---- Pages ----
 async function openPageFromFile(title, path) {
   try {
     const r = await fetch(path, { cache: "no-store" });
     const html = await r.text();
     showPage(title, html);
-  } catch (e) {
+  } catch {
     showPage(title, `<div style="font-weight:900;color:#b00;">Sayfa yüklenemedi</div>`);
   }
 }
@@ -351,7 +281,7 @@ function hidePage() {
 }
 window.App = { escapeHtml, showPage };
 
-// -------------------- MODES --------------------
+// ---- Modes ----
 const MODES = {
   chat: {
     label: "Sohbet",
@@ -414,6 +344,7 @@ const MODES = {
     sugg: "Ekmek değil, yeşillik ye.",
   },
 };
+
 const MODE_KEYS = Object.keys(MODES);
 
 function applyFooterLines(activeKey) {
@@ -500,17 +431,17 @@ function switchMode(modeKey) {
   }
 }
 
-// -------------------- SWIPE + DOUBLE TAP (sadece hero açıkken) --------------------
+// ---- SWIPE + DOUBLE TAP ----
 function bindSwipe() {
-  const area = $("main");
+  const area = mainEl || $("main");
   if (!area) return;
 
   let sx = 0, sy = 0, active = false;
 
   area.addEventListener("pointerdown", (e) => {
-    // sadece HERO görünürken swipe
-    const heroVisible = heroContent && heroContent.style.display !== "none";
-    if (!heroVisible) { active = false; return; }
+    // chat görünürken swipe yakalama: scroll ile çakışmasın
+    const chatVisible = chatContainer && chatContainer.style.display === "block";
+    if (chatVisible) { active = false; return; }
 
     active = true;
     sx = e.clientX;
@@ -554,7 +485,7 @@ function bindSwipe() {
   }
 }
 
-// -------------------- DRAWER --------------------
+// ---- Drawer ----
 function openDrawer() {
   if (drawerMask) drawerMask.classList.add("show");
   if (drawer) drawer.classList.add("open");
@@ -564,9 +495,12 @@ function closeDrawer() {
   if (drawer) drawer.classList.remove("open");
 }
 
-// -------------------- PLAN + PROFILE --------------------
+// ---- Plan + Drawer profile ----
 async function pullPlanFromBackend() {
-  if (!getToken()) { currentPlan = "free"; return; }
+  if (!getToken()) {
+    currentPlan = "free";
+    return;
+  }
   try {
     const r = await apiFetch(`${BASE_DOMAIN}/api/memory/get`, {
       method: "GET",
@@ -582,14 +516,15 @@ async function pullPlanFromBackend() {
 
 const FALLBACK_AVATAR =
   "data:image/svg+xml;charset=utf-8," +
-  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" rx="20" fill="#222"/><text x="40" y="50" font-size="26" text-anchor="middle" fill="#fff" font-family="Arial">👵</text></svg>`);
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" rx="20" fill="#222"/><text x="40" y="50" font-size="26" text-anchor="middle" fill="#fff" font-family="Arial">👵</text></svg>`
+  );
 
 async function pullProfileToDrawer() {
   if (!getToken()) return;
   try {
     const r = await apiFetch(PROFILE_ME_URL, { method: "GET", headers: { ...authHeaders() } });
     const me = r.data || {};
-
     const display = (me.display_name || me.email || "Üye").trim();
     const cn = me.caynana_id || "CN-????";
     const plan = (me.plan || currentPlan || "free").toUpperCase();
@@ -603,14 +538,19 @@ async function pullProfileToDrawer() {
       dpAvatar.src = avatar || FALLBACK_AVATAR;
       dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
     }
-  } catch { /* sessiz */ }
+
+    // persona kilitlerini kaldır (login olduysa)
+    unlockAllPersonasUI(true);
+  } catch {
+    // sessiz
+  }
 }
 
 function setDrawerProfileUI() {
   const logged = !!getToken();
   if (dpName) dpName.textContent = logged ? "Üye" : "Misafir";
   if (dpPlan) dpPlan.textContent = (currentPlan || "free").toUpperCase();
-  if (dpCN) dpCN.textContent = logged ? "CYN-…" : "CN-????";
+  if (dpCN) dpCN.textContent = logged ? (dpCN.textContent || "CN-????") : "CN-????";
   if (dpAvatar) {
     dpAvatar.src = FALLBACK_AVATAR;
     dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
@@ -620,19 +560,18 @@ function setDrawerProfileUI() {
 function updateLoginUI() {
   const logged = !!getToken();
   if (safeLogoutBtn) safeLogoutBtn.style.display = logged ? "flex" : "none";
+  unlockAllPersonasUI(logged);
 }
 
-// -------------------- PERSONA KİLİDİ KALDIR --------------------
-function unlockPersonasUI() {
+function unlockAllPersonasUI(isLogged) {
   const opts = document.querySelectorAll("#personaModal .persona-opt");
   opts.forEach((opt) => {
-    opt.classList.remove("locked");
-    const lockIcon = opt.querySelector(".fa-lock");
-    if (lockIcon) lockIcon.style.display = "none";
+    if (isLogged) opt.classList.remove("locked");
+    else opt.classList.add("locked");
   });
 }
 
-// -------------------- GOOGLE GSI --------------------
+// ---- Google GSI ----
 function ensureGoogleButton() {
   if (!googleBtn) return;
   googleBtn.innerHTML = "";
@@ -654,7 +593,6 @@ function ensureGoogleButton() {
         });
         const j = r.data || {};
         if (!j.token) throw new Error(j.detail || "Google giriş başarısız");
-
         setToken(j.token);
 
         setAuthStatus("Bağlandı ✅");
@@ -663,9 +601,7 @@ function ensureGoogleButton() {
         updateLoginUI();
         await pullProfileToDrawer();
 
-        unlockPersonasUI(); // ✅ kilit kalksın
-
-        setTimeout(() => hideModal(authModal), 250);
+        setTimeout(() => hideModal(authModal), 350);
       } catch (e) {
         showAuthError(e);
       }
@@ -680,7 +616,7 @@ function ensureGoogleButton() {
   });
 }
 
-// -------------------- EMAIL AUTH --------------------
+// ---- Email Auth ----
 let authMode = "login";
 async function handleAuthSubmit() {
   const email = (authEmail?.value || "").trim();
@@ -705,15 +641,13 @@ async function handleAuthSubmit() {
     updateLoginUI();
     await pullProfileToDrawer();
 
-    unlockPersonasUI(); // ✅ kilit kalksın
-
-    setTimeout(() => hideModal(authModal), 250);
+    setTimeout(() => hideModal(authModal), 350);
   } catch (e) {
     showAuthError(e);
   }
 }
 
-// -------------------- NOTIFICATIONS --------------------
+// ---- Notifications ----
 async function openNotifications() {
   showModal(notifModal);
   if (!notifList) return;
@@ -741,24 +675,29 @@ async function openNotifications() {
       return;
     }
 
-    notifList.innerHTML = items.map((it) => {
-      const title = it.title || "Bildirim";
-      const body = it.text || it.body || it.message || "";
-      return `
-        <div class="notifItem">
-          <div class="notifItemTitle">${escapeHtml(title)}</div>
-          <div class="notifItemBody">${escapeHtml(body)}</div>
-        </div>
-      `;
-    }).join("");
+    notifList.innerHTML = items
+      .map((it) => {
+        const title = it.title || "Bildirim";
+        const body = it.text || it.body || it.message || "";
+        return `
+          <div class="notifItem">
+            <div class="notifItemTitle">${escapeHtml(title)}</div>
+            <div class="notifItemBody">${escapeHtml(body)}</div>
+          </div>
+        `;
+      })
+      .join("");
   } catch (e) {
     notifList.innerHTML = `<div style="font-weight:900;color:#b00;">${escapeHtml(e.message || "Hata")}</div>`;
   }
 }
 
-// -------------------- MIC / CAMERA --------------------
+// ---- Mic ----
 function startMic() {
-  if (!getToken()) { requireLogin("Evladım, mikrofon için önce giriş yap."); return; }
+  if (!getToken()) {
+    requireLogin("Evladım, mikrofon için önce giriş yap.");
+    return;
+  }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return alert("Tarayıcı desteklemiyor");
   const r = new SR();
@@ -770,13 +709,7 @@ function startMic() {
   r.start();
 }
 
-function openCamera() {
-  if (!getToken()) { requireLogin("Evladım, fotoğraf göndermek için önce giriş yap."); return; }
-  if (fileEl) { fileEl.value = ""; fileEl.click(); }
-}
-function openFalCamera() { openCamera(); }
-
-// -------------------- FAL UI --------------------
+// ---- Fal UI ----
 function setFalStepUI() {
   if (!falStepText || !falStepSub) return;
 
@@ -800,15 +733,29 @@ function resetFalCapture() {
 }
 async function falCheckOneImage(dataUrl) {
   try {
-    const r = await apiFetch(FAL_CHECK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image: dataUrl }),
-    }, 25000);
+    const r = await apiFetch(
+      FAL_CHECK_URL,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ image: dataUrl }) },
+      25000
+    );
     return r.data || { ok: false, reason: "Kontrol edilemedi." };
   } catch {
     return { ok: false, reason: "Kontrol edemedim, tekrar dene." };
   }
+}
+
+function openCamera() {
+  if (!getToken()) {
+    requireLogin("Evladım, fotoğraf göndermek için önce giriş yap.");
+    return;
+  }
+  if (fileEl) {
+    fileEl.value = "";
+    fileEl.click();
+  }
+}
+function openFalCamera() {
+  openCamera();
 }
 
 function resetModalOnly() {
@@ -868,7 +815,7 @@ if (photoOkBtn) {
   };
 }
 
-// -------------------- BUBBLES + AUDIO --------------------
+// ---- Bubbles + Audio ----
 async function addBubble(role, text, isLoader = false, speech = "") {
   if (!chatContainer || !heroContent) return null;
 
@@ -910,9 +857,15 @@ if (chatContainer) {
 }
 
 async function playAudio(text, btn) {
-  if (!getToken()) { requireLogin("Evladım, ses için önce giriş yap."); return; }
+  if (!getToken()) {
+    requireLogin("Evladım, ses için önce giriş yap.");
+    return;
+  }
 
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
 
   const old = btn.innerHTML;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
@@ -924,7 +877,6 @@ async function playAudio(text, btn) {
       body: JSON.stringify({ text, persona: currentPersona }),
     });
     if (!res.ok) throw new Error("TTS çalışmadı");
-
     const blob = await res.blob();
     currentAudio = new Audio(URL.createObjectURL(blob));
     currentAudio.onended = () => (btn.innerHTML = old);
@@ -935,75 +887,229 @@ async function playAudio(text, btn) {
   }
 }
 
-// -------------------- SHOPPING CARDS (EN KRİTİK) --------------------
-function normalizeWhy(p) {
-  return (
-    p.why ||
-    p.reason ||
-    p.note ||
-    (p.caynana_score >= 80 ? "Fiyat/kalite dengesi iyi, puanı yüksek." :
-     p.caynana_score >= 65 ? "Genel yorumlar iyi, fiyat bandı makul." :
-     "Bu fiyata göre idare eder, alternatife de bak.")
-  );
+// ---- Shopping Cards (premium) ----
+function injectShoppingStyles() {
+  if (document.getElementById("caynanaShoppingStyle")) return;
+  const style = document.createElement("style");
+  style.id = "caynanaShoppingStyle";
+  style.textContent = `
+    .cards{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+      padding-bottom:8px;
+    }
+    .card{
+      position:relative;
+      background:rgba(255,255,255,.98);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:16px;
+      overflow:hidden;
+      box-shadow:0 10px 26px rgba(0,0,0,.18);
+      display:flex;
+      flex-direction:column;
+      min-height:260px;
+    }
+    .cardBadge{
+      position:absolute;
+      top:10px;
+      left:0;
+      z-index:3;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:1000;
+      color:#111;
+      border-radius:0 10px 10px 0;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .badgeGold{ background:linear-gradient(90deg,#FFD54F,#FFB300); border:none; }
+    .badgeSilver{ background:linear-gradient(90deg,#E0E0E0,#BDBDBD); border:none; }
+    .badgeBronze{ background:linear-gradient(90deg,#E6B980,#C97A3A); border:none; }
+    .badgeTag{
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:3;
+      font-size:11px;
+      font-weight:1000;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.72);
+      color:#fff;
+    }
+    .card img{
+      width:100%;
+      height:130px;
+      object-fit:contain;
+      background:#fafafa;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      padding:8px;
+    }
+    .cardBody{
+      padding:10px 10px 12px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      flex:1;
+    }
+    .card .title{
+      font-size:11px;
+      font-weight:1000;
+      color:#111;
+      line-height:1.25;
+      max-height:32px;
+      overflow:hidden;
+    }
+    .row2{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card .price{
+      font-size:14px;
+      font-weight:1100;
+      color:var(--primary);
+      white-space:nowrap;
+    }
+    .scorePill{
+      font-size:11px;
+      font-weight:1100;
+      background:#111;
+      color:#fff;
+      padding:4px 8px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .card-why{
+      font-size:11px;
+      font-weight:900;
+      color:#333;
+      line-height:1.35;
+      background:#f4f4f6;
+      border-radius:12px;
+      padding:8px 10px;
+    }
+    .btnLink{
+      margin-top:auto;
+      display:block;
+      text-align:center;
+      background:#111;
+      color:#fff !important;
+      padding:10px;
+      border-radius:12px;
+      text-decoration:none;
+      font-size:11px;
+      font-weight:1100;
+      letter-spacing:.2px;
+    }
+    .btnLink:active{ transform:scale(.98); }
+  `;
+  document.head.appendChild(style);
 }
 
-function normalizePrice(p) {
-  return (
-    p.price_text ||
-    p.priceText ||
-    (typeof p.price === "number" ? `${p.price} TL` : "") ||
-    (p.price ? String(p.price) : "") ||
-    "Fiyat için tıkla"
-  );
-}
+function normalizeWhy(p, rankLabel = "") {
+  const raw = (p.why || p.reason || p.note || "").trim();
+  if (raw) return raw;
 
-function normalizeImage(p) {
-  return p.image || p.image_url || p.img || p.thumbnail || "";
-}
+  const s = Number(p.caynana_score ?? p.score ?? p.caynanaScore ?? 0) || 0;
+  const priceText = (p.price_text || p.priceText || (p.price ? String(p.price) : "") || "").trim();
+  const title = (p.title || p.name || p.product_name || "ürün").trim();
 
-function normalizeLink(p) {
-  return p.url || p.link || p.href || "#";
-}
+  const seedStr = `${title}|${priceText}|${s}`;
+  let h = 0;
+  for (let i = 0; i < seedStr.length; i++) h = (h * 31 + seedStr.charCodeAt(i)) >>> 0;
+  const pick = h % 6;
 
-function normalizeTitle(p) {
-  return p.title || p.name || p.product_name || "Ürün";
-}
+  const scoreLine =
+    s >= 85 ? "puanı yüksek, risk düşük" :
+    s >= 75 ? "genel memnuniyet iyi" :
+    s >= 60 ? "fiyat/performans fena değil" :
+              "alternatifle kıyas şart";
 
-function normalizeScore(p) {
-  const s = p.caynana_score ?? p.score ?? p.caynanaScore;
-  if (s === undefined || s === null || s === "") return "-";
-  return String(s);
+  const priceLine =
+    priceText ? `fiyatı da net (${priceText})` : "fiyatı linkten teyit et";
+
+  const rankLine = rankLabel ? `${rankLabel} seçeneği` : "öne çıkanlardan";
+
+  const templates = [
+    `Bunu ${rankLine} diye koydum; ${scoreLine}, ${priceLine}.`,
+    `Evladım bu ${rankLine}; ${scoreLine}. Bir de ${priceLine}.`,
+    `Şuna “mantıklı” derim: ${rankLine}. ${scoreLine}, ${priceLine}.`,
+    `Bu ürün ${rankLine}; ${scoreLine}. ${priceLine} — sonra ağlama 🙂`,
+    `Ben olsam bunu yukarı yazarım: ${rankLine}. ${scoreLine}, ${priceLine}.`,
+    `Kafa karıştırmasın: ${rankLine}. ${scoreLine}; ${priceLine}.`,
+  ];
+
+  return templates[pick];
 }
 
 function renderCards(items = []) {
   injectShoppingStyles();
   if (!chatContainer || !Array.isArray(items) || !items.length) return;
 
+  const prepared = items.slice(0, 6).map((p, i) => {
+    const s = Number(p.caynana_score ?? p.score ?? p.caynanaScore ?? 0);
+    return { p, i, s: isFinite(s) ? s : 0 };
+  });
+
+  prepared.sort((a, b) => (b.s - a.s) || (a.i - b.i));
+
   const wrap = document.createElement("div");
   wrap.className = "cards";
 
-  items.slice(0, 6).forEach((p) => {
-    const title = normalizeTitle(p);
-    const price = normalizePrice(p);
-    const score = normalizeScore(p);
-    const img = normalizeImage(p);
-    const link = normalizeLink(p);
-    const why = normalizeWhy(p);
+  prepared.forEach((it, idx) => {
+    const p = it.p;
+
+    const title = (p.title || p.name || p.product_name || "Ürün").trim();
+    const price =
+      (p.price_text || p.priceText ||
+        (typeof p.price === "number" ? `${p.price} TL` : "") ||
+        (p.price ? String(p.price) : "") ||
+        "Fiyat için tıkla").trim();
+
+    const scoreVal = (p.caynana_score ?? p.score ?? p.caynanaScore);
+    const scoreTxt = (scoreVal === undefined || scoreVal === null || scoreVal === "") ? "—" : String(scoreVal);
+
+    const img = (p.image || p.image_url || p.img || p.thumbnail || "").trim();
+    const link = (p.url || p.link || p.href || "#").trim();
+
+    const badge =
+      idx === 0 ? { cls: "badgeGold", label: "ALTIN ÖNERİ", icon: "🥇" } :
+      idx === 1 ? { cls: "badgeSilver", label: "GÜMÜŞ", icon: "🥈" } :
+      idx === 2 ? { cls: "badgeBronze", label: "BRONZ", icon: "🥉" } :
+                 { cls: "", label: "ÖNERİ", icon: "✨" };
+
+    const rankLabel =
+      idx === 0 ? "Altın" :
+      idx === 1 ? "Gümüş" :
+      idx === 2 ? "Bronz" : "Öneri";
+
+    const why = normalizeWhy(p, rankLabel);
 
     const card = document.createElement("div");
     card.className = "card";
-
     card.innerHTML = `
+      <div class="cardBadge ${badge.cls}">
+        <span>${badge.icon}</span><span>${badge.label}</span>
+      </div>
+      <div class="badgeTag">${idx + 1}. sıra</div>
       ${img ? `<img src="${img}" alt="${escapeHtml(title)}" />` : ``}
       <div class="cardBody">
         <div class="title">${escapeHtml(title)}</div>
-        <div class="price">${escapeHtml(price)}</div>
-        <div class="score">Caynana Puanı: <b>${escapeHtml(score)}</b></div>
+        <div class="row2">
+          <div class="price">${escapeHtml(price)}</div>
+          <div class="scorePill">Puan: ${escapeHtml(scoreTxt)}</div>
+        </div>
         <div class="card-why">👵 ${escapeHtml(why)}</div>
         <a class="btnLink" href="${link}" target="_blank" rel="noopener">İncele</a>
       </div>
     `;
-
     wrap.appendChild(card);
   });
 
@@ -1011,11 +1117,13 @@ function renderCards(items = []) {
   scrollToBottom(true);
 }
 
-// -------------------- SEND --------------------
+// ---- Send ----
 async function send() {
   if (isSending) return;
 
   if (!getToken()) {
+    isSending = false;
+    if (sendBtn) sendBtn.disabled = false;
     await requireLogin("Evladım, önce giriş yapacaksın. Üyelik olmadan sohbet yok.");
     return;
   }
@@ -1055,16 +1163,10 @@ async function send() {
     }, 25000);
 
     const data = r.data || {};
-
     const l = document.getElementById(loaderId);
     if (l) l.remove();
 
-    await addBubble(
-      "ai",
-      data.assistant_text || "Bir şey diyemedim evladım.",
-      false,
-      data.speech_text || ""
-    );
+    await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
 
     if (currentMode === "shopping" && Array.isArray(data.data) && data.data.length) {
       renderCards(data.data);
@@ -1080,27 +1182,32 @@ async function send() {
   }
 }
 
-// -------------------- EVENTS --------------------
+// ---- Events ----
 function bindEvents() {
   // drawer
   if (menuBtn) menuBtn.onclick = openDrawer;
   if (drawerClose) drawerClose.onclick = closeDrawer;
   if (drawerMask) drawerMask.onclick = closeDrawer;
 
-  // persona (giriş şart)
+  // persona
   if (personaBtn) {
     personaBtn.onclick = () => {
-      if (!getToken()) { requireLogin("Evladım, kaynana modları için önce giriş yap."); return; }
+      if (!getToken()) {
+        requireLogin("Evladım, kaynana modları için önce giriş yap.");
+        return;
+      }
       showModal(personaModal);
     };
   }
   if (personaClose) personaClose.onclick = () => hideModal(personaModal);
   if (personaModal) personaModal.addEventListener("click", (e) => { if (e.target === personaModal) hideModal(personaModal); });
 
-  // persona seçimi (kilit yok, giriş şart)
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     opt.addEventListener("click", () => {
-      if (!getToken()) { requireLogin("Evladım, kaynana modları için önce giriş yap."); return; }
+      if (!getToken()) {
+        requireLogin("Evladım, kaynana modları için önce giriş yap.");
+        return;
+      }
       document.querySelectorAll("#personaModal .persona-opt").forEach((x) => x.classList.remove("selected"));
       opt.classList.add("selected");
       currentPersona = opt.getAttribute("data-persona") || "normal";
@@ -1141,18 +1248,17 @@ function bindEvents() {
     authLogout.onclick = () => {
       setToken("");
       currentPlan = "free";
-      setDrawerProfileUI();
       updateLoginUI();
+      setDrawerProfileUI();
       setAuthStatus("Çıkış yapıldı ❌");
-      // persona kilidi geri gelsin istersen burada koyarız; şimdilik gerek yok.
     };
   }
   if (safeLogoutBtn) {
     safeLogoutBtn.onclick = () => {
       setToken("");
       currentPlan = "free";
-      setDrawerProfileUI();
       updateLoginUI();
+      setDrawerProfileUI();
       closeDrawer();
     };
   }
@@ -1180,10 +1286,8 @@ function bindEvents() {
   if (sendBtn) sendBtn.onclick = send;
 }
 
-// -------------------- INIT --------------------
+// ---- Init ----
 async function init() {
-  injectShoppingStyles();
-
   document.body.classList.remove("fal-mode");
   falImages = [];
 
@@ -1199,9 +1303,5 @@ async function init() {
   setDrawerProfileUI();
   updateLoginUI();
   await pullProfileToDrawer();
-
-  if (getToken()) {
-    unlockPersonasUI();
-  }
 }
 init();
