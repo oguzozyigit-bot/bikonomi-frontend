@@ -1,12 +1,13 @@
-/* js/main.js - (v9606 - Resim ve Modül Entegrasyonu) */
+/* js/main.js - (v9705 - DOCK EKLENDİ) */
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
 import { initAuth } from './auth.js';
 import { initChat } from './chat.js';
-import { initFal } from './fal.js';
+import { initFal } from './fal.js'; // Varsa
 import { initUi } from './ui_modals.js'; 
+import { initDock } from './dock.js'; // ✅ YENİ EKLENEN
 
-// Resim Haritası (GitHub'daki dosya isimlerine göre)
+// Resim Haritası
 const HERO_IMAGES = {
     'chat': './images/hero-chat.png',
     'fal': './images/hero-fal.png',
@@ -19,28 +20,28 @@ const HERO_IMAGES = {
     'default': './images/hero-chat.png'
 };
 
-// Resim Değiştirme Fonksiyonu
-const setHeroMode = (mode) => {
+// Resim Değiştirme Fonksiyonu (Dışarıya açıyoruz)
+export const setHeroMode = (mode) => {
     const img = document.getElementById('heroImage');
     const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['default'];
     
     if (img) {
-        console.log(`🖼️ Mod Değişiyor: ${mode} -> ${targetSrc}`);
-        // Hafif bir geçiş efekti için
+        // img.src = targetSrc; // Basit geçiş
+        // Efektli geçiş:
         img.style.opacity = '0';
         setTimeout(() => {
             img.src = targetSrc;
             img.onload = () => { img.style.opacity = '0.4'; };
-            // Resim önbellekteyse onload tetiklenmeyebilir, garanti olsun:
+            // Cache durumunda onload tetiklenmezse diye güvenlik:
             setTimeout(() => { img.style.opacity = '0.4'; }, 100);
         }, 200);
     }
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("👵 Caynana Web Başlatılıyor... (v9606 - Final)");
+    console.log("👵 Caynana Web Başlatılıyor... (v9705)");
 
-    // --- 1. BAŞLANGIÇ AYARLARI ---
+    // --- 1. GÖRSELLERİ VE METİNLERİ YÜKLE ---
     const heroTitle = document.getElementById('heroTitle');
     const heroDesc = document.getElementById('heroDesc');
     const heroImage = document.getElementById('heroImage');
@@ -59,14 +60,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- 2. MODÜLLERİ BAŞLAT ---
     try {
-        // initUi'ye resim değiştirme yetkisini veriyoruz!
         if (typeof initUi === 'function') initUi(setHeroMode);
-        
+        if (typeof initDock === 'function') initDock(); // ✅ DOCK BAŞLATILIYOR
         if (typeof initAuth === 'function') await initAuth();
         if (typeof initChat === 'function') initChat();
-        if (typeof initFal === 'function') initFal();
+        // if (typeof initFal === 'function') initFal();
         
-        console.log("✅ Sistem Aktif! Resimler bağlandı.");
+        console.log("✅ Sistem Aktif! Modüller Yerleşti.");
     } catch (error) {
         console.error("Başlatma hatası:", error);
     }
