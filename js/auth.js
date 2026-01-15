@@ -1,96 +1,65 @@
-import { AUTH_GOOGLE_URL, AUTH_LOGIN_URL, AUTH_REGISTER_URL, GOOGLE_CLIENT_ID } from "./config.js";
-import { setToken, apiMe } from "./api.js";
+/* js/auth.js
+   Kullanıcı Giriş/Çıkış İşlemleri
+*/
+import { BASE_DOMAIN } from './main.js';
 
-export function bindAuthUI(onPlanChanged){
-  const authModal = document.getElementById("authModal");
-  const btnLoginTab = document.getElementById("btnLoginTab");
-  const btnRegTab = document.getElementById("btnRegTab");
-  const authSubmit = document.getElementById("authSubmit");
-  const authClose = document.getElementById("authClose");
-  const authLogout = document.getElementById("authLogout");
-  const authStatus = document.getElementById("authStatus");
+// Mevcut kullanıcı durumu
+export let currentUser = null;
 
-  let mode = "login";
+// Başlatıcı Fonksiyon (Main.js bunu arıyor!)
+export async function initAuth() {
+    console.log("🔒 Auth Modülü Başlatılıyor...");
+    checkLoginStatus();
 
-  function setTab(m){
-    mode = m;
-    if(m==="login"){
-      btnLoginTab.classList.add("tabActive"); btnRegTab.classList.remove("tabActive");
-      authSubmit.textContent = "Giriş Yap";
+    // Giriş butonlarını dinle (Eğer sayfada varsa)
+    const loginBtn = document.getElementById('login-btn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', () => {
+            // Burada normalde modal açılır
+            console.log("Giriş butonu tıklandı");
+            // window.openLoginModal(); // UI Modals içinde tanımlıysa
+        });
+    }
+}
+
+// Kullanıcı giriş yapmış mı kontrol et
+export function checkLoginStatus() {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+        console.log("✅ Kullanıcı giriş yapmış görünüyor.");
+        document.body.classList.add("logged-in");
+        // İstersen burada /api/auth/me servisine sorup teyit edebilirsin
     } else {
-      btnRegTab.classList.add("tabActive"); btnLoginTab.classList.remove("tabActive");
-      authSubmit.textContent = "Kayıt Ol";
+        console.log("👤 Misafir kullanıcıs.");
+        document.body.classList.remove("logged-in");
     }
-  }
-
-  btnLoginTab.onclick = ()=> setTab("login");
-  btnRegTab.onclick = ()=> setTab("register");
-  authClose.onclick = ()=> authModal.style.display = "none";
-
-  authSubmit.onclick = async ()=>{
-    const email = (document.getElementById("authEmail").value || "").trim();
-    const password = (document.getElementById("authPass").value || "").trim();
-    authStatus.textContent = "İşlem yapıyorum…";
-
-    const url = (mode==="register") ? AUTH_REGISTER_URL : AUTH_LOGIN_URL;
-
-    try{
-      const r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ email, password }) });
-      const j = await r.json();
-      if(!r.ok) throw new Error(j.detail || "Hata");
-      setToken(j.token);
-      authStatus.textContent = "Bağlandı ✅";
-      const me = await apiMe();
-      onPlanChanged(me?.plan || "free");
-      setTimeout(()=> authModal.style.display="none", 400);
-    }catch(e){
-      authStatus.textContent = "Hata: " + (e.message || "Bilinmeyen");
-    }
-  };
-
-  authLogout.onclick = ()=>{
-    setToken("");
-    authStatus.textContent = "Çıkış yapıldı ❌";
-    onPlanChanged("free");
-  };
-
-  // Google button init (retry)
-  initGoogleButton((plan)=>{ onPlanChanged(plan); authStatus.textContent="Bağlandı ✅"; authModal.style.display="none"; });
 }
 
-export function openAuthModal(){
-  document.getElementById("authModal").style.display = "flex";
-}
-
-function initGoogleButton(onDone){
-  const el = document.getElementById("googleBtn");
-  if(!el) return;
-
-  const retry = (n=20)=>{
-    if(!(window.google && google.accounts && google.accounts.id)){
-      if(n>0) return setTimeout(()=>retry(n-1), 250);
-      return;
-    }
-
-    el.innerHTML = "";
-    google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID,
-      callback: async (resp)=>{
-        try{
-          const r = await fetch(AUTH_GOOGLE_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ id_token: resp.credential }) });
-          const j = await r.json();
-          if(!r.ok) throw new Error(j.detail || "Google giriş hatası");
-          setToken(j.token);
-          const me = await apiMe();
-          onDone(me?.plan || "free");
-        }catch(e){
-          document.getElementById("authStatus").textContent = "Google Hata: " + (e.message || "");
+// Giriş Yapma Fonksiyonu
+export async function login(email, password) {
+    try {
+        const res = await fetch(`${BASE_DOMAIN}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await res.json();
+        if (res.ok && data.token) {
+            localStorage.setItem("auth_token", data.token);
+            checkLoginStatus();
+            return { success: true };
+        } else {
+            return { success: false, message: data.detail || "Giriş başarısız" };
         }
-      }
-    });
+    } catch (err) {
+        console.error("Login hatası:", err);
+        return { success: false, message: "Sunucu hatası" };
+    }
+}
 
-    google.accounts.id.renderButton(el, { theme:"outline", size:"large", width:320, text:"continue_with", shape:"pill" });
-  };
-
-  retry();
+// Çıkış Yapma
+export function logout() {
+    localStorage.removeItem("auth_token");
+    location.reload();
 }
