@@ -1,13 +1,13 @@
-/* js/main.js - (v9905 - CANLI GÖRSEL + ESPİRİLİ LAFLAR) */
+/* js/main.js - (v9907 - CANLI + GARANTİ YOL + initProfile) */
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
 import { initAuth, checkLoginStatus } from './auth.js';
 import { initChat } from './chat.js';
 import { initUi, setupPersonaModal, setupNotifications } from './ui_modals.js';
-import { initProfile } from './profile.js';
+import { initProfile } from './profile.js'; // ✅ EKSİK PARÇA TAMAMLANDI
 import { initDock } from './dock.js';
 
-// --- CAYNANA ESPİRİLİ LAFLARI (Modüle Göre) ---
+/* --- CAYNANA ESPİRİLİ LAFLARI (Modüle Göre) --- */
 const MODULE_WIT = {
     'chat':     "Anlat bakalım, yine ne derdin var?",
     'fal':      "Kapat fincanı, soğut gel. Bakalım neler çıkacak...",
@@ -19,7 +19,7 @@ const MODULE_WIT = {
     'default':  "Hayırdır evladım, bir sessizlik oldu?"
 };
 
-// Resim Haritası
+/* --- RESİM YOLLARI (Basit ve Garanti) --- */
 const HERO_IMAGES = {
     'chat':     './images/hero-chat.png',
     'fal':      './images/hero-fal.png',
@@ -32,9 +32,9 @@ const HERO_IMAGES = {
     'default':  './images/hero-chat.png'
 };
 
-// --- MOD DEĞİŞTİRME FONKSİYONU (Resim + Laf) ---
+/* --- MOD DEĞİŞTİRME --- */
 export const setHeroMode = (mode) => {
-    // 1. Global modu güncelle (chat.js kullanacak)
+    // 1. Global modu güncelle
     window.currentAppMode = mode;
 
     // 2. Resmi Değiştir (Efektli)
@@ -42,20 +42,30 @@ export const setHeroMode = (mode) => {
     const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['default'];
     
     if (img) {
-        img.style.opacity = '0'; // Önce söndür
+        // Önce söndür
+        img.style.transition = 'opacity 0.2s ease';
+        img.style.opacity = '0'; 
+        
         setTimeout(() => {
             img.src = targetSrc;
-            // Yüklendiğinde eski canlılığına (0.9) getir
-            img.onload = () => { img.style.opacity = '0.9'; };
-            // Cache durumunda garanti olsun
-            setTimeout(() => { img.style.opacity = '0.9'; }, 100);
+            
+            // Yüklendiğinde TAM CANLI (1.0) yap
+            img.onload = () => { img.style.opacity = '1.0'; };
+            img.onerror = () => { 
+                console.error("Resim yüklenemedi:", targetSrc);
+                img.src = HERO_IMAGES['default']; 
+                img.style.opacity = '1.0';
+            };
+            
+            // Cache durumunda garanti tetikleyici
+            setTimeout(() => { img.style.opacity = '1.0'; }, 50);
         }, 200);
     }
 
-    // 3. Espirili Lafı Değiştir (#suggestionText)
+    // 3. Espirili Lafı Değiştir
     const suggestionText = document.getElementById('suggestionText');
     if (suggestionText) {
-        // Hafif bir yanıp sönme efekti ile metni değiştir
+        suggestionText.style.transition = 'opacity 0.2s ease';
         suggestionText.style.opacity = '0';
         setTimeout(() => {
             suggestionText.innerText = MODULE_WIT[mode] || MODULE_WIT['default'];
@@ -63,7 +73,7 @@ export const setHeroMode = (mode) => {
         }, 200);
     }
 
-    // 4. Fal Modu Kontrolü (Kamera butonu için)
+    // 4. Fal Modu Kontrolü
     if (mode === 'fal') {
         document.body.classList.add('fal-mode');
     } else {
@@ -71,23 +81,23 @@ export const setHeroMode = (mode) => {
     }
 };
 
+/* --- BAŞLATMA --- */
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("👵 Caynana Web Başlatılıyor... (v9905 - Canlı Mod)");
+    console.log("👵 Caynana Web Başlatılıyor... (v9907)");
 
-    // --- BAŞLANGIÇ AYARLARI ---
     const heroImage = document.getElementById('heroImage');
     
-    // Başlangıç resmi ve opaklığı
+    // Resim ayarları (TAM CANLI)
     if (heroImage) {
         heroImage.src = HERO_IMAGES.chat;
         heroImage.style.display = 'block';
-        heroImage.style.opacity = '0.9'; // Canlı başlangıç
+        heroImage.style.opacity = '1.0'; // <-- KARARMAYI ENGELLEYEN AYAR
     }
 
-    // Başlangıç modu ve lafı
+    // Modu başlat
     setHeroMode('chat');
 
-    // --- MODÜLLERİ BAŞLAT ---
+    // Modülleri yükle
     try {
         if (typeof initUi === 'function') initUi();
         if (typeof setupPersonaModal === 'function') setupPersonaModal();
@@ -95,10 +105,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         if (typeof initDock === 'function') initDock();
         
-        // Auth ve Profil (Sıralı)
+        // Auth ve Profil
         if (typeof initAuth === 'function') await initAuth();
         await checkLoginStatus(); 
-        if (typeof initProfile === 'function') initProfile();
+        if (typeof initProfile === 'function') initProfile(); // ✅ ARTIK HATA VERMEZ
         
         if (typeof initChat === 'function') initChat();
         
