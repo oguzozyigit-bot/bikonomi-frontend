@@ -785,3 +785,25 @@ body.fal-mode .fal-only{ display:block; }
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
 }
+/* === v9500 Profile Scroll Fix === */
+.profileBox { max-height: 78vh; overflow: hidden; }
+.profileScroll{
+  max-height: 52vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 6px;
+}
+.pfRow2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:10px;
+}
+.pfSectionTitle{
+  margin: 10px 0 6px 0;
+  font-weight: 1000;
+  color:#111;
+  font-size:12px;
+}
+@media (max-width: 420px){
+  .pfRow2{ grid-template-columns: 1fr; }
+}
