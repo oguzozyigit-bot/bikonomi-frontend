@@ -1,6 +1,4 @@
-// CAYNANA WEB - main.js (FINAL v9400)
-// Modüller duruyor. Sadece üyelik+profil tamamlandı.
-// Shopping kart tasarımı korunur, yıldız pill gradient -> tek renk.
+// CAYNANA WEB - main.js (FINAL v9500)
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -18,9 +16,7 @@ export function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
 function setToken(t){ if(t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }
 export function authHeaders(){ const t=getToken(); return t ? {Authorization:"Bearer "+t} : {}; }
 
-// -------------------------
 // FAILSAFE
-// -------------------------
 window.addEventListener("error",(e)=>{
   try{
     const msg=(e && (e.message||e.error?.message)) || "Bilinmeyen JS hatası";
@@ -31,9 +27,7 @@ window.addEventListener("error",(e)=>{
   }catch{}
 });
 
-// -------------------------
 // STATE
-// -------------------------
 let sessionId="sess_"+Math.random().toString(36).slice(2,10);
 let pendingImage=null;
 let currentAudio=null;
@@ -48,12 +42,9 @@ let falImages=[];
 const FAL_STEPS=["1/3: Üstten çek","2/3: Yandan çek","3/3: Diğer yandan çek"];
 
 if(window.marked) marked.setOptions({mangle:false,headerIds:false});
-
 const $=(id)=>document.getElementById(id);
 
-// -------------------------
 // DOM
-// -------------------------
 const mainEl=$("main");
 const heroImage=$("heroImage");
 const heroContent=$("heroContent");
@@ -99,7 +90,7 @@ const faqBtn=$("faqBtn");
 const contactBtn=$("contactBtn");
 const privacyBtn=$("privacyBtn");
 
-// Drawer login
+// Drawer login UI
 const drawerProfileCard=$("drawerProfileCard");
 const guestLoginBlock=$("guestLoginBlock");
 const openLoginBtn=$("openLoginBtn");
@@ -148,7 +139,7 @@ const pfCity=$("pfCity");
 const pfJob=$("pfJob");
 const pfPriority=$("pfPriority");
 
-// Fal UI labels
+// Fal UI
 const falCamBtn=$("falCamBtn");
 const falStepText=$("falStepText");
 const falStepSub=$("falStepSub");
@@ -162,20 +153,20 @@ const oz3=$("ozLine3");
 // Brand tap
 const brandTap=$("brandTap");
 
-// -------------------------
+// Extra buttons
+const camBtn=$("camBtn");
+const micBtn=$("micBtn");
+
 // UI helpers
-// -------------------------
 function showModal(el){ if(el) el.classList.add("show"); }
 function hideModal(el){ if(el) el.classList.remove("show"); }
 function setAuthStatus(msg){ if(authStatus) authStatus.textContent=msg; }
 function setProfileStatus(msg){ if(profileStatus) profileStatus.textContent=msg; }
-
 function escapeHtml(s){
   return (s||"").replace(/[&<>"']/g,(m)=>({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
-
 function scrollToBottom(force=false){
   if(!chatContainer) return;
   if(force){ requestAnimationFrame(()=> chatContainer.scrollTop=chatContainer.scrollHeight); return; }
@@ -208,9 +199,7 @@ async function typeWriterEffect(el,text,speed=18){
 
 function assetUrl(relPath){ return new URL(`../${relPath}`, import.meta.url).href; }
 
-// -------------------------
 // SAFE FETCH
-// -------------------------
 async function apiFetch(url,opts={},timeoutMs=20000){
   const controller=new AbortController();
   const t=setTimeout(()=>controller.abort(),timeoutMs);
@@ -226,28 +215,43 @@ async function apiFetch(url,opts={},timeoutMs=20000){
 
     if(!res.ok){
       const msg=(typeof data==="object" && (data.detail||data.message)) || (typeof data==="string" && data) || `HTTP ${res.status}`;
-      const err=new Error(msg);
-      err.status=res.status;
-      err.data=data;
-      throw err;
+      const err=new Error(msg); err.status=res.status; err.data=data; throw err;
     }
     return {ok:true,status:res.status,data};
   }catch(e){
-    if(String(e?.name||"").toLowerCase()==="aborterror"){
-      const err=new Error("Zaman aşımı (sunucu yanıt vermedi)."); err.code="TIMEOUT"; throw err;
-    }
+    if(String(e?.name||"").toLowerCase()==="aborterror"){ const err=new Error("Zaman aşımı."); err.code="TIMEOUT"; throw err; }
     if((e && e.message==="Failed to fetch") || /failed to fetch/i.test(String(e?.message||""))){
       const err=new Error("Sunucuya erişemedim (CORS / ağ / SSL)."); err.code="FAILED_FETCH"; throw err;
     }
     throw e;
-  }finally{
-    clearTimeout(t);
-  }
+  }finally{ clearTimeout(t); }
 }
 
-// -------------------------
-// AUTH + MENU STATE
-// -------------------------
+// Drawer open/close
+function openDrawer(){ if(drawerMask) drawerMask.classList.add("show"); if(drawer) drawer.classList.add("open"); }
+function closeDrawer(){ if(drawerMask) drawerMask.classList.remove("show"); if(drawer) drawer.classList.remove("open"); }
+
+// Auth open/close
+function openAuth(){
+  showModal(authModal);
+  setAuthStatus("");
+  setTimeout(ensureGoogleButton, 80);
+}
+function closeAuth(){ hideModal(authModal); }
+
+// Persona locks
+function lockPersonaUI(){
+  document.querySelectorAll("#personaModal .persona-opt").forEach((opt)=>{
+    const k=opt.getAttribute("data-persona");
+    if(k==="normal") opt.classList.remove("locked");
+    else opt.classList.add("locked");
+  });
+}
+function unlockPersonaUI(){
+  document.querySelectorAll("#personaModal .persona-opt").forEach((opt)=>opt.classList.remove("locked"));
+}
+
+// Menu states
 const FALLBACK_AVATAR =
   "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" rx="20" fill="#222"/><text x="40" y="50" font-size="26" text-anchor="middle" fill="#fff" font-family="Arial">👵</text></svg>`);
@@ -266,30 +270,17 @@ function setMenuLoggedIn(){
   unlockPersonaUI();
 }
 
-function lockPersonaUI(){
-  document.querySelectorAll("#personaModal .persona-opt").forEach((opt)=>{
-    const k=opt.getAttribute("data-persona");
-    if(k==="normal") opt.classList.remove("locked");
-    else opt.classList.add("locked");
-  });
+// Avatar/ID helpers (robust)
+function getAvatarUrl(me){
+  if(!me) return FALLBACK_AVATAR;
+  return (me.profile && me.profile.avatar_url) || me.avatar_url || me.avatar || me.picture || FALLBACK_AVATAR;
 }
-function unlockPersonaUI(){
-  document.querySelectorAll("#personaModal .persona-opt").forEach((opt)=>opt.classList.remove("locked"));
+function getDisplayID(me){
+  if(!me) return "CN-????";
+  return me.caynana_id || me.caynana_no || me.id || me.user_id || "CN-????";
 }
 
-function openAuth(){
-  showModal(authModal);
-  setAuthStatus("");
-  setTimeout(ensureGoogleButton, 80);
-}
-function closeAuth(){ hideModal(authModal); }
-
-function openDrawer(){ if(drawerMask) drawerMask.classList.add("show"); if(drawer) drawer.classList.add("open"); }
-function closeDrawer(){ if(drawerMask) drawerMask.classList.remove("show"); if(drawer) drawer.classList.remove("open"); }
-
-// -------------------------
-// PROFILE COMPLETE CHECK
-// -------------------------
+// Profile
 function syncKidsFields(){
   const v=(pfKids?.value||"").toLowerCase();
   const show=(v==="var");
@@ -319,7 +310,7 @@ async function fetchMeSafe(){
     const r=await apiFetch(PROFILE_ME_URL,{method:"GET",headers:{...authHeaders()}},20000);
     meCache=r.data||null;
     return meCache;
-  }catch(e){
+  }catch{
     return null;
   }
 }
@@ -327,15 +318,15 @@ async function fetchMeSafe(){
 function fillDrawer(me){
   if(!me) return;
   const display=(me.display_name||me.email||"Üye").trim();
-  const cn=(me.caynana_id||"CN-????").trim();
+  const cn=getDisplayID(me);
   const plan=(me.plan||"free").toUpperCase();
-  const avatar=(me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
+  const avatar=getAvatarUrl(me);
 
   if(dpName) dpName.textContent=display;
   if(dpCN) dpCN.textContent=cn;
   if(dpPlan) dpPlan.textContent=plan;
   if(dpAvatar){
-    dpAvatar.src=avatar||FALLBACK_AVATAR;
+    dpAvatar.src=avatar;
     dpAvatar.onerror=()=> dpAvatar.src=FALLBACK_AVATAR;
   }
 }
@@ -343,15 +334,15 @@ function fillDrawer(me){
 function fillProfileModal(me){
   if(!me) return;
   const email=(me.email||"—").trim();
-  const cn=(me.caynana_id||"CN-????").trim();
+  const cn=getDisplayID(me);
   const plan=(me.plan||"free").toUpperCase();
-  const avatar=(me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
+  const avatar=getAvatarUrl(me);
 
   if(profileEmail) profileEmail.textContent=email;
   if(profileCN) profileCN.textContent=cn;
   if(profilePlan) profilePlan.textContent=plan;
   if(profileAvatar){
-    profileAvatar.src=avatar||FALLBACK_AVATAR;
+    profileAvatar.src=avatar;
     profileAvatar.onerror=()=> profileAvatar.src=FALLBACK_AVATAR;
   }
 
@@ -381,7 +372,6 @@ function openProfile(force=false){
   setProfileStatus(force ? "Devam etmek için zorunlu alanları doldur." : "");
 }
 function closeProfile(){
-  // profil zorunlu ise kapatma yok (force kilidi)
   if(meCache && !isProfileComplete(meCache)){
     setProfileStatus("Zorunlu alanları doldurup Kaydet’e basmadan çıkamazsın.");
     return;
@@ -421,7 +411,7 @@ async function saveProfile(){
     await apiFetch(PROFILE_SET_URL,{
       method:"POST",
       headers:{ "Content-Type":"application/json", ...authHeaders() },
-      body:JSON.stringify(payload)
+      body: JSON.stringify(payload)
     },20000);
 
     const me=await fetchMeSafe();
@@ -429,7 +419,6 @@ async function saveProfile(){
       fillDrawer(me);
       fillProfileModal(me);
       setProfileStatus("Kaydedildi ✅");
-      // artık çıkabilir
       hideModal(profileModal);
       setProfileStatus("");
     }else{
@@ -442,9 +431,7 @@ async function saveProfile(){
   }
 }
 
-// -------------------------
-// GOOGLE SIGN-IN
-// -------------------------
+// Google sign-in
 function ensureGoogleButton(){
   if(!googleBtn) return;
   googleBtn.innerHTML="";
@@ -480,17 +467,16 @@ function ensureGoogleButton(){
           currentPlan=(me.plan||"free").toLowerCase();
           fillDrawer(me);
           fillProfileModal(me);
-
           if(!isProfileComplete(me)){
-            openProfile(true);
+            setTimeout(()=>openProfile(true),250);
           }
         }else{
-          // /me yoksa bile online kal
           if(dpAvatar) dpAvatar.src=FALLBACK_AVATAR;
           if(dpName) dpName.textContent="Üye";
           if(dpCN) dpCN.textContent="CN-????";
           if(dpPlan) dpPlan.textContent="FREE";
         }
+
       }catch(e){
         setAuthStatus("Hata: "+(e?.message||"Giriş başarısız"));
       }
@@ -505,9 +491,7 @@ function ensureGoogleButton(){
   });
 }
 
-// -------------------------
-// MODES (kilitlediğimiz modüller DURUYOR)
-// -------------------------
+// Modes
 const MODES={
   chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img:assetUrl("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…" },
   dedikodu:{ label:"Dedikodu", icon:"fa-people-group", color:"#111111", title:"Dedikodu Odası", desc:"Evladım burada lafın ucu kaçar…", img:assetUrl("images/hero-dedikodu.png"), ph:"Bir şey yaz…", sugg:"Dedikodu varsa ben buradayım…" },
@@ -516,9 +500,9 @@ const MODES={
   saglik:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img:assetUrl("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!" },
   diyet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img:assetUrl("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye." },
 };
-
 const MODE_KEYS=Object.keys(MODES);
 
+// Footer lines
 function applyFooterLines(activeKey){
   const idx=MODE_KEYS.indexOf(activeKey);
   const colors=[];
@@ -549,10 +533,7 @@ function renderDock(){
     item.className="dock-item"+(k===currentMode?" active":"");
     item.setAttribute("data-mode", k);
     item.innerHTML=`<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
-    item.onclick=()=>{
-      if(!getToken()) return openAuth();
-      switchMode(k);
-    };
+    item.onclick=()=>{ if(!getToken()) return openAuth(); switchMode(k); };
     dock.appendChild(item);
   });
 }
@@ -583,9 +564,7 @@ function switchMode(modeKey){
   if(modeKey!=="fal") falImages=[];
 }
 
-// -------------------------
-// Swipe + DoubleTap (mod değişimi - kilitli modüller duruyor)
-// -------------------------
+// Swipe + double tap
 function bindSwipeAndDoubleTap(){
   const area=mainEl || $("main");
   if(!area) return;
@@ -613,7 +592,6 @@ function bindSwipeAndDoubleTap(){
     switchMode(next);
   },{passive:true});
 
-  // PC dblclick
   if(brandTap){
     brandTap.addEventListener("dblclick",(e)=>{
       e.preventDefault();
@@ -622,10 +600,7 @@ function bindSwipeAndDoubleTap(){
       const next=MODE_KEYS[(idx+1)%MODE_KEYS.length];
       switchMode(next);
     });
-  }
 
-  // Mobile double-tap
-  if(brandTap){
     let lastTap=0, lastX=0, lastY=0;
     brandTap.addEventListener("pointerup",(e)=>{
       const now=Date.now();
@@ -647,9 +622,7 @@ function bindSwipeAndDoubleTap(){
   }
 }
 
-// -------------------------
-// Fal UI text
-// -------------------------
+// Fal UI
 function setFalStepUI(){
   if(!falStepText || !falStepSub) return;
   if(currentMode!=="fal"){
@@ -666,17 +639,13 @@ function setFalStepUI(){
   }
 }
 
-// -------------------------
-// Persona actions
-// -------------------------
+// Persona
 function openPersona(){
   if(!getToken()) return openAuth();
   showModal(personaModal);
 }
 
-// -------------------------
-// Photo minimal flow (fal + image)
-// -------------------------
+// Photo
 function resetModalOnly(){
   pendingImage=null;
   if(photoPreview) photoPreview.src="";
@@ -712,7 +681,6 @@ if(fileEl){
     reader.readAsDataURL(f);
   });
 }
-
 if(photoOkBtn){
   photoOkBtn.onclick=async ()=>{
     hideModal(photoModal);
@@ -728,9 +696,7 @@ if(photoOkBtn){
   };
 }
 
-// -------------------------
 // Notifications
-// -------------------------
 async function openNotifications(){
   showModal(notifModal);
   if(!notifList) return;
@@ -767,10 +733,7 @@ async function openNotifications(){
   }
 }
 
-// -------------------------
-// Shopping cards (SENİN KİLİTLEDİĞİN TASARIM – DOKUNMADIM)
-// Sadece YILDIZ pill gradient kaldırıldı -> tek renk (#FFB300)
-// -------------------------
+// Shopping cards (kendi tasarımın)
 function ensureShoppingStyles(){
   if(document.getElementById("caynanaShopStyles")) return;
   const s=document.createElement("style");
@@ -861,8 +824,7 @@ function renderShoppingCards(products){
     imgBox.className="shopImgBox";
     if(img){
       const im=document.createElement("img");
-      im.src=img;
-      im.alt="img";
+      im.src=img; im.alt="img";
       im.onerror=()=>{ imgBox.innerHTML=`<div style="font-weight:900;color:#777;font-size:12px;">Görsel yok</div>`; };
       imgBox.appendChild(im);
     }else{
@@ -916,9 +878,7 @@ function renderShoppingCards(products){
   scrollToBottom(true);
 }
 
-// -------------------------
-// Bubbles + audio button (ses sonra bakacağız)
-// -------------------------
+// Bubbles
 async function addBubble(role,text,isLoader=false){
   if(!chatContainer||!heroContent) return null;
   const div=document.createElement("div");
@@ -938,9 +898,7 @@ async function addBubble(role,text,isLoader=false){
   return div;
 }
 
-// -------------------------
-// SEND
-// -------------------------
+// Send
 async function send(){
   if(isSending) return;
   if(!getToken()) return openAuth();
@@ -986,9 +944,26 @@ async function send(){
   }
 }
 
-// -------------------------
+// Page loader
+async function openPageFromFile(title,path){
+  try{
+    const r=await fetch(path,{cache:"no-store"});
+    const html=await r.text();
+    if(!pageModal||!pageTitleEl||!pageBodyEl) return;
+    pageTitleEl.textContent=title;
+    pageBodyEl.innerHTML=html;
+    showModal(pageModal);
+    closeDrawer();
+  }catch{
+    if(!pageModal||!pageTitleEl||!pageBodyEl) return;
+    pageTitleEl.textContent=title;
+    pageBodyEl.innerHTML=`<div style="font-weight:900;color:#b00;">Sayfa yüklenemedi</div>`;
+    showModal(pageModal);
+    closeDrawer();
+  }
+}
+
 // EVENTS
-// -------------------------
 function bindEvents(){
   if(menuBtn) menuBtn.onclick=openDrawer;
   if(drawerClose) drawerClose.onclick=closeDrawer;
@@ -1014,7 +989,6 @@ function bindEvents(){
   };
 
   if(safeLogoutBtn) safeLogoutBtn.onclick=()=>{
-    // sohbet temizle + token temizle
     if(chatContainer) chatContainer.innerHTML="";
     Object.keys(modeChats||{}).forEach(k=> delete modeChats[k]);
     setToken("");
@@ -1030,7 +1004,6 @@ function bindEvents(){
     opt.addEventListener("click",()=>{
       if(!getToken()) return openAuth();
       if(opt.classList.contains("locked")) return;
-
       document.querySelectorAll("#personaModal .persona-opt").forEach(x=> x.classList.remove("selected"));
       opt.classList.add("selected");
       currentPersona=opt.getAttribute("data-persona") || "normal";
@@ -1051,35 +1024,13 @@ function bindEvents(){
   if(sendBtn) sendBtn.onclick=send;
   if(textInput) textInput.addEventListener("keypress",(e)=>{ if(e.key==="Enter") send(); });
 
-  // camera/mic/fal buttons
   if(falCamBtn) falCamBtn.onclick=openFalCamera;
   if(photoCancelBtn) photoCancelBtn.onclick=resetModalOnly;
   if(camBtn) camBtn.onclick=openCamera;
-  if(micBtn) micBtn.onclick=()=>alert("Ses sonra (şimdilik metin)"); // sen ses geri plan dedin
+  if(micBtn) micBtn.onclick=()=>alert("Ses sonra (şimdilik metin)");
 }
 
-// page loader
-async function openPageFromFile(title,path){
-  try{
-    const r=await fetch(path,{cache:"no-store"});
-    const html=await r.text();
-    if(!pageModal||!pageTitleEl||!pageBodyEl) return;
-    pageTitleEl.textContent=title;
-    pageBodyEl.innerHTML=html;
-    showModal(pageModal);
-    closeDrawer();
-  }catch{
-    if(!pageModal||!pageTitleEl||!pageBodyEl) return;
-    pageTitleEl.textContent=title;
-    pageBodyEl.innerHTML=`<div style="font-weight:900;color:#b00;">Sayfa yüklenemedi</div>`;
-    showModal(pageModal);
-    closeDrawer();
-  }
-}
-
-// -------------------------
 // INIT
-// -------------------------
 async function init(){
   renderDock();
   applyHero("chat");
