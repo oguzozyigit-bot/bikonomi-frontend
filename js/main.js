@@ -729,7 +729,6 @@ async function addBubble(role, text, isLoader = false, speech = "") {
 
 // -------------------------
 // SEND (minimum)
-—
 // (Senin mevcut /shopping render vb. burada kalsın istersen.
 // Şimdilik login fix odaklı olduğumuz için chat endpoint'i aynen çalışır.)
 async function send() {
