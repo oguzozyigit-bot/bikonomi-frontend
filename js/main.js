@@ -1,9 +1,10 @@
-// CAYNANA WEB - main.js (FINAL v7002)
+// CAYNANA WEB - main.js (FINAL v7002.1)
 // ✅ Tek dosya, çakışma yok.
 // ✅ Giriş yoksa: chat yok, mod yok, persona yok, kamera/mic yok.
 // ✅ Giriş varsa: tüm modlar + persona serbest.
 // ✅ Shopping: TEK SÜTUN premium kart + "Caynana Yıldızları" (puan/sıra yok).
 // ✅ PC: dblclick, Mobil: double-tap (çift tık) + swipe.
+// ✅ İSTEK: Yıldız rozetindeki “yıldıza göre renk” KALDIRILDI (tek renk).
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -290,7 +291,7 @@ function closeDrawer() {
 }
 
 // -------------------------
-// Style injection (Premium Shopping Cards)
+// Premium Shopping Cards CSS injection
 // -------------------------
 function ensureShoppingStyles() {
   if (document.getElementById("caynanaShopStyles")) return;
@@ -786,7 +787,7 @@ async function handleAuthSubmit() {
 }
 
 // -------------------------
-// Notifications (tam fonksiyon)
+// Notifications
 // -------------------------
 async function openNotifications() {
   showModal(notifModal);
@@ -994,7 +995,7 @@ async function playAudio(text, btn) {
 }
 
 // -------------------------
-// SHOPPING: Caynana Yıldızları (puan/sıra yok)
+// SHOPPING: Caynana Yıldızları (tek rozet rengi, yıldıza göre renk YOK)
 // -------------------------
 function normStr(x) { return (x == null ? "" : String(x)).trim(); }
 function pickUrl(p) { return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
@@ -1027,11 +1028,15 @@ function buildWhyText(p, idx) {
   return variants[idx % variants.length];
 }
 
+// ✅ SABİT ROZET RENGİ (tek renk)
+const STAR_BADGE_GRAD = "linear-gradient(135deg,#FFB300,#FF6A00)";
+
 function starPackByIndex(i) {
-  if (i === 0) return { stars: 5, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#FFB300,#FF6A00)" };
-  if (i === 1) return { stars: 4, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#00C897,#00B3FF)" };
-  if (i === 2) return { stars: 3, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#8B5CF6,#FF4FD8)" };
-  if (i === 3) return { stars: 2, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#111827,#6B7280)" };
+  // yıldız sayısı farklı, ama renk tek
+  if (i === 0) return { stars: 5, label: "Caynana Yıldızları" };
+  if (i === 1) return { stars: 4, label: "Caynana Yıldızları" };
+  if (i === 2) return { stars: 3, label: "Caynana Yıldızları" };
+  if (i === 3) return { stars: 2, label: "Caynana Yıldızları" };
   return null;
 }
 function starsText(n) { return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n); }
@@ -1047,7 +1052,7 @@ function renderShoppingCards(products) {
     const url = pickUrl(p);
     const title = pickTitle(p);
     const img = pickImg(p);
-    const price = pickPrice(p); // gelirse göster, gelmezse hiç yazma
+    const price = pickPrice(p);
     const why = buildWhyText(p, i);
     const badge = starPackByIndex(i);
 
@@ -1056,9 +1061,8 @@ function renderShoppingCards(products) {
 
     const glow = document.createElement("div");
     glow.className = "shopGlow";
-    glow.style.background = badge
-      ? `radial-gradient(circle, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 35%, rgba(255,255,255,0) 55%), ${badge.grad}`
-      : "radial-gradient(circle, rgba(255,179,0,0.18) 0%, rgba(255,255,255,0) 70%)";
+    // ✅ Glow da sabit (yıldıza göre renk YOK)
+    glow.style.background = "radial-gradient(circle, rgba(255,179,0,0.18) 0%, rgba(255,255,255,0) 70%)";
     card.appendChild(glow);
 
     const imgBox = document.createElement("div");
@@ -1086,7 +1090,7 @@ function renderShoppingCards(products) {
       const b = document.createElement("div");
       b.className = "starBadge";
       b.innerHTML = `
-        <span class="starPill" style="background:${badge.grad}">★</span>
+        <span class="starPill" style="background:${STAR_BADGE_GRAD}">★</span>
         <span class="starLabel">${escapeHtml(badge.label)}</span>
         <span class="stars">${escapeHtml(starsText(badge.stars))}</span>
       `;
@@ -1188,7 +1192,7 @@ async function send() {
 }
 
 // -------------------------
-// Persona UI lock/unlock + Events
+// Events
 // -------------------------
 function bindEvents() {
   // drawer
@@ -1217,7 +1221,7 @@ function bindEvents() {
     });
   });
 
-  // auth modal open
+  // auth open
   if (accountBtn) {
     accountBtn.onclick = () => {
       showModal(authModal);
