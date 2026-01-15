@@ -1,171 +1,333 @@
-/* js/chat.js (v9913 - SMOOTH SHOPPING FLOW & FIXED LINKS) */
-import { BASE_DOMAIN } from './main.js';
+/* js/chat.js (v9914 - SMOOTH SHOPPING FLOW + TOKEN/CSS/URL FIX)
+   - Token key: caynana_token (senin sistem)
+   - Endpoint: /api/chat (backend ile uyumlu)
+   - Mevcut CSS ile uyum: .msg.user / .msg.ai + .bubble
+   - Ürün kartları: tek sütun, link <a>, görsel fallback
+   - Shopping kartları: metin bitince sırayla akış
+*/
+
+import { BASE_DOMAIN } from "./main.js";
 
 export function initChat() {
-    const sendBtn = document.getElementById('sendBtn');
-    const input = document.getElementById('text');
-    
-    if (sendBtn) {
-        const newBtn = sendBtn.cloneNode(true);
-        sendBtn.parentNode.replaceChild(newBtn, sendBtn);
-        newBtn.addEventListener('click', sendMessage);
-    }
-    if (input) {
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') sendMessage();
-        });
-    }
+  const sendBtn = document.getElementById("sendBtn");
+  const input = document.getElementById("text");
+
+  if (sendBtn) {
+    // Event çakışmasını önle
+    const newBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+    newBtn.addEventListener("click", sendMessage);
+  }
+
+  if (input) {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+  }
+}
+
+function getToken() {
+  // Senin standardın
+  return localStorage.getItem("caynana_token") || "";
+}
+
+function currentMode() {
+  // main.js setHeroMode bunu window.currentAppMode olarak set ediyor
+  return window.currentAppMode || "chat";
 }
 
 async function sendMessage() {
-    const input = document.getElementById('text');
-    const txt = input.value.trim();
-    if (!txt) return;
+  const input = document.getElementById("text");
+  const txt = (input?.value || "").trim();
+  if (!txt) return;
 
-    addBubble(txt, 'user', false); 
-    input.value = '';
-
-    const currentMode = window.currentAppMode || "chat";
-
+  // Login gate (token yoksa auth modal aç)
+  const token = getToken();
+  if (!token) {
     try {
-        const token = localStorage.getItem("auth_token");
-        const headers = { "Content-Type": "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
+      if (typeof window.openAuth === "function") window.openAuth();
+    } catch {}
+    // chat'e küçük uyarı da bas
+    addBubble("Evladım, önce Google ile giriş yapacaksın.", "ai");
+    return;
+  }
 
-        addBubble("...", 'bot', true, true); 
+  addBubble(txt, "user");
+  input.value = "";
 
-        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-            method: "POST",
-            headers: headers,
-            body: JSON.stringify({ message: txt, mode: currentMode, persona: "normal" })
-        });
+  const mode = currentMode();
 
-        const loadingBubble = document.getElementById('loadingBubble');
-        if (loadingBubble) loadingBubble.remove();
+  // Loading bubble
+  const loadingId = addLoading("Caynana düşünüyor…");
 
-        const data = await res.json();
+  try {
+    const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
 
-        if (res.ok) {
-            const botText = data.assistant_text || "Hımm...";
-            const hasProducts = data.data && Array.isArray(data.data) && data.data.length > 0;
-            
-            // Daktilo efekti ile yaz
-            typeWriterBubble(botText, () => {
-                // Metin bittiğinde çalışır
-                if (hasProducts) {
-                    // KRİTİK AYAR 1: Metin bittikten sonra biraz bekle (Nefes payı)
-                    setTimeout(() => {
-                        renderProducts(data.data);
-                    }, 800); // 800ms bekleme
-                }
-            });
-
-        } else {
-            addBubble("Bir hata oldu evladım.", 'bot');
-        }
-
-    } catch (err) {
-        const loadingBubble = document.getElementById('loadingBubble');
-        if (loadingBubble) loadingBubble.remove();
-        addBubble("İnternet gitti galiba.", 'bot');
-    }
-}
-
-// --- STANDART BALON EKLEME ---
-function addBubble(text, type, isLoading = false) {
-    const container = document.getElementById('chatContainer');
-    const row = document.createElement('div');
-    row.className = `msg-row ${type}`;
-    
-    const bubble = document.createElement('div');
-    bubble.className = `msg-bubble ${type}`;
-    if (isLoading) {
-        bubble.id = 'loadingBubble';
-        bubble.style.fontStyle = 'italic';
-        bubble.style.opacity = '0.7';
-    }
-    
-    bubble.innerHTML = text.replace(/\n/g, '<br>');
-    row.appendChild(bubble);
-    container.appendChild(row);
-    container.scrollTo(0, container.scrollHeight);
-}
-
-// --- DAKTİLO EFEKTİ ---
-function typeWriterBubble(text, callback) {
-    const container = document.getElementById('chatContainer');
-    const row = document.createElement('div');
-    row.className = 'msg-row bot';
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble bot';
-    bubble.innerHTML = ''; 
-    row.appendChild(bubble);
-    container.appendChild(row);
-
-    let i = 0;
-    const speed = 25; // Yazma hızı
-
-    function type() {
-        if (i < text.length) {
-            const char = text.charAt(i);
-            if (char === '\n') bubble.innerHTML += '<br>';
-            else bubble.innerHTML += char;
-            i++;
-            container.scrollTo(0, container.scrollHeight);
-            setTimeout(type, speed);
-        } else {
-            if (callback) callback();
-        }
-    }
-    type();
-}
-
-// --- ÜRÜN KARTLARI (YENİ ANİMASYONLU & LİNKLİ) ---
-function renderProducts(products) {
-    const container = document.getElementById('chatContainer');
-    
-    products.forEach((p, index) => {
-        // KRİTİK AYAR 2: Her kart arasında daha uzun bekle (Yavaş akış)
-        setTimeout(() => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            
-            // KRİTİK AYAR 3: Yeni süzülme animasyonunu uygula
-            // 0.8s sürecek, yavaşça süzülecek
-            card.style.animation = 'slideUpSlow 0.8s ease forwards';
-            
-            let starsHTML = '';
-            for(let i=0; i<5; i++) starsHTML += '<i class="fa-solid fa-star"></i>';
-
-            // Not: Buton yerine <a> etiketi kullanıyoruz (Daha güvenli link)
-            card.innerHTML = `
-                <div class="pc-img-wrap">
-                    <img src="${p.image}" class="pc-img" onerror="this.src='https://via.placeholder.com/300?text=Görsel+Yok'">
-                </div>
-                <div class="pc-content">
-                    <div class="pc-title">${p.title}</div>
-                    <div class="caynana-stars">${starsHTML}</div>
-                    <div style="font-weight:800; color:#00C897; font-size:16px;">${p.price}</div>
-                    
-                    <div class="pc-desc">
-                        <strong>👵 Caynana Diyor ki:</strong><br>
-                        ${p.reason}
-                    </div>
-                    
-                    <a href="${p.url}" target="_blank" class="pc-btn">
-                        Caynana Öneriyor — Ürüne Git
-                    </a>
-                </div>
-            `;
-            
-            const row = document.createElement('div');
-            row.className = 'msg-row bot';
-            row.style.display = 'block'; 
-            row.appendChild(card);
-            
-            container.appendChild(row);
-            container.scrollTo(0, container.scrollHeight);
-            
-        }, index * 800); // Her kart arası 800ms fark
+    const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ message: txt, mode, persona: window.currentPersona || "normal" }),
     });
+
+    removeById(loadingId);
+
+    let data = {};
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+
+    if (!res.ok) {
+      const errMsg = data?.detail || data?.message || "Bir hata oldu evladım.";
+      addBubble(errMsg, "ai");
+      return;
+    }
+
+    const botText = data.assistant_text || "Heh… bir şey diyemedim.";
+    const products = Array.isArray(data.data) ? data.data : [];
+
+    // Metni daktilo ile yaz, bitince ürünleri akıt
+    typeWriterBubble(botText, "ai", () => {
+      if (mode === "shopping" && products.length) {
+        setTimeout(() => renderProducts(products), 650);
+      }
+    });
+  } catch (err) {
+    removeById(loadingId);
+    addBubble("İnternet gitti galiba evladım. Bir daha dene.", "ai");
+  }
+}
+
+// ----------------------------
+// UI: bubbles (mevcut CSS ile uyumlu)
+// .msg.user/.msg.ai + .bubble
+// ----------------------------
+function addBubble(text, role = "ai") {
+  const container = document.getElementById("chatContainer");
+  if (!container) return null;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + (role === "user" ? "user" : "ai");
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
+  return wrap;
+}
+
+function addLoading(text) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return null;
+
+  const id = "ldr_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg ai";
+  wrap.id = id;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.style.opacity = "0.75";
+  bubble.style.fontStyle = "italic";
+  bubble.innerHTML = escapeHtml(text);
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
+  return id;
+}
+
+function removeById(id) {
+  if (!id) return;
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function typeWriterBubble(text, role = "ai", callback) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + (role === "user" ? "user" : "ai");
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble";
+  bubble.innerHTML = "";
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+
+  let i = 0;
+  const speed = 22;
+
+  function tick() {
+    if (i < text.length) {
+      const ch = text.charAt(i++);
+      if (ch === "\n") bubble.innerHTML += "<br>";
+      else bubble.innerHTML += escapeHtml(ch);
+      container.scrollTo(0, container.scrollHeight);
+      setTimeout(tick, speed);
+    } else {
+      if (callback) callback();
+    }
+  }
+  tick();
+}
+
+// ----------------------------
+// Shopping cards (tek sütun, premium)
+// Backend product keys: title, price, image, url, reason
+// ----------------------------
+function renderProducts(products) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  // Kart CSS yoksa basit inline ekle
+  ensureProductStyles();
+
+  products.slice(0, 6).forEach((p, index) => {
+    setTimeout(() => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      const img = safeUrl(p.image) || "";
+      const url = safeUrl(p.url) || "";
+      const title = p.title || "Ürün";
+      const price = p.price || ""; // yoksa boş geç
+      const reason = p.reason || "Evladım bunu seçtim çünkü daha mantıklı duruyor.";
+
+      const priceHtml = price ? `<div class="pc-price">${escapeHtml(price)}</div>` : "";
+
+      card.innerHTML = `
+        <div class="pc-img-wrap">
+          <img src="${escapeAttr(img)}" class="pc-img" alt="ürün"
+               onerror="this.onerror=null;this.src='https://via.placeholder.com/600x600?text=Gorsel+Yok';">
+        </div>
+        <div class="pc-content">
+          <div class="pc-title">${escapeHtml(title)}</div>
+          ${priceHtml}
+          <div class="pc-desc"><b>👵 Caynana diyor ki:</b><br>${escapeHtml(reason)}</div>
+          ${
+            url
+              ? `<a href="${escapeAttr(url)}" target="_blank" rel="noopener" class="pc-btn">Caynana Öneriyor — Ürüne Git</a>`
+              : `<div class="pc-btn disabled">Link yok (kaynak gelmedi)</div>`
+          }
+        </div>
+      `;
+
+      const wrap = document.createElement("div");
+      wrap.className = "msg ai";
+      wrap.appendChild(card);
+
+      container.appendChild(wrap);
+      container.scrollTo(0, container.scrollHeight);
+    }, index * 650);
+  });
+}
+
+function ensureProductStyles() {
+  if (document.getElementById("pcStyleV9914")) return;
+  const s = document.createElement("style");
+  s.id = "pcStyleV9914";
+  s.textContent = `
+    .product-card{
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow:0 14px 34px rgba(0,0,0,0.14), 0 0 0 1px rgba(255,255,255,0.65) inset;
+      margin-top:12px;
+      animation: pcUp .55s cubic-bezier(.16,1,.3,1) both;
+    }
+    @keyframes pcUp { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:translateY(0)} }
+    .pc-img-wrap{
+      padding:12px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(245,245,245,1));
+      border-bottom:1px solid rgba(0,0,0,0.06);
+    }
+    .pc-img{
+      width:100%;
+      height:220px;
+      object-fit:contain;
+      border-radius:18px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,0.06);
+    }
+    .pc-content{ padding:14px; }
+    .pc-title{
+      font-weight:950;
+      font-size:15px;
+      line-height:1.25;
+      color:#141414;
+      margin-bottom:8px;
+    }
+    .pc-price{
+      font-weight:1000;
+      font-size:18px;
+      color: var(--primary, #00C897);
+      margin-bottom:10px;
+      letter-spacing:-0.4px;
+    }
+    .pc-desc{
+      background:#FFFBF0;
+      border:1px solid rgba(255,179,0,0.14);
+      border-left:5px solid #FFB300;
+      border-radius:18px;
+      padding:12px 14px;
+      font-weight:850;
+      font-size:13px;
+      line-height:1.45;
+      color:#4e3a2f;
+      margin-bottom:12px;
+    }
+    .pc-btn{
+      height:50px;
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-decoration:none;
+      font-weight:1000;
+      color:#fff;
+      background:linear-gradient(135deg, var(--primary, #00C897), #111);
+      box-shadow:0 14px 28px rgba(0,0,0,0.20);
+      user-select:none;
+    }
+    .pc-btn:active{ transform:scale(.99); }
+    .pc-btn.disabled{
+      opacity:.55;
+      background:#999;
+      box-shadow:none;
+    }
+  `;
+  document.head.appendChild(s);
+}
+
+// ----------------------------
+// Utilities
+// ----------------------------
+function safeUrl(u) {
+  const s = (u || "").trim();
+  if (s.startsWith("http://") || s.startsWith("https://")) return s;
+  return "";
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  }[m]));
+}
+
+function escapeAttr(s) {
+  // Çok basit attribute escape
+  return escapeHtml(String(s || "")).replace(/"/g, "&quot;");
 }
