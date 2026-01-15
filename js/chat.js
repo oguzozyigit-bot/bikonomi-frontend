@@ -1,21 +1,15 @@
-/* js/chat.js (v9909 - OpenAI Entegrasyonu) */
+/* js/chat.js (v9910 - SHOPPING CARDS ENABLED) */
 import { BASE_DOMAIN } from './main.js';
-import { currentUser } from './auth.js';
 
 export function initChat() {
-    console.log("💬 Sohbet Modülü Başlatılıyor...");
-
     const sendBtn = document.getElementById('sendBtn');
     const input = document.getElementById('text');
     
-    // Olay Dinleyicileri
     if (sendBtn) {
-        // Varsa eski listener'ı temizle (çoklu gönderimi önle)
         const newBtn = sendBtn.cloneNode(true);
         sendBtn.parentNode.replaceChild(newBtn, sendBtn);
         newBtn.addEventListener('click', sendMessage);
     }
-    
     if (input) {
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') sendMessage();
@@ -28,53 +22,48 @@ async function sendMessage() {
     const txt = input.value.trim();
     if (!txt) return;
 
-    // 1. Kullanıcı Mesajını Ekrana Bas
     addBubble(txt, 'user');
-    input.value = ''; // Kutuyu temizle
+    input.value = '';
 
-    // 2. Modu Belirle (Global değişkenden)
     const currentMode = window.currentAppMode || "chat";
 
-    // 3. Backend'e Gönder
     try {
         const token = localStorage.getItem("auth_token");
         const headers = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        addBubble("...", 'bot', true); // Yazıyor animasyonu (geçici)
+        addBubble("...", 'bot', true); 
 
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
             method: "POST",
             headers: headers,
-            body: JSON.stringify({
-                message: txt,
-                mode: currentMode,
-                persona: "normal"
-            })
+            body: JSON.stringify({ message: txt, mode: currentMode, persona: "normal" })
         });
 
-        // Yazıyor... balonunu kaldır
         const loadingBubble = document.getElementById('loadingBubble');
         if (loadingBubble) loadingBubble.remove();
 
         const data = await res.json();
 
         if (res.ok) {
+            // 1. Metin Cevabı
             addBubble(data.assistant_text || "Hımm...", 'bot');
+
+            // 2. Ürün Kartları Varsa Çiz
+            if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+                renderProducts(data.data);
+            }
         } else {
-            console.error("Chat Hatası:", data);
-            addBubble("Tansiyonum düştü evladım. (Sunucu Hatası)", 'bot');
+            addBubble("Bir hata oldu evladım.", 'bot');
         }
 
     } catch (err) {
-        console.error(err);
         const loadingBubble = document.getElementById('loadingBubble');
         if (loadingBubble) loadingBubble.remove();
-        addBubble("İnternetin mi koptu ne oldu? Cevap veremedim.", 'bot');
+        addBubble("İnternet gitti galiba.", 'bot');
     }
 }
 
-// Baloncuk Ekleme
 function addBubble(text, type, isLoading = false) {
     const container = document.getElementById('chatContainer');
     const row = document.createElement('div');
@@ -88,12 +77,54 @@ function addBubble(text, type, isLoading = false) {
         bubble.style.opacity = '0.7';
     }
     
-    // Basit satır kırılımı (Anayasa uyumlu)
     bubble.innerHTML = text.replace(/\n/g, '<br>');
-
     row.appendChild(bubble);
     container.appendChild(row);
+    container.scrollTo(0, container.scrollHeight);
+}
 
-    // Scroll
+// --- ÜRÜN KARTLARI (ANAYASA TASARIMI) ---
+function renderProducts(products) {
+    const container = document.getElementById('chatContainer');
+    
+    products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        
+        // 5 Yıldız (Sarı)
+        let starsHTML = '';
+        for(let i=0; i<5; i++) starsHTML += '<i class="fa-solid fa-star"></i>';
+
+        card.innerHTML = `
+            <div class="pc-img-wrap">
+                <img src="${p.image}" class="pc-img" onerror="this.src='https://via.placeholder.com/300?text=Urun'">
+            </div>
+            <div class="pc-content">
+                <div class="pc-title">${p.title}</div>
+                <div class="caynana-stars">${starsHTML}</div>
+                <div style="font-weight:800; color:#00C897; font-size:16px;">${p.price}</div>
+                
+                <div class="pc-desc">
+                    <strong>👵 Caynana Diyor ki:</strong><br>
+                    ${p.reason}
+                </div>
+                
+                <button class="pc-btn" onclick="window.open('${p.url}', '_blank')">
+                    Caynana Öneriyor — Ürüne Git
+                </button>
+            </div>
+        `;
+        
+        // Kartı bir satır içine koymadan direkt ekliyoruz ki tam genişlik olsun
+        // Ama düzgün hizalamak için msg-row içine de alabiliriz. 
+        // Şimdilik direkt container'a ekleyelim, CSS halleder.
+        const row = document.createElement('div');
+        row.className = 'msg-row bot';
+        row.style.display = 'block'; // Block olsun ki tam otursun
+        row.appendChild(card);
+        
+        container.appendChild(row);
+    });
+    
     container.scrollTo(0, container.scrollHeight);
 }
