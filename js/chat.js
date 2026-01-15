@@ -1,74 +1,99 @@
-/* js/chat.js
-   Sohbet ve Mesajlaşma Mantığı
-*/
+/* js/chat.js (v9909 - OpenAI Entegrasyonu) */
 import { BASE_DOMAIN } from './main.js';
+import { currentUser } from './auth.js';
 
 export function initChat() {
-    console.log("💬 Chat Modülü Başlatılıyor...");
+    console.log("💬 Sohbet Modülü Başlatılıyor...");
+
+    const sendBtn = document.getElementById('sendBtn');
+    const input = document.getElementById('text');
     
-    const sendBtn = document.getElementById('send-btn');
-    const inputField = document.getElementById('chat-input');
+    // Olay Dinleyicileri
+    if (sendBtn) {
+        // Varsa eski listener'ı temizle (çoklu gönderimi önle)
+        const newBtn = sendBtn.cloneNode(true);
+        sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+        newBtn.addEventListener('click', sendMessage);
+    }
     
-    // Gönder butonu varsa olayı bağla
-    if (sendBtn && inputField) {
-        sendBtn.addEventListener('click', () => sendMessage());
-        inputField.addEventListener('keypress', (e) => {
+    if (input) {
+        input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') sendMessage();
         });
     }
 }
 
 async function sendMessage() {
-    const inputField = document.getElementById('chat-input');
-    const message = inputField.value.trim();
-    if (!message) return;
+    const input = document.getElementById('text');
+    const txt = input.value.trim();
+    if (!txt) return;
 
-    // 1. Kullanıcı mesajını ekrana yaz
-    addMessageBubble(message, 'user');
-    inputField.value = '';
+    // 1. Kullanıcı Mesajını Ekrana Bas
+    addBubble(txt, 'user');
+    input.value = ''; // Kutuyu temizle
 
-    // 2. Yükleniyor animasyonu göster (opsiyonel)
-    // showLoading();
+    // 2. Modu Belirle (Global değişkenden)
+    const currentMode = window.currentAppMode || "chat";
 
+    // 3. Backend'e Gönder
     try {
         const token = localStorage.getItem("auth_token");
         const headers = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        // 3. Backend'e gönder
+        addBubble("...", 'bot', true); // Yazıyor animasyonu (geçici)
+
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
             method: "POST",
             headers: headers,
-            body: JSON.stringify({ 
-                message: message,
-                mode: "chat",
+            body: JSON.stringify({
+                message: txt,
+                mode: currentMode,
                 persona: "normal"
             })
         });
 
+        // Yazıyor... balonunu kaldır
+        const loadingBubble = document.getElementById('loadingBubble');
+        if (loadingBubble) loadingBubble.remove();
+
         const data = await res.json();
-        
-        // 4. Cevabı ekrana yaz
-        if (data.assistant_text) {
-            addMessageBubble(data.assistant_text, 'assistant');
+
+        if (res.ok) {
+            addBubble(data.assistant_text || "Hımm...", 'bot');
         } else {
-            addMessageBubble("Bir hata oluştu evladım, tekrar dene.", 'assistant');
+            console.error("Chat Hatası:", data);
+            addBubble("Tansiyonum düştü evladım. (Sunucu Hatası)", 'bot');
         }
 
     } catch (err) {
-        console.error("Chat hatası:", err);
-        addMessageBubble("Sunucuya ulaşamadım evladım.", 'assistant');
+        console.error(err);
+        const loadingBubble = document.getElementById('loadingBubble');
+        if (loadingBubble) loadingBubble.remove();
+        addBubble("İnternetin mi koptu ne oldu? Cevap veremedim.", 'bot');
     }
 }
 
-function addMessageBubble(text, sender) {
-    const chatContainer = document.getElementById('chat-container'); // HTML'deki ID'ye göre ayarla
-    if (!chatContainer) return;
-
-    const div = document.createElement('div');
-    div.classList.add('message-bubble', sender); // CSS için 'user' veya 'assistant' class'ı
-    div.innerText = text;
+// Baloncuk Ekleme
+function addBubble(text, type, isLoading = false) {
+    const container = document.getElementById('chatContainer');
+    const row = document.createElement('div');
+    row.className = `msg-row ${type}`;
     
-    chatContainer.appendChild(div);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+    const bubble = document.createElement('div');
+    bubble.className = `msg-bubble ${type}`;
+    if (isLoading) {
+        bubble.id = 'loadingBubble';
+        bubble.style.fontStyle = 'italic';
+        bubble.style.opacity = '0.7';
+    }
+    
+    // Basit satır kırılımı (Anayasa uyumlu)
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+
+    row.appendChild(bubble);
+    container.appendChild(row);
+
+    // Scroll
+    container.scrollTo(0, container.scrollHeight);
 }
