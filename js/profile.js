@@ -1,11 +1,30 @@
-/* js/profile.js (ANAYASA MADDE 12 - PROFİL YÖNETİMİ)
-   Zorunlu Alanlar: Ad, Takma Ad, Cinsiyet, Yaş, Boy, Kilo.
-   Bunlar yoksa modal kapanmaz.
-*/
+/* js/profile.js (FIXED v9907 - initProfile EKLENDİ) */
 import { BASE_DOMAIN } from './main.js';
 import { currentUser } from './auth.js';
 
 let currentProfile = {};
+
+// ✅ EKSİK OLAN FONKSİYON BU! (Main.js bunu arıyor)
+export function initProfile() {
+    console.log("👤 Profil Modülü Başlatılıyor...");
+    
+    // Kaydet butonunu dinle
+    const saveBtn = document.getElementById('profileSave');
+    if (saveBtn) {
+        // Önce temizle (varsa) sonra ekle
+        saveBtn.removeEventListener('click', saveProfile);
+        saveBtn.addEventListener('click', saveProfile);
+    }
+
+    // Modal kapatma tuşu
+    const closeBtn = document.getElementById('profileCloseX');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+             const modal = document.getElementById('profileModal');
+             if(modal) modal.style.display = 'none';
+        });
+    }
+}
 
 // --- PROFİLİ YÜKLE ---
 export async function loadProfile(forceCheck = false) {
@@ -31,7 +50,7 @@ export async function loadProfile(forceCheck = false) {
             if (forceCheck) {
                 if (!isProfileValid(prof)) {
                     console.log("⚠️ Profil eksik! Zorunlu açılıyor...");
-                    openProfileModal(false); // false = kapatılamaz (closeBtn gizlenmeli)
+                    openProfileModal(false); // false = kapatılamaz
                 }
             }
         }
@@ -46,7 +65,8 @@ export function openProfileModal(canClose = true) {
     const closeBtn = document.getElementById('profileCloseX');
     
     if (modal) {
-        modal.style.display = 'flex';
+        modal.style.display = 'flex'; // app.css'teki modalMask display: flex'i tetikler
+        
         // Eğer zorunluysa kapatma tuşunu gizle
         if (!canClose) {
             if (closeBtn) closeBtn.style.display = 'none';
@@ -70,6 +90,8 @@ export async function saveProfile() {
         bio: val('pfBio'),
         marital: val('pfMarital'),
         kids: val('pfKids'),
+        kids_count: val('pfKidsCount'),
+        kids_ages: val('pfKidsAges'),
         spouse_name: val('pfSpouseName'),
         city: val('pfCity'),
         job: val('pfJob'),
@@ -86,23 +108,27 @@ export async function saveProfile() {
     if (statusDiv) statusDiv.innerText = "Kaydediliyor...";
 
     try {
+        const token = localStorage.getItem("auth_token");
         const res = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("auth_token")}`
+                "Authorization": `Bearer ${token}`
             },
             body: JSON.stringify({ profile: p })
         });
 
         if (res.ok) {
             if (statusDiv) statusDiv.innerText = "Aferin, kaydettim.";
+            
             // Modalı kapatmaya izin ver ve kapat
             const closeBtn = document.getElementById('profileCloseX');
             if (closeBtn) closeBtn.style.display = 'block';
+            
             setTimeout(() => {
-                document.getElementById('profileModal').style.display = 'none';
-                statusDiv.innerText = "";
+                const modal = document.getElementById('profileModal');
+                if(modal) modal.style.display = 'none';
+                if(statusDiv) statusDiv.innerText = "";
             }, 1000);
             
             // UI güncelle
@@ -122,6 +148,11 @@ function val(id) {
     return el ? el.value.trim() : "";
 }
 
+function setVal(id, v) {
+    const el = document.getElementById(id);
+    if (el && v) el.value = v;
+}
+
 function fillForm(p) {
     setVal('pfFullName', p.name);
     setVal('pfNick', p.nick);
@@ -132,15 +163,12 @@ function fillForm(p) {
     setVal('pfBio', p.bio);
     setVal('pfMarital', p.marital);
     setVal('pfKids', p.kids);
+    setVal('pfKidsCount', p.kids_count);
+    setVal('pfKidsAges', p.kids_ages);
     setVal('pfSpouseName', p.spouse_name);
     setVal('pfCity', p.city);
     setVal('pfJob', p.job);
     setVal('pfPriority', p.priority);
-}
-
-function setVal(id, v) {
-    const el = document.getElementById(id);
-    if (el && v) el.value = v;
 }
 
 function updateUI(p, uid, plan) {
@@ -164,7 +192,7 @@ function updateUI(p, uid, plan) {
     if (dPlan) dPlan.innerText = planStr;
     if (dCN) dCN.innerText = idStr;
 
-    if (pEmail) pEmail.innerText = name; // Email yerine isim gösterelim, daha şık
+    if (pEmail) pEmail.innerText = name; 
     if (pCN) pCN.innerText = idStr;
     if (pPlan) pPlan.innerText = planStr;
 
@@ -175,12 +203,5 @@ function updateUI(p, uid, plan) {
 }
 
 function isProfileValid(p) {
-    // Zorunlu alanların doluluğunu kontrol et
     return (p.name && p.nick && p.gender && p.age && p.height && p.weight);
 }
-
-// Kaydet butonunu dinle (Main.js'den çağrılacak veya burada beklenecek)
-document.addEventListener('DOMContentLoaded', () => {
-    const saveBtn = document.getElementById('profileSave');
-    if (saveBtn) saveBtn.addEventListener('click', saveProfile);
-});
