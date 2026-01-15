@@ -1,4 +1,4 @@
-/* js/main.js - (Full UI + Yerel Görseller v9605) */
+/* js/main.js - (v9606 - Resim ve Modül Entegrasyonu) */
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
 import { initAuth } from './auth.js';
@@ -19,10 +19,28 @@ const HERO_IMAGES = {
     'default': './images/hero-chat.png'
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("👵 Caynana Web Başlatılıyor... (v9605)");
+// Resim Değiştirme Fonksiyonu
+const setHeroMode = (mode) => {
+    const img = document.getElementById('heroImage');
+    const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['default'];
+    
+    if (img) {
+        console.log(`🖼️ Mod Değişiyor: ${mode} -> ${targetSrc}`);
+        // Hafif bir geçiş efekti için
+        img.style.opacity = '0';
+        setTimeout(() => {
+            img.src = targetSrc;
+            img.onload = () => { img.style.opacity = '0.4'; };
+            // Resim önbellekteyse onload tetiklenmeyebilir, garanti olsun:
+            setTimeout(() => { img.style.opacity = '0.4'; }, 100);
+        }, 200);
+    }
+};
 
-    // --- 1. GÖRSELLERİ VE METİNLERİ YÜKLE ---
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("👵 Caynana Web Başlatılıyor... (v9606 - Final)");
+
+    // --- 1. BAŞLANGIÇ AYARLARI ---
     const heroTitle = document.getElementById('heroTitle');
     const heroDesc = document.getElementById('heroDesc');
     const heroImage = document.getElementById('heroImage');
@@ -32,37 +50,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (heroDesc) heroDesc.innerHTML = "Yapay Zekânın<br>Geleneksel Aklı";
     if (suggestionText) suggestionText.innerText = "Fal baktırmak için kameraya, sohbet için mikrofona bas evladım.";
 
-    // Arkaplan Resmi Ayarı (Yerel Dosyadan)
+    // Başlangıç resmi (Chat)
     if (heroImage) {
-        // Hata olursa varsayılanı yükle
-        heroImage.onerror = function() {
-            console.warn("Resim yüklenemedi, varsayılana dönülüyor:", this.src);
-            if (this.src !== HERO_IMAGES.default) this.src = HERO_IMAGES.default;
-        };
-
-        // Başlangıç resmi (Chat)
         heroImage.src = HERO_IMAGES.chat;
         heroImage.style.display = 'block';
-        heroImage.style.opacity = '0.4'; // Yazı okunsun diye hafif flu
+        heroImage.style.opacity = '0.4';
     }
 
     // --- 2. MODÜLLERİ BAŞLAT ---
     try {
-        if (typeof initUi === 'function') initUi();
+        // initUi'ye resim değiştirme yetkisini veriyoruz!
+        if (typeof initUi === 'function') initUi(setHeroMode);
+        
         if (typeof initAuth === 'function') await initAuth();
         if (typeof initChat === 'function') initChat();
         if (typeof initFal === 'function') initFal();
         
-        console.log("✅ Sistem ve Görseller Aktif!");
+        console.log("✅ Sistem Aktif! Resimler bağlandı.");
     } catch (error) {
         console.error("Başlatma hatası:", error);
     }
 });
-
-// Dışarıdan resim değiştirmek için yardımcı fonksiyon
-export function setHeroMode(mode) {
-    const img = document.getElementById('heroImage');
-    if (img && HERO_IMAGES[mode]) {
-        img.src = HERO_IMAGES[mode];
-    }
-}
