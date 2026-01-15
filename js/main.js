@@ -1,73 +1,154 @@
-/* js/main.js - (v9705 - DOCK EKLENDİ) */
+/* js/main.js - (v9906 - CANLI GÖRSEL + ESPİRİLİ LAFLAR - FIXED) */
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
-import { initAuth } from './auth.js';
-import { initChat } from './chat.js';
-import { initFal } from './fal.js'; // Varsa
-import { initUi } from './ui_modals.js'; 
-import { initDock } from './dock.js'; // ✅ YENİ EKLENEN
+import { initAuth, checkLoginStatus } from "./auth.js";
+import { initChat } from "./chat.js";
+import { initUi, setupPersonaModal, setupNotifications } from "./ui_modals.js";
+import { initProfile } from "./profile.js";
+import { initDock } from "./dock.js";
 
-// Resim Haritası
+/* --------------------------------------------------
+   GLOBAL APP STATE (tek yerden yönet)
+-------------------------------------------------- */
+window.CaynanaApp = window.CaynanaApp || {
+  mode: "chat",
+  setMode: null,
+};
+
+/* --------------------------------------------------
+   CAYNANA ESPİRİLİ LAFLARI (Modüle Göre)
+-------------------------------------------------- */
+const MODULE_WIT = {
+  chat: "Anlat bakalım, yine ne derdin var?",
+  fal: "Kapat fincanı, soğut gel. Bakalım neler çıkacak...",
+  shopping: "Paran cebine batıyor herhalde? Gel bakalım...",
+  dedikodu: "Kız kim ne demiş? Çatlarım anlat hadi!",
+  health: "Ayol ben doktor muyum? Ama dur bir nane limon...",
+  diet: "O böreği yavaşça yere bırak evladım.",
+  astro: "Yıldızlar tersine dönmüş diyorlar, hayırdır inşallah.",
+  default: "Hayırdır evladım, bir sessizlik oldu?",
+};
+
+/* --------------------------------------------------
+   HERO IMAGE PATHS (import.meta.url ile garanti)
+-------------------------------------------------- */
+function heroUrl(rel) {
+  // main.js: /js/main.js -> ../images/.. doğru çözülür
+  return new URL(`../images/${rel}`, import.meta.url).href;
+}
+
 const HERO_IMAGES = {
-    'chat': './images/hero-chat.png',
-    'fal': './images/hero-fal.png',
-    'dream': './images/hero-dream.png',
-    'shopping': './images/hero-shopping.png',
-    'diet': './images/hero-diet.png',
-    'health': './images/hero-health.png',
-    'astro': './images/hero-astro.png',
-    'dedikodu': './images/hero-dedikodu.png',
-    'default': './images/hero-chat.png'
+  chat: heroUrl("hero-chat.png"),
+  fal: heroUrl("hero-fal.png"),
+  dream: heroUrl("hero-dream.png"),
+  shopping: heroUrl("hero-shopping.png"),
+  diet: heroUrl("hero-diet.png"),
+  health: heroUrl("hero-health.png"),
+  astro: heroUrl("hero-astro.png"),
+  dedikodu: heroUrl("hero-dedikodu.png"),
+  default: heroUrl("hero-chat.png"),
 };
 
-// Resim Değiştirme Fonksiyonu (Dışarıya açıyoruz)
+/* --------------------------------------------------
+   UTIL: Fade
+-------------------------------------------------- */
+function fadeEl(el, toOpacity, ms = 180) {
+  if (!el) return;
+  el.style.transition = `opacity ${ms}ms ease`;
+  el.style.opacity = String(toOpacity);
+}
+
+/* --------------------------------------------------
+   MOD DEĞİŞTİRME (Resim + Laf + Fal UI)
+-------------------------------------------------- */
 export const setHeroMode = (mode) => {
-    const img = document.getElementById('heroImage');
-    const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['default'];
-    
-    if (img) {
-        // img.src = targetSrc; // Basit geçiş
-        // Efektli geçiş:
-        img.style.opacity = '0';
-        setTimeout(() => {
-            img.src = targetSrc;
-            img.onload = () => { img.style.opacity = '0.4'; };
-            // Cache durumunda onload tetiklenmezse diye güvenlik:
-            setTimeout(() => { img.style.opacity = '0.4'; }, 100);
-        }, 200);
-    }
+  const m = mode || "chat";
+
+  // 1) Global modu yaz (iki isimle de)
+  window.currentAppMode = m;                 // geriye uyum
+  window.CaynanaApp.mode = m;                // yeni standart
+
+  // 2) Hero Image değiştir (fade)
+  const img = document.getElementById("heroImage");
+  const targetSrc = HERO_IMAGES[m] || HERO_IMAGES.default;
+
+  if (img) {
+    // önce söndür
+    fadeEl(img, 0, 160);
+
+    // sonra src değiştir ve tekrar yak
+    setTimeout(() => {
+      // src set
+      img.src = targetSrc;
+
+      // cache olsa bile yakalım
+      // (onload bazen cache'de tetiklenmeyebiliyor)
+      const bringBack = () => fadeEl(img, 0.9, 220);
+
+      img.onload = bringBack;
+      img.onerror = () => {
+        // fallback
+        img.src = HERO_IMAGES.default;
+        bringBack();
+      };
+
+      // garanti: 80ms sonra geri getir
+      setTimeout(bringBack, 80);
+    }, 170);
+  }
+
+  // 3) suggestionText değiştir (fade)
+  const suggestionText = document.getElementById("suggestionText");
+  if (suggestionText) {
+    fadeEl(suggestionText, 0, 120);
+    setTimeout(() => {
+      suggestionText.innerText = MODULE_WIT[m] || MODULE_WIT.default;
+      fadeEl(suggestionText, 1, 180);
+    }, 130);
+  }
+
+  // 4) Fal modu CSS
+  if (m === "fal") document.body.classList.add("fal-mode");
+  else document.body.classList.remove("fal-mode");
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("👵 Caynana Web Başlatılıyor... (v9705)");
+// dışarıdan erişim
+window.CaynanaApp.setMode = setHeroMode;
 
-    // --- 1. GÖRSELLERİ VE METİNLERİ YÜKLE ---
-    const heroTitle = document.getElementById('heroTitle');
-    const heroDesc = document.getElementById('heroDesc');
-    const heroImage = document.getElementById('heroImage');
-    const suggestionText = document.getElementById('suggestionText');
+/* --------------------------------------------------
+   BOOT
+-------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("👵 Caynana Web Başlatılıyor... (v9906 - Fixed)");
 
-    if (heroTitle) heroTitle.innerText = "CAYNANA";
-    if (heroDesc) heroDesc.innerHTML = "Yapay Zekânın<br>Geleneksel Aklı";
-    if (suggestionText) suggestionText.innerText = "Fal baktırmak için kameraya, sohbet için mikrofona bas evladım.";
+  // başlangıç hero ayarları
+  const heroImage = document.getElementById("heroImage");
+  if (heroImage) {
+    heroImage.src = HERO_IMAGES.chat;
+    heroImage.style.display = "block";
+    heroImage.style.opacity = "0.9";
+  }
 
-    // Başlangıç resmi (Chat)
-    if (heroImage) {
-        heroImage.src = HERO_IMAGES.chat;
-        heroImage.style.display = 'block';
-        heroImage.style.opacity = '0.4';
-    }
+  // başlangıç modu
+  setHeroMode("chat");
 
-    // --- 2. MODÜLLERİ BAŞLAT ---
-    try {
-        if (typeof initUi === 'function') initUi(setHeroMode);
-        if (typeof initDock === 'function') initDock(); // ✅ DOCK BAŞLATILIYOR
-        if (typeof initAuth === 'function') await initAuth();
-        if (typeof initChat === 'function') initChat();
-        // if (typeof initFal === 'function') initFal();
-        
-        console.log("✅ Sistem Aktif! Modüller Yerleşti.");
-    } catch (error) {
-        console.error("Başlatma hatası:", error);
-    }
+  // modülleri başlat
+  try {
+    if (typeof initUi === "function") initUi();
+    if (typeof setupPersonaModal === "function") setupPersonaModal();
+    if (typeof setupNotifications === "function") setupNotifications();
+
+    if (typeof initDock === "function") initDock();
+
+    // Auth + Profile sıralı
+    if (typeof initAuth === "function") await initAuth();
+    if (typeof checkLoginStatus === "function") await checkLoginStatus();
+    if (typeof initProfile === "function") initProfile();
+
+    if (typeof initChat === "function") initChat();
+
+    console.log("✅ Sistem Aktif! Modüller Yerleşti.");
+  } catch (error) {
+    console.error("Başlatma hatası:", error);
+  }
 });
