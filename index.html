@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -19,8 +18,7 @@
 
         <div id="topbar">
             <div class="topbarGlass">
-                
-                <div class="menu-btn" id="menuBtn" onclick="document.getElementById('drawerMask').style.display='flex'">
+                <div class="menu-btn" id="menuBtn" onclick="openDrawer()">
                     <i class="fa-solid fa-bars"></i>
                 </div>
 
@@ -48,7 +46,7 @@
             <div id="chatContainer">
                 <div class="msg-row bot">
                     <div class="msg-bubble bot">
-                        Hoş geldin evladım! Anlat bakalım, keyfin nasıl? Bir derdin mi var, yoksa bir şey mi lazım?
+                        Hoş geldin evladım! Kartları düzelttim, menüyü taktım. Ne bakacaktık?
                     </div>
                 </div>
             </div>
@@ -56,7 +54,7 @@
 
         <div id="bottom">
             <div id="suggestionText">Benim zamanımda...</div>
-
+            
             <div class="input-wrapper" id="stdInputArea">
                 <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
                 <div class="search-bar">
@@ -73,8 +71,7 @@
             </div>
 
             <div id="dockContainer">
-                <div id="dock">
-                    </div>
+                <div id="dock"></div>
             </div>
 
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
@@ -84,39 +81,33 @@
         </div>
     </div>
 
+    <div id="drawerMask" class="modalMask">
+        <div id="drawer">
+            <h2>Ayarlar</h2>
+            <div class="persona-opt selected"><span>Normal Mod</span> <i class="fa-solid fa-check"></i></div>
+            <div class="persona-opt locked"><span>Sinirli Caynana</span> <i class="fa-solid fa-lock"></i></div>
+            <div class="persona-opt locked"><span>Pamuk Nine</span> <i class="fa-solid fa-lock"></i></div>
+            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+            <button class="pc-btn" style="background:#333; color:#fff;" onclick="closeDrawer()">Kapat</button>
+        </div>
+    </div>
+
     <div id="authModal" class="modalMask">
         <div class="authBox">
-            <div class="modalHeader">Giriş Yap Evladım</div>
+            <div class="modalHeader">Giriş Yap</div>
             <input type="text" id="loginEmail" class="authInput" placeholder="E-posta">
             <input type="password" id="loginPass" class="authInput" placeholder="Şifre">
             <button class="pc-btn" id="doLoginBtn">Giriş Yap</button>
-            <div style="margin-top:10px; font-size:12px; text-align:center; color:#888; cursor:pointer;" id="goRegister">Hesabın yok mu? Kayıt Ol</div>
-        </div>
-    </div>
-    
-    <div id="drawerMask" class="modalMask">
-        <div id="drawer">
-            <h2 style="margin-bottom:20px;">Ayarlar</h2>
-            
-            <div class="persona-opt selected">
-                <span>Normal Mod</span> <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>Sinirli Caynana</span> <i class="fa-solid fa-lock"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>Pamuk Nine</span> <i class="fa-solid fa-lock"></i>
-            </div>
-
-            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-            
-            <button class="pc-btn" style="background:#333; color:#fff;" onclick="document.getElementById('drawerMask').style.display='none'">Kapat</button>
+            <div style="margin-top:10px; font-size:12px; text-align:center; color:#888;" id="goRegister">Kayıt Ol</div>
         </div>
     </div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
-    
     <script type="module" src="js/main.js"></script>
-
+    
+    <script>
+        function openDrawer() { document.getElementById('drawerMask').style.display = 'flex'; }
+        function closeDrawer() { document.getElementById('drawerMask').style.display = 'none'; }
+    </script>
 </body>
 </html>
