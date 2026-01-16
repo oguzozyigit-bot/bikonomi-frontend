@@ -2,7 +2,7 @@
 
 // 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
-const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com"; 
+const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 const MODE_CONFIG = {
