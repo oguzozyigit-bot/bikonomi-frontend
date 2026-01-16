@@ -1,7 +1,6 @@
-/* js/chat.js (v10.2 - CIRCULAR DEPENDENCY FIX) */
+/* js/chat.js (v10.3 - RESTORED JAVASCRIPT) */
 
-// 1. KİLİTLENMEYİ ÇÖZEN HAMLE: import satırını kaldırdık.
-// Adresi direkt buraya tanımlıyoruz.
+// Kilitlenme olmasın diye adresi buraya sabitliyoruz
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
@@ -19,7 +18,7 @@ export function initChat() {
   }
   
   if (input) {
-    // Enter tuşu desteği (önceki listener'ı kaldırmaya gerek yok, üstüne yazar)
+    // Enter tuşu desteği
     input.onkeydown = (e) => { 
         if (e.key === "Enter") sendMessage(); 
     };
@@ -132,7 +131,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// KART YAPISI (Contain Image - Net Görüntü)
+// 🌟 ÜRÜN KARTLARINI ÇİZEN FONKSİYON 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
