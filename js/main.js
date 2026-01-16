@@ -1,4 +1,4 @@
-/* js/main.js (v55.0 - GOLD MASTER) */
+/* js/main.js (v56.0 - STABILITY & SECURITY) */
 
 // 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
@@ -25,11 +25,12 @@ window.currentAppMode = 'chat';
 
 // 2. BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v55.0 GOLD Ready");
+    console.log("🚀 Caynana v56.0 Stable Ready");
     initDock();
     setAppMode('chat');
-    updateUIForUser(); // Menüyü ve giriş durumunu ayarlar
+    updateUIForUser(); // Menüyü hazırla
     
+    // Google Kütüphanesi
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try { 
             google.accounts.id.initialize({ 
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 auto_select: false,
                 cancel_on_tap_outside: false
             }); 
-        } catch(e) { console.error("Google Init Error:", e); }
+        } catch(e) { console.error("Google Başlatma Hatası:", e); }
     }
 
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
@@ -49,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function sendMessage() {
     const txt = document.getElementById("text").value.trim();
     if(!txt) return;
-    if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yap önce."); return; }
+    if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yapmadan cevap veremem evladım."); return; }
 
     document.getElementById("text").value = "";
     addBubble(txt, 'user');
@@ -78,7 +79,7 @@ async function sendMessage() {
 
         typeWriter(ans, () => {
             badge.style.display = "none";
-            // BUTON ALTA EKLENİYOR
+            // BUTON
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
             if(lastRow) {
@@ -92,7 +93,7 @@ async function sendMessage() {
         });
 
     } catch(e) {
-        addBubble("Bağlantı koptu.", 'bot');
+        addBubble("Bağlantı koptu, internetini kontrol et.", 'bot');
         badge.style.display = "none";
     }
 }
@@ -120,7 +121,7 @@ window.fetchAndPlayAudio = async () => {
         } else { throw new Error("Ses boş"); }
     } catch(e) {
         if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
-        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
+        alert("Sunucuya bağlanamadım. İnternetin var mı evladım?");
     }
 };
 
@@ -139,7 +140,6 @@ function playAudioRaw(b64) {
 function initDock() {
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
-    // İkon Renkleri
     MODULE_ORDER.forEach(key => {
         const color = MODE_CONFIG[key].color;
         dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')">
@@ -167,7 +167,7 @@ function setAppMode(m) {
     if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
     if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
 
-    // ALT ÇİZGİLERİ RENKLENDİR
+    // Alt Çizgiler
     const idx = MODULE_ORDER.indexOf(m);
     for(let i=0; i<4; i++) {
         const line = document.querySelector(`.oz-lines span:nth-child(${i+1})`);
@@ -183,14 +183,11 @@ function updateUIForUser() {
     const footer = document.querySelector('.menu-footer');
     
     if(r) {
-        // GİRİŞ VARSA
+        // GİRİŞ VAR -> PROFİL AÇIK
         const u = JSON.parse(r);
-        const bar = document.getElementById('userInfoBar');
-        if(bar) {
-            bar.classList.add('visible');
-            document.getElementById('headerHitap').innerText = (u.hitap || "MİSAFİR").toUpperCase();
-            document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
-        }
+        document.getElementById('userInfoBar').classList.add('visible');
+        document.getElementById('headerHitap').innerText = (u.hitap || "MİSAFİR").toUpperCase();
+        document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
         
         if(menu) {
             menu.innerHTML = `
@@ -201,19 +198,17 @@ function updateUIForUser() {
                 <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil Düzenle</a>
                 <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
                 <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
-                <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
                 <div class="menu-item" onclick="window.handleLogout()" style="color:#f44; margin-top:15px;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</div>
             `;
         }
     } else {
-        // GİRİŞ YOKSA
-        const bar = document.getElementById('userInfoBar');
-        if(bar) bar.classList.remove('visible');
+        // GİRİŞ YOK -> PROFİL GİZLİ, GOOGLE BUTONU VAR
+        document.getElementById('userInfoBar').classList.remove('visible');
 
         if(menu) {
             menu.innerHTML = `
                 <div style="text-align:center; padding:20px; color:#ccc; font-size:13px;">
-                    Daha iyi hizmet için giriş yapman lazım evladım.
+                    Giriş yapmazsan seni tanıyamam evladım.
                 </div>
                 <div class="menu-item" onclick="window.handleGoogleLogin()" style="background:#fff; color:#000; text-align:center; justify-content:center; cursor:pointer;">
                     <i class="fa-brands fa-google"></i> Google ile Bağlan
@@ -223,7 +218,6 @@ function updateUIForUser() {
             `;
         }
     }
-    
     if(footer) footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
 }
 
@@ -234,7 +228,13 @@ window.openPersonaModal = () => document.getElementById('personaModal').style.di
 window.changePersona = (p) => { currentPersona=p; document.getElementById('personaModal').style.display='none'; addBubble(`Mod: ${p.toUpperCase()}`, 'bot'); };
 window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; };
 window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
-window.handleGoogleLogin = () => { if(typeof google === 'undefined') { alert("Google script yüklenemedi."); return; } google.accounts.id.prompt(); };
+window.handleGoogleLogin = () => { 
+    if(typeof google === 'undefined') { 
+        alert("Google bağlantısı kurulamadı. Reklam engelleyici varsa kapat, sayfayı yenile."); 
+        return; 
+    } 
+    google.accounts.id.prompt(); 
+};
 window.triggerAuth = (m) => { addBubble(m, 'bot'); window.openDrawer(); };
 window.generateDietList = () => addBubble("Diyet listesi hazırlanıyor...", 'bot');
 window.loadAstroContent = () => addBubble("Yıldızlara bakılıyor...", 'bot');
