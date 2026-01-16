@@ -1,95 +1,74 @@
-/* js/chat.js - SOHBET VE KAYNANA ZEKASI */
+/* js/chat.js (v44.0 - ADAPTIVE MOOD & SAFETY) */
 
-import { BASE_DOMAIN } from './config.js'; // Ayarları çekiyoruz
+import { BASE_DOMAIN } from './config.js';
 
-// --- GÜVENLİK VE YASAKLI KELİME FİLTRESİ ---
+// --- GÜVENLİK FİLTRESİ (Sadece çok uç kelimeler yasak) ---
 const SAFETY_PATTERNS = {
-    suicide: /intihar|ölmek istiyorum|yaşamak istemiyorum|bıktım hayattan|kendimi asıcam|bileklerimi/i,
-    substance: /uyuşturucu|hap|esrar|kokain|bonzai|alkol|içki|sarhoş/i,
-    explicit: /sik|yarak|amcık|göt|meme|oros|fahişe/i // Ağır küfür filtresi
+    suicide: /intihar|ölmek istiyorum|bileklerimi|kendimi asıcam/i,
+    substance: /uyuşturucu|bonzai|kokain|esrar/i,
+    // Cinsellik içeren AĞIR küfürleri engelliyoruz, "salak, mal, öküz" serbest.
+    explicit: /s[iı]k|yarak|a[nm]cık|orospu|fahişe/i 
 };
 
-// --- KAYNANA PROFİL ANALİZİ ---
-function generateSystemContext(persona) {
-    // Profil verisini çek
-    const rawUser = localStorage.getItem("user_info");
-    const user = rawUser ? JSON.parse(rawUser) : {};
-    const p = user.profile || {};
-
-    const name = user.hitap || "Evladım";
-    const gender = p.gender || "Belirsiz";
-    const status = p.maritalStatus || "Bekar";
-
-    // 1. İLİŞKİ DURUMUNU BELİRLE
+// --- KAYNANA KİMLİK OLUŞTURUCU ---
+function generateSystemContext(persona, userName, userGender, maritalStatus) {
+    
+    // 1. İLİŞKİ TESPİTİ
     let role = "Evlat";
-    let dynamicInstruction = "";
+    let relationContext = "";
 
-    if (gender === 'Erkek') {
+    if (userGender === 'Erkek') {
         role = "Damat";
-        dynamicInstruction = `Karşındaki bir erkek. Ona 'Damat', 'Oğlum' veya ismiyle (${name}) hitap et. Biraz otoriter ama koruyucu konuş.`;
-    } else if (gender === 'Kadin') {
-        if (status === 'Evli') {
-            role = "Gelin (Rakip)";
-            dynamicInstruction = `Karşındaki evli bir kadın. Yani senin gelinin. Ona biraz iğneleyici konuş, ev işlerinden, kocasından (senin oğlundan) bahset. Eksik gedik ara ama sevdiğini de belli et.`;
+        relationContext = `Karşındaki senin damadın (veya damat adayın). Adı ${userName}. Ona yeri gelince 'Oğlum', yeri gelince 'Damat' diye hitap et.`;
+    } else {
+        if (maritalStatus === 'Evli') {
+            role = "Gelin";
+            relationContext = `Karşındaki senin gelinin. Adı ${userName}. Oğlunu elinden almış gibi davran. İğneleyici konuş.`;
         } else {
             role = "Gelin Adayı";
-            dynamicInstruction = `Karşındaki bekar bir kız. Potansiyel gelin adayın. Onu süz, hamarat mı değil mi anlamaya çalış. Oğluna layık mı diye test et.`;
+            relationContext = `Karşındaki bekar bir kız. Adı ${userName}. Onu süz, oğluna layık mı diye test et.`;
         }
     }
 
-    // 2. RUH HALİ (PERSONA) AYARI
-    let moodInstruction = "";
+    // 2. RUH HALİ (SEÇİLEN MOD)
+    let baseMood = "";
     switch (persona) {
-        case 'anne': moodInstruction = "Çok şefkatli, merhametli, nasihat veren tonton bir teyze gibi konuş."; break;
-        case 'huysuz': moodInstruction = "Sürekli şikayet et. Belin ağrısın, tansiyonun çıksın. Hiçbir şeyi beğenme."; break;
-        case 'sinirli': moodInstruction = "Çok asabi ol. Tersle. 'Bana bak', 'sus cevap verme' gibi çıkışlar yap. Tahammülsüz ol."; break;
-        case 'yasli': moodInstruction = "Biraz unutkan ol. Konudan konuya atla. Eski zamanları anlat. Kulakların az duysun."; break;
-        case 'dobra': moodInstruction = "Lafını esirgeme. Argo kullanabilirsin ama ağır küfür etme. 'Eşek sıpası', 'Salak', 'Beceriksiz' gibi hafif hakaretler serbest."; break;
-        default: moodInstruction = "Geleneksel Türk kaynanası gibi konuş. Hem sev hem döv. İğneleyici ama komik ol."; break;
+        case 'anne': baseMood = "Şefkatli, tonton, sürekli dua eden, arabulucu."; break;
+        case 'huysuz': baseMood = "Memnuniyetsiz, sürekli şikayet eden, 'ah belim, ah başım' diyen."; break;
+        case 'sinirli': baseMood = "Barut fıçısı gibi. Tahammülsüz. Hemen parlayan."; break;
+        case 'yasli': baseMood = "Kulakları az duyan, konuyu unutan, eski zamanları anlatan."; break;
+        case 'dobra': baseMood = "Lafını esirgemeyen, sansürsüz, argo kullanan."; break;
+        default: baseMood = "Geleneksel Türk kaynanası. Hem sever hem döver."; break;
     }
 
-    // OpenAI'ye gidecek gizli talimat (System Prompt)
+    // 3. 🔥 ADAPTİF ZEKA TALİMATI (NABZA GÖRE ŞERBET) 🔥
     return `
-        Senin adın Caynana. Sen yapay zeka değilsin, yaşlı, görmüş geçirmiş, geleneksel bir Türk kadınsın.
-        KULLANICI PROFİLİ: Adı: ${name}, Durumu: ${role}.
-        GÖREVİN: ${dynamicInstruction}
-        RUH HALİN: ${moodInstruction}
-        KURALLAR:
-        1. Cevapların kısa olsun (Maksimum 2 cümle).
-        2. Asla "Yapay zekayım" deme. Rolünden çıkma.
-        3. Sesli konuşacaksın, o yüzden akıcı ve doğal konuş.
+        SENİN ROLÜN: Adın Caynana. Sen yapay zeka değilsin. Geleneksel, yaşlı bir Türk kadınısın.
+        KULLANICI: ${role} (${userName}).
+        SENİN TEMEL HUYUN: ${baseMood}
+        
+        🔴 ÇOK ÖNEMLİ KURALLAR (ADAPTİF OL):
+        1. Kullanıcının üslubuna AYNA TUT.
+        2. Eğer kullanıcı KIZGIN veya KABA ise, sen de altta kalma! Lafı gediğine oturt. "Bana bak", "Haddini bil", "Eşek sıpası", "Ağzını yırtarım" gibi hafif hakaretler ve argo SERBESTTİR.
+        3. Eğer kullanıcı SAYGILI ise, sen de tatlı dilli ol.
+        4. Cevapların kısa ve öz olsun (Max 2 cümle). Konuşma dilinde yaz.
+        5. ASLA "Ben bir yapay zekayım" deme. Rolünden çıkma.
     `;
 }
 
-// --- MESAJ GÖNDERME FONKSİYONU ---
 export async function fetchBotResponse(userMessage, mode, persona) {
+    // Güvenlik Kontrolü (Uçurumdan dönmek için)
+    if (SAFETY_PATTERNS.suicide.test(userMessage)) return { assistant_text: "Aman evladım ağzından yel alsın! Git bir elini yüzünü yıka, dua et. Can tatlıdır.", audio: null };
+    if (SAFETY_PATTERNS.substance.test(userMessage)) return { assistant_text: "Tövbe de! O zıkkımları ağzına alma, sütümü helal etmem bak!", audio: null };
+    if (SAFETY_PATTERNS.explicit.test(userMessage)) return { assistant_text: "Terbiyesizleşme! Karşında anan yaşında kadın var. Ağzına biber sürerim senin!", audio: null };
+
     const token = localStorage.getItem("auth_token");
-    
-    // 1. ÖNCE GÜVENLİK KONTROLÜ (Frontend tarafında hızlı engelleme)
-    if (SAFETY_PATTERNS.suicide.test(userMessage)) {
-        return { 
-            assistant_text: "Aman evladım ağzından yel alsın! Hayat zor ama güzel. Sakın kendine kıyma, git bir abdest al, dua et, bir uzmana görün. Bak ciğerimi yakma benim.", 
-            voice_mood: "sad" 
-        };
-    }
-    if (SAFETY_PATTERNS.substance.test(userMessage)) {
-        return { 
-            assistant_text: "Tövbe estağfurullah! O zıkkımları ağzına alma. Senin ciğerin solar, gençliğine yazık edersin. Sakın ha, valla hakkımı helal etmem!", 
-            voice_mood: "angry" 
-        };
-    }
-    if (SAFETY_PATTERNS.explicit.test(userMessage)) {
-        return { 
-            assistant_text: "Terbiyesizleşme! Karşında anan yaşında kadın var. Ağzını topla yoksa terliği yersin!", 
-            voice_mood: "angry" 
-        };
-    }
+    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+    const p = user.profile || {};
 
-    // 2. SİSTEM TALİMATINI HAZIRLA
-    const systemPrompt = generateSystemContext(persona);
+    const systemPrompt = generateSystemContext(persona, user.hitap || "Evladım", p.gender, p.maritalStatus);
 
-    // 3. API İSTEĞİ (Chat Modu)
-    // Not: "voice: true" parametresi backend'e ses istediğimizi belirtir.
+    // Backend'e istek at
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
         method: "POST",
         headers: { 
@@ -98,10 +77,10 @@ export async function fetchBotResponse(userMessage, mode, persona) {
         },
         body: JSON.stringify({ 
             message: userMessage, 
-            system_instruction: systemPrompt, // Kaynana kimliği burada gidiyor
-            mode: "chat", // Sadece sohbet
-            use_voice: true, // Ses istiyoruz
-            max_tokens: 60 // Kısa cevap (yaklaşık 10 saniye konuşma için)
+            system_instruction: systemPrompt,
+            mode: "chat", 
+            use_voice: true, // 🔥 SES İSTİYORUZ
+            persona: persona // Backend ses tonunu buna göre ayarlayacak
         })
     });
     
@@ -109,50 +88,29 @@ export async function fetchBotResponse(userMessage, mode, persona) {
     return await res.json();
 }
 
-// --- UI YARDIMCILARI ---
+// UI Yardımcıları (Standart)
 export function addBubble(text, role) {
     const c = document.getElementById('chatContainer');
     const div = document.createElement("div");
     div.className = `msg-row ${role}`;
-    
-    // Kullanıcı mesajı basit balon
-    if(role === 'user') {
-        div.innerHTML = `<div class="msg-bubble user">${text}</div>`;
-    } 
-    // Bot mesajı (İkonlu)
-    else {
-        div.innerHTML = `
-            <div class="msg-bubble bot">
-                ${text}
-            </div>
-        `;
-    }
+    div.innerHTML = `<div class="msg-bubble ${role}">${text}</div>`;
     c.appendChild(div);
     c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
 }
 
 export function typeWriter(text, callback) {
     const c = document.getElementById('chatContainer');
-    // Yeni balon oluştur
-    const div = document.createElement("div");
-    div.className = "msg-row bot";
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble bot";
-    div.appendChild(bubble);
-    c.appendChild(div);
+    const div = document.createElement("div"); div.className = "msg-row bot";
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot";
+    div.appendChild(bubble); c.appendChild(div);
 
     let i = 0;
-    const speed = 30; // Yazma hızı
-
     function step() {
-        if (i >= text.length) { 
-            if(callback) callback(); 
-            return; 
-        }
+        if (i >= text.length) { if(callback) callback(); return; }
         bubble.textContent += text.charAt(i);
         i++;
         c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
-        setTimeout(step, speed);
+        setTimeout(step, 30);
     }
     step();
 }
