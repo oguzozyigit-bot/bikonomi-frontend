@@ -1,6 +1,6 @@
-/* js/chat.js (v10.3 - RESTORED JAVASCRIPT) */
+/* js/chat.js - CLEAN RESTORE */
 
-// Kilitlenme olmasın diye adresi buraya sabitliyoruz
+// Kilitlenmeyi önlemek için adresi elle yazıyoruz
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
@@ -11,14 +11,12 @@ export function initChat() {
   const input = document.getElementById("text");
   
   if (sendBtn) {
-    // Eski listener'ları temizlemek için klonluyoruz
     const newBtn = sendBtn.cloneNode(true);
     sendBtn.parentNode.replaceChild(newBtn, sendBtn);
     newBtn.addEventListener("click", sendMessage);
   }
   
   if (input) {
-    // Enter tuşu desteği
     input.onkeydown = (e) => { 
         if (e.key === "Enter") sendMessage(); 
     };
@@ -35,7 +33,6 @@ async function sendMessage() {
   const token = getToken();
   if (!token) { triggerAuth("Evladım önce bir giriş yap, kim olduğunu bileyim."); return; }
 
-  // Kullanıcı mesajını ekle
   addBubble(txt, "user");
   input.value = "";
 
@@ -59,7 +56,7 @@ async function sendMessage() {
     const products = Array.isArray(data.data) ? data.data : [];
 
     typeWriterBubble(botText, "ai", () => {
-      // Mesaj bittikten sonra ürün varsa göster
+      // Mesaj bitince ürün varsa kartları bas
       if ((mode === "shopping" || products.length > 0) && products.length) {
         setTimeout(() => renderProducts(products), 500);
       }
@@ -131,7 +128,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// 🌟 ÜRÜN KARTLARINI ÇİZEN FONKSİYON 🌟
+// 🌟 ÜRÜN KARTI ÇİZME (Resimler Net, Yapı Sağlam) 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
@@ -148,6 +145,7 @@ function renderProducts(products) {
       let price = p.price || "Fiyat Gör";
       const reason = p.reason || "İncelemeye değer.";
 
+      // Kart HTML'i
       card.innerHTML = `
         <div class="pc-img-wrap">
           <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
