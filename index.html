@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Caynana.ai - Ultimate V4</title>
+    <title>Caynana.ai - Premium v5.2</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +43,8 @@
             </div>
         </div>
 
-        <div id="chatContainer"></div>
+        <div id="chatContainer">
+            </div>
     </div>
 
     <div id="bottom">
@@ -65,8 +66,7 @@
         </div>
 
         <div id="dockContainer">
-            <div id="dock">
-                </div>
+            <div id="dock"></div>
         </div>
 
         <div class="footer-sign">@CaynanaAI By Ozyigits</div>
@@ -80,30 +80,11 @@
     </div>
 </div>
 
-<div id="authModal" class="modalMask">
-    <div class="authBox">
-        <div class="modalHeader"><h3>Giriş Yap</h3><i class="fa-solid fa-xmark" id="authClose"></i></div>
-        <p style="font-size:13px; opacity:0.8; margin-bottom:15px;">Seni tanımam ve hafızamı tutmam için giriş yapman lazım.</p>
-        
-        <div id="googleBtn" class="google-btn-style">
-            <i class="fa-brands fa-google"></i> Google ile Devam Et
-        </div>
-        
-        <div style="text-align:center; margin:15px 0; font-size:12px; opacity:0.5;">VEYA E-POSTA İLE</div>
-        
-        <input type="email" id="email" class="authInput" placeholder="E-Posta">
-        <input type="password" id="password" class="authInput" placeholder="Şifre">
-        <button class="pc-btn" id="loginBtn" style="margin-top:10px;">Giriş Yap</button>
-    </div>
-</div>
-
-<div id="personaModal" class="modalMask">
-    <div class="authBox">
-        <div class="modalHeader"><h3>Caynana Modu</h3><i class="fa-solid fa-xmark" id="personaClose"></i></div>
-        <div class="persona-opt selected" data-p="normal">👵 Normal Kaynana</div>
-        <div class="persona-opt locked">🥰 Anne Tadında (Pro)</div>
-        <div class="persona-opt locked">😠 Huysuz (Pro)</div>
-        <div class="persona-opt locked">🧐 Dedektif (Pro)</div>
+<div id="drawerMask" class="modalMask" style="justify-content:flex-end;">
+    <div id="drawer">
+        <div class="drawerHeader"><h2>Menü</h2><i class="fa-solid fa-xmark" id="drawerClose"></i></div>
+        <div class="drawerItem" id="openProfileBtn">👤 Profil Ayarları</div>
+        <div class="drawerItem" id="openLoginBtn">🔑 Giriş Yap</div>
     </div>
 </div>
 
@@ -112,7 +93,7 @@
         <div class="modalHeader"><h3>Profil</h3><i class="fa-solid fa-xmark" id="profileCloseX"></i></div>
         <input type="text" id="pfName" class="authInput" placeholder="Adın?">
         <select id="pfGender" class="authInput">
-            <option value="">Cinsiyet Seçme</option>
+            <option value="">Belirtme</option>
             <option value="kiz">Kızım / Ablam</option>
             <option value="ogul">Oğlum / Abim</option>
         </select>
@@ -120,11 +101,20 @@
     </div>
 </div>
 
-<div id="drawerMask" class="modalMask" style="justify-content:flex-end;">
-    <div id="drawer">
-        <div class="drawerHeader"><h2>Menü</h2><i class="fa-solid fa-xmark" id="drawerClose"></i></div>
-        <div class="drawerItem" id="openProfileBtn">👤 Profil Ayarları</div>
-        <div class="drawerItem" id="openLoginBtn">🔑 Giriş Yap</div>
+<div id="authModal" class="modalMask">
+    <div class="authBox">
+        <div class="modalHeader"><h3>Giriş Yap</h3><i class="fa-solid fa-xmark" id="authClose"></i></div>
+        <input type="email" id="email" class="authInput" placeholder="E-Posta">
+        <input type="password" id="password" class="authInput" placeholder="Şifre" style="margin-top:10px;">
+        <button class="pc-btn" id="loginBtn" style="margin-top:15px;">Giriş</button>
+    </div>
+</div>
+
+<div id="personaModal" class="modalMask">
+    <div class="authBox">
+        <div class="modalHeader"><h3>Mod Seç</h3><i class="fa-solid fa-xmark" id="personaClose"></i></div>
+        <div class="persona-opt selected" data-p="normal">👵 Normal</div>
+        <div class="persona-opt locked">🥰 Anne Tadında (Pro)</div>
     </div>
 </div>
 
