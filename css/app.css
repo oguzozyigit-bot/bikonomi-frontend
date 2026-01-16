@@ -44,24 +44,24 @@ body { display: flex; align-items: center; justify-content: center; }
 .msg-bubble { max-width: 88%; padding: 14px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
 .msg-bubble.user { background: var(--primary); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
 
-/* css/app.css içinde .msg-bubble.bot kısmını bul ve bununla değiştir */
+/* css/app.css içinde bu bloğu bul ve tamamen değiştir */
 
 .msg-bubble.bot { 
-    /* Daha şeffaf beyaz zemin */
-    background: rgba(255, 255, 255, 0.15); 
+    /* ARKA PLANI GİZLEMEK İÇİN DAHA OPAK BEYAZ */
+    background: rgba(255, 255, 255, 0.45); 
     color: #fff; 
     
-    /* GÜÇLÜ BUZLU CAM */
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    /* ÇOK GÜÇLÜ BULANIKLIK (KRİSTAL BUZ) */
+    backdrop-filter: blur(60px) saturate(120%);
+    -webkit-backdrop-filter: blur(60px) saturate(120%);
     
-    /* İnce parlak kenarlık (Cam hissi için) */
+    /* Kenarlık */
     border: 1px solid rgba(255, 255, 255, 0.3); 
     border-bottom-left-radius: 4px;
     
-    /* Yazı okunabilirliği için hafif gölge */
-    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    /* Okunabilirlik için gölge */
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
 /* BOTTOM BAR */
