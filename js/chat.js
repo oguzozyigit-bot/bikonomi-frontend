@@ -1,208 +1,313 @@
-/* js/chat.js (v16.1 - PRODUCTION READY & SECURE) */
-const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
+/* js/chat.js (v16.2 - FINAL / SECURE + CSS UYUMLU) */
+const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
-// Çift tıklamayı önlemek için kilit
 let isBusy = false;
 
+// Sınıf isimlerini standartlaştırıyoruz (CSS ile uyumlu)
+const ROLE_USER = "user";
+const ROLE_BOT = "bot";
+
 export function initChat() {
-  console.log("Chat Modülü Aktif v16.1");
+  console.log("Chat Modülü Aktif v16.2 (SECURE)");
+
   const sendBtn = document.getElementById("sendBtn");
   const input = document.getElementById("text");
-  
+
   if (sendBtn) {
-    // Event listener temizliği (Double-bind önlemi)
+    // Double-bind önlemi (Clone yöntemiyle eski listener'ı temizle)
     const newBtn = sendBtn.cloneNode(true);
     sendBtn.parentNode.replaceChild(newBtn, sendBtn);
-    newBtn.addEventListener("click", sendMessage);
+    newBtn.addEventListener("click", () => {
+      if (!isBusy) sendMessage();
+    });
   }
-  
+
   if (input) {
-    input.onkeydown = (e) => { 
-        if (e.key === "Enter" && !isBusy) sendMessage(); 
-    };
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !isBusy) sendMessage();
+    });
   }
 }
 
-function getToken() { return localStorage.getItem("auth_token") || ""; }
+function getToken() {
+  return localStorage.getItem("auth_token") || "";
+}
+
+// Yumuşak kaydırma
+function scrollChatToBottom() {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+  requestAnimationFrame(() => {
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+  });
+}
 
 async function sendMessage() {
-  if (isBusy) return; // Kilitliyse işlem yapma
+  if (isBusy) return;
 
   const input = document.getElementById("text");
   const txt = (input?.value || "").trim();
   if (!txt) return;
 
   const token = getToken();
-  if (!token) { triggerAuth("Giriş yap evladım."); return; }
+  if (!token) {
+    triggerAuth("Giriş yap evladım.");
+    return;
+  }
 
-  // Kilidi kapat ve UI'ı güncelle
+  // Kilitle
   isBusy = true;
-  input.disabled = true; // Inputu dondur
-  input.style.opacity = "0.5";
+  if (input) {
+    input.disabled = true;
+    input.style.opacity = "0.5";
+  }
 
-  addBubble(txt, "user");
-  input.value = "";
+  // Kullanıcı mesajı
+  addBubble(txt, ROLE_USER);
+  if (input) input.value = "";
 
   const mode = window.currentAppMode || "chat";
-  
-  // Loading ekle
+
+  // Loading başlat
   addLoading("Caynana yazıyor...");
 
   try {
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
       body: JSON.stringify({ message: txt, mode, persona: "normal" }),
     });
 
-    // Loading balonlarını temizle
+    // Loading temizle
     removeLoading();
-    
-    if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
-    if (!res.ok) { addBubble("Sunucu hatası evladım.", "ai"); return; }
+
+    if (res.status === 401) {
+      triggerAuth("Süren dolmuş.");
+      return;
+    }
+    if (!res.ok) {
+      addBubble("Sunucu hatası evladım.", ROLE_BOT);
+      return;
+    }
 
     const data = await res.json();
-    const botText = data.assistant_text || "...";
-    const products = Array.isArray(data.data) ? data.data : [];
+    const botText = (data?.assistant_text ?? "...").toString();
+    const products = Array.isArray(data?.data) ? data.data : [];
 
-    // Gerçek daktilo efekti ile yazdır
-    typeWriterBubble(botText, "ai", () => {
+    // ✅ XSS-safe typewriter + CSS uyumlu bot sınıfı
+    typeWriterBubble(botText, ROLE_BOT, () => {
       if (products.length > 0) {
-        setTimeout(() => renderProducts(products), 300);
+        setTimeout(() => renderProducts(products), 250);
       }
     });
 
   } catch (err) {
     removeLoading();
     console.error(err);
-    addBubble("Bağlantı koptu evladım.", "ai");
+    addBubble("Bağlantı koptu evladım.", ROLE_BOT);
   } finally {
-    // İşlem bitince kilidi aç
+    // Kilidi aç
     isBusy = false;
-    input.disabled = false;
-    input.style.opacity = "1";
-    input.focus();
-  }
-}
-
-// 🛡️ GÜVENLİ MESAJ BALONU (XSS FİXLENDİ)
-function addBubble(text, role) {
-  const container = document.getElementById("chatContainer");
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row " + role;
-  
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble " + role;
-  
-  // Önce textContent ile güvenli hale getir, sonra satır başlarını işle
-  bubble.textContent = text; 
-  bubble.innerHTML = bubble.innerHTML.replace(/\n/g, "<br>");
-  
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  container.scrollTo(0, container.scrollHeight);
-  return bubble; // Typewriter için elementi döndür
-}
-
-// ✍️ GERÇEK DAKTİLO EFEKTİ
-function typeWriterBubble(text, role, cb) {
-  const container = document.getElementById("chatContainer");
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row " + role;
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble " + role;
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-
-  let i = 0;
-  const speed = 15; // Yazma hızı (ms)
-
-  function type() {
-    if (i < text.length) {
-        // Tek tek harf ekle (HTML entity korumalı değil ama temel metin için ok)
-        // Eğer HTML tag varsa burası değişmeli, şimdilik düz metin varsayıyoruz.
-        const char = text.charAt(i);
-        bubble.innerHTML += (char === '\n' ? '<br>' : char);
-        i++;
-        container.scrollTo(0, container.scrollHeight);
-        setTimeout(type, speed);
-    } else {
-        if (cb) cb(); // Yazma bitince callback çalıştır
+    if (input) {
+      input.disabled = false;
+      input.style.opacity = "1";
+      input.focus();
     }
   }
-  type();
 }
 
-// ✨ CANLI LOADING
-function addLoading(text) {
-    const container = document.getElementById("chatContainer");
-    const wrap = document.createElement("div");
-    wrap.className = "msg-row bot loading-bubble-wrap"; // Sınıf bazlı takip
-    
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble bot";
-    // fa-beat-fade ile daha canlı animasyon
-    bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-beat-fade" style="margin-left:5px; font-size:12px;"></i>`;
-    
-    wrap.appendChild(bubble);
-    container.appendChild(wrap);
-    container.scrollTo(0, container.scrollHeight);
-}
-
-function removeLoading() {
-    document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove());
-}
-
-function renderProducts(products) {
+/* ✅ Güvenli balon: textContent + br node (HTML injection yok) */
+function addBubble(text, role) {
   const container = document.getElementById("chatContainer");
-  products.slice(0, 5).forEach((p, index) => {
-    setTimeout(() => {
-      const card = document.createElement("div");
-      card.className = "product-card";
-      
-      const img = p.image || PLACEHOLDER_IMG;
-      const title = p.title || "Ürün";
-      const price = p.price || "Fiyat Gör";
-      const url = p.url || "#";
-      const reason = p.reason || "İncele";
-      
-      card.innerHTML = `
-        <div class="pc-source">Trendyol</div>
-        <div class="pc-img-wrap">
-          <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
-        </div>
-        <div class="pc-content">
-            <div class="pc-title">${title}</div>
-            <div class="pc-info-row">
-                <i class="fa-solid fa-circle-check"></i> <span>${reason}</span>
-            </div>
-            <div class="pc-bottom-row">
-                <div class="pc-price">${price}</div>
-                <a href="${url}" target="_blank" class="pc-btn-mini">Ürüne Git</a>
-            </div>
-        </div>
-      `;
-      
-      const wrap = document.createElement("div");
-      wrap.className = "msg-row bot";
-      wrap.appendChild(card);
-      container.appendChild(wrap);
-      container.scrollTo(0, container.scrollHeight);
-    }, index * 300);
+  if (!container) return null;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+
+  setTextWithLineBreaks(bubble, text);
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  scrollChatToBottom();
+  return bubble;
+}
+
+function setTextWithLineBreaks(el, text) {
+  // el içine güvenli şekilde metin + <br> node basar
+  el.textContent = ""; // temizle
+  const parts = String(text).split("\n");
+  parts.forEach((part, idx) => {
+    el.appendChild(document.createTextNode(part));
+    if (idx !== parts.length - 1) el.appendChild(document.createElement("br"));
   });
 }
 
-function triggerAuth(msg) { 
-    // Auth uyarısını daktilo efekti olmadan direkt bas
-    const container = document.getElementById("chatContainer");
-    const wrap = document.createElement("div");
-    wrap.className = "msg-row bot";
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble bot";
-    bubble.textContent = msg;
-    wrap.appendChild(bubble);
-    container.appendChild(wrap);
-    
-    document.getElementById('authModal').style.display = 'flex'; 
+/* ✅ GERÇEK DAKTİLO (XSS SAFE): innerHTML yok, node basılıyor */
+function typeWriterBubble(text, role, cb) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+
+  const s = String(text);
+  let i = 0;
+  const speed = 14; // ms
+
+  function step() {
+    if (i >= s.length) {
+      if (cb) cb();
+      return;
+    }
+
+    const ch = s.charAt(i);
+    if (ch === "\n") {
+      bubble.appendChild(document.createElement("br"));
+    } else {
+      bubble.appendChild(document.createTextNode(ch));
+    }
+
+    i++;
+    scrollChatToBottom();
+    setTimeout(step, speed);
+  }
+
+  step();
+}
+
+/* ✅ Loading balonu (kontrollü) */
+function addLoading(text) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row bot loading-bubble-wrap";
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble bot";
+
+  // Burada sabit HTML var -> güvenli (dış veri yok)
+  bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-beat-fade" style="margin-left:5px; font-size:12px;"></i>`;
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  scrollChatToBottom();
+}
+
+function removeLoading() {
+  document.querySelectorAll(".loading-bubble-wrap").forEach((el) => el.remove());
+}
+
+/* ✅ URL güvenliği: sadece http/https aç, javascript: engelle */
+function safeUrl(url) {
+  try {
+    const u = new URL(url, window.location.origin);
+    if (u.protocol === "http:" || u.protocol === "https:") return u.href;
+    return "#";
+  } catch {
+    return "#";
+  }
+}
+
+/* ✅ Ürün kartları: innerHTML YOK (XSS kapalı, tam DOM inşası) */
+function renderProducts(products) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  products.slice(0, 5).forEach((p, index) => {
+    setTimeout(() => {
+      const wrap = document.createElement("div");
+      wrap.className = "msg-row bot";
+
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      // Rozet
+      const source = document.createElement("div");
+      source.className = "pc-source";
+      source.textContent = "Trendyol";
+
+      // Resim Alanı
+      const imgWrap = document.createElement("div");
+      imgWrap.className = "pc-img-wrap";
+
+      const imgEl = document.createElement("img");
+      imgEl.className = "pc-img";
+      imgEl.alt = "Ürün görseli";
+      imgEl.src = (p?.image || "").toString().trim() || PLACEHOLDER_IMG;
+      imgEl.onerror = () => { imgEl.src = PLACEHOLDER_IMG; };
+
+      imgWrap.appendChild(imgEl);
+
+      // İçerik Alanı
+      const content = document.createElement("div");
+      content.className = "pc-content";
+
+      const title = document.createElement("div");
+      title.className = "pc-title";
+      title.textContent = (p?.title || "Ürün").toString();
+
+      const infoRow = document.createElement("div");
+      infoRow.className = "pc-info-row";
+
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-circle-check";
+
+      const reason = document.createElement("span");
+      reason.textContent = (p?.reason || "İncele").toString();
+
+      infoRow.appendChild(icon);
+      infoRow.appendChild(document.createTextNode(" "));
+      infoRow.appendChild(reason);
+
+      const bottomRow = document.createElement("div");
+      bottomRow.className = "pc-bottom-row";
+
+      const price = document.createElement("div");
+      price.className = "pc-price";
+      price.textContent = (p?.price || "Fiyat Gör").toString();
+
+      const link = document.createElement("a");
+      link.className = "pc-btn-mini";
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.href = safeUrl((p?.url || "#").toString());
+      link.textContent = "Ürüne Git";
+
+      bottomRow.appendChild(price);
+      bottomRow.appendChild(link);
+
+      content.appendChild(title);
+      content.appendChild(infoRow);
+      content.appendChild(bottomRow);
+
+      card.appendChild(source);
+      card.appendChild(imgWrap);
+      card.appendChild(content);
+
+      wrap.appendChild(card);
+      container.appendChild(wrap);
+      scrollChatToBottom();
+    }, index * 260);
+  });
+}
+
+/* ✅ Auth çağrısı (bot balonu ile) */
+function triggerAuth(msg) {
+  addBubble(msg, ROLE_BOT);
+  const modal = document.getElementById("authModal");
+  if (modal) modal.style.display = "flex";
 }
