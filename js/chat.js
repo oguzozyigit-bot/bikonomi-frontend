@@ -1,4 +1,4 @@
-/* js/chat.js (v15.0 - SOLID HTML STRUCTURE) */
+/* js/chat.js (v15.1 - FIX LOADING STUCK) */
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
@@ -31,6 +31,7 @@ async function sendMessage() {
   input.value = "";
 
   const mode = window.currentAppMode || "chat";
+  // Loading balonuna ID verdik ki sonra silebilelim
   const loadingId = addLoading("Caynana yazıyor...");
 
   try {
@@ -40,6 +41,7 @@ async function sendMessage() {
       body: JSON.stringify({ message: txt, mode, persona: "normal" }),
     });
 
+    // ID ile balonu siliyoruz
     removeById(loadingId);
     
     if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
@@ -56,13 +58,39 @@ async function sendMessage() {
     });
 
   } catch (err) {
-    removeById(loadingId);
+    removeById(loadingId); // Hata olsa da sil
     console.error(err);
     addBubble("Bağlantı koptu evladım.", "ai");
   }
 }
 
-// 🌟 YENİ KART HTML'İ (SADE & NET) 🌟
+// 🛠️ DÜZELTİLEN YER: ID döndüren loading fonksiyonu
+function addLoading(text) {
+    const container = document.getElementById("chatContainer");
+    const id = "ldr_" + Date.now(); // Benzersiz ID
+    
+    const wrap = document.createElement("div");
+    wrap.id = id; // Wrapper'a ID ver
+    wrap.className = "msg-row bot";
+    
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble bot";
+    bubble.innerHTML = text + ' <i class="fa-solid fa-pen-nib fa-fade"></i>'; // Animasyonlu ikon
+    
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+    container.scrollTo(0, container.scrollHeight);
+    
+    return id; // ID'yi geri döndür
+}
+
+// ID ile silme fonksiyonu
+function removeById(id) { 
+    if(!id) return;
+    const el = document.getElementById(id); 
+    if (el) el.remove(); 
+}
+
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
   products.slice(0, 5).forEach((p, index) => {
@@ -114,6 +142,4 @@ function addBubble(text, role) {
   container.appendChild(wrap);
   container.scrollTo(0, container.scrollHeight);
 }
-function addLoading(text) { return addBubble(text, "bot"); }
-function removeById(id) { const el = document.getElementById(id); if (el) el.remove(); }
 function typeWriterBubble(text, role, cb) { addBubble(text, role); if(cb) cb(); }
