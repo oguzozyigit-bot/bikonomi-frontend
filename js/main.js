@@ -1,10 +1,10 @@
-/* js/main.js (v26.1 - AUTH CODE FLOW FIX) */
+/* js/main.js (v26.3 - FINAL STABLE & DEBUG) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 // 🔥 BURAYA RENDER'DAKİ GOOGLE CLIENT ID'Yİ YAPIŞTIR 🔥
-const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
+const GOOGLE_CLIENT_ID = "BURAYA_RENDERDAKI_GOOGLE_CLIENT_ID_YAPISTIR"; 
 
 let isBusy = false;
 const chatHistory = {};
@@ -24,14 +24,14 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v26.1 Started (Code Flow)");
+    console.log("🚀 Caynana v26.3 Started (Access Token Mode)");
     initDock();
     setAppMode('chat');
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
     document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-/* ... DOCK ve UI FONKSİYONLARI ... */
+/* ... DOCK & UI ... */
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) return;
@@ -86,7 +86,7 @@ function updateFooterBars(currentMode) {
     }
 }
 
-/* ... CHAT FONKSİYONLARI ... */
+/* ... CHAT ... */
 async function sendMessage() {
     if(isBusy) return;
     const input = document.getElementById("text");
@@ -194,7 +194,7 @@ window.triggerAuth = (msg) => {
     document.getElementById("authModal").style.display = "flex";
 };
 
-// 🔥 GOOGLE LOGIN (AUTH CODE FLOW - SUNUCU DOSTU) 🔥
+// 🔥 GOOGLE LOGIN (UNIVERSAL ACCESS TOKEN) 🔥
 window.handleGoogleLogin = () => {
     if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Lütfen sayfayı yenile."); return; }
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) { alert("JS Dosyasında Client ID eksik!"); return; }
@@ -205,16 +205,14 @@ window.handleGoogleLogin = () => {
     btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
     btn.style.opacity = "0.7"; btn.disabled = true;
 
-    // initTokenClient YERİNE initCodeClient KULLANIYORUZ
-    // Bu yöntem "Access Token" değil "Auth Code" verir. Sunucular bunu sever.
-    const client = google.accounts.oauth2.initCodeClient({
+    // initTokenClient: Access Token alır. Backend Secret gerektirmez.
+    const client = google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: 'email profile openid',
-        ux_mode: 'popup',
         callback: (response) => {
-            if (response.code) {
-                console.log("🟢 Google Auth Code Alındı, Backend'e Gönderiliyor...");
-                verifyGoogleTokenOnBackend(response.code, btn, oldText);
+            if (response.access_token) {
+                console.log("🟢 Google Access Token Alındı...", response);
+                verifyGoogleTokenOnBackend(response.access_token, btn, oldText);
             } else {
                 console.warn("Google girişi iptal edildi.");
                 resetGoogleBtn(btn, oldText);
@@ -222,16 +220,21 @@ window.handleGoogleLogin = () => {
         },
     });
 
-    client.requestCode(); // requestAccessToken yerine requestCode
+    // Pencereyi Aç
+    client.requestAccessToken();
 };
 
-async function verifyGoogleTokenOnBackend(code, btn, oldText) {
+async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
     try {
-        // Backend 'code' bekliyorsa bu çalışır
+        // Backend ne isterse istesin diye her formatı gönderiyoruz
         const payload = { 
-            code: code,
-            google_token: code // Yedek olarak
+            token: accessToken,
+            access_token: accessToken,
+            google_token: accessToken,
+            id_token: accessToken // Bazı sistemler buna da Access Token kabul eder
         };
+
+        console.log("📤 Backend'e giden payload:", payload);
 
         const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
             method: "POST",
@@ -241,9 +244,13 @@ async function verifyGoogleTokenOnBackend(code, btn, oldText) {
 
         const data = await res.json();
         
+        // HATA YAKALAMA
         if (!res.ok) {
             console.error("🔴 SUNUCU HATASI:", data);
-            throw new Error(data.message || data.error || "Sunucu girişi reddetti (400).");
+            // Ekrana hatayı basıyoruz ki bilelim neymiş derdi
+            const errMsg = data.message || data.error || JSON.stringify(data);
+            alert("Sunucu Hatası: " + errMsg);
+            throw new Error(errMsg);
         }
 
         if (data.token) {
@@ -257,7 +264,7 @@ async function verifyGoogleTokenOnBackend(code, btn, oldText) {
         }
 
     } catch (err) {
-        alert("Giriş Hatası: " + err.message);
+        console.error(err);
         resetGoogleBtn(btn, oldText);
     }
 }
