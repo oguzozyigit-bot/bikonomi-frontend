@@ -1,35 +1,36 @@
-/* js/main.js (v21.0 - HISTORY + TRASH) */
-import { initChat, triggerAuth } from './chat.js';
+/* js/main.js (v23.0 - UNIFIED & FIXED) */
 
-// Mod Yapılandırması (Açılış mesajlarını buraya ekledik)
+const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
+let isBusy = false;
+const chatHistory = {};
+
+// MOD YAPILANDIRMASI
 const MODE_CONFIG = {
-    'chat': { 
-        title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments",
-        welcome: "Ooo hoş geldin evladım! Gözüm yollarda kaldı. Gel otur şöyle, anlat bakalım derdin ne?"
-    },
-    'shopping': { 
-        title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping",
-        welcome: "Aman evladım, paranı sokağa atma. Ne lazım söyle, en uygununu bulayım sana."
-    },
-    'dedikodu': { 
-        title: "Dedikodu Odası<br>Bize Özel.", desc: "Duvarların kulağı var.", color: "#90A4AE", icon: "fa-user-secret",
-        welcome: "Kız kim ne demiş? Anlat çabuk, aramızda kalacak söz."
-    },
-    'fal': { 
-        title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#CE93D8", icon: "fa-mug-hot",
-        welcome: "Hadi iç kahveni, kapat fincanı soğusun da gel. Bakalım kısmetinde ne var?"
-    },
+    'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", welcome: "Ooo hoş geldin evladım! Gözüm yollarda kaldı. Gel otur şöyle, anlat bakalım derdin ne?" },
+    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", welcome: "Aman evladım, paranı sokağa atma. Ne lazım söyle, en uygununu bulayım sana." },
+    'dedikodu': { title: "Dedikodu Odası<br>Bize Özel.", desc: "Duvarların kulağı var.", color: "#90A4AE", icon: "fa-user-secret", welcome: "Kız kim ne demiş? Anlat çabuk, aramızda kalacak söz." },
+    'fal': { title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#CE93D8", icon: "fa-mug-hot", welcome: "Hadi iç kahveni, kapat fincanı soğusun da gel." },
     'astro': { title: "Yıldızlar Ne Diyor<br>Bakalım.", desc: "Merkür retrosu hayırdır.", color: "#7986CB", icon: "fa-star", welcome: "Yıldızlar bu ara karışık evladım. Burcun ne senin?" },
     'ruya': { title: "Rüyalar Alemi<br>Hayırdır.", desc: "Kabus mu gördün?", color: "#81D4FA", icon: "fa-cloud-moon", welcome: "Hayırdır inşallah de. Ne gördün rüyanda?" },
-    'health': { title: "Önce Sağlık<br>Gerisi Yalan.", desc: "Neren ağrıyor?", color: "#E57373", icon: "fa-heart-pulse", welcome: "Aman sağlığına dikkat et. Neren ağrıyor, neyin var?" },
+    'health': { title: "Önce Sağlık<br>Gerisi Yalan.", desc: "Neren ağrıyor?", color: "#E57373", icon: "fa-heart-pulse", welcome: "Aman sağlığına dikkat et. Neren ağrıyor?" },
     'diet': { title: "Boğazını Tut<br>Rahat Et.", desc: "O böreği bırak.", color: "#AED581", icon: "fa-carrot", welcome: "O böreği yavaşça yere bırak evladım. Gel diyete başlayalım." },
     'trans': { title: "Gavurca<br>Ne Demişler?", desc: "Anlamadığını sor.", color: "#FFB74D", icon: "fa-language", welcome: "Ne diyor bu gavurlar? Anlamadığın yeri sor bana." }
 };
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
-// 🔥 MODÜL HAFIZASI 🔥
-const chatHistory = {}; 
+// BAŞLATMA
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("🚀 Caynana v23.0 Started");
+    initDock();
+    setAppMode('chat');
+    
+    // Event Listenerlar
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
+});
 
+// DOCK (İKONLAR)
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) return;
@@ -45,74 +46,42 @@ function initDock() {
     });
 }
 
+// MOD DEĞİŞTİRME
 function setAppMode(mode) {
-    // 1. Önceki modun geçmişini kaydet
     const currentContainer = document.getElementById('chatContainer');
     const oldMode = window.currentAppMode || 'chat';
-    if (currentContainer) {
-        chatHistory[oldMode] = currentContainer.innerHTML;
-    }
+    if(currentContainer) chatHistory[oldMode] = currentContainer.innerHTML;
 
-    // 2. Yeni moda geç
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode] || MODE_CONFIG['chat'];
     
-    // UI Güncelle
-    const titleEl = document.getElementById('heroTitle');
-    const descEl = document.getElementById('heroDesc');
-    
-    if(titleEl) titleEl.innerHTML = cfg.title;
-    if(descEl) descEl.innerHTML = cfg.desc;
-    
+    document.getElementById('heroTitle').innerHTML = cfg.title;
+    document.getElementById('heroDesc').innerHTML = cfg.desc;
     document.documentElement.style.setProperty('--primary', cfg.color);
     
-    // İkon Aktifliği
+    // Resim Değişimi
+    const heroImg = document.getElementById('heroImage');
+    heroImg.style.opacity = '0';
+    setTimeout(() => {
+        heroImg.src = `./images/hero-${mode}.png`; // Veya varsayılan
+        heroImg.onload = () => heroImg.style.opacity = '1';
+        heroImg.onerror = () => { heroImg.src = './images/hero-chat.png'; heroImg.style.opacity='1'; };
+    }, 200);
+
     document.querySelectorAll('.dock-item').forEach(el => {
         el.classList.remove('active');
         if(el.dataset.mode === mode) el.classList.add('active');
     });
-
-    // Alt Çizgileri Renklendir
     updateFooterBars(mode);
 
-    // 3. Yeni modun geçmişini yükle (Yoksa varsayılan mesajı bas)
+    // Geçmişi Yükle
     if (chatHistory[mode]) {
         currentContainer.innerHTML = chatHistory[mode];
-        // Scroll'u en aşağı çek
-        setTimeout(() => {
-            currentContainer.scrollTo({ top: currentContainer.scrollHeight, behavior: 'instant' });
-        }, 10);
+        setTimeout(() => currentContainer.scrollTo({ top: currentContainer.scrollHeight, behavior: 'instant' }), 10);
     } else {
-        // İlk kez giriliyorsa temizle ve hoşgeldin mesajı bas
         currentContainer.innerHTML = '';
         addBotMessage(cfg.welcome);
     }
-}
-
-// 🔥 ÇÖP KUTUSU FONKSİYONU 🔥
-function clearCurrentChat() {
-    const container = document.getElementById('chatContainer');
-    const mode = window.currentAppMode || 'chat';
-    const cfg = MODE_CONFIG[mode];
-    
-    if(container) {
-        container.innerHTML = ''; // Hepsini sil
-        addBotMessage(cfg.welcome); // Sadece hoşgeldin mesajını geri koy
-        // Hafızayı da güncelle
-        chatHistory[mode] = container.innerHTML;
-    }
-}
-
-// Yardımcı: Bot mesajı basma (Main içinden)
-function addBotMessage(text) {
-    const container = document.getElementById('chatContainer');
-    const wrap = document.createElement("div");
-    wrap.className = "msg-row bot";
-    const bubble = document.createElement("div");
-    bubble.className = "msg-bubble bot";
-    bubble.innerHTML = text;
-    wrap.appendChild(bubble);
-    container.appendChild(wrap);
 }
 
 function updateFooterBars(currentMode) {
@@ -122,24 +91,133 @@ function updateFooterBars(currentMode) {
     for(let i=0; i<4; i++) {
         const targetIdx = (idx + i) % MODULE_ORDER.length; 
         const targetMode = MODULE_ORDER[targetIdx];
-        const color = MODE_CONFIG[targetMode].color;
-        if(lines[i]) lines[i].style.background = color;
+        if(lines[i]) lines[i].style.background = MODE_CONFIG[targetMode].color;
     }
 }
 
-// Global Erişimler
-window.triggerAuth = triggerAuth;
-window.clearCurrentChat = clearCurrentChat;
+// MESAJLAŞMA
+async function sendMessage() {
+    if(isBusy) return;
+    const input = document.getElementById("text");
+    const txt = input.value.trim();
+    if(!txt) return;
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Main System Loaded v21");
-    initChat();
-    initDock();
-    // İlk açılışta history'yi boş başlat, varsayılan mesaj HTML'de var zaten
-    // Ama biz yine de setAppMode çağırarak renkleri ve state'i oturtalım
-    // HTML'deki mesajı 'chat' historysine alalım
-    const container = document.getElementById('chatContainer');
-    if(container) chatHistory['chat'] = container.innerHTML;
+    if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yap evladım."); return; }
+
+    removeLoading();
+    isBusy = true; input.disabled = true; input.style.opacity = "0.5";
     
-    setAppMode('chat');
-});
+    addBubble(txt, 'user');
+    input.value = "";
+    
+    setCaynanaStatus("typing");
+    addLoading("Caynana yazıyor...");
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 40000);
+
+    try {
+        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+            method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("auth_token")}` },
+            body: JSON.stringify({ message: txt, mode: window.currentAppMode || "chat", persona: "normal" }),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        removeLoading();
+
+        if (res.status === 401) { triggerAuth("Süren dolmuş."); isBusy = false; input.disabled=false; input.style.opacity="1"; return; }
+        if (!res.ok) { addBotMessage("Sunucu hatası evladım."); isBusy = false; input.disabled=false; input.style.opacity="1"; return; }
+
+        const data = await res.json();
+        const botText = (data?.assistant_text ?? "...").toString();
+        typeWriterBubble(botText, () => {
+            setCaynanaStatus("replied");
+            if (Array.isArray(data?.data) && data.data.length > 0) setTimeout(() => renderProducts(data.data), 250);
+        });
+
+    } catch(err) {
+        clearTimeout(timeoutId); removeLoading();
+        addBotMessage("Bağlantı koptu evladım.");
+    } finally {
+        isBusy = false; input.disabled = false; input.style.opacity = "1"; input.focus();
+        setTimeout(() => setCaynanaStatus("idle"), 1000);
+    }
+}
+
+// YARDIMCILAR
+function addBubble(text, role) {
+    const container = document.getElementById("chatContainer");
+    const wrap = document.createElement("div"); wrap.className = "msg-row " + role;
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble " + role;
+    bubble.textContent = ""; const parts = String(text).split("\n");
+    parts.forEach((part, idx) => { bubble.appendChild(document.createTextNode(part)); if (idx !== parts.length - 1) bubble.appendChild(document.createElement("br")); });
+    wrap.appendChild(bubble); container.appendChild(wrap); container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+
+function addBotMessage(text) {
+    const container = document.getElementById("chatContainer");
+    const wrap = document.createElement("div"); wrap.className = "msg-row bot";
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot"; // CSS'te varsayılan beyaz
+    bubble.innerHTML = text;
+    wrap.appendChild(bubble); container.appendChild(wrap);
+}
+
+function typeWriterBubble(text, cb) {
+    const container = document.getElementById("chatContainer");
+    const wrap = document.createElement("div"); wrap.className = "msg-row bot";
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot";
+    wrap.appendChild(bubble); container.appendChild(wrap);
+    const s = String(text); let i = 0;
+    function step() {
+        if (i >= s.length) { if (cb) cb(); return; }
+        const ch = s.charAt(i);
+        if (ch === "\n") bubble.appendChild(document.createElement("br")); else bubble.appendChild(document.createTextNode(ch));
+        i++; container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); setTimeout(step, 10);
+    } step();
+}
+
+function addLoading(text) {
+    const container = document.getElementById("chatContainer"); removeLoading();
+    const wrap = document.createElement("div"); wrap.className = "msg-row bot loading-bubble-wrap";
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot";
+    bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-fade"></i>`;
+    wrap.appendChild(bubble); container.appendChild(wrap); container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+}
+
+function removeLoading() { document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove()); }
+
+function renderProducts(products) {
+    const container = document.getElementById("chatContainer");
+    products.slice(0, 5).forEach((p, index) => {
+        setTimeout(() => {
+            const wrap = document.createElement("div"); wrap.className = "msg-row bot";
+            const card = document.createElement("div"); card.className = "product-card";
+            card.innerHTML = `<div class="pc-source">Trendyol</div><div class="pc-img-wrap"><img src="${p.image || PLACEHOLDER_IMG}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'"></div><div class="pc-content"><div class="pc-title">${p.title || "Ürün"}</div><div class="pc-info-row"><i class="fa-solid fa-circle-check"></i> ${p.reason || 'İncele'}</div><div class="pc-bottom-row"><div class="pc-price">${p.price || "Fiyat Gör"}</div><a href="${p.url}" target="_blank" class="pc-btn-mini">Ürüne Git</a></div></div>`;
+            wrap.appendChild(card); container.appendChild(wrap); container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        }, index * 260);
+    });
+}
+
+function clearCurrentChat() {
+    const container = document.getElementById('chatContainer');
+    const mode = window.currentAppMode || 'chat';
+    if(container) {
+        container.innerHTML = ''; 
+        addBotMessage(MODE_CONFIG[mode].welcome);
+        chatHistory[mode] = container.innerHTML;
+    }
+}
+
+function setCaynanaStatus(state) {
+    const badge = document.getElementById("caynanaSpeaking");
+    if(!badge) return;
+    if(state === "typing") { badge.classList.add("is-typing"); badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Caynana yazıyor...`; }
+    else { badge.classList.remove("is-typing"); badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`; }
+}
+
+// GLOBAL FONKSİYONLAR
+window.clearCurrentChat = clearCurrentChat;
+window.triggerAuth = (msg) => {
+    addBotMessage(msg);
+    document.getElementById("authModal").style.display = "flex";
+};
