@@ -1,4 +1,4 @@
-/* js/main.js (v13.1 - PASTEL & MATTE COLORS) */
+/* js/main.js (v14.0 - FINAL LOGIC) */
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
 import { initAuth, checkLoginStatus } from './auth.js';
@@ -10,17 +10,16 @@ const MODULE_ORDER = [
     'chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'
 ];
 
-// ✨ YENİ PASTEL RENK PALETİ ✨
 const MODE_CONFIG = {
-    'chat':     { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", wit: "Benim zamanımda...", icon: "fa-comments" }, // Mat Altın
-    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", wit: "Ucuz etin yahnisi...", icon: "fa-bag-shopping" }, // Pastel Yeşil (Adaçayı)
-    'dedikodu': { title: "Dedikodu Odası<br>Bize Özel.", desc: "Duvarların kulağı var.", color: "#90A4AE", wit: "Kız kim ne demiş?", icon: "fa-user-secret" }, // Mat Gri/Mavi
-    'fal':      { title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#CE93D8", wit: "Soğut gel fincanı...", icon: "fa-mug-hot" }, // Lavanta
-    'astro':    { title: "Yıldızlar Ne Diyor<br>Bakalım.", desc: "Merkür retrosu hayırdır.", color: "#7986CB", wit: "Burcun ne senin?", icon: "fa-star" }, // Pastel İndigo
-    'ruya':     { title: "Rüyalar Alemi<br>Hayırdır.", desc: "Kabus mu gördün?", color: "#81D4FA", wit: "Suya anlat...", icon: "fa-cloud-moon" }, // Bebek Mavisi
-    'health':   { title: "Önce Sağlık<br>Gerisi Yalan.", desc: "Neren ağrıyor?", color: "#E57373", wit: "Ayağını sıcak tut...", icon: "fa-heart-pulse" }, // Somon
-    'diet':     { title: "Boğazını Tut<br>Rahat Et.", desc: "O böreği bırak.", color: "#AED581", wit: "Su içsen yarıyor mu?", icon: "fa-carrot" }, // Pastel Lime
-    'trans':    { title: "Gavurca<br>Ne Demişler?", desc: "Anlamadığını sor.", color: "#FFB74D", wit: "Hello hello...", icon: "fa-language" } // Kayısı
+    'chat':     { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", wit: "Benim zamanımda...", icon: "fa-comments" },
+    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", wit: "Ucuz etin yahnisi...", icon: "fa-bag-shopping" },
+    'dedikodu': { title: "Dedikodu Odası<br>Bize Özel.", desc: "Duvarların kulağı var.", color: "#90A4AE", wit: "Kız kim ne demiş?", icon: "fa-user-secret" },
+    'fal':      { title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#CE93D8", wit: "Soğut gel fincanı...", icon: "fa-mug-hot" },
+    'astro':    { title: "Yıldızlar Ne Diyor<br>Bakalım.", desc: "Merkür retrosu hayırdır.", color: "#7986CB", wit: "Burcun ne senin?", icon: "fa-star" },
+    'ruya':     { title: "Rüyalar Alemi<br>Hayırdır.", desc: "Kabus mu gördün?", color: "#81D4FA", wit: "Suya anlat...", icon: "fa-cloud-moon" },
+    'health':   { title: "Önce Sağlık<br>Gerisi Yalan.", desc: "Neren ağrıyor?", color: "#E57373", wit: "Ayağını sıcak tut...", icon: "fa-heart-pulse" },
+    'diet':     { title: "Boğazını Tut<br>Rahat Et.", desc: "O böreği bırak.", color: "#AED581", wit: "Su içsen yarıyor mu?", icon: "fa-carrot" },
+    'trans':    { title: "Gavurca<br>Ne Demişler?", desc: "Anlamadığını sor.", color: "#FFB74D", wit: "Hello hello...", icon: "fa-language" }
 };
 
 const HERO_IMAGES = {
@@ -36,7 +35,7 @@ const chatHistory = {};
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) {
-        console.error("HATA: #dock bulunamadı!");
+        console.error("HATA: #dock elementi bulunamadı!");
         return;
     }
     dock.innerHTML = ''; 
@@ -74,6 +73,9 @@ export const setHeroMode = (mode) => {
     
     document.documentElement.style.setProperty('--primary', cfg.color);
     
+    // ÇİZGİLERİ GÜNCELLE
+    updateFooterBars(mode);
+
     const img = document.getElementById('heroImage');
     const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['chat'];
     if(img) {
@@ -108,8 +110,29 @@ export const setHeroMode = (mode) => {
     }
 };
 
+function updateFooterBars(currentMode) {
+    const idx = MODULE_ORDER.indexOf(currentMode);
+    if(idx === -1) return;
+
+    const lines = [
+        document.getElementById('line1'),
+        document.getElementById('line2'),
+        document.getElementById('line3'),
+        document.getElementById('line4')
+    ];
+
+    for(let i=0; i<4; i++) {
+        const targetIdx = (idx + i) % MODULE_ORDER.length; 
+        const targetMode = MODULE_ORDER[targetIdx];
+        const color = MODE_CONFIG[targetMode].color;
+        
+        if(lines[i]) lines[i].style.background = color;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 Caynana v13.1 (Pastel) Başlatılıyor...");
+    console.log("🚀 Caynana v14.0 Başlatılıyor...");
+    
     initDock(); 
     setHeroMode('chat'); 
 
