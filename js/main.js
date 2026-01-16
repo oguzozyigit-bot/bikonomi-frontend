@@ -1,4 +1,4 @@
-/* js/main.js (v26.4 - ID TOKEN / JWT STRATEGY) */
+/* js/main.js (v26.5 - PROFILE REDIRECT ADDED) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -23,7 +23,7 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v26.4 Started (ID Token Mode)");
+    console.log("🚀 Caynana v26.5 Started");
     initDock();
     setAppMode('chat');
     
@@ -206,7 +206,7 @@ window.triggerAuth = (msg) => {
     document.getElementById("authModal").style.display = "flex";
 };
 
-// 🔥 GOOGLE GİRİŞ (ID TOKEN / JWT) 🔥
+// 🔥 GOOGLE GİRİŞ (ID TOKEN) 🔥
 window.handleGoogleLogin = () => {
     if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Sayfayı yenile."); return; }
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) { alert("JS Dosyasında Client ID eksik!"); return; }
@@ -218,11 +218,10 @@ window.handleGoogleLogin = () => {
         btn.disabled = true;
     }
 
-    // Google Penceresini Aç (Prompt)
+    // Google Penceresini Aç
     google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
             console.warn("Google Prompt açılamadı:", notification);
-            // Pencere açılmazsa manuel yedek yöntem yok, kullanıcıya bildir
             if(btn) { 
                 btn.innerHTML = '<i class="fa-brands fa-google"></i> Tekrar Dene'; 
                 btn.disabled=false; 
@@ -235,10 +234,9 @@ window.handleGoogleLogin = () => {
 // Google'dan Cevap Gelince Çalışır
 async function handleGoogleResponse(response) {
     console.log("🟢 Google Credential (JWT) Alındı:", response);
-    const credential = response.credential; // Bu JWT Token'dır
+    const credential = response.credential;
 
     try {
-        // Backend'e her ihtimale karşı tüm isimlerle gönderiyoruz
         const payload = { 
             token: credential,       
             credential: credential,
@@ -261,17 +259,29 @@ async function handleGoogleResponse(response) {
 
         if (data.token) {
             console.log("🚀 Giriş Başarılı:", data);
+            
+            // 1. TOKEN KAYDET
             localStorage.setItem("auth_token", data.token);
             
+            // 2. KULLANICI BİLGİSİNİ KAYDET
+            const userData = data.user || {
+                name: "Misafir",
+                picture: PLACEHOLDER_IMG,
+                id: "user_" + Math.floor(Math.random() * 10000)
+            };
+            localStorage.setItem("user_info", JSON.stringify(userData));
+
+            // 3. UI TEMİZLE
             document.getElementById('authModal').style.display = 'none';
-            addBotMessage("Ooo hoş geldin evladım! Girişini yaptım, artık seni tanıyorum.");
-            
             const btn = document.querySelector('.btn-google');
             if(btn) {
                 btn.innerHTML = '<i class="fa-brands fa-google"></i> Google ile Bağlan';
                 btn.style.opacity = "1";
                 btn.disabled = false;
             }
+
+            // 4. 🔥 DİREKT PROFİL SAYFASINA YÖNLENDİR 🔥
+            window.location.href = "pages/profil.html";
         }
 
     } catch (err) {
