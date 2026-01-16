@@ -1,8 +1,7 @@
-/* js/chat.js (v8.0 - PREMIUM BMW X5 CARDS HTML) */
+/* js/chat.js (v9.0 - CONCEPT CARDS HTML) */
 import { BASE_DOMAIN } from "./main.js";
 
-// Daha şık bir placeholder görseli
-const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/f0f2f5/999999?text=Görsel+Yok";
+const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/1a1a1a/555555?text=Görsel+Yok";
 
 export function initChat() {
   const sendBtn = document.getElementById("sendBtn");
@@ -119,7 +118,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// 🌟 PREMIUM BMW X5 KART YAPISI 🌟
+// 🌟 CONCEPT DARK CARD 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
@@ -128,33 +127,26 @@ function renderProducts(products) {
       const card = document.createElement("div");
       card.className = "product-card";
 
-      // Görsel kontrolü: Eğer görsel yoksa veya hata verirse placeholder kullan
       let img = p.image;
-      if (!img || img === "") {
-          img = PLACEHOLDER_IMG;
-      }
-
+      if (!img || img === "") img = PLACEHOLDER_IMG;
+      
       const url = p.url || "#";
       const title = p.title || "Ürün";
-      let price = p.price;
-      if (!price || price === "" || price === "Fiyat Gör") {
-          price = "Fiyatı Gör";
-      }
+      let price = p.price || "Fiyat Gör";
       const reason = p.reason || "Bunu beğendim.";
 
       card.innerHTML = `
         <div class="pc-img-wrap">
           <img src="${img}" class="pc-img" alt="${escapeHtml(title)}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}';">
-          <div class="pc-source-badge">Trendyol</div>
           <div class="pc-price-tag">${escapeHtml(price)}</div>
         </div>
         <div class="pc-content">
             <div class="pc-title">${escapeHtml(title)}</div>
-            <div class="pc-reason-badge">
-                <i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}
+            <div class="pc-reason-box">
+                <i class="fa-solid fa-bolt"></i> ${escapeHtml(reason)}
             </div>
-            <a href="${url}" target="_blank" class="pc-btn-premium">
-                Ürüne Git <i class="fa-solid fa-arrow-right-long"></i>
+            <a href="${url}" target="_blank" class="pc-btn-action">
+                İncele
             </a>
         </div>
       `;
