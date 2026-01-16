@@ -1,7 +1,7 @@
-/* js/chat.js (v9.0 - CONCEPT CARDS HTML) */
+/* js/chat.js (v9.1 - CLEAN IMAGE HANDLING) */
 import { BASE_DOMAIN } from "./main.js";
 
-const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/1a1a1a/555555?text=Görsel+Yok";
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
 
 export function initChat() {
   const sendBtn = document.getElementById("sendBtn");
@@ -118,7 +118,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// 🌟 CONCEPT DARK CARD 🌟
+// 🌟 DÜZELTİLMİŞ KART YAPISI (CONTAIN IMAGE) 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
@@ -137,17 +137,22 @@ function renderProducts(products) {
 
       card.innerHTML = `
         <div class="pc-img-wrap">
-          <img src="${img}" class="pc-img" alt="${escapeHtml(title)}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}';">
-          <div class="pc-price-tag">${escapeHtml(price)}</div>
+          <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
+          <div class="pc-source-badge">Trendyol</div>
         </div>
         <div class="pc-content">
             <div class="pc-title">${escapeHtml(title)}</div>
-            <div class="pc-reason-box">
-                <i class="fa-solid fa-bolt"></i> ${escapeHtml(reason)}
+            
+            <div class="pc-reason-tag">
+                <i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}
             </div>
-            <a href="${url}" target="_blank" class="pc-btn-action">
-                İncele
-            </a>
+            
+            <div style="display:flex; justify-content:space-between; align-items:end;">
+                <div class="pc-price">${escapeHtml(price)}</div>
+                <a href="${url}" target="_blank" class="pc-btn-mini">
+                    İncele <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+                </a>
+            </div>
         </div>
       `;
 
