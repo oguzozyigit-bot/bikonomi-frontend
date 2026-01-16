@@ -71,3 +71,32 @@ body { display: flex; align-items: center; justify-content: center; }
 .pc-price { font-size: 15px; font-weight: 800; color: #2e7d32; } .pc-btn-mini { background: #f5f5f5; color: #333 !important; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; transition: 0.2s; }
 .pc-source { position: absolute; top: 0; right: 0; background: #ff6f00; color: #fff; font-size: 8px; font-weight: 700; padding: 2px 6px; border-bottom-left-radius: 6px; }
 #chatContainer::-webkit-scrollbar { width: 4px; } #chatContainer::-webkit-scrollbar-track { background: transparent; } #chatContainer::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+/* --- SCROLLBAR GİZLEME (HAYALET MOD) --- */
+#chatContainer {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+#chatContainer::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+    width: 0;
+    height: 0;
+}
+
+/* --- DOCK İKON RENKLERİ (AKTİFKEN) --- */
+/* Bu sınıfı JS ile dinamik vereceğiz ama baz olsun */
+.dock-item.active .dock-icon {
+    background: var(--primary) !important;
+    color: #000 !important;
+    box-shadow: 0 0 15px var(--primary);
+    transform: scale(1.1);
+}
+
+/* --- ALT ÇİZGİLER (RENKLİ GEÇİŞ) --- */
+.oz-lines {
+    display: flex; gap: 4px; height: 4px; width: 100%; margin-top: 2px;
+}
+.oz-lines span {
+    flex: 1; border-radius: 2px; 
+    background: #333; /* Varsayılan */
+    transition: background 0.4s ease;
+}
