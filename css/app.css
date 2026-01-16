@@ -44,25 +44,61 @@ body { display: flex; align-items: center; justify-content: center; }
   background: radial-gradient(circle, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%);
 }
 
-/* --- TOPBAR --- */
-#topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 50; padding: 20px 24px; }
-.topbarGlass { display: flex; align-items: center; justify-content: space-between; }
-.brand { 
-  display: flex; align-items: center; gap: 8px; 
-  font-size: 22px; font-weight: 800; color: #fff; 
-  letter-spacing: -0.5px; text-shadow: 0 4px 20px rgba(0,0,0,0.5);
-}
-.brand i { color: var(--primary); filter: drop-shadow(0 0 8px var(--primary)); }
-.brand span { font-weight: 300; opacity: 0.9; font-size: 14px; letter-spacing: 1px; text-transform: uppercase; margin-left: 4px; }
+/* css/app.css - TOPBAR GÜNCELLEMESİ */
 
-.menu-btn {
-  width: 44px; height: 44px; border-radius: 14px;
-  background: rgba(255,255,255,0.05); 
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  color: #fff; display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--glass-border); cursor: pointer; transition: 0.2s;
+/* --- TOPBAR --- */
+#topbar { 
+  position: absolute; top: 0; left: 0; right: 0; z-index: 50; 
+  padding: 10px 12px; /* Padding azaldı, logo YUKARI çıktı */
 }
-.menu-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.15); }
+
+.topbarGlass { 
+  display: flex; align-items: center; justify-content: space-between;
+  /* Uzun Buzlu Cam Bar Efekti */
+  background: rgba(255, 255, 255, 0.1); /* Hafif beyaz cam */
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px; /* Köşeleri yuvarlatılmış bar */
+  padding: 10px 16px; /* Barın iç dolgusu */
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2); /* Hafif gölge */
+}
+
+/* Marka ve Slogan Sarmalayıcı */
+.brand-wrap {
+    display: flex; flex-direction: column;
+}
+
+/* Ana Logo Metni */
+.brand { 
+  font-size: 20px; font-weight: 900; color: #fff; 
+  text-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  line-height: 1;
+}
+
+/* Yeni Slogan Metni */
+.brand-slogan {
+    font-size: 10px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7); /* Daha sönük beyaz */
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* İkonlar Alanı (Yan yana durması için flex) */
+.topActions { 
+  display: flex; gap: 8px; /* İkonlar arası boşluk */
+}
+
+/* İkon Butonları */
+.menu-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s;
+  font-size: 14px;
+}
+.menu-btn:active { transform: scale(0.9); background: var(--primary); color:#000; }
 
 /* --- HERO METİNLERİ --- */
 #main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; pointer-events: none; }
