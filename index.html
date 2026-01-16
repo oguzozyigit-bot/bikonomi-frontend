@@ -32,8 +32,12 @@
                         <i class="fa-solid fa-bell"></i>
                         <span class="notif-dot"></span>
                     </div>
-                    <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
-                    <div class="menu-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
+                    <div class="menu-btn" id="voiceToggleBtn">
+                        <i class="fa-solid fa-volume-xmark" id="voiceIcon"></i>
+                    </div>
+                    <div class="menu-btn" onclick="location.reload()">
+                        <i class="fa-solid fa-rotate-right"></i>
+                    </div>
                 </div>
             </div>
         </div>
@@ -43,14 +47,14 @@
                 <div id="heroTitle">Caynana ile<br>Dertleş.</div>
                 <div id="heroDesc">Hadi gel evladım, anlat bakalım. Neler var neler yok?</div>
                 <div id="caynanaSpeaking">
-                    <i class="fa-solid fa-comment-dots"></i> Caynana Hazır...
+                    <i class="fa-solid fa-comment-dots"></i> Caynana Dinliyor...
                 </div>
             </div>
 
             <div id="chatContainer">
                 <div class="msg-row bot">
                     <div class="msg-bubble bot">
-                        Hoş geldin evladım! Üst barı daralttım, ikonları yan yana dizdim. Yazı da ortalı. Nasıl olmuş?
+                        Hoş geldin evladım! Üst barı incelttim, ikonları sıraya dizdim, çizgileri geri getirdim. Şimdi oldu mu?
                     </div>
                 </div>
             </div>
@@ -80,6 +84,10 @@
             </div>
 
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
+            
+            <div class="oz-lines">
+                <span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span>
+            </div>
         </div>
     </div>
 
@@ -89,27 +97,12 @@
                 <h2>Menü</h2>
                 <div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div>
             </div>
-
             <div class="menu-list">
                 <div class="menu-item highlight" onclick="triggerAuth('Giriş yapılıyor...')">
-                    <i class="fa-solid fa-user-plus"></i> Üye Girişi / Kayıt Ol
+                    <i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol
                 </div>
-                <div class="menu-item">
-                    <i class="fa-solid fa-circle-info"></i> Hakkımızda
-                </div>
-                <div class="menu-item">
-                    <i class="fa-solid fa-circle-question"></i> Sıkça Sorulan Sorular
-                </div>
-                <div class="menu-item">
-                    <i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası
-                </div>
-                <div class="menu-item">
-                    <i class="fa-solid fa-envelope"></i> İletişim
-                </div>
-            </div>
-            
-            <div style="margin-top: auto; padding-top: 20px; text-align: center; font-size: 10px; color: #666;">
-                v13.2 Beta
+                <div class="menu-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
+                <div class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</div>
             </div>
         </div>
     </div>
@@ -120,4 +113,15 @@
             <input type="text" id="loginEmail" class="authInput" placeholder="E-posta">
             <input type="password" id="loginPass" class="authInput" placeholder="Şifre">
             <button class="pc-btn" id="doLoginBtn">Giriş Yap</button>
-            <div style="margin-top:10px
+            <div style="margin-top:10px; font-size:12px; text-align:center; color:#888;" id="goRegister">Kayıt Ol</div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+    <script type="module" src="js/main.js"></script>
+    <script>
+        function openDrawer() { document.getElementById('drawerMask').style.display = 'flex'; }
+        function closeDrawer() { document.getElementById('drawerMask').style.display = 'none'; }
+    </script>
+</body>
+</html>
