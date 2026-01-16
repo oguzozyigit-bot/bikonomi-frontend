@@ -176,3 +176,33 @@ body { display: flex; align-items: center; justify-content: center; }
 @media (prefers-color-scheme: dark) {
   #chatContainer::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); }
 }
+/* --- BRAND AUTO-RESIZE FIX (FINAL) --- */
+
+/* Orta alanı güvenli bölgeye al */
+.brand-container {
+  max-width: calc(100% - 140px); /* sağ + sol ikon güvenliği */
+  pointer-events: none;
+}
+
+/* Ana logo yazısı otomatik ölçeklenir */
+.brand {
+  font-size: clamp(14px, 4.2vw, 18px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Slogan daha erken küçülür */
+.brand-slogan {
+  font-size: clamp(8px, 2.2vw, 9px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Çok dar ekranlarda sloganı gizle (çarpışma garantili önlem) */
+@media (max-width: 360px) {
+  .brand-slogan {
+    display: none;
+  }
+}
