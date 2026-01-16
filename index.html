@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#000000">
     <title>Caynana.AI</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="css/app.css?v=22.0">
+    <link rel="stylesheet" href="css/app.css?v=23.0">
 </head>
 <body>
+
     <div id="app">
         <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
         <div id="heroOverlay"></div>
@@ -29,7 +31,6 @@
                 <div class="topActions">
                     <div class="menu-btn relative" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
                     <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
-                    
                     <div class="menu-btn" onclick="clearCurrentChat()">
                         <i class="fa-solid fa-trash-can"></i>
                     </div>
@@ -45,16 +46,12 @@
             </div>
 
             <div id="chatContainer">
-                <div class="msg-row bot">
-                    <div class="msg-bubble bot">
-                        Ooo hoş geldin evladım! Gözüm yollarda kaldı. Gel otur şöyle, anlat bakalım derdin ne?
-                    </div>
                 </div>
-            </div>
         </div>
 
         <div id="bottom">
             <div id="suggestionText">Benim zamanımda...</div>
+            
             <div class="input-wrapper" id="stdInputArea">
                 <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
                 <div class="search-bar">
@@ -68,6 +65,7 @@
             </div>
 
             <div id="dockContainer"><div id="dock"></div></div>
+
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
             <div class="oz-lines"><span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span></div>
         </div>
@@ -83,6 +81,7 @@
             </div>
         </div>
     </div>
+
     <div id="authModal" class="modalMask">
         <div class="authBox">
             <div class="modalHeader">Giriş Yap</div>
@@ -92,8 +91,10 @@
             <div style="margin-top:10px; font-size:12px; text-align:center; color:#888;" id="goRegister">Kayıt Ol</div>
         </div>
     </div>
+
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
-    
-    <script type="module" src="js/main.js?v=22.0"></script>
+
+    <script src="js/main.js?v=23.0"></script>
+
 </body>
 </html>
