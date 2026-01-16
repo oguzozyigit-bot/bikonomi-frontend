@@ -1,4 +1,4 @@
-/* js/main.js (v46.0 - SPEAK BUTTON FIXED) */
+/* js/main.js (v47.0 - KAYNANA USULÜ HATA MESAJI) */
 
 // --- 1. AYARLAR VE SABİTLER ---
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
@@ -27,7 +27,7 @@ window.currentAppMode = 'chat';
 
 // --- 3. BAŞLATMA ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v46.0 (Button Fix) Started");
+    console.log("🚀 Caynana v47.0 Started");
     
     initDock(); 
     setAppMode('chat'); 
@@ -106,7 +106,7 @@ async function fetchBotResponse(userMessage, mode, persona) {
     return await res.json();
 }
 
-// --- 5. MESAJ GÖNDERME VE SES (DÜZELTİLDİ) ---
+// --- 5. MESAJ GÖNDERME ---
 async function sendMessage() {
     if(isBusy) return;
     const txt = document.getElementById("text").value.trim();
@@ -128,11 +128,10 @@ async function sendMessage() {
             if (data.audio_data) playAudioResponse(data.audio_data);
             else if(badge) badge.style.display = "none";
 
-            // 🔥 BUTON EKLEME KISMI (ARTIK KOŞULSUZ ŞARTSIZ EKLİYOR) 🔥
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
             if(lastRow) {
-                // Ses verisi varsa onu koy, yoksa boş string koy
+                // Ses verisi yoksa boş string gönderiyoruz
                 const audioContent = data.audio_data || "";
                 lastRow.querySelector('.msg-bubble').insertAdjacentHTML('beforeend', 
                     `<div class="speak-btn-inline" onclick="window.replayLastAudio('${audioContent}')">
@@ -238,16 +237,18 @@ window.changePersona = (p) => {
     document.getElementById('personaModal').style.display='none';
     addBotMessage(`Mod değişti: <b>${p.toUpperCase()}</b>`);
 };
-// 🔥 SES TEKRAR OYNATMA (GÜVENLİ) 🔥
+
+// 🔥 GÜNCELLENEN REPLAY FONKSİYONU 🔥
 window.replayLastAudio = (b64) => {
     if(!b64 || b64 === "undefined" || b64 === "") {
-        alert("Ses verisi henüz gelmedi başkanım. Backend bağlanınca konuşacak.");
+        // KAYNANA USULÜ HATA MESAJI
+        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
     } else {
         playAudioResponse(b64);
     }
 };
-window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display="flex"; };
 
+window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display="flex"; };
 window.generateDietList = () => loadDietContent();
 window.showZodiacFeatures = () => addBotMessage("Burç özellikleri çok yakında...");
 window.showBmiStatus = () => alert("Detaylı analiz hazırlanıyor...");
