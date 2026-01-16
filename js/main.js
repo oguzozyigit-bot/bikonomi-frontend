@@ -1,8 +1,8 @@
-/* js/main.js (v58.0 - REAL GOOGLE LOGIN RESTORED) */
+/* js/main.js (v60.0 - FINAL MENU & COLORS) */
 
 // 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
-const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
+const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 const MODE_CONFIG = {
@@ -25,150 +25,29 @@ window.currentAppMode = 'chat';
 
 // 2. BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v58.0 Google Restored");
     initDock();
     setAppMode('chat');
-    updateUIForUser(); // Menüyü hazırla
-    initSwipeDetection();
-
-    // 🔥 GOOGLE BAŞLATMA (Israrcı Mod) 🔥
+    updateUIForUser(); // MENÜYÜ GÜNCELLE
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
-        initializeGoogle();
-    } else {
-        // Eğer kütüphane geç yüklenirse diye 1 saniye sonra tekrar dene
-        setTimeout(() => {
-            if(typeof google !== 'undefined') initializeGoogle();
-        }, 1000);
+        try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {}
     }
-
-    const sendBtn = document.getElementById("sendBtn");
-    const textInput = document.getElementById("text");
-    if(sendBtn) sendBtn.addEventListener("click", sendMessage);
-    if(textInput) textInput.addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-function initializeGoogle() {
-    try {
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleResponse,
-            auto_select: false, // Otomatik seçimi kapattık, butona basınca sorsun
-            cancel_on_tap_outside: false
-        });
-        console.log("Google Init Başarılı");
-    } catch(e) {
-        console.error("Google Init Hatası:", e);
-    }
-}
-
-// 3. MESAJ GÖNDERME
-async function sendMessage() {
-    const txt = document.getElementById("text").value.trim();
-    if(!txt) return;
-    
-    // Giriş Kontrolü
-    if(!localStorage.getItem("auth_token")) { 
-        triggerAuth("Cevap vermem için önce menüden giriş yapman lazım evladım."); 
-        return; 
-    }
-
-    document.getElementById("text").value = "";
-    addBubble(txt, 'user');
-    
-    const badge = document.getElementById("caynanaSpeaking");
-    if(badge) { badge.style.display = "flex"; badge.innerText = "Yazıyor..."; }
-
-    try {
-        const token = localStorage.getItem("auth_token");
-        const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-        
-        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-            body: JSON.stringify({ 
-                message: txt, 
-                mode: window.currentAppMode, 
-                persona: currentPersona,
-                system_instruction: `Sen Caynanasın. Kullanıcı: ${user.hitap || 'Evlat'}. Mod: ${currentPersona}. Kısa cevap ver.`
-            })
-        });
-        
-        const data = await res.json();
-        const ans = data.assistant_text || "...";
-        lastBotResponseText = ans;
-
-        typeWriter(ans, () => {
-            if(badge) badge.style.display = "none";
-            const rows = document.querySelectorAll('.msg-row.bot');
-            const lastRow = rows[rows.length - 1];
-            if(lastRow) {
-                lastRow.querySelector('.msg-bubble').insertAdjacentHTML('beforeend', 
-                    `<div class="speak-btn-inline" onclick="window.fetchAndPlayAudio()">
-                        <i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur
-                    </div>`
-                );
-            }
-            if(data.data && data.data.length > 0) renderProducts(data.data);
-        });
-
-    } catch(e) {
-        addBubble("Bağlantı koptu, internetini kontrol et.", 'bot');
-        if(badge) badge.style.display = "none";
-    }
-}
-
-// 4. SES İŞLEMİ
-window.fetchAndPlayAudio = async () => {
-    if(!lastBotResponseText) return;
-    const btns = document.querySelectorAll('.speak-btn-inline');
-    const btn = btns[btns.length - 1];
-    if(btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...`;
-
-    try {
-        const res = await fetch(`${BASE_DOMAIN}/api/speech`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text_to_comment: lastBotResponseText, persona: currentPersona })
-        });
-        
-        if(!res.ok) throw new Error("Backend yok");
-        const data = await res.json();
-        
-        if(data.audio_data) {
-            playAudioRaw(data.audio_data);
-            if(btn) btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Tekrarla`;
-        } else { throw new Error("Ses boş"); }
-    } catch(e) {
-        if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
-        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
-    }
-};
-
-function playAudioRaw(b64) {
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    try {
-        currentAudio = new Audio("data:audio/mp3;base64," + b64);
-        const badge = document.getElementById("caynanaSpeaking");
-        if(badge) { badge.style.display = "flex"; badge.innerText = "Konuşuyor..."; }
-        currentAudio.play();
-        currentAudio.onended = () => { if(badge) badge.style.display = "none"; };
-    } catch(e) { console.error(e); }
-}
-
-// 5. UI & MENÜ
+// 3. UI & MENÜ
 function initDock() {
     const dock = document.getElementById('dock');
-    if(dock) {
-        dock.innerHTML = '';
-        MODULE_ORDER.forEach(key => {
-            const color = MODE_CONFIG[key].color;
-            dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')">
-                <div class="dock-icon" style="color:${color}; border-color:${color}40;">
-                    <i class="fa-solid ${MODE_CONFIG[key].icon}"></i>
-                </div>
-            </div>`;
-        });
-    }
+    dock.innerHTML = '';
+    MODULE_ORDER.forEach(key => {
+        const color = MODE_CONFIG[key].color;
+        // 🔥 İKONLARA RENK VERİLDİ 🔥
+        dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')">
+            <div class="dock-icon" style="color:${color}; border-color:${color}40;">
+                <i class="fa-solid ${MODE_CONFIG[key].icon}"></i>
+            </div>
+        </div>`;
+    });
 }
 
 function setAppMode(m) {
@@ -188,88 +67,126 @@ function setAppMode(m) {
     if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
     if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
 
-    // Renkli Çizgiler
+    // ALT ÇİZGİLERİ RENKLENDİR
     const idx = MODULE_ORDER.indexOf(m);
     for(let i=0; i<4; i++) {
         const line = document.querySelector(`.oz-lines span:nth-child(${i+1})`);
         if(line) line.style.background = MODE_CONFIG[MODULE_ORDER[(idx+i)%9]].color;
     }
-
     document.getElementById('chatContainer').innerHTML = '';
 }
 
+// 🔥 DÜZELTİLEN MENÜ YAPISI 🔥
 function updateUIForUser() {
     const r = localStorage.getItem("user_info");
     const menu = document.querySelector('.menu-list');
     const footer = document.querySelector('.menu-footer');
     
     if(r) {
-        // --- GİRİŞ VAR ---
+        // GİRİŞ VAR
         const u = JSON.parse(r);
-        const bar = document.getElementById('userInfoBar');
-        if(bar) {
-            bar.classList.add('visible');
-            document.getElementById('headerHitap').innerText = (u.hitap || "MİSAFİR").toUpperCase();
-            document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
-        }
+        document.getElementById('userInfoBar').classList.add('visible');
+        document.getElementById('headerHitap').innerText = (u.hitap || "MİSAFİR").toUpperCase();
+        document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
         
-        if(menu) {
-            menu.innerHTML = `
-                <div style="text-align:center; margin-bottom:15px;">
-                    <img src="${u.picture || PLACEHOLDER_IMG}" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary);">
-                    <div style="color:#fff; font-weight:700; margin-top:5px;">${u.hitap}</div>
-                </div>
-                <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil Düzenle</a>
-                <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
-                <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
-                <div class="menu-item" onclick="window.handleLogout()" style="color:#f44; margin-top:15px;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</div>
-            `;
-        }
+        menu.innerHTML = `
+            <div style="text-align:center; margin-bottom:15px;">
+                <img src="${u.picture || PLACEHOLDER_IMG}" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary);">
+                <div style="color:#fff; font-weight:700; margin-top:5px;">${u.hitap}</div>
+            </div>
+            <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil Düzenle</a>
+            <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+            <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
+            <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+            <div class="menu-item" onclick="window.handleLogout()" style="color:#f44; margin-top:15px;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</div>
+        `;
     } else {
-        // --- GİRİŞ YOK (GOOGLE BUTONUNU GÖSTER) ---
-        const bar = document.getElementById('userInfoBar');
-        if(bar) bar.classList.remove('visible');
-
-        if(menu) {
-            menu.innerHTML = `
-                <div style="text-align:center; padding:20px; color:#ccc; font-size:13px;">
-                    Daha iyi hizmet için giriş yapman lazım evladım.
-                </div>
-                <div class="menu-item" onclick="window.handleGoogleLogin()" style="background:#fff; color:#000; text-align:center; justify-content:center; cursor:pointer;">
-                    <i class="fa-brands fa-google"></i> Google ile Bağlan
-                </div>
-                <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
-                <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
-            `;
-        }
+        // GİRİŞ YOK (LİNKLER GERİ GELDİ)
+        document.getElementById('userInfoBar').classList.remove('visible');
+        menu.innerHTML = `
+            <div style="text-align:center; padding:20px; color:#ccc; font-size:13px;">
+                Giriş yapmazsan seni tanıyamam evladım.
+            </div>
+            <div class="menu-item" onclick="window.handleGoogleLogin()" style="background:#fff; color:#000; text-align:center; justify-content:center; cursor:pointer;">
+                <i class="fa-brands fa-google"></i> Google ile Bağlan
+            </div>
+            <div class="menu-item" onclick="window.handleDevLogin()" style="background:#333; border:1px dashed #666; color:#aaa; text-align:center; justify-content:center; cursor:pointer; font-size:11px;">
+                <i class="fa-solid fa-key"></i> Test Girişi
+            </div>
+            <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+            <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
+            <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+        `;
     }
-    
-    if(footer) footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
+    footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
 }
 
-// Global Binding
+// MESAJ GÖNDERME
+async function sendMessage() {
+    const txt = document.getElementById("text").value.trim();
+    if(!txt) return;
+    if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yap önce."); return; }
+
+    document.getElementById("text").value = "";
+    addBubble(txt, 'user');
+    const badge = document.getElementById("caynanaSpeaking");
+    badge.style.display = "flex"; badge.innerText = "Yazıyor...";
+
+    try {
+        const token = localStorage.getItem("auth_token");
+        const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+        if(token === "dev_token_bypass") { // TEST MODU
+            setTimeout(()=>{ typeWriter("Test modundasın, ses çalışmaz ama her şey yolunda.", ()=>{badge.style.display='none'; addSpeakButton()}); }, 800);
+            return;
+        }
+        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+            method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+            body: JSON.stringify({ message: txt, mode: window.currentAppMode, persona: currentPersona, system_instruction: `Sen Caynanasın. Kullanıcı: ${user.hitap || 'Evlat'}. Mod: ${currentPersona}.` })
+        });
+        const data = await res.json();
+        lastBotResponseText = data.assistant_text || "...";
+        typeWriter(lastBotResponseText, () => {
+            badge.style.display = "none";
+            addSpeakButton();
+            if(data.data && data.data.length > 0) renderProducts(data.data);
+        });
+    } catch(e) { addBubble("Bağlantı koptu.", 'bot'); badge.style.display = "none"; }
+}
+
+function addSpeakButton() {
+    const rows = document.querySelectorAll('.msg-row.bot');
+    const lastRow = rows[rows.length - 1];
+    if(lastRow) lastRow.querySelector('.msg-bubble').insertAdjacentHTML('beforeend', `<div class="speak-btn-inline" onclick="window.fetchAndPlayAudio()"><i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur</div>`);
+}
+
+// SES İŞLEMİ
+window.fetchAndPlayAudio = async () => {
+    if(!lastBotResponseText) return;
+    if(localStorage.getItem("auth_token")==="dev_token_bypass") { alert("Test modunda ses yok."); return; }
+    const btn = document.querySelectorAll('.speak-btn-inline')[document.querySelectorAll('.speak-btn-inline').length-1];
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...`;
+    try {
+        const res = await fetch(`${BASE_DOMAIN}/api/speech`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text_to_comment: lastBotResponseText, persona: currentPersona }) });
+        const data = await res.json();
+        if(data.audio_data) { playAudioRaw(data.audio_data); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Tekrarla`; }
+    } catch(e) { btn.innerHTML = `Hata`; alert("Backend bağlantısı yok."); }
+};
+
+function playAudioRaw(b64) {
+    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+    try { currentAudio = new Audio("data:audio/mp3;base64," + b64); currentAudio.play(); } catch(e) {}
+}
+
+// YARDIMCILAR
 window.openDrawer = () => document.getElementById('drawerMask').style.display='flex';
 window.closeDrawer = () => document.getElementById('drawerMask').style.display='none';
 window.openPersonaModal = () => document.getElementById('personaModal').style.display='flex';
 window.changePersona = (p) => { currentPersona=p; document.getElementById('personaModal').style.display='none'; addBubble(`Mod: ${p.toUpperCase()}`, 'bot'); };
 window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; };
 window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
-
-// 🔥 GOOGLE TETİKLEYİCİ 🔥
-window.handleGoogleLogin = () => {
-    if(typeof google === 'undefined') {
-        alert("Google bağlantısı kurulamadı. Sayfayı yenileyip tekrar dene.");
-        return;
-    }
-    // Google Penceresini Aç
-    google.accounts.id.prompt(); 
-};
-
-window.toggleVoice = () => alert("Sesi her mesajda 'Dinle' butonuyla açabilirsin.");
-window.triggerAuth = (m) => { 
-    addBubble(m, 'bot'); 
-    window.openDrawer(); // Menüyü aç ki butonu görsün
-};
+window.handleGoogleLogin = () => { if(typeof google === 'undefined') { alert("Google yüklenemedi."); return; } google.accounts.id.prompt(); };
+window.handleDevLogin = () => { localStorage.setItem("user_info", JSON.stringify({hitap:"Test", picture:"https://via.placeholder.com/150", profile:{}})); localStorage.setItem("auth_token", "dev_token_bypass"); window.location.reload(); };
+window.triggerAuth = (m) => { addBubble(m, 'bot'); window.openDrawer(); };
 window.generateDietList = () => addBubble("Diyet listesi hazırlanıyor...", 'bot');
 window.loadAstroContent = () => addBubble("Yıldızlara bakılıyor...", 'bot');
 
@@ -277,5 +194,3 @@ function addBubble(t, r) { const c=document.getElementById('chatContainer'); c.i
 function typeWriter(t, cb) { const c=document.getElementById('chatContainer'); const id="b"+Date.now(); c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot" id="${id}"></div></div>`; const el=document.getElementById(id); let i=0; function s(){ if(i>=t.length){if(cb)cb();return;} el.innerHTML+=t.charAt(i); i++; c.scrollTop=c.scrollHeight; setTimeout(s,15); } s(); }
 async function handleGoogleResponse(r) { const p=JSON.parse(atob(r.credential.split('.')[1])); localStorage.setItem("user_info",JSON.stringify({hitap:p.given_name, picture:p.picture})); localStorage.setItem("auth_token", "demo_token"); window.location.href="pages/profil.html"; }
 function renderProducts(p) { p.slice(0,5).forEach((x,i)=>{ setTimeout(()=>{ document.getElementById("chatContainer").innerHTML+=`<div class="msg-row bot"><div class="product-card"><img src="${x.image||PLACEHOLDER_IMG}" class="pc-img"><div class="pc-content"><div class="pc-title">${x.title}</div><div class="pc-price">${x.price}</div><a href="${x.url}" target="_blank" class="pc-btn-mini">Git</a></div></div></div>`; },i*200); }); }
-function initSwipeDetection() { let ts=0; const m=document.getElementById('main'); m.addEventListener('touchstart',e=>{ts=e.changedTouches[0].screenX}); m.addEventListener('touchend',e=>{ const te=e.changedTouches[0].screenX; if(te<ts-50)changeModule(1); if(te>ts+50)changeModule(-1); }); }
-function changeModule(d) { let i=MODULE_ORDER.indexOf(window.currentAppMode)+d; if(i>=9)i=0; if(i<0)i=8; setAppMode(MODULE_ORDER[i]); }
