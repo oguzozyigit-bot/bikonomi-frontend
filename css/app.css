@@ -1,4 +1,4 @@
-/* css/app.css (v55.0 - GOLD MASTER) */
+/* css/app.css (v60.0 - VIBRANT COLORS & MENU FIX) */
 
 :root { --primary: #E6C25B; --font: 'Outfit', sans-serif; --app-bg: #000; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -33,22 +33,18 @@ html, body { height: 100%; width: 100%; background: #111; font-family: var(--fon
 #chatContainer { flex: 1; overflow-y: auto; padding: 10px 16px 200px 16px; display: flex; flex-direction: column; gap: 12px; scrollbar-width: none; }
 #chatContainer::-webkit-scrollbar { display: none; }
 
-/* 🔥 BALON VE BUTON HİZALAMA 🔥 */
 .msg-bubble { 
     max-width: 85%; padding: 12px 16px; border-radius: 16px; 
     background: #fff; color: #000; font-size: 14px; font-weight: 600; 
     box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    /* Burası butonu alta atar */
     display: flex; flex-direction: column; align-items: flex-start; gap: 8px; 
 }
 .msg-row.user { justify-content: flex-end; display: flex; } .msg-bubble.user { background: var(--primary); border-bottom-right-radius: 2px; }
 .msg-row.bot { justify-content: flex-start; display: flex; } .msg-bubble.bot { border-bottom-left-radius: 2px; }
 
 .speak-btn-inline { 
-    background: #222; color: var(--primary); 
-    padding: 8px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
-    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; 
-    border: 1px solid var(--primary); width: auto; transition: 0.2s;
+    background: #222; color: var(--primary); padding: 8px 12px; border-radius: 20px; font-size: 11px; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--primary); width: auto; transition: 0.2s;
 }
 .speak-btn-inline:active { transform: scale(0.95); background: var(--primary); color: #000; }
 
@@ -62,9 +58,12 @@ html, body { height: 100%; width: 100%; background: #111; font-family: var(--fon
 #dockContainer { overflow-x: auto; margin-top: 15px; margin-bottom: 8px; scrollbar-width: none; }
 #dockContainer::-webkit-scrollbar { display: none; }
 #dock { display: flex; gap: 12px; padding: 0 5px; min-width: max-content; }
-.dock-item { width: 45px; display: flex; flex-direction: column; align-items: center; opacity: 0.6; transition: 0.2s; cursor: pointer; }
-.dock-item.active { opacity: 1; transform: translateY(-5px); }
-.dock-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; border: 1px solid rgba(255,255,255,0.1); }
+
+/* 🔥 SOLUKLUK GİDERİLDİ (opacity: 1) 🔥 */
+.dock-item { width: 45px; display: flex; flex-direction: column; align-items: center; opacity: 1; transition: 0.2s; cursor: pointer; }
+.dock-item.active { transform: translateY(-5px); }
+/* İkonların rengini JS verecek, burada white'ı sildim */
+.dock-icon { width: 42px; height: 42px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.1); }
 
 .oz-lines { display: flex; gap: 4px; height: 3px; margin-top: 5px; }
 .oz-lines span { flex: 1; background: #333; border-radius: 2px; transition: background 0.3s ease; }
@@ -83,15 +82,11 @@ html, body { height: 100%; width: 100%; background: #111; font-family: var(--fon
 .persona-option { background: #333; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; color: #fff; border: 1px solid #444; }
 .persona-option.selected { border-color: var(--primary); color: var(--primary); background: rgba(230,194,91,0.1); }
 
-/* 🔥 SAYFA SCROLL (GİZLİ AMA ÇALIŞAN) 🔥 */
 .page-container {
-    height: 100vh; overflow-y: auto; 
-    padding: 80px 20px 50px 20px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    height: 100vh; overflow-y: auto; padding: 80px 20px 50px 20px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .page-container::-webkit-scrollbar { display: none; }
-
 .form-group { margin-bottom: 15px; }
 .form-label { display: block; color: #aaa; font-size: 12px; margin-bottom: 5px; font-weight: 700; }
 .form-input, .form-select { width: 100%; padding: 12px; background: #252525; border: 1px solid #333; color: #fff; border-radius: 8px; outline: none; }
