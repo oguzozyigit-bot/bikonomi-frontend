@@ -1,10 +1,11 @@
-/* js/main.js (v50.0 - STABLE & ALL FEATURES) */
+/* js/main.js (v51.0 - MENU, COLORS & PROPER BUTTON) */
 
 // 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
+// 🔥 MODÜL RENKLERİ VE İKONLARI 🔥
 const MODE_CONFIG = {
     'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", showCam: false },
     'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", showCam: true },
@@ -25,12 +26,11 @@ window.currentAppMode = 'chat';
 
 // 2. BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v50.0 Ready");
+    console.log("🚀 Caynana v51.0 Ready");
     initDock();
     setAppMode('chat');
     updateUIForUser();
     
-    // Google Login
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {}
     }
@@ -55,7 +55,6 @@ async function sendMessage() {
         const token = localStorage.getItem("auth_token");
         const user = JSON.parse(localStorage.getItem("user_info") || "{}");
         
-        // Sadece Yazı İsteği
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -74,13 +73,13 @@ async function sendMessage() {
         typeWriter(ans, () => {
             badge.style.display = "none";
             
-            // 🔥 BUTON EKLE (GARANTİLİ) 🔥
+            // 🔥 YENİ BUTON İSMİ VE YAPISI 🔥
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
             if(lastRow) {
                 lastRow.querySelector('.msg-bubble').insertAdjacentHTML('beforeend', 
                     `<div class="speak-btn-inline" onclick="window.fetchAndPlayAudio()">
-                        <i class="fa-solid fa-volume-high"></i> Dinle
+                        <i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur
                     </div>`
                 );
             }
@@ -93,11 +92,10 @@ async function sendMessage() {
     }
 }
 
-// 4. SES İŞLEMİ (TIKLA -> GETİR -> ÇAL)
+// 4. SES İŞLEMİ
 window.fetchAndPlayAudio = async () => {
     if(!lastBotResponseText) return;
     
-    // Butonu bul ve güncelle
     const btns = document.querySelectorAll('.speak-btn-inline');
     const btn = btns[btns.length - 1];
     if(btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...`;
@@ -106,28 +104,19 @@ window.fetchAndPlayAudio = async () => {
         const res = await fetch(`${BASE_DOMAIN}/api/speech`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                text_to_comment: lastBotResponseText, 
-                persona: currentPersona 
-            })
+            body: JSON.stringify({ text_to_comment: lastBotResponseText, persona: currentPersona })
         });
         
-        // Eğer backend cevap vermezse veya hata dönerse (Mevcut durumda muhtemel)
         if(!res.ok) throw new Error("Backend yok");
-
         const data = await res.json();
         
         if(data.audio_data) {
             playAudioRaw(data.audio_data);
             if(btn) btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Tekrarla`;
-        } else {
-            throw new Error("Ses verisi boş");
-        }
+        } else { throw new Error("Ses boş"); }
     } catch(e) {
-        console.warn("Ses hatası:", e);
         if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
-        // 🔥 KAYNANA USULÜ HATA MESAJI 🔥
-        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
+        alert("Backend gelince konuşacağım evladım. 😅");
     }
 };
 
@@ -142,12 +131,18 @@ function playAudioRaw(b64) {
     } catch(e) { console.error(e); }
 }
 
-// 5. YARDIMCILAR & UI
+// 5. UI & MENÜ
 function initDock() {
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
+    // 🔥 RENKLİ İKONLAR İÇİN STYLE EKLENDİ 🔥
     MODULE_ORDER.forEach(key => {
-        dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')"><div class="dock-icon"><i class="fa-solid ${MODE_CONFIG[key].icon}"></i></div></div>`;
+        const color = MODE_CONFIG[key].color;
+        dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')">
+            <div class="dock-icon" style="color:${color}; border-color:${color}40;">
+                <i class="fa-solid ${MODE_CONFIG[key].icon}"></i>
+            </div>
+        </div>`;
     });
 }
 
@@ -158,24 +153,15 @@ function setAppMode(m) {
     document.getElementById('heroDesc').innerHTML = c.desc;
     document.documentElement.style.setProperty('--primary', c.color);
     
-    // Resim Değişimi
     const img = document.getElementById('heroImage');
     img.style.opacity = '0';
     setTimeout(() => { img.src = `./images/hero-${m}.png`; img.onload = () => img.style.opacity = '1'; }, 200);
 
-    // Buton Gizle/Göster
     ['falInputArea','stdInputArea','dietActions','astroActions'].forEach(i=>document.getElementById(i).style.display='none');
     if(c.specialInput === 'fal') document.getElementById('falInputArea').style.display='flex';
     else document.getElementById('stdInputArea').style.display='flex';
     if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
     if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
-
-    // Renkli Çizgiler
-    const idx = MODULE_ORDER.indexOf(m);
-    for(let i=0; i<4; i++) {
-        const line = document.getElementById(`line${i+1}`);
-        if(line) line.style.background = MODE_CONFIG[MODULE_ORDER[(idx+i)%9]].color;
-    }
 
     document.getElementById('chatContainer').innerHTML = '';
 }
@@ -183,15 +169,28 @@ function setAppMode(m) {
 function updateUIForUser() {
     const r = localStorage.getItem("user_info");
     const menu = document.querySelector('.menu-list');
+    const footer = document.querySelector('.menu-footer');
+    
+    // 🔥 MENÜ LİNKLERİ GERİ GELDİ 🔥
+    let menuHTML = `
+        <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil</a>
+        <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+        <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
+        <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+    `;
+
     if(r) {
         const u = JSON.parse(r);
         document.getElementById('userInfoBar').classList.add('visible');
         document.getElementById('headerHitap').innerText = u.hitap.toUpperCase();
         document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
-        menu.innerHTML = `<a href="pages/profil.html" class="menu-item">Profil</a><a href="pages/sss.html" class="menu-item">S.S.S</a><div class="menu-item" onclick="window.handleLogout()">Çıkış</div>`;
+        menuHTML += `<div class="menu-item" onclick="window.handleLogout()" style="color:#f44;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</div>`;
     } else {
-        menu.innerHTML = `<div class="menu-item" onclick="document.getElementById('authModal').style.display='flex'">Giriş Yap</div>`;
+        menuHTML += `<div class="menu-item" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--primary); color:#000;">Giriş Yap</div>`;
     }
+    
+    menu.innerHTML = menuHTML;
+    footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
 }
 
 // Global Binding
