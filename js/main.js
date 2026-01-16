@@ -1,7 +1,11 @@
-/* js/main.js (v23.0 - UNIFIED & FIXED) */
+/* js/main.js (v26.0 - GOOGLE ACTIVE & FULL SYSTEM) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
+
+// 🔥 BURAYA RENDER'DAKİ GOOGLE CLIENT ID'Yİ YAPIŞTIR 🔥
+const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
+
 let isBusy = false;
 const chatHistory = {};
 
@@ -21,7 +25,7 @@ const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'h
 
 // BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v23.0 Started");
+    console.log("🚀 Caynana v26.0 Started (Google Login Ready)");
     initDock();
     setAppMode('chat');
     
@@ -63,7 +67,7 @@ function setAppMode(mode) {
     const heroImg = document.getElementById('heroImage');
     heroImg.style.opacity = '0';
     setTimeout(() => {
-        heroImg.src = `./images/hero-${mode}.png`; // Veya varsayılan
+        heroImg.src = `./images/hero-${mode}.png`;
         heroImg.onload = () => heroImg.style.opacity = '1';
         heroImg.onerror = () => { heroImg.src = './images/hero-chat.png'; heroImg.style.opacity='1'; };
     }, 200);
@@ -157,7 +161,7 @@ function addBubble(text, role) {
 function addBotMessage(text) {
     const container = document.getElementById("chatContainer");
     const wrap = document.createElement("div"); wrap.className = "msg-row bot";
-    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot"; // CSS'te varsayılan beyaz
+    const bubble = document.createElement("div"); bubble.className = "msg-bubble bot"; 
     bubble.innerHTML = text;
     wrap.appendChild(bubble); container.appendChild(wrap);
 }
@@ -221,22 +225,78 @@ window.triggerAuth = (msg) => {
     addBotMessage(msg);
     document.getElementById("authModal").style.display = "flex";
 };
-// GOOGLE GİRİŞ FONKSİYONU (İSKELET)
+
+// 🔥 GOOGLE GİRİŞ FONKSİYONU (GERÇEK) 🔥
 window.handleGoogleLogin = () => {
-    console.log("🟡 Google ile giriş işlemi başlatılıyor...");
-    
-    // BURAYA İLERDE FIREBASE/SUPABASE KODLARI GELECEK
-    // Şimdilik kullanıcıya tepki verelim:
+    // Google Kütüphanesi Yüklü mü?
+    if (typeof google === 'undefined') {
+        alert("Google bağlantısı kurulamadı. Lütfen sayfayı yenile veya internetini kontrol et.");
+        return;
+    }
+
     const btn = document.querySelector('.btn-google');
     const oldText = btn.innerHTML;
     
+    // UI Yükleniyor Modu
     btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
-    btn.style.opacity = "0.8";
-    
-    // Simülasyon (Gerçek bağlantı yapılana kadar)
-    setTimeout(() => {
-        alert("Başkanım, Google API anahtarlarını sunucuya girince burası aktif olacak. Şimdilik tasarım çalışıyor!");
+    btn.style.opacity = "0.7";
+    btn.disabled = true;
+
+    // Google Token Client Başlat
+    const client = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: 'email profile openid',
+        callback: (response) => {
+            if (response.access_token) {
+                console.log("🟢 Google Token Alındı, Backend'e Gönderiliyor...");
+                verifyGoogleTokenOnBackend(response.access_token, btn, oldText);
+            } else {
+                console.warn("Google girişi iptal edildi.");
+                resetGoogleBtn(btn, oldText);
+            }
+        },
+    });
+
+    // Pencereyi Aç
+    client.requestAccessToken();
+};
+
+// Backend Doğrulama
+async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
+    try {
+        const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token: accessToken })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.token) {
+            // BAŞARILI
+            console.log("🚀 Giriş Başarılı:", data);
+            localStorage.setItem("auth_token", data.token);
+            
+            // UI Güncelle
+            document.getElementById('authModal').style.display = 'none';
+            addBotMessage(" Hoş geldin evladım! Girişini yaptım, artık seni tanıyorum. Ne lazımdı?");
+            
+            resetGoogleBtn(btn, oldText);
+        } else {
+            throw new Error(data.message || "Sunucu girişi reddetti.");
+        }
+
+    } catch (err) {
+        console.error("Login Hatası:", err);
+        alert("Giriş yapılamadı: " + err.message);
+        resetGoogleBtn(btn, oldText);
+    }
+}
+
+function resetGoogleBtn(btn, oldText) {
+    if(btn) {
         btn.innerHTML = oldText;
         btn.style.opacity = "1";
-    }, 1500);
-};
+        btn.disabled = false;
+    }
+}
