@@ -260,3 +260,27 @@ function triggerAuth(msg) {
   const m = document.getElementById("authModal");
   if (m) m.style.display = "flex";
 }
+/* === FINAL: HER MESAJ ZEMİNLİ OLSUN (USER+BOT) === */
+
+/* Bot (Caynana) - buzlu cam */
+.msg-bubble.bot{
+  background: rgba(255,255,255,0.86) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  color: #0b0b0b !important;
+  border: 1px solid rgba(255,255,255,0.45) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important;
+}
+
+/* Kullanıcı - solid altın */
+.msg-bubble.user{
+  background: var(--primary) !important;
+  color: #000 !important;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.18) !important;
+}
+
+/* Blur desteklemeyen cihazlar için fallback */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .msg-bubble.bot{ background: rgba(255,255,255,0.95) !important; }
+}
