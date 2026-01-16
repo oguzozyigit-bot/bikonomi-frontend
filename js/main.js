@@ -221,3 +221,22 @@ window.triggerAuth = (msg) => {
     addBotMessage(msg);
     document.getElementById("authModal").style.display = "flex";
 };
+// GOOGLE GİRİŞ FONKSİYONU (İSKELET)
+window.handleGoogleLogin = () => {
+    console.log("🟡 Google ile giriş işlemi başlatılıyor...");
+    
+    // BURAYA İLERDE FIREBASE/SUPABASE KODLARI GELECEK
+    // Şimdilik kullanıcıya tepki verelim:
+    const btn = document.querySelector('.btn-google');
+    const oldText = btn.innerHTML;
+    
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
+    btn.style.opacity = "0.8";
+    
+    // Simülasyon (Gerçek bağlantı yapılana kadar)
+    setTimeout(() => {
+        alert("Başkanım, Google API anahtarlarını sunucuya girince burası aktif olacak. Şimdilik tasarım çalışıyor!");
+        btn.innerHTML = oldText;
+        btn.style.opacity = "1";
+    }, 1500);
+};
