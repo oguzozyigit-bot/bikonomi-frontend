@@ -19,7 +19,8 @@
 
         <div id="topbar">
             <div class="topbarGlass">
-                <div class="menu-btn" id="menuBtn">
+                
+                <div class="menu-btn" id="menuBtn" onclick="document.getElementById('drawerMask').style.display='flex'">
                     <i class="fa-solid fa-bars"></i>
                 </div>
 
@@ -40,7 +41,7 @@
                 <div id="heroTitle">Caynana ile<br>İki Lafın Belini Kır.</div>
                 <div id="heroDesc">Hadi gel evladım, biraz dertleşelim. Neler var neler yok?</div>
                 <div id="caynanaSpeaking">
-                    <i class="fa-solid fa-comment-dots"></i> Caynana Yazıyor...
+                    <i class="fa-solid fa-comment-dots"></i> Caynana Hazır...
                 </div>
             </div>
 
@@ -95,13 +96,27 @@
     
     <div id="drawerMask" class="modalMask">
         <div id="drawer">
-            <h2>Ayarlar</h2>
-            <p>Menü içeriği buraya...</p>
-            <button class="pc-btn" onclick="document.getElementById('drawerMask').style.display='none'">Kapat</button>
+            <h2 style="margin-bottom:20px;">Ayarlar</h2>
+            
+            <div class="persona-opt selected">
+                <span>Normal Mod</span> <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="persona-opt locked">
+                <span>Sinirli Caynana</span> <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="persona-opt locked">
+                <span>Pamuk Nine</span> <i class="fa-solid fa-lock"></i>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+            
+            <button class="pc-btn" style="background:#333; color:#fff;" onclick="document.getElementById('drawerMask').style.display='none'">Kapat</button>
         </div>
     </div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
+    
     <script type="module" src="js/main.js"></script>
+
 </body>
 </html>
