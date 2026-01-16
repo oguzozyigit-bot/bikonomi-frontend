@@ -1,4 +1,4 @@
-/* css/app.css (v5.2 - FIX & COMPACT CARDS) */
+/* css/app.css (v5.3 - STRONG BLUR FIX) */
 
 :root {
   --col-chat: #FFC107; --col-shopping: #00E676; --col-dedikodu: #E0E0E0;
@@ -11,13 +11,9 @@
 html, body { height: 100%; width: 100%; overflow: hidden; background: #000; font-family: var(--font); }
 body { display: flex; align-items: center; justify-content: center; }
 
-#app {
-  width: 100%; height: 100%; max-width: 480px; position: relative;
-  display: flex; flex-direction: column; background: var(--app-bg); overflow: hidden;
-  box-shadow: 0 0 50px rgba(0,0,0,0.8);
-}
+#app { width: 100%; height: 100%; max-width: 480px; position: relative; display: flex; flex-direction: column; background: var(--app-bg); overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
 
-/* HERO & UI */
+/* HERO & TOPBAR */
 #heroImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.3s ease; }
 #heroOverlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.95) 100%); }
 
@@ -31,6 +27,7 @@ body { display: flex; align-items: center; justify-content: center; }
 .menu-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
 .menu-btn:active { background: var(--primary); color: #000; }
 
+/* MAIN & CHAT */
 #main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 #heroContent { margin-top: 90px; padding: 0 24px; pointer-events: none; animation: slideIn 0.6s ease; flex-shrink: 0; }
 @keyframes slideIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
@@ -46,21 +43,21 @@ body { display: flex; align-items: center; justify-content: center; }
 .msg-row.bot { justify-content: flex-start; }
 .msg-bubble { max-width: 88%; padding: 14px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
 .msg-bubble.user { background: var(--primary); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
-/* css/app.css içindeki ilgili kısım */
 
+/* BUZLU CAM GÜNCELLEMESİ (DAHA FLU) */
 .msg-bubble.bot { 
-    background: rgba(255, 255, 255, 0.25); /* Daha opak beyaz (0.15'ten 0.25'e) */
+    background: rgba(255, 255, 255, 0.25); /* Biraz daha beyaz */
     color: #fff; 
-    backdrop-filter: blur(25px); /* Daha güçlü bulanıklık (12px'ten 25px'e) */
+    backdrop-filter: blur(25px); /* BUZLU CAM GÜCÜ ARTIRILDI */
     -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Kenarlık da biraz daha belirgin */
-    border-bottom-left-radius: 4px;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2); 
+    border-bottom-left-radius: 4px; 
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Okunabilirlik için gölge */
 }
 
+/* BOTTOM BAR */
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(25px); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 20px 16px 8px 16px; box-shadow: 0 -10px 50px rgba(0,0,0,0.7); }
 #suggestionText { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; box-shadow: 0 4px 15px var(--primary); white-space: nowrap; pointer-events: none; }
-
 .input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .search-bar { flex: 1; height: 48px; background: rgba(255,255,255,0.1); border-radius: 18px; display: flex; align-items: center; padding: 0 14px; }
 #text { flex: 1; border: none; background: transparent; font-size: 15px; color: #fff; outline: none; }
@@ -69,6 +66,7 @@ body { display: flex; align-items: center; justify-content: center; }
 .fal-input-area { display: flex; justify-content: center; margin-bottom: 10px; }
 .big-cam-btn { background: var(--col-fal); color: #fff; padding: 12px 30px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; box-shadow: 0 0 20px rgba(213, 0, 249, 0.4); animation: pulse 2s infinite; }
 
+/* DOCK & FOOTER */
 #dockContainer { overflow-x: auto; margin-bottom: 8px; scrollbar-width: none; }
 #dock { display: flex; gap: 10px; padding: 0 4px; min-width: max-content; }
 .dock-item { opacity: 0.5; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 50px; flex-shrink: 0; }
@@ -76,33 +74,13 @@ body { display: flex; align-items: center; justify-content: center; }
 .dock-icon { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 .dock-item.active .dock-icon { background: var(--primary); color: #000; box-shadow: 0 0 12px var(--primary); }
 .dock-label { font-size: 9px; font-weight: 700; color: #fff; }
-
 .footer-sign { text-align: center; font-size: 10px; font-weight: 800; color: rgba(255,255,255,0.4); margin-bottom: 2px; }
 .oz-lines { display: flex; gap: 4px; height: 4px; width: 100%; margin-top: 2px; }
 .oz-lines span { flex: 1; border-radius: 2px; background: #333; transition: background 0.4s ease; }
 
-/* MODALLAR (ÖNEMLİ: Default Hidden) */
-.modalMask { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
-#drawerMask { align-items: flex-start; justify-content: flex-end; }
-#drawer { width: 75%; height: 100%; background: #1a1a1a; padding: 20px; transform: translateX(100%); transition: 0.3s; color: #fff; }
-.authBox { width: 85%; background: #222; padding: 20px; border-radius: 20px; border: 1px solid #444; color: #fff; }
-.modalHeader { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 18px; font-weight: 900; }
-.authInput { width: 100%; padding: 12px; background: #333; border: 1px solid #444; color: #fff; border-radius: 10px; margin-bottom: 10px; }
-.pc-btn { width: 100%; padding: 12px; background: var(--primary); color: #000; font-weight: 900; border: none; border-radius: 12px; cursor: pointer; text-align: center; text-decoration: none; display: block; }
-.persona-opt { padding: 12px; background: #333; margin-bottom: 8px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; }
-.persona-opt.selected { border: 2px solid var(--primary); background: #222; }
-.persona-opt.locked { opacity: 0.5; }
-
-/* ========================================= */
-/* 🌟 FERRARI KARTLAR (KOMPAKT & YATAY) 🌟 */
-/* ========================================= */
-.product-card {
-  background: #fff; border-radius: 16px; overflow: hidden; margin-top: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; height: 110px;
-  position: relative; animation: slideInRight 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
+/* FERRARI KART */
+.product-card { background: #fff; border-radius: 16px; overflow: hidden; margin-top: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; height: 110px; position: relative; animation: slideInRight 0.5s ease; }
 @keyframes slideInRight { from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:translateX(0);} }
-
 .pc-img-wrap { width: 110px; height: 100%; flex-shrink: 0; background: #f9f9f9; position: relative; }
 .pc-img { width: 100%; height: 100%; object-fit: cover; }
 .pc-content { flex: 1; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
@@ -112,3 +90,14 @@ body { display: flex; align-items: center; justify-content: center; }
 .pc-reason-tag i { color: #FFC107; margin-right: 4px; }
 .pc-btn-mini { background: #111; color: #fff !important; text-decoration: none; font-size: 10px; font-weight: 700; padding: 6px 12px; border-radius: 8px; transition: 0.2s; }
 .pc-source-badge { position: absolute; top: 4px; left: 4px; background: rgba(255,255,255,0.9); padding: 2px 5px; border-radius: 4px; font-size: 8px; font-weight: 800; color: #F27A1A; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+/* MODALLAR */
+.modalMask { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); align-items: center; justify-content: center; }
+#drawerMask { align-items: flex-start; justify-content: flex-end; }
+#drawer { width: 75%; height: 100%; background: #1a1a1a; padding: 20px; transform: translateX(100%); transition: 0.3s; color: #fff; }
+.authBox { width: 85%; background: #222; padding: 20px; border-radius: 20px; border: 1px solid #444; color: #fff; }
+.authInput { width: 100%; padding: 12px; background: #333; border: 1px solid #444; color: #fff; border-radius: 10px; margin-bottom: 10px; }
+.pc-btn { width: 100%; padding: 12px; background: var(--primary); color: #000; font-weight: 900; border: none; border-radius: 12px; cursor: pointer; text-align: center; text-decoration: none; display: block; }
+.persona-opt { padding: 12px; background: #333; margin-bottom: 8px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; }
+.persona-opt.selected { border: 2px solid var(--primary); background: #222; }
+.persona-opt.locked { opacity: 0.5; }
