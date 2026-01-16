@@ -1,19 +1,19 @@
-/* js/main.js (v10.1 - DOCK FIX & MODULES RESTORE) */
-export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
+/* js/main.js (v10.1 - FINAL STABLE) */
+export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; // Render adresin
 
 import { initAuth, checkLoginStatus } from './auth.js';
 import { initChat } from './chat.js';
-import { initUi, setupPersonaModal, setupNotifications } from './ui_modals.js';
+import { initUi } from './ui_modals.js';
 import { initProfile } from './profile.js';
 
-// --- MODÜL SIRALAMASI VE AYARLARI ---
+// MODÜLLER
 const MODULE_ORDER = [
     'chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'
 ];
 
 const MODE_CONFIG = {
     'chat':     { title: "Caynana ile<br>İki Lafın Belini Kır.", desc: "Hadi gel evladım, anlat bakalım.", color: "#FFC107", wit: "Benim zamanımda...", icon: "fa-comments" },
-    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "Ne lazımsa söyle, en uygununu bulayım.", color: "#00E676", wit: "Ucuz etin yahnisi...", icon: "fa-bag-shopping" },
+    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını, en uygununu bulurum.", color: "#00E676", wit: "Ucuz etin yahnisi...", icon: "fa-bag-shopping" },
     'dedikodu': { title: "Dedikodu Odası<br>Sadece Bize Özel.", desc: "Duvarların kulağı var, sessiz ol.", color: "#E0E0E0", wit: "Kız kim ne demiş?", icon: "fa-user-secret" },
     'fal':      { title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#D500F9", wit: "Soğut gel fincanı...", icon: "fa-mug-hot" },
     'astro':    { title: "Yıldızlar Ne Diyor<br>Bakalım.", desc: "Merkür retrosu falan, hayırdır inşallah.", color: "#3D5AFE", wit: "Burcun ne senin?", icon: "fa-star" },
@@ -31,17 +31,15 @@ const HERO_IMAGES = {
     'trans': './images/hero-chat.png'
 };
 
-// SOHBET HAFIZASI (Her modülün konuşmasını hatırlar)
 const chatHistory = {}; 
 
-// --- DOCK (İKONLARI ÇİZEN FONKSİYON) ---
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) {
-        console.error("HATA: #dock elementi bulunamadı!");
+        console.error("⚠️ HATA: #dock elementi HTML'de bulunamadı!");
         return;
     }
-    dock.innerHTML = ''; // Temizle
+    dock.innerHTML = '';
     
     MODULE_ORDER.forEach(key => {
         const conf = MODE_CONFIG[key];
@@ -56,20 +54,18 @@ function initDock() {
         `;
         dock.appendChild(item);
     });
+    console.log("✅ Dock ikonları yüklendi.");
 }
 
-// --- MOD DEĞİŞTİRME ---
 export const setHeroMode = (mode) => {
     const prevMode = window.currentAppMode || 'chat';
-    
-    // 1. Önceki sohbeti kaydet
     const container = document.getElementById('chatContainer');
     if (container) chatHistory[prevMode] = container.innerHTML;
 
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode] || MODE_CONFIG['chat'];
     
-    // 2. Yazıları Güncelle
+    // UI Güncelleme
     const titleEl = document.getElementById('heroTitle');
     const descEl = document.getElementById('heroDesc');
     const witEl = document.getElementById('suggestionText');
@@ -78,26 +74,22 @@ export const setHeroMode = (mode) => {
     if(descEl) descEl.innerHTML = cfg.desc;
     if(witEl) witEl.innerText = cfg.wit;
     
-    // 3. Rengi Değiştir
     document.documentElement.style.setProperty('--primary', cfg.color);
     
-    // 4. Alt Çizgileri Güncelle
     updateFooterBars(mode);
 
-    // 5. Resmi Değiştir
     const img = document.getElementById('heroImage');
     const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['chat'];
     if(img) {
-        img.style.opacity = '0.1'; // Geçiş efekti
+        img.style.opacity = '0.1';
         setTimeout(() => { 
             img.src = targetSrc; 
             img.onload = () => { img.style.opacity = '1'; };
-            // Cache durumunda hemen göster
             setTimeout(() => { img.style.opacity = '1'; }, 100);
         }, 200);
     }
     
-    // 6. Aktif İkonu Parlat
+    // Aktif İkon
     document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
     const activeDock = document.querySelector(`.dock-item[data-mode="${mode}"]`);
     if(activeDock) {
@@ -105,16 +97,14 @@ export const setHeroMode = (mode) => {
         activeDock.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
-    // 7. Sohbeti Geri Yükle
     if (container) {
         container.innerHTML = chatHistory[mode] || '';
         container.scrollTop = container.scrollHeight;
     }
 
-    // 8. Fal Modu Kamera Kontrolü
+    // Kamera Butonu Kontrolü
     const stdInput = document.getElementById('stdInputArea');
     const falInput = document.getElementById('falInputArea');
-    
     if (mode === 'fal') {
         if(stdInput) stdInput.style.display = 'none';
         if(falInput) falInput.style.display = 'flex';
@@ -127,35 +117,22 @@ export const setHeroMode = (mode) => {
 function updateFooterBars(currentMode) {
     const idx = MODULE_ORDER.indexOf(currentMode);
     if(idx === -1) return;
-
-    const lines = [
-        document.getElementById('line1'),
-        document.getElementById('line2'),
-        document.getElementById('line3'),
-        document.getElementById('line4')
-    ];
-
+    const lines = [document.getElementById('line1'), document.getElementById('line2'), document.getElementById('line3'), document.getElementById('line4')];
     for(let i=0; i<4; i++) {
         const targetIdx = (idx + i) % MODULE_ORDER.length; 
         const targetMode = MODULE_ORDER[targetIdx];
-        const color = MODE_CONFIG[targetMode].color;
-        
-        if(lines[i]) lines[i].style.background = color;
+        if(lines[i]) lines[i].style.background = MODE_CONFIG[targetMode].color;
     }
 }
 
-// --- BAŞLATMA ---
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 Caynana v10.1 Başlatılıyor...");
-    
-    initDock(); // İKONLARI ÇİZ
-    
-    // Event Listeners
+    console.log("🚀 Uygulama Başlatılıyor...");
+    initDock(); 
+    setHeroMode('chat'); 
+
+    // Eventler
     const camBtn = document.getElementById('camBtn');
     if(camBtn) camBtn.addEventListener('click', () => document.getElementById('fileInput').click());
-    
-    const falCamBtn = document.getElementById('falCamBtn');
-    if(falCamBtn) falCamBtn.addEventListener('click', () => document.getElementById('fileInput').click());
     
     const vBtn = document.getElementById('voiceToggleBtn');
     if(vBtn) {
@@ -163,13 +140,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.isVoiceOn = !window.isVoiceOn;
             const vIcon = document.getElementById('voiceIcon');
             vIcon.className = window.isVoiceOn ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
-            vBtn.style.background = window.isVoiceOn ? "var(--primary)" : "";
-            vBtn.style.color = window.isVoiceOn ? "#000" : "";
         });
     }
-
-    // İlk Başlatma
-    setHeroMode('chat'); 
 
     try {
         if (typeof initUi === 'function') initUi();
@@ -177,5 +149,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         await checkLoginStatus(); 
         if (typeof initProfile === 'function') initProfile();
         if (typeof initChat === 'function') initChat();
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Başlatma Hatası:", e); }
 });
