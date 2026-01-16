@@ -18,26 +18,15 @@
 
         <div id="topbar">
             <div class="topbarGlass">
-                <div class="menu-btn" onclick="openDrawer()">
-                    <i class="fa-solid fa-bars"></i>
-                </div>
-                
+                <div class="menu-btn" onclick="openDrawer()"><i class="fa-solid fa-bars"></i></div>
                 <div class="brand-container">
                     <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
                     <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
                 </div>
-
                 <div class="topActions">
-                    <div class="menu-btn relative" id="notifBtn">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="notif-dot"></span>
-                    </div>
-                    <div class="menu-btn" id="voiceToggleBtn">
-                        <i class="fa-solid fa-volume-xmark" id="voiceIcon"></i>
-                    </div>
-                    <div class="menu-btn" onclick="location.reload()">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </div>
+                    <div class="menu-btn relative" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
+                    <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
+                    <div class="menu-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
                 </div>
             </div>
         </div>
@@ -54,7 +43,7 @@
             <div id="chatContainer">
                 <div class="msg-row bot">
                     <div class="msg-bubble bot">
-                        Hoş geldin evladım! Üst barı incelttim, ikonları sıraya dizdim, çizgileri geri getirdim. Şimdi oldu mu?
+                        Ooo hoş geldin evladım! Gözüm yollarda kaldı. Anlat bakalım, bugün ne lazım? Senin için en iyisini bulurum ben.
                     </div>
                 </div>
             </div>
@@ -62,7 +51,6 @@
 
         <div id="bottom">
             <div id="suggestionText">Benim zamanımda...</div>
-            
             <div class="input-wrapper" id="stdInputArea">
                 <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
                 <div class="search-bar">
@@ -70,43 +58,26 @@
                 </div>
                 <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
-
             <div class="fal-input-area" id="falInputArea" style="display:none;">
-                <div class="big-cam-btn" id="falCamBtn">
-                    <i class="fa-solid fa-camera fa-2x"></i>
-                    <span>Fincanı Çek</span>
-                </div>
+                <div class="big-cam-btn" id="falCamBtn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
             </div>
-
-            <div id="dockContainer">
-                <div id="dock">
-                    </div>
-            </div>
-
+            <div id="dockContainer"><div id="dock"></div></div>
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
-            
-            <div class="oz-lines">
-                <span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span>
-            </div>
+            <div class="oz-lines"><span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span></div>
         </div>
     </div>
 
     <div id="drawerMask" class="modalMask">
         <div id="drawer">
-            <div class="drawer-header">
-                <h2>Menü</h2>
-                <div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div>
-            </div>
+            <div class="drawer-header"><h2>Menü</h2><div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div></div>
             <div class="menu-list">
-                <div class="menu-item highlight" onclick="triggerAuth('Giriş yapılıyor...')">
-                    <i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol
-                </div>
+                <div class="menu-item highlight" onclick="triggerAuth('Giriş yapılıyor...')"><i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol</div>
                 <div class="menu-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
                 <div class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</div>
             </div>
         </div>
     </div>
-
+    
     <div id="authModal" class="modalMask">
         <div class="authBox">
             <div class="modalHeader">Giriş Yap</div>
