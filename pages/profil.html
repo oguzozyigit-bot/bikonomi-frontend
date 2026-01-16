@@ -6,33 +6,34 @@
     <title>Profil Ayarları - Caynana.AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/app.css?v=26.0">
+    <link rel="stylesheet" href="../css/app.css?v=27.0">
     
     <style>
         .profile-container { padding: 80px 20px 40px 20px; color: #fff; max-width: 600px; margin: 0 auto; }
         
-        /* Avatar Alanı */
         .avatar-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; position: relative; }
         .avatar-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; box-shadow: 0 0 20px rgba(230, 194, 91, 0.3); }
         .lock-icon { position: absolute; bottom: 0; background: #333; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 1px solid #555; }
         
-        /* Form Elemanları */
-        .form-group { margin-bottom: 20px; }
-        .form-label { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; display: block; }
-        .form-input, .form-select, .form-textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: 0.3s; }
-        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(230, 194, 91, 0.1); }
+        .section-title { font-size: 16px; font-weight: 900; color: var(--primary); border-bottom: 1px solid #333; padding-bottom: 10px; margin: 30px 0 20px 0; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* Read Only Stil */
-        .form-input:disabled { opacity: 0.5; cursor: not-allowed; border-color: #222; }
+        .form-group { margin-bottom: 20px; }
+        .form-row { display: flex; gap: 15px; }
+        .form-col { flex: 1; }
+        
+        .form-label { font-size: 13px; font-weight: 700; color: #bbb; margin-bottom: 8px; display: block; }
+        .form-label i { color: var(--primary); margin-right: 5px; width: 15px; text-align: center; }
+        
+        .form-input, .form-select, .form-textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: 0.3s; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); }
+        .form-input:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Checkbox Grubu */
-        .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .cb-item { background: #1a1a1a; border: 1px solid #333; padding: 10px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; user-select: none; }
-        .cb-item.selected { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
+        /* Hidden Areas */
+        .hidden-area { display: none; background: #222; padding: 15px; border-radius: 12px; border-left: 3px solid var(--primary); margin-top: 10px; animation: slideDown 0.3s ease; }
+        @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
 
-        /* Kaydet Butonu */
-        .save-btn { width: 100%; background: var(--primary); color: #000; font-weight: 900; padding: 16px; border-radius: 14px; border: none; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .save-btn:disabled { opacity: 0.5; cursor: wait; }
+        .save-btn { width: 100%; background: var(--primary); color: #000; font-weight: 900; padding: 16px; border-radius: 14px; border: none; font-size: 16px; cursor: pointer; margin-top: 20px; box-shadow: 0 4px 15px rgba(230, 194, 91, 0.2); transition: 0.2s; }
+        .save-btn:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
@@ -42,7 +43,7 @@
 
         <div class="sub-page-header">
             <div class="header-logo" style="width:100%; text-align:center;">
-                <i class="fa-solid fa-user-gear"></i> PROFİL BİLGİLERİ
+                <i class="fa-solid fa-user-pen"></i> PROFİLİNİZİ OLUŞTURUN
             </div>
         </div>
 
@@ -54,128 +55,186 @@
                 <div style="font-size: 11px; color: #666; margin-top: 8px;">Google Hesabından Çekildi</div>
             </div>
 
+            <div class="section-title">📋 Zorunlu Bilgiler</div>
+
             <div class="form-group">
-                <label class="form-label">Kullanıcı ID (Sistem)</label>
-                <input type="text" id="userId" class="form-input" disabled value="USER_12345">
+                <label class="form-label"><i class="fa-solid fa-id-card"></i> Ad Soyad *</label>
+                <input type="text" id="fullname" class="form-input" placeholder="Adınız ve Soyadınız">
             </div>
 
             <div class="form-group">
-                <label class="form-label">🗣️ Caynana Sana Nasıl Hitap Etsin? *</label>
-                <input type="text" id="hitap" class="form-input" placeholder="Örn: Oğuz, Abi, Güzelim, Reis..." maxlength="20">
-                <div style="font-size: 10px; color: #666; margin-top: 4px;">Caynana seni bu isimle çağıracak. (Küfür/Emoji Yasak)</div>
+                <label class="form-label"><i class="fa-solid fa-comment-dots"></i> Caynana Size Nasıl Hitap Etsin? *</label>
+                <input type="text" id="hitap" class="form-input" placeholder="Örn: Oğuz, Abi, Güzelim, Reis...">
             </div>
 
+            <div class="form-row">
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-venus-mars"></i> Cinsiyet *</label>
+                    <select id="gender" class="form-select">
+                        <option value="">Seçiniz</option>
+                        <option value="Kadin">Kadın</option>
+                        <option value="Erkek">Erkek</option>
+                    </select>
+                </div>
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-calendar-days"></i> Yaş *</label>
+                    <input type="number" id="age" class="form-input" placeholder="Örn: 30">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-ruler-vertical"></i> Boy (cm) *</label>
+                    <input type="number" id="height" class="form-input" placeholder="175">
+                </div>
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-weight-scale"></i> Kilo (kg) *</label>
+                    <input type="number" id="weight" class="form-input" placeholder="70">
+                </div>
+            </div>
+
+            <div class="section-title">💍 Aile ve İlişkiler (Opsiyonel)</div>
+
             <div class="form-group">
-                <label class="form-label">🎯 Kullanım Amacı (En az 1 tane) *</label>
-                <div class="checkbox-group" id="purposeGroup">
-                    <div class="cb-item" onclick="toggleCb(this)">Sohbet & Dertleşme</div>
-                    <div class="cb-item" onclick="toggleCb(this)">Alışveriş Tavsiyesi</div>
-                    <div class="cb-item" onclick="toggleCb(this)">Eğlence & Fal</div>
+                <label class="form-label"><i class="fa-solid fa-ring"></i> Medeni Durum</label>
+                <select id="maritalStatus" class="form-select" onchange="toggleSpouse()">
+                    <option value="">Seçiniz</option>
+                    <option value="Bekar">Bekar</option>
+                    <option value="Evli">Evli</option>
+                </select>
+                
+                <div id="spouseArea" class="hidden-area">
+                    <label class="form-label" style="color:#fff;">❤️ Eşinizin Adı</label>
+                    <input type="text" id="spouseName" class="form-input" placeholder="Eşinizin ismi...">
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">✍️ Hakkımda (Opsiyonel)</label>
-                <textarea id="about" class="form-textarea" rows="2" placeholder="Kendinden kısaca bahset..." maxlength="140"></textarea>
+                <label class="form-label"><i class="fa-solid fa-children"></i> Çocuk Sayısı</label>
+                <select id="childCount" class="form-select" onchange="toggleChildren()">
+                    <option value="0">Yok</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4+</option>
+                </select>
+
+                <div id="childAgesArea" class="hidden-area">
+                    <label class="form-label" style="color:#fff;">👶 Çocukların Yaşları (Virgülle ayırın)</label>
+                    <input type="text" id="childAges" class="form-input" placeholder="Örn: 7, 12">
+                </div>
+            </div>
+
+            <div class="section-title">🌍 Lokasyon ve Diğer</div>
+
+            <div class="form-row">
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-earth-europe"></i> Ülke</label>
+                    <input type="text" id="country" class="form-input" value="Türkiye">
+                </div>
+                <div class="form-col">
+                    <label class="form-label"><i class="fa-solid fa-city"></i> İl</label>
+                    <input type="text" id="city" class="form-input" placeholder="İstanbul">
+                </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">⚽ Tuttuğun Takım (Opsiyonel)</label>
+                <label class="form-label"><i class="fa-solid fa-futbol"></i> Tuttuğu Takım</label>
                 <input type="text" id="team" class="form-input" placeholder="Takım ismi...">
             </div>
 
-            <div class="form-group" style="display:flex; gap:10px;">
-                <div style="flex:1;">
-                    <label class="form-label">Konuşma Tarzı</label>
-                    <select id="style" class="form-select">
-                        <option value="direct">Direkt (Dobra)</option>
-                        <option value="soft">Yumuşak (Anaç)</option>
-                        <option value="funny">Umursamaz (Eğlenceli)</option>
-                    </select>
-                </div>
-                <div style="flex:1;">
-                    <label class="form-label">Bildirimler</label>
-                    <select id="notif" class="form-select">
-                        <option value="on">Açık</option>
-                        <option value="off">Kapalı</option>
-                    </select>
-                </div>
-            </div>
-
             <button class="save-btn" onclick="saveProfile()">
-                <i class="fa-solid fa-check"></i> KAYDET VE BAŞLA
+                <i class="fa-solid fa-check-circle"></i> KAYDET VE BAŞLA
             </button>
-
+            
+            <div style="height:30px;"></div>
         </div>
     </div>
 
     <script>
-        // Sayfa Yüklendiğinde
         document.addEventListener('DOMContentLoaded', () => {
-            // LocalStorage'dan veriyi çek
+            // LocalStorage'dan kullanıcıyı çek
             const rawUser = localStorage.getItem("user_info");
             if (!rawUser) {
-                // Giriş yapılmamışsa ana sayfaya at
-                alert("Önce giriş yapmalısın başkanım.");
+                alert("Lütfen önce giriş yapın.");
                 window.location.href = "../index.html";
                 return;
             }
-
             const user = JSON.parse(rawUser);
-
-            // Alanları Doldur
-            document.getElementById('userAvatar').src = user.picture || "https://via.placeholder.com/100";
-            document.getElementById('userId').value = user.id || "Bilinmiyor";
             
-            // Eğer daha önce kaydedilmiş hitap varsa doldur (İlerde backend'den gelirse)
-            if(user.hitap) document.getElementById('hitap').value = user.hitap;
+            // Verileri Yerleştir
+            document.getElementById('userAvatar').src = user.picture || "https://via.placeholder.com/100";
+            if(user.name) document.getElementById('fullname').value = user.name;
+            
+            // Eğer daha önce kaydedilmişse onları da doldur
+            if(user.profile) {
+                const p = user.profile;
+                if(p.hitap) document.getElementById('hitap').value = p.hitap;
+                if(p.gender) document.getElementById('gender').value = p.gender;
+                if(p.age) document.getElementById('age').value = p.age;
+                if(p.height) document.getElementById('height').value = p.height;
+                if(p.weight) document.getElementById('weight').value = p.weight;
+                // Diğer alanlar da buraya eklenebilir...
+            }
         });
 
-        // Checkbox Mantığı
-        function toggleCb(el) {
-            el.classList.toggle('selected');
+        // Eş Adı Göster/Gizle
+        function toggleSpouse() {
+            const val = document.getElementById('maritalStatus').value;
+            const area = document.getElementById('spouseArea');
+            area.style.display = (val === 'Evli') ? 'block' : 'none';
         }
 
-        // Kaydetme Fonksiyonu
+        // Çocuk Yaşları Göster/Gizle
+        function toggleChildren() {
+            const val = document.getElementById('childCount').value;
+            const area = document.getElementById('childAgesArea');
+            area.style.display = (val !== '0') ? 'block' : 'none';
+        }
+
         function saveProfile() {
-            const hitap = document.getElementById('hitap').value.trim();
-            const purposes = document.querySelectorAll('#purposeGroup .cb-item.selected');
-            
-            // 1. ZORUNLU ALAN KONTROLÜ
-            if (!hitap) {
-                alert("Caynana sana ne diyecek? Hitap şeklini boş bırakma.");
-                return;
-            }
-            if (purposes.length === 0) {
-                alert("En az bir kullanım amacı seçmelisin başkanım.");
-                return;
+            // Zorunlu Alan Kontrolü
+            const requiredIds = ['fullname', 'hitap', 'gender', 'age', 'height', 'weight'];
+            for (let id of requiredIds) {
+                const val = document.getElementById(id).value.trim();
+                if (!val) {
+                    alert("Lütfen tüm zorunlu alanları doldurun başkanım. (* işaretliler)");
+                    document.getElementById(id).focus();
+                    return;
+                }
             }
 
-            // 2. VERİYİ HAZIRLA
+            // Veriyi Paketle
             const profileData = {
-                hitap: hitap,
-                purposes: Array.from(purposes).map(el => el.innerText),
-                about: document.getElementById('about').value.trim(),
-                team: document.getElementById('team').value.trim(),
-                style: document.getElementById('style').value,
-                notification: document.getElementById('notif').value
+                fullname: document.getElementById('fullname').value.trim(),
+                hitap: document.getElementById('hitap').value.trim(),
+                gender: document.getElementById('gender').value,
+                age: document.getElementById('age').value,
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                maritalStatus: document.getElementById('maritalStatus').value,
+                spouseName: document.getElementById('spouseName').value.trim(),
+                childCount: document.getElementById('childCount').value,
+                childAges: document.getElementById('childAges').value.trim(),
+                country: document.getElementById('country').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                team: document.getElementById('team').value.trim()
             };
 
-            console.log("Kaydedilecek Profil:", profileData);
-
-            // 3. BACKEND'E GÖNDER (Şimdilik LocalStorage güncelle ve ana sayfaya git)
-            // İlerde buraya: await fetch('/api/profile', ...) gelecek.
-            
+            // LocalStorage Güncelle
             let currentUser = JSON.parse(localStorage.getItem("user_info"));
-            currentUser = { ...currentUser, ...profileData }; // Verileri birleştir
+            currentUser.profile = profileData; // Profil objesi olarak ekle
+            currentUser.hitap = profileData.hitap; // Kolay erişim için ana köke de ekle
+            
             localStorage.setItem("user_info", JSON.stringify(currentUser));
 
             // Buton Efekti
             const btn = document.querySelector('.save-btn');
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Ayarlanıyor...`;
-            
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor...`;
+            btn.style.opacity = "0.7";
+
+            // 1 saniye sonra yönlendir
             setTimeout(() => {
-                // Ana Sayfaya Dön (Profil Tamamlandı)
                 window.location.href = "../index.html";
             }, 1000);
         }
