@@ -1,47 +1,87 @@
-/* js/auth.js - KİMLİK YÖNETİMİ */
-import { BASE_DOMAIN, PLACEHOLDER_IMG } from './config.js';
+import { GOOGLE_CLIENT_ID } from "./config.js";
 
-export function checkLoginStatus() {
-    const raw = localStorage.getItem("user_info");
-    const menu = document.querySelector('.menu-list');
-    const bar = document.getElementById('userInfoBar');
-    
-    if (raw) {
-        const u = JSON.parse(raw);
-        if(bar) {
-            bar.classList.add('visible'); 
-            document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
-            document.getElementById('headerHitap').innerText = (u.hitap || "DAMAT").toUpperCase();
-            document.getElementById('headerName').innerText = u.name || "";
-        }
-        if(menu) {
-            menu.innerHTML = `
-                <a href="pages/profil.html" class="menu-item highlight" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil</a>
-                <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
-                <div style="margin-top:10px; border-top:1px solid #333;"></div>
-                <div class="menu-item link-item" onclick="window.handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</div>
-            `;
-        }
-    } else {
-        if(bar) bar.classList.remove('visible'); 
-        if(menu) menu.innerHTML = `<div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'"><i class="fa-solid fa-user-plus"></i> Giriş Yap</div>`;
+export function initAuth({ onAuthed }){
+  const token = localStorage.getItem("auth_token");
+  if (token) {
+    markAuthed(true);
+    if (onAuthed) onAuthed(getUserInfo());
+  } else {
+    markAuthed(false);
+    showLoginModal(onAuthed);
+  }
+
+  // Google GIS init
+  window.google?.accounts?.id?.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: (resp) => {
+      localStorage.setItem("auth_token", resp.credential);
+      const info = decodeJwt(resp.credential);
+      // ID sabit (sub)
+      const user_info = getUserInfo() || {};
+      user_info.id = info.sub;
+      user_info.email = info.email;
+      user_info.name = info.name || info.email || "Kullanıcı";
+      user_info.avatar = info.picture || "";
+      // profil objesi
+      user_info.profile = user_info.profile || {};
+      localStorage.setItem("user_info", JSON.stringify(user_info));
+      hideLoginModal();
+      markAuthed(true);
+      if (onAuthed) onAuthed(user_info);
     }
+  });
 }
 
-export function parseJwt(token) {
-    try {
-        return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-    } catch(e){ return {} }
+function decodeJwt(token){
+  const payload = token.split(".")[1];
+  const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
+  return JSON.parse(decodeURIComponent(escape(json)));
 }
 
-export async function verifyBackendToken(credential) {
-    try {
-        const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: credential })
-        });
-        const data = await res.json();
-        if (data.token) localStorage.setItem("auth_token", data.token);
-    } catch (e) { console.error("Backend Auth Error", e); }
+export function getUserInfo(){
+  try { return JSON.parse(localStorage.getItem("user_info") || "{}"); }
+  catch { return {}; }
+}
+
+export function logout(){
+  localStorage.removeItem("auth_token");
+  localStorage.removeItem("user_info");
+  location.reload();
+}
+
+function markAuthed(ok){
+  const dot = document.getElementById("authDot");
+  if (!dot) return;
+  dot.style.background = ok ? "#55d38a" : "#777";
+}
+
+function showLoginModal(onAuthed){
+  // Tek ekranı “kilitleyen” basit modal
+  let modal = document.getElementById("loginModal");
+  if (!modal){
+    modal = document.createElement("div");
+    modal.id = "loginModal";
+    modal.style.cssText = `
+      position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:10000;
+      display:flex; align-items:center; justify-content:center; padding:16px;`;
+    modal.innerHTML = `
+      <div style="width:min(420px,100%); background:#0b0b0b; border:1px solid #222; border-radius:18px; padding:16px;">
+        <div style="font-weight:800; color:#ffb300; margin-bottom:8px;">CAYNANA.AI</div>
+        <div style="color:#ddd; margin-bottom:14px;">Devam etmek için Google ile giriş yap.</div>
+        <div id="gBtn"></div>
+      </div>`;
+    document.body.appendChild(modal);
+  }
+  // Button render
+  setTimeout(() => {
+    window.google?.accounts?.id?.renderButton(
+      document.getElementById("gBtn"),
+      { theme: "outline", size: "large", text: "continue_with", shape: "pill" }
+    );
+  }, 200);
+}
+
+function hideLoginModal(){
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.remove();
 }
