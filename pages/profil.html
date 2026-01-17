@@ -5,40 +5,124 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Profil Ayarları</title>
 <style>
-  :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
-  body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-  .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
-  @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; } }
+  /* --- TEMEL AYARLAR --- */
+  :root { 
+    --bg: #0e0e0e; 
+    --text: #ececec; 
+    --gold: #ffb300; 
+    --pistachio: #bef264; 
+    --card-bg: #1a1a1a; 
+  }
+  
+  body { 
+    margin: 0; padding: 0; 
+    background: #000; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    color: var(--text); 
+    display: flex; justify-content: center; 
+    height: 100vh; overflow: hidden; 
+  }
 
-  .header { padding: 20px; text-align: center; border-bottom: 1px solid #222; background: rgba(20,20,20,0.95); }
-  .header h2 { margin: 0; font-size: 18px; color: #fff; }
+  /* --- MOBİL KASA --- */
+  .mobile-frame { 
+    width: 100%; max-width: 480px; height: 100%; 
+    background: var(--bg); 
+    display: flex; flex-direction: column; 
+    position: relative; 
+  }
+  @media (min-width: 500px) { 
+    .mobile-frame { 
+      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
+    } 
+  }
+
+  /* --- HEADER --- */
+  .header { 
+    padding: 20px; text-align: center; 
+    border-bottom: 1px solid #222; 
+    background: rgba(20,20,20,0.95); 
+    backdrop-filter: blur(10px);
+    z-index: 10;
+  }
+  .header h2 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; letter-spacing: 0.5px; }
   .header p { margin: 5px 0 0; font-size: 12px; color: #888; }
 
-  /* SCROLLBAR GİZLEME */
-  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; }
-  .scroll-content::-webkit-scrollbar { display: none; }
+  /* --- SCROLL ALANI (Gizli Scrollbar) --- */
+  .scroll-content { 
+    flex: 1; overflow-y: auto; padding: 20px; 
+    display: flex; flex-direction: column; gap: 20px; 
+    scrollbar-width: none; /* Firefox */
+  }
+  .scroll-content::-webkit-scrollbar { display: none; /* Chrome */ }
   
+  /* --- AVATAR --- */
   .p-avatar-area { text-align: center; margin-bottom: 10px; }
-  .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
+  .p-avatar { 
+    width: 100px; height: 100px; 
+    border-radius: 50%; border: 3px solid var(--gold); 
+    object-fit: cover; background: #222; 
+    box-shadow: 0 0 20px rgba(255, 179, 0, 0.2);
+  }
   
-  .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; letter-spacing: 1px; }
+  /* --- FORM ELEMANLARI --- */
+  .section-title { 
+    font-size: 11px; color: var(--pistachio); font-weight: 700; 
+    text-transform: uppercase; margin-bottom: 5px; 
+    border-bottom: 1px solid #222; padding-bottom: 8px; letter-spacing: 1px; 
+  }
   
-  .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
-  .form-label { font-size: 12px; color: #888; font-weight: 600; margin-left: 2px; }
-  .form-input, .form-select { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; }
-  .form-input:focus { border-color: var(--gold); background: #222; }
-  .form-input:disabled { opacity: 0.5; cursor: default; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; }
+  .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
+  
+  .form-input, .form-select { 
+    background: #1a1a1a; border: 1px solid #333; color: #fff; 
+    padding: 14px; border-radius: 12px; font-size: 14px; 
+    outline: none; width: 100%; transition: 0.2s; 
+    font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus { 
+    border-color: var(--gold); background: #222; 
+    box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.1);
+  }
+  .form-input:disabled { opacity: 0.5; cursor: not-allowed; background: #111; color: #666; }
+  
+  /* Placeholder Rengi */
+  ::placeholder { color: #555; opacity: 1; }
 
-  .save-btn { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; }
-  
-  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 10px; border-radius: 8px; border: 1px dashed #333; }
-  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; }
-  .copy-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+  /* --- ID KUTUSU --- */
+  .id-copy-box { 
+    display: flex; align-items: center; gap: 10px; 
+    background: #111; padding: 12px; border-radius: 10px; 
+    border: 1px dashed #333; position: relative;
+  }
+  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; letter-spacing: 1px; }
+  .copy-btn { 
+    background: none; border: none; cursor: pointer; font-size: 18px; color: #666; transition: 0.2s;
+  }
+  .copy-btn:hover { color: var(--gold); transform: scale(1.1); }
 
-  /* Dinamik Alanlar */
-  .conditional-field { display: none; animation: fadeIn 0.3s ease; border-left: 2px solid var(--gold); padding-left: 10px; margin-left: 5px; margin-bottom: 15px; }
+  /* --- DİNAMİK ALANLAR (Animasyonlu) --- */
+  .conditional-field { 
+    display: none; animation: fadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+    border-left: 2px solid var(--gold); padding-left: 15px; margin-left: 5px; margin-bottom: 10px;
+  }
   .conditional-field.show { display: block; }
-  @keyframes fadeIn { from{opacity:0; transform:translateY(-5px);} to{opacity:1; transform:translateY(0);} }
+  
+  @keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(-10px); } 
+    to { opacity: 1; transform: translateY(0); } 
+  }
+
+  /* --- BUTON --- */
+  .save-btn { 
+    background: var(--gold); color: #000; border: none; 
+    padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; 
+    width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; 
+    transition: 0.2s; box-shadow: 0 5px 20px rgba(255, 179, 0, 0.15);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .save-btn:active { transform: scale(0.97); }
 </style>
 </head>
 <body>
@@ -50,8 +134,9 @@
   </div>
 
   <div class="scroll-content">
+    
     <div class="p-avatar-area">
-      <img id="formAvatar" class="p-avatar" src="" alt="Avatar">
+      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" alt="Avatar">
       <div style="font-size:11px; color:#666; margin-top:8px;">Google Hesabın</div>
     </div>
 
@@ -76,7 +161,7 @@
       <label class="form-label">ID Numarası (Değişmez)</label>
       <div class="id-copy-box">
         <span id="formID" class="id-text">...</span>
-        <button class="copy-btn" onclick="copyID()">📋</button>
+        <button class="copy-btn" onclick="copyID()" title="Kopyala">📋</button>
       </div>
     </div>
 
@@ -95,7 +180,7 @@
       </div>
     </div>
 
-    <div class="section-title">Detaylar (İlişkiyi Güçlendirir)</div>
+    <div class="section-title" style="margin-top:10px;">Detaylar (İlişkiyi Güçlendirir)</div>
 
     <div class="form-group">
       <label class="form-label">Medeni Durum</label>
@@ -143,74 +228,13 @@
       <input type="text" id="formCity" class="form-input" placeholder="Örn: Ankara">
     </div>
 
-    <button class="save-btn" onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
+    <button class="save-btn" onclick="saveProfile()">
+      💾 KAYDET VE BAŞLA
+    </button>
   </div>
 </div>
 
-<script>
-  let currentUser = null;
+<script type="module" src="../js/profile.js"></script>
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const data = localStorage.getItem('caynana_user_v8');
-    if(!data) { window.location.href = '../index.html'; return; }
-
-    currentUser = JSON.parse(data);
-    
-    document.getElementById('formAvatar').src = currentUser.avatar;
-    document.getElementById('formFullname').value = currentUser.fullname;
-    document.getElementById('formID').innerText = currentUser.id;
-
-    if(currentUser.hitap) document.getElementById('formHitap').value = currentUser.hitap;
-    if(currentUser.botName) document.getElementById('formBotName').value = currentUser.botName;
-    if(currentUser.dob) document.getElementById('formDob').value = currentUser.dob;
-    if(currentUser.gender) document.getElementById('formGender').value = currentUser.gender;
-  });
-
-  function toggleMarriedFields() {
-    const val = document.getElementById('formStatus').value;
-    const div = document.getElementById('marriedFields');
-    val === 'Evli' ? div.classList.add('show') : div.classList.remove('show');
-  }
-
-  function toggleChildFields() {
-    const val = document.getElementById('formChildCount').value;
-    const div = document.getElementById('childFields');
-    val !== '0' ? div.classList.add('show') : div.classList.remove('show');
-  }
-
-  function copyID() {
-    navigator.clipboard.writeText(currentUser.id);
-    alert("ID Kopyalandı!");
-  }
-
-  function saveProfile() {
-    const hitap = document.getElementById('formHitap').value;
-    const botName = document.getElementById('formBotName').value;
-    const dob = document.getElementById('formDob').value;
-    const gender = document.getElementById('formGender').value;
-
-    if(!hitap || !botName || !dob || !gender) {
-      alert("Lütfen mecburi alanları doldur evladım.");
-      return;
-    }
-
-    currentUser.hitap = hitap;
-    currentUser.botName = botName;
-    currentUser.dob = dob;
-    currentUser.gender = gender;
-    currentUser.maritalStatus = document.getElementById('formStatus').value;
-    currentUser.spouse = document.getElementById('formSpouse').value;
-    currentUser.childCount = document.getElementById('formChildCount').value;
-    currentUser.childNames = document.getElementById('formChildNames').value;
-    currentUser.childAges = document.getElementById('formChildAges').value;
-    currentUser.team = document.getElementById('formTeam').value;
-    currentUser.city = document.getElementById('formCity').value;
-    
-    currentUser.isProfileCompleted = true;
-
-    localStorage.setItem('caynana_user_v8', JSON.stringify(currentUser));
-    window.location.href = '../index.html';
-  }
-</script>
 </body>
 </html>
