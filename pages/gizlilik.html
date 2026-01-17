@@ -1,109 +1,180 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gizlilik Politikası - Caynana.AI</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="../css/app.css?v=25.0"> 
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Gizlilik Politikası</title>
+<style>
+  /* --- TEMEL AYARLAR --- */
+  :root { 
+    --bg: #0e0e0e; 
+    --text: #ececec; 
+    --gold: #ffb300; 
+    --pistachio: #bef264; 
+    --card-bg: #1a1a1a; 
+  }
+  
+  body { 
+    margin: 0; padding: 0; 
+    background: #000; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    color: var(--text); 
+    display: flex; justify-content: center; 
+    height: 100vh; overflow: hidden; 
+  }
 
-    <style>
-        /* Bu sayfaya özel okuma kolaylığı */
-        .policy-section { margin-bottom: 25px; }
-        .policy-section h4 { color: #fff; margin-bottom: 10px; font-size: 16px; border-left: 3px solid var(--primary); padding-left: 10px; }
-        .policy-section ul { list-style: none; padding-left: 10px; }
-        .policy-section li { position: relative; padding-left: 15px; margin-bottom: 6px; font-size: 13px; color: #aaa; }
-        .policy-section li::before { content: "•"; color: var(--primary); position: absolute; left: 0; font-weight: bold; }
-        .policy-section p { font-size: 13px; color: #aaa; line-height: 1.6; }
-        .pill-badge { display: inline-block; background: #222; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid #333; margin-bottom: 20px; }
-    </style>
+  .mobile-frame { 
+    width: 100%; max-width: 480px; height: 100%; 
+    background: var(--bg); 
+    display: flex; flex-direction: column; 
+    position: relative; 
+  }
+  @media (min-width: 500px) { 
+    .mobile-frame { 
+      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
+    } 
+  }
+
+  /* --- HEADER --- */
+  .header { 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #222; 
+    background: rgba(20,20,20,0.95); 
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    display: flex; align-items: center; gap: 15px;
+  }
+  .back-btn {
+    background: none; border: none; color: var(--gold); 
+    font-size: 24px; cursor: pointer; padding: 0; margin-top: -2px;
+  }
+  .header-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+
+  /* --- İÇERİK ALANI --- */
+  .content-area { 
+    flex: 1; overflow-y: auto; padding: 25px 20px; 
+    display: flex; flex-direction: column; gap: 25px; 
+    scrollbar-width: none; 
+  }
+  .content-area::-webkit-scrollbar { display: none; }
+
+  /* Tipografi */
+  h3 { color: var(--gold); font-size: 14px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; }
+  p, li { font-size: 13px; line-height: 1.6; color: #ccc; margin: 0; }
+  
+  ul { margin: 5px 0 0 0; padding-left: 20px; list-style-type: disc; }
+  ul ul { list-style-type: circle; margin-top: 5px; }
+  li { margin-bottom: 5px; }
+
+  .intro { font-size: 13px; color: #888; border-bottom: 1px solid #222; padding-bottom: 20px; margin-bottom: 5px; font-style: italic; }
+  
+  .highlight { color: #fff; font-weight: 600; }
+
+  /* Footer İmza */
+  .footer-sign { 
+    margin-top: 30px; text-align: center; padding: 20px; 
+    border-top: 1px solid #222; color: var(--pistachio); 
+    font-weight: 700; font-size: 14px; 
+  }
+  .footer-sub { font-size: 11px; color: #666; font-weight: 400; margin-top: 4px; }
+
+</style>
 </head>
 <body>
 
-    <div id="app">
-        <div id="heroOverlay" style="background: #111; z-index: -1;"></div>
+<div class="mobile-frame">
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="header-title">Gizlilik Politikası</div>
+  </div>
 
-        <div class="sub-page-header">
-            <a href="../index.html" class="back-btn-fixed">
-                <i class="fa-solid fa-chevron-left"></i>
-            </a>
-            <div class="header-logo">
-                <i class="fa-solid fa-shield-halved"></i> GİZLİLİK
-            </div>
-        </div>
-
-        <div class="page-container">
-            
-            <h2 style="margin-bottom: 5px;">Gizlilik Politikası</h2>
-            <div style="font-size: 11px; color: #666; margin-bottom: 15px;">Son Güncelleme: 14 Ocak 2026</div>
-
-            <div class="pill-badge">
-                <i class="fa-solid fa-check"></i> Minimum Veri • Güvenli Saklama • Kontrol Sende
-            </div>
-
-            <div class="policy-section">
-                <h4>1. Topladığımız Veriler</h4>
-                <ul>
-                    <li><b>Hesap:</b> E-posta (zorunlu), parola hash’i (şifreler şifrelenerek tutulur).</li>
-                    <li><b>Kullanım:</b> Günlük hak sayaçları (fal/sohbet limitleri) ve teknik loglar.</li>
-                    <li><b>İçerik:</b> Gönderdiğiniz mesajlar ve görseller (sadece hizmeti üretmek için anlık işlenir).</li>
-                    <li><b>Profil (Opsiyonel):</b> İsim, yaş gibi bilgiler (sadece siz eklerseniz).</li>
-                </ul>
-            </div>
-
-            <div class="policy-section">
-                <h4>2. Neden Topluyoruz?</h4>
-                <ul>
-                    <li>Size özel sohbet ve yorum deneyimi sunmak için.</li>
-                    <li>Kullanım haklarını ve abonelikleri yönetmek için.</li>
-                    <li>Uygulama güvenliğini sağlamak ve kötüye kullanımı önlemek için.</li>
-                </ul>
-            </div>
-
-            <div class="policy-section">
-                <h4>3. Ödeme ve Abonelik</h4>
-                <p>
-                    Tüm ödeme işlemleri doğrudan <b>Google Play Store</b> veya <b>Apple App Store</b> altyapısı üzerinden gerçekleşir. 
-                    Caynana.AI sunucularında kredi kartı numaranız veya finansal bilgileriniz <u>asla saklanmaz.</u>
-                </p>
-            </div>
-
-            <div class="policy-section">
-                <h4>4. Üçüncü Taraf Hizmetler</h4>
-                <ul>
-                    <li><b>Google/Apple:</b> Giriş işlemleri ve ödemeler için.</li>
-                    <li><b>AI Servisleri:</b> Mesajlarınızı anlamlandırmak ve yanıt üretmek için (Anonimleştirilmiş olarak).</li>
-                    <li><b>Bulut Sunucu:</b> Verilerin güvenli barındırılması için.</li>
-                </ul>
-            </div>
-
-            <div class="policy-section">
-                <h4>5. Verilerin Saklanması ve Silinmesi</h4>
-                <p>
-                    Verileriniz, hizmeti sağladığımız süre boyunca güvenli sunucularda (SSL/TLS şifreleme ile) saklanır.
-                </p>
-                <p style="margin-top:10px; color:#fff;">
-                    <b>Haklarınız:</b> Uygulama içindeki "Hesabımı Sil" seçeneğiyle veya bizimle iletişime geçerek tüm verilerinizin kalıcı olarak silinmesini talep edebilirsiniz.
-                </p>
-            </div>
-
-            <div style="background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; margin-top: 20px;">
-                <h4 style="color: #fff; margin-bottom: 5px; font-size: 14px; border:none; padding:0;">İletişim</h4>
-                <p style="font-size: 13px; color: #888; margin: 0;">
-                    Gizlilik ile ilgili her türlü sorunuz için:<br>
-                    <span style="color:var(--primary); font-weight:700;">destek@caynana.ai</span>
-                </p>
-            </div>
-
-            <div style="text-align: center; margin-top: 40px; opacity: 0.4; font-size: 11px; padding-bottom: 20px;">
-                @CaynanaAI By Ozyigits<br>2026
-            </div>
-
-        </div>
+  <div class="content-area">
+    
+    <div class="intro">
+      Caynana AI, kullanıcılarının gizliliğini ve kişisel verilerinin korunmasını ciddiyetle ele alır. Bu politika, verilerin nasıl toplandığını ve kullanıldığını açıklar.
     </div>
+
+    <section>
+      <h3>1) Toplanan Veriler</h3>
+      <p>Caynana AI, yalnızca hizmetin çalışması için gerekli olan verileri toplar:</p>
+      <ul>
+        <li><strong>Kimlik Bilgileri:</strong> Google veya Apple hesabından gelen ad ve profil fotoğrafı.</li>
+        <li><strong>Profil Bilgileri:</strong> Caynana’nın sana verdiği isim, hitap tercihi ve isteğe bağlı bilgiler.</li>
+        <li><strong>Kullanım Verileri:</strong> Son görülme zamanı, online durumu ve teknik etkileşim bilgileri.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>2) Kamera ve Mikrofon Kullanımı</h3>
+      <ul>
+        <li>Kamera ve mikrofon yalnızca sen <span class="highlight">açıkça izin verdiğinde</span> çalışır.</li>
+        <li>Görüntü ve ses kaydedilmez, depolanmaz ve paylaşılmaz.</li>
+        <li>Veriler sadece yüz takibi, göz teması ve konuşma algılama gibi anlık analiz amaçlı kullanılır.</li>
+      </ul>
+      <p style="margin-top:5px; color:#888;">* İstediğin an bu izinleri kapatabilirsin.</p>
+    </section>
+
+    <section>
+      <h3>3) Mesajlar ve İçerik</h3>
+      <ul>
+        <li>Yazdığın veya söylediğin mesajlar hizmetin çalışması için işlenir.</li>
+        <li>Kalıcı olarak üçüncü taraflarla paylaşılmaz.</li>
+        <li>İçerikler, kullanıcı deneyimini geliştirmek dışında başka bir amaçla kullanılmaz.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>4) Veri Paylaşımı</h3>
+      <p>Caynana AI, kullanıcı verilerini izinsiz olarak üçüncü kişilerle paylaşmaz. Yasal zorunluluklar haricinde veri aktarımı yapmaz.</p>
+    </section>
+
+    <section>
+      <h3>5) Veri Güvenliği</h3>
+      <ul>
+        <li>Veriler güvenli sunucularda saklanır.</li>
+        <li>Yetkisiz erişimi önlemek için teknik ve idari önlemler alınır.</li>
+        <li>İhlal durumunda gerekli önlemler derhal uygulanır.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>6) Çerezler</h3>
+      <p>Oturum yönetimi için gerekli teknik çerezler kullanılabilir. Takip veya reklam amaçlı çerezler zorunlu değildir ve kullanılmaz.</p>
+    </section>
+
+    <section>
+      <h3>7) Kullanıcının Hakları</h3>
+      <p>Kullanıcı olarak şunlara hakkın vardır:</p>
+      <ul>
+        <li>Kendi verilerine erişme.</li>
+        <li>Verilerinin düzeltilmesini isteme.</li>
+        <li>Hesabının silinmesini talep etme.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>8) Çocukların Gizliliği</h3>
+      <p>Caynana AI, 18 yaş altındaki kullanıcılar için tasarlanmamıştır. Bilinçli olarak çocuklara ait veri toplanmaz.</p>
+    </section>
+
+    <section>
+      <h3>9) Değişiklikler</h3>
+      <p>Bu politika zaman zaman güncellenebilir. Güncellemeler uygulama içinde bildirildiği anda yürürlüğe girer.</p>
+    </section>
+
+    <section>
+      <h3>10) Kabul</h3>
+      <p>Caynana AI’yi kullanarak bu Gizlilik Politikası’nı okuduğunu, anladığını ve kabul ettiğini beyan etmiş olursun.</p>
+    </section>
+
+    <div class="footer-sign">
+      Caynana AI
+      <div class="footer-sub">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
