@@ -38,7 +38,7 @@ body{
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden; /* Drawer taşmasın */
+  overflow: hidden;
 }
 
 @media(min-width: 500px){
@@ -148,86 +148,243 @@ body{
 
 /* --- 4. HEADER & GÖZLER --- */
 .header{
-  height: 180px;
+  height: 200px;
   display: flex; justify-content: center; align-items: center;
-  background: radial-gradient(circle at center, rgba(255,179,0,0.1) 0%, #000 70%);
+  background: radial-gradient(circle at center, rgba(255,179,0,0.10) 0%, #000 72%);
   position: relative; z-index: 10; flex-shrink: 0;
   margin-top: 20px;
 }
 
-/* GÖZLER (NEON v3 + EYE IN EYE) */
-.eyes-container{ display: flex; gap: 20px; transform: scale(0.9); }
-.eye-wrapper{ width: 120px; height: 75px; position: relative; display: flex; justify-content: center; align-items: center; }
-.eye-frame{
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  border-radius: 50% 50% 40% 40%;
-  border: 3px solid #fff;
-  box-shadow: 0 0 4px #fff, 0 0 10px var(--amber), 0 0 25px var(--amber), inset 0 0 15px var(--amber);
-  background: rgba(0,0,0,0.4); z-index: 5;
-}
-
-/* PUPIL artık "kapsayıcı" (içine mini göz koyacağız) */
-.pupil{
-  width: 26px; height: 26px;
-  background: #000;
-  border: 2px solid #fff;
-  border-radius: 50%;
+/* --- KADIN GÖZÜ SETUP --- */
+.eyes-container{
+  display: flex;
+  gap: 24px;
+  transform: scale(0.92);
   position: relative;
-  z-index: 6;
-  box-shadow: 0 0 12px var(--amber);
-  transition: transform 0.1s;
-  overflow: hidden; /* mini göz taşmasın */
 }
 
-/* Göz bebeğine biraz "lens" hissi */
+/* göz bloğu */
+.eye-wrapper{
+  width: 140px;
+  height: 105px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* kaş */
+.brow{
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 110px;
+  height: 26px;
+  z-index: 30;
+  opacity: 0.95;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+}
+.brow::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius: 40px;
+  /* kaşın ana gövdesi: kavisli bir "stroke" hissi */
+  background:
+    radial-gradient(120px 40px at 50% 80%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.95) 62%, rgba(0,0,0,0) 70%),
+    radial-gradient(120px 40px at 50% 78%, rgba(0,0,0,0) 58%, rgba(20,20,20,0.9) 62%, rgba(0,0,0,0) 72%);
+  clip-path: polygon(0% 70%, 10% 40%, 25% 25%, 45% 20%, 65% 25%, 82% 38%, 100% 65%, 100% 100%, 0% 100%);
+  opacity: 0.95;
+}
+
+/* kaşın ucu */
+.brow::after{
+  content:"";
+  position:absolute;
+  right: 6px; top: 10px;
+  width: 26px; height: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.95));
+  border-radius: 10px;
+  transform: rotate(-8deg);
+  opacity: 0.8;
+}
+
+/* göz çerçevesi (badem kadın gözü) */
+.eye-frame{
+  position: absolute; top: 30px; left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 78px;
+  border-radius: 55% 55% 45% 45% / 65% 65% 45% 45%;
+  border: 3px solid rgba(255,255,255,0.95);
+  box-shadow:
+    0 0 4px rgba(255,255,255,0.9),
+    0 0 12px rgba(255,179,0,0.85),
+    0 0 26px rgba(255,179,0,0.7),
+    inset 0 0 18px rgba(255,179,0,0.55);
+  background: rgba(0,0,0,0.35);
+  z-index: 10;
+}
+
+/* eyeliner (üst çizgi) */
+.eyeliner{
+  position: absolute;
+  top: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 146px;
+  height: 44px;
+  z-index: 15;
+  pointer-events:none;
+}
+.eyeliner::before{
+  content:"";
+  position:absolute; left:0; top:0;
+  width: 100%; height: 100%;
+  background:
+    radial-gradient(140px 60px at 50% 100%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.95) 62%, rgba(0,0,0,0) 70%),
+    linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 25%, rgba(0,0,0,0.9) 75%, rgba(0,0,0,0) 100%);
+  clip-path: polygon(0% 85%, 8% 60%, 22% 40%, 42% 33%, 60% 36%, 78% 46%, 92% 62%, 100% 80%, 100% 100%, 0% 100%);
+  opacity: 0.85;
+}
+/* eyeliner kuyruğu (wing) */
+.eyeliner::after{
+  content:"";
+  position:absolute;
+  right: -6px; top: 20px;
+  width: 26px; height: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.95), rgba(0,0,0,0));
+  border-radius: 10px;
+  transform: rotate(-12deg);
+  opacity: 0.9;
+}
+
+/* kirpikler */
+.lashes{
+  position:absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 152px;
+  height: 58px;
+  z-index: 20;
+  pointer-events:none;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.7));
+}
+.lashes::before{
+  content:"";
+  position:absolute; inset:0;
+  /* bir sürü ince çizgiyi gradient ile veriyoruz */
+  background:
+    repeating-linear-gradient(
+      105deg,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 7px,
+      rgba(255,255,255,0.08) 8px,
+      rgba(255,255,255,0.08) 9px,
+      rgba(0,0,0,0) 10px,
+      rgba(0,0,0,0) 14px
+    );
+  opacity: 0.7;
+  mask-image: radial-gradient(150px 80px at 50% 92%, rgba(0,0,0,0) 52%, rgba(0,0,0,1) 62%);
+}
+.lashes::after{
+  content:"";
+  position:absolute; left: 8px; right: 8px; top: 8px; bottom: 0;
+  border-top: 3px solid rgba(0,0,0,0.9);
+  border-radius: 0 0 60px 60px;
+  transform: rotate(-2deg);
+  opacity: 0.75;
+}
+
+/* iris halka */
+.iris{
+  position:absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255,179,0,0.55) 0%, rgba(255,179,0,0.18) 28%, rgba(0,0,0,0.0) 60%),
+    radial-gradient(circle at 60% 70%, rgba(255,145,0,0.25) 0%, rgba(0,0,0,0) 55%);
+  border: 2px solid rgba(255,255,255,0.35);
+  box-shadow: 0 0 18px rgba(255,179,0,0.35);
+  z-index: 11;
+  pointer-events:none;
+  opacity: 0.95;
+}
+
+/* pupil kapsayıcı (içine mini göz koyacağız) */
+.pupil{
+  position:absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid rgba(255,255,255,0.95);
+  box-shadow: 0 0 12px rgba(255,179,0,0.9);
+  z-index: 16;
+  overflow: hidden;
+  transition: transform 0.1s;
+}
 .pupil::after{
   content:"";
   position:absolute; inset:0;
   border-radius:50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.20) 0%, rgba(255,255,255,0.06) 25%, rgba(0,0,0,0) 55%);
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 25%, rgba(0,0,0,0) 55%);
   pointer-events:none;
 }
 
-/* --- GÖZ İÇİNDE GÖZ (mini eye) --- */
+/* --- GÖZ İÇİNDE GÖZ --- */
 .mini-eye{
   position:absolute;
   left:50%; top:50%;
   width: 14px; height: 9px;
   transform: translate(-50%,-50%);
-  border-radius: 50% 50% 40% 40%;
-  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 55% 55% 45% 45% / 65% 65% 45% 45%;
+  border: 1px solid rgba(255,255,255,0.92);
   background: rgba(0,0,0,0.55);
   box-shadow:
     0 0 2px rgba(255,255,255,0.7),
-    0 0 6px rgba(255,179,0,0.7),
+    0 0 6px rgba(255,179,0,0.75),
     inset 0 0 6px rgba(255,179,0,0.35);
   display:flex;
   align-items:center;
   justify-content:center;
-  opacity: 0.95;
+  opacity: 0.96;
 }
-
-/* mini pupil */
 .mini-pupil{
   width: 4px; height: 4px;
   border-radius: 50%;
   background: #000;
   border: 1px solid rgba(255,255,255,0.9);
-  box-shadow: 0 0 4px rgba(255,179,0,0.9);
+  box-shadow: 0 0 4px rgba(255,179,0,0.95);
   transition: transform 0.1s;
 }
 
-/* mini eye'ye çok hafif "nefes" */
+/* mini eye nefes */
 @keyframes breathe {
   0%,100%{ transform: translate(-50%,-50%) scale(1); }
   50%{ transform: translate(-50%,-50%) scale(1.06); }
 }
 .mini-eye{ animation: breathe 2.8s ease-in-out infinite; }
 
+/* kapak (blink) */
 .lid{
-  position: absolute; top: -20%; left: -10%; width: 120%; height: 0%;
-  background: var(--bg); z-index: 10; border-bottom: 2px solid #111;
+  position: absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 160px;
+  height: 0%;
+  background: var(--bg);
+  z-index: 25;
+  border-bottom: 2px solid #111;
   transition: height 0.3s ease;
+  border-radius: 50px;
 }
 
 /* --- 5. CHAT & INPUT --- */
@@ -253,13 +410,34 @@ body{
 input{ width: 100%; background: #111; border: 1px solid #333; border-radius: 25px; padding: 14px 20px; color: #fff; font-size: 16px; outline: none; transition: 0.3s; }
 input:focus{ border-color: var(--amber); }
 
-/* --- CSS ANIMASYONLAR --- */
+/* --- MOOD ANİMASYONLARI --- */
 .blink .lid{ animation: blink 4s infinite; }
-@keyframes blink{ 0%,96%,100%{height:0%} 98%{height:100%} }
-.suspicious .lid{ height: 60%; }
-.shock .eye-wrapper{ transform: scale(1.1); } .shock .pupil{ transform: scale(0.6); }
+@keyframes blink{ 0%,96%,100%{height:0%} 98%{height:82%} }
+
+/* şüphe: kaş iner + göz kapak yarım */
+.suspicious .lid{ height: 42%; }
+.suspicious .brow{ transform: translateX(-50%) translateY(4px) rotate(-3deg); opacity: 0.98; }
+
+/* şok: kaş kalkar + göz büyür + pupil küçülür */
+.shock{ transform: translateY(-2px); }
+.shock .brow{ transform: translateX(-50%) translateY(-4px) rotate(2deg); }
+.shock .eye-frame{ transform: translateX(-50%) scale(1.06); }
+.shock .pupil{ transform: translateX(-50%) scale(0.75); }
+
+/* rolling: pupil yukarı bakar gibi */
 .rolling .pupil{ animation: roll 2s ease-in-out; }
-@keyframes roll{ 0%{transform:translate(0,0)} 50%{transform:translate(0,-15px)} 100%{transform:translate(0,0)} }
+@keyframes roll{
+  0%{transform:translateX(-50%) translate(0,0)}
+  50%{transform:translateX(-50%) translate(0,-14px)}
+  100%{transform:translateX(-50%) translate(0,0)}
+}
+
+/* normalde kaş hafif canlı */
+@keyframes browIdle{
+  0%,100%{ transform: translateX(-50%) translateY(0); }
+  50%{ transform: translateX(-50%) translateY(-1px); }
+}
+.blink .brow{ animation: browIdle 3.2s ease-in-out infinite; }
 
 </style>
 </head>
@@ -304,11 +482,16 @@ input:focus{ border-color: var(--amber); }
 
   <div class="header">
     <div class="eyes-container">
+
+      <!-- SOL GÖZ -->
       <div class="eye-wrapper blink" id="eyeL">
+        <div class="brow"></div>
+        <div class="lashes"></div>
+        <div class="eyeliner"></div>
         <div class="lid"></div>
         <div class="eye-frame"></div>
+        <div class="iris"></div>
 
-        <!-- PUPIL + MINI EYE -->
         <div class="pupil">
           <div class="mini-eye">
             <div class="mini-pupil"></div>
@@ -316,17 +499,22 @@ input:focus{ border-color: var(--amber); }
         </div>
       </div>
 
+      <!-- SAĞ GÖZ -->
       <div class="eye-wrapper blink" id="eyeR">
+        <div class="brow"></div>
+        <div class="lashes"></div>
+        <div class="eyeliner"></div>
         <div class="lid"></div>
         <div class="eye-frame"></div>
+        <div class="iris"></div>
 
-        <!-- PUPIL + MINI EYE -->
         <div class="pupil">
           <div class="mini-eye">
             <div class="mini-pupil"></div>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -349,7 +537,7 @@ input:focus{ border-color: var(--amber); }
 </div>
 
 <script>
-/* --- MENÜ (DRAWER) MANTIĞI --- */
+/* --- MENÜ (DRAWER) --- */
 const menuBtn = document.getElementById('menuBtn');
 const drawer = document.getElementById('drawer');
 const mask = document.getElementById('drawerMask');
@@ -364,13 +552,11 @@ function toggleDrawer(open) {
     mask.classList.remove('open');
   }
 }
-
 menuBtn.addEventListener('click', () => toggleDrawer(true));
 closeBtn.addEventListener('click', () => toggleDrawer(false));
 mask.addEventListener('click', () => toggleDrawer(false));
 
-
-/* --- GÖZ & CHAT MANTIĞI --- */
+/* --- GÖZ TAKİBİ + CHAT --- */
 const eyes = [document.getElementById("eyeL"), document.getElementById("eyeR")];
 const pupils = document.querySelectorAll(".pupil");
 const miniPupils = document.querySelectorAll(".mini-pupil");
@@ -391,18 +577,23 @@ function trackEyes(x, y) {
   eyes.forEach((eye, i) => {
     if(!eye.classList.contains("rolling")){
       const rect = eye.getBoundingClientRect();
-      const dx = (x - rect.left - rect.width/2) / 10;
-      const dy = (y - rect.top - rect.height/2) / 10;
+      const cx = rect.left + rect.width/2;
+      const cy = rect.top + rect.height/2;
 
-      const px = clamp(dx, -15, 15);
-      const py = clamp(dy, -15, 15);
+      // biraz daha yumuşak hareket için bölü 11
+      const dx = (x - cx) / 11;
+      const dy = (y - cy) / 11;
 
-      // Ana pupil hareketi
-      pupils[i].style.transform = `translate(${px}px, ${py}px)`;
+      // pupil sınırı
+      const px = clamp(dx, -14, 14);
+      const py = clamp(dy, -10, 10);
 
-      // Mini pupil: ters yönde, daha az hareket (rekürsif hissi)
+      // ana pupil
+      pupils[i].style.transform = `translateX(-50%) translate(${px}px, ${py}px)`;
+
+      // mini pupil: ters ve daha küçük (rekürsif hissi)
       const mx = clamp(-px * 0.35, -4, 4);
-      const my = clamp(-py * 0.35, -4, 4);
+      const my = clamp(-py * 0.35, -3, 3);
       miniPupils[i].style.transform = `translate(${mx}px, ${my}px)`;
     }
   });
@@ -411,10 +602,13 @@ function trackEyes(x, y) {
 function setMood(mood) {
   eyes.forEach((e, i) => {
     e.classList.remove("blink", "suspicious", "shock", "rolling");
-    pupils[i].style.transform = "translate(0,0)";
+    pupils[i].style.transform = "translateX(-50%) translate(0,0)";
     miniPupils[i].style.transform = "translate(0,0)";
-    if(mood === "normal") e.classList.add("blink"); else e.classList.add(mood);
+
+    if(mood === "normal") e.classList.add("blink");
+    else e.classList.add(mood);
   });
+
   if(mood === "rolling") setTimeout(() => setMood("normal"), 2500);
 }
 
@@ -429,7 +623,7 @@ input.addEventListener("keypress", (e) => {
     setTimeout(() => {
       typingIndicator.style.display = "none";
       generateResponse(text);
-    }, 1000);
+    }, 900);
   }
 });
 
