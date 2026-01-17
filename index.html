@@ -10,10 +10,10 @@
     --panel: #181818;
     --text: #ececec;
     --gold: #ffb300;
-    --pistachio: #bef264; /* Fıstık Yeşili */
-    --glass: rgba(20, 20, 20, 0.85); /* Biraz daha koyu blur */
-    --border: rgba(255, 255, 255, 0.08);
-    --lip-color: #d84315; /* Hafif kiremit rengi */
+    --pistachio: #bef264;
+    --glass: rgba(15, 15, 15, 0.95); /* Daha koyu blur, içerik karışmasın */
+    --border: rgba(255, 255, 255, 0.1);
+    --lip-color: #c62828; /* Daha belirgin kırmızı/kiremit */
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -24,267 +24,279 @@
     background: var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text);
-    overflow: hidden;
+    overflow: hidden; /* Scroll sadece chat içinde */
   }
 
-  /* --- ANA KAP --- */
+  /* --- APP CONTAINER --- */
   .app-container {
     width: 100%; height: 100%;
-    max-width: 480px;
-    margin: 0 auto;
+    max-width: 480px; margin: 0 auto;
     position: relative;
-    display: flex;
-    flex-direction: column;
     background: var(--bg);
+    display: flex; flex-direction: column;
   }
 
-  /* --- TOPBAR --- */
+  /* --- TOPBAR (Logo + Slogan) --- */
   .topbar {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 60px;
+    position: fixed; top: 0; left: 0; right: 0; /* SABİT */
+    height: 75px; /* Slogan için biraz yükselttik */
     background: var(--glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px;
-    z-index: 1100; /* En üstte */
-  }
-  .hamb { font-size: 24px; cursor: pointer; color: #aaa; background:none; border:none; }
-  .brand { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; color: #fff; }
-  .status-dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; box-shadow: 0 0 8px var(--gold); }
-
-  /* --- EYES & MOUTH WRAPPER (Sabit Panel) --- */
-  .face-panel {
-    position: absolute;
-    top: 60px; /* Topbar altı */
-    left: 0; right: 0;
-    height: 180px; /* Gözler + Dudak için yer */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    background: linear-gradient(to bottom, var(--bg) 80%, transparent); /* Alt kısım yumuşak geçiş */
-    
-    /* Animasyonlar */
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
-    
-    /* Varsayılan: GİZLİ (Yukarıda) */
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
+    z-index: 2000;
+    max-width: 480px; margin: 0 auto; /* Desktopta ortalı kalsın */
   }
 
-  /* Tracking Aktifken Face Panel Görünür */
-  .app-container.tracking-active .face-panel {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
+  /* HAMBURGER */
+  .hamb-btn {
+    background: none; border: none; cursor: pointer; padding: 8px;
   }
-
-  .eyes-row {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    margin-bottom: 20px;
+  .hamb-icon {
+    display: block; width: 24px; height: 2px; background: #aaa; position: relative;
   }
+  .hamb-icon::before, .hamb-icon::after {
+    content:''; position: absolute; left: 0; width: 24px; height: 2px; background: #aaa;
+  }
+  .hamb-icon::before { top: -6px; } .hamb-icon::after { top: 6px; }
 
-  /* --- EYE CSS --- */
-  .eye {
-    width: 110px; height: 80px;
-    position: relative;
-    --lidTop: 0%; --lidBot: 0%; 
-    --gx: 0px; --gy: 0px;
+  /* ORTA KISIM (Logo + Title + Slogan) */
+  .brand-wrapper {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin-top: 4px;
   }
   
+  .logo-area { display: flex; align-items: center; gap: 8px; }
+  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; color: #fff; }
+  
+  .slogan {
+    font-size: 10px; color: #888; letter-spacing: 0.3px; margin-top: 2px; font-weight: 400;
+  }
+
+  /* SEESAW (Tahtaravalli) SVG Styling */
+  .seesaw-svg { width: 40px; height: 20px; overflow: visible; }
+  .seesaw-bar { 
+    transform-origin: 20px 14px; /* Dönme noktası üçgenin ucu */
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  /* Animasyon Classları */
+  .tilt-left .seesaw-bar { transform: rotate(-15deg); } /* Yeşil aşağı (User) */
+  .tilt-right .seesaw-bar { transform: rotate(15deg); } /* Turuncu aşağı (Bot) */
+
+  /* --- MENU OVERLAY --- */
+  .menu-overlay {
+    position: fixed; inset: 0; z-index: 3000;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
+    opacity: 0; pointer-events: none; transition: 0.3s;
+  }
+  .menu-sidebar {
+    position: absolute; top: 0; left: 0; bottom: 0; width: 260px;
+    background: #1a1a1a; border-right: 1px solid #333;
+    transform: translateX(-100%); transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+    padding: 80px 20px 20px; display: flex; flex-direction: column; gap: 15px;
+  }
+  .menu-overlay.open { opacity: 1; pointer-events: auto; }
+  .menu-overlay.open .menu-sidebar { transform: translateX(0); }
+  
+  .menu-item { color: #ccc; text-decoration: none; font-size: 16px; padding: 10px; border-bottom: 1px solid #333; }
+
+  /* --- FACE PANEL (Sabit - Klavye Kaymaz) --- */
+  .face-panel {
+    position: fixed; /* FIXED ÖNEMLİ */
+    top: 75px; /* Topbar yüksekliği kadar aşağıda */
+    left: 0; right: 0;
+    height: 160px;
+    z-index: 1500;
+    background: linear-gradient(to bottom, var(--bg) 85%, transparent);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    max-width: 480px; margin: 0 auto;
+    
+    /* Show/Hide Logic */
+    transform: translateY(-120%); opacity: 0; pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+  }
+  
+  .app-container.tracking-active .face-panel {
+    transform: translateY(0); opacity: 1; pointer-events: auto;
+  }
+
+  .eyes-row { display: flex; gap: 26px; margin-bottom: 14px; }
+  
+  /* EYE STYLES */
+  .eye { width: 100px; height: 70px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; }
   .brow {
-    position: absolute; top: -12px; left: 5%; width: 90%; height: 18px;
-    background: #222; border-radius: 10px;
+    position: absolute; top: -14px; left: 0; width: 100%; height: 18px;
+    background: #222; border-radius: 99px;
     transform-origin: center; transition: 0.2s;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.6);
   }
   .sclera {
-    width: 100%; height: 100%;
-    background: #e0e0e0;
-    border-radius: 50%;
-    overflow: hidden;
-    position: relative;
-    box-shadow: inset 0 0 12px rgba(0,0,0,0.9);
-    border: 2px solid #2a2a2a;
+    width: 100%; height: 100%; background: #ddd;
+    border-radius: 50%; overflow: hidden; position: relative;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 2px solid #222;
   }
   .iris {
-    width: 40px; height: 40px;
-    background: radial-gradient(circle, #5d4037 0%, #3e2723 100%);
-    border-radius: 50%;
-    position: absolute; top: 50%; left: 50%;
+    width: 36px; height: 36px;
+    background: radial-gradient(circle, #5d4037 0%, #281a16 100%);
+    border-radius: 50%; position: absolute; top: 50%; left: 50%;
     transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy)));
-    border: 1px solid rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.2);
   }
   .pupil {
-    width: 14px; height: 14px; background: #000; border-radius: 50%;
+    width: 12px; height: 12px; background: #000; border-radius: 50%;
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   }
   .reflection {
-    position: absolute; top: 6px; right: 6px;
-    width: 6px; height: 6px; background: rgba(255,255,255,0.9);
-    border-radius: 50%; filter: blur(0.5px);
+    position: absolute; top: 6px; right: 6px; width: 5px; height: 5px;
+    background: #fff; border-radius: 50%; opacity: 0.8;
   }
-  
   .lid-top, .lid-bot {
     position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10;
-    transition: height 0.08s ease-out;
+    transition: height 0.1s ease-out;
   }
   .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
   .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
 
-  /* --- MOUTH (DUDAK) CSS --- */
+  /* MOUTH (Daha belirgin) */
   .mouth-wrapper {
-    width: 60px; height: 24px;
-    position: relative;
+    width: 50px; height: 26px;
     display: flex; justify-content: center; align-items: center;
+    position: relative;
   }
   .mouth {
-    width: 100%; height: 100%;
-    background: transparent;
-    border-bottom: 3px solid #7d5a5a; /* Kapalıyken çizgi */
-    border-radius: 50%;
-    transition: 0.2s;
-    opacity: 0.7;
+    width: 36px; height: 4px;
+    background: var(--lip-color);
+    border-radius: 10px;
+    transition: 0.15s;
+    opacity: 0.8;
   }
   
-  /* Konuşurken Dudak Hareketi */
+  /* Konuşma Animasyonu (Caynana) */
   .face-panel.speaking .mouth {
-    border-bottom: none;
-    background: #5a3a3a; /* Ağız içi */
-    height: 18px; width: 40px;
-    border-radius: 50%;
-    animation: talkAnim 0.18s infinite alternate;
-    box-shadow: inset 0 -4px 0 #3e2723; /* Dil efekti */
+    width: 40px; height: 20px; border-radius: 50%;
+    border: 2px solid var(--lip-color);
+    background: #4e1a1a; /* Ağız içi */
+    animation: talkAnim 0.2s infinite alternate;
   }
+  @keyframes talkAnim { 0% { transform: scaleY(0.7); } 100% { transform: scaleY(1.2); } }
 
-  @keyframes talkAnim {
-    0% { height: 10px; width: 45px; transform: scaleY(0.8); }
-    100% { height: 24px; width: 38px; transform: scaleY(1.1); }
+  /* Mırıldanma/Okuma Animasyonu (Kullanıcı Yazarken) */
+  .face-panel.mumbling .mouth {
+    height: 6px; width: 38px;
+    animation: mumbleAnim 0.15s infinite alternate;
   }
+  @keyframes mumbleAnim { 0% { transform: translateX(-1px); } 100% { transform: translateX(1px); } }
 
-  /* Takip Kapat Butonu (Yüzün altında) */
-  .track-toggle-mini {
-    margin-top: 15px;
-    background: rgba(255,255,255,0.06);
-    color: #888; border: none;
-    padding: 6px 12px; border-radius: 20px;
-    font-size: 11px; cursor: pointer;
+  /* BELİRGİN KAPAT BUTONU */
+  .close-track-btn {
+    margin-top: 12px;
+    background: rgba(198, 40, 40, 0.15); /* Hafif kırmızı zemin */
+    color: #ef9a9a; 
+    border: 1px solid rgba(198, 40, 40, 0.4);
+    padding: 6px 16px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; cursor: pointer;
     transition: 0.2s;
   }
-  .track-toggle-mini:hover { color: #fff; background: rgba(255,255,255,0.1); }
+  .close-track-btn:hover { background: rgba(198, 40, 40, 0.3); color: #fff; }
 
   /* --- CHAT AREA --- */
   .chat-area {
-    flex: 1;
-    overflow-y: auto;
-    padding-left: 16px; padding-right: 16px; padding-bottom: 100px;
-    
-    /* Kritik Geçiş */
-    padding-top: 80px; /* Varsayılan: Topbar (60) + Boşluk (20) */
-    transition: padding-top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    
+    flex: 1; overflow-y: auto;
+    padding: 90px 16px 120px 16px; /* Topbar(75) + Padding */
     display: flex; flex-direction: column; gap: 16px;
-    scroll-behavior: smooth;
+    transition: padding-top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  
-  /* Tracking Aktifken Chat Aşağı İner */
+  /* Tracking açılınca chat aşağı itilir */
   .app-container.tracking-active .chat-area {
-    padding-top: 250px; /* Topbar (60) + FacePanel (180) + Boşluk (10) */
+    padding-top: 240px; /* Topbar(75) + Face(160) + Gap */
   }
 
   .bubble {
-    max-width: 86%;
-    padding: 12px 16px;
-    border-radius: 18px;
-    font-size: 15px; line-height: 1.45;
-    position: relative;
-    animation: pop 0.2s ease;
+    max-width: 85%; padding: 12px 16px; border-radius: 18px;
+    font-size: 15px; line-height: 1.45; animation: pop 0.2s ease;
   }
-  @keyframes pop { from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
-
-  .bubble.bot {
-    align-self: flex-start;
-    background: #1c1c1c;
-    border-left: 3px solid var(--gold);
-    border-top-left-radius: 4px; color: #ddd;
-  }
+  @keyframes pop { from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
   
-  .bubble.user {
-    align-self: flex-end;
-    background: #252525;
-    border-right: 3px solid var(--pistachio);
-    border-top-right-radius: 4px; color: #fff;
-    text-align: right;
-  }
+  .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; }
+  .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; text-align: right; border-top-right-radius: 4px; }
 
   /* --- INPUT DOCK --- */
   .input-dock {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(to top, #0e0e0e 90%, transparent);
-    padding: 10px 16px 30px 16px;
-    z-index: 1200;
+    position: fixed; bottom: 0; left: 0; right: 0; /* FIXED */
+    background: linear-gradient(to top, #0e0e0e 85%, transparent);
+    padding: 10px 16px 30px 16px; z-index: 2000;
+    max-width: 480px; margin: 0 auto;
   }
-
-  /* Ana Takip Açma Butonu (Gözler yokken) */
+  
   .main-track-btn {
     position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
-    background: rgba(30,30,30,0.9);
-    border: 1px solid #444; color: #aaa;
-    font-size: 13px; padding: 8px 16px; border-radius: 20px;
-    cursor: pointer; backdrop-filter: blur(4px);
-    transition: 0.2s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    background: #1f1f1f; border: 1px solid #444; color: #aaa;
+    font-size: 12px; padding: 8px 18px; border-radius: 20px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: 0.2s;
   }
-  /* Takip açıksa bu buton gizlensin */
-  .app-container.tracking-active .main-track-btn {
-    display: none;
-  }
+  .app-container.tracking-active .main-track-btn { display: none; }
 
   .dock-inner {
-    display: flex; align-items: flex-end; gap: 10px;
-    background: #1e1e1e; border: 1px solid #333;
-    border-radius: 24px; padding: 8px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+    display: flex; align-items: flex-end; gap: 12px;
+    background: #1a1a1a; border: 1px solid #333;
+    border-radius: 26px; padding: 8px 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   }
 
-  .dock-btn {
-    width: 40px; height: 40px; border-radius: 50%; border: none;
-    background: transparent; color: #999; font-size: 20px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: 0.2s;
+  /* MODERN ICONS (SVG) */
+  .icon-btn {
+    width: 42px; height: 42px; border-radius: 50%; border: none;
+    background: transparent; color: #888; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; flex-shrink: 0;
   }
-  .dock-btn.active { color: var(--gold); background: rgba(255,179,0,0.15); }
-  
+  .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
+  .icon-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+  .icon-btn.active { color: var(--gold); background: rgba(255,179,0,0.15); }
+
   textarea {
     flex: 1; background: transparent; border: none; outline: none;
     color: #fff; font-size: 16px; resize: none; padding: 10px 5px;
     max-height: 120px; min-height: 24px; font-family: inherit;
   }
-
-  .footer {
-    position: absolute; bottom: 5px; left: 0; right: 0;
-    text-align: center; font-size: 10px; color: #444; pointer-events: none; z-index: 1201;
-  }
   
+  .footer { position: fixed; bottom: 6px; width:100%; text-align: center; font-size: 10px; color: #444; pointer-events: none; z-index: 2100; max-width: 480px;}
   #camVideo { display: none; }
 </style>
 </head>
 <body>
 
 <div class="app-container" id="appContainer">
-  <div class="topbar">
-    <button class="hamb">☰</button>
-    <div class="brand">Caynana AI</div>
-    <div class="status-dot"></div>
+  
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <a href="#" class="menu-item">Ayarlar</a>
+      <a href="#" class="menu-item">Geçmişi Temizle</a>
+      <a href="#" class="menu-item">Hakkında</a>
+      <a href="#" class="menu-item" style="color:#d32f2f;">Çıkış</a>
+    </div>
   </div>
+
+  <div class="topbar">
+    <button class="hamb-btn" id="hambBtn"><span class="hamb-icon"></span></button>
+    
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <div class="brand-name">Caynana AI</div>
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          <g class="seesaw-bar" id="seesawBar">
+             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+             <circle cx="3" cy="5" r="3" fill="#bef264" />
+             <circle cx="37" cy="5" r="3" fill="#ffb300" />
+          </g>
+        </svg>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div style="width:24px;"></div> </div>
 
   <div class="face-panel" id="facePanel">
     <div class="eyes-row">
@@ -308,20 +320,26 @@
       <div class="mouth"></div>
     </div>
 
-    <button class="track-toggle-mini" id="closeTrackBtn">Takibi Kapat</button>
+    <button class="close-track-btn" id="closeTrackBtn">Takibi Kapat</button>
   </div>
 
   <div class="chat-area" id="chat">
-    <div class="bubble bot">Gözüm üzerinde... Anlat bakalım derdin ne?</div>
+    <div class="bubble bot">Gözüm üzerinde evladım...</div>
   </div>
 
   <div class="input-dock">
     <button class="main-track-btn" id="openTrackBtn">👁️ Takip et</button>
     
     <div class="dock-inner">
-      <button class="dock-btn" id="camBtn">📷</button>
+      <button class="icon-btn" id="camBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      
       <textarea id="msgInput" rows="1" placeholder="Mesaj yaz..."></textarea>
-      <button class="dock-btn" id="micBtn">🎙️</button>
+      
+      <button class="icon-btn" id="micBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
     </div>
   </div>
 
@@ -334,13 +352,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
 <script>
-  // DOM
+  // --- DOM Elements ---
   const appContainer = document.getElementById('appContainer');
   const facePanel = document.getElementById('facePanel');
   const chat = document.getElementById('chat');
   const msgInput = document.getElementById('msgInput');
   const eyeL = document.getElementById('eyeL');
   const eyeR = document.getElementById('eyeR');
+  const seesawBar = document.getElementById('seesawBar');
+  const brandWrapper = document.getElementById('brandWrapper');
+  const menuOverlay = document.getElementById('menuOverlay');
+  const hambBtn = document.getElementById('hambBtn');
   
   const openTrackBtn = document.getElementById('openTrackBtn');
   const closeTrackBtn = document.getElementById('closeTrackBtn');
@@ -348,21 +370,36 @@
   const micBtn = document.getElementById('micBtn');
   const camVideo = document.getElementById('camVideo');
 
-  // State
   let isTracking = false;
   let isCameraOn = false;
   let isMicListening = false;
   let faceMesh, camera;
 
-  // Helpers
+  // --- Helpers ---
   const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const scrollChat = () => chat.scrollTop = chat.scrollHeight;
 
-  // --- GÖZ FONKSİYONLARI ---
+  // --- MENU LOGIC ---
+  hambBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuOverlay.classList.toggle('open');
+  });
+  menuOverlay.addEventListener('click', () => menuOverlay.classList.remove('open'));
+
+  // --- LOGO (SEESAW) ANIMATION ---
+  function setSeesaw(side) {
+    // side: 'left' (User), 'right' (Bot), null (Balance)
+    brandWrapper.classList.remove('tilt-left', 'tilt-right');
+    if(side === 'left') brandWrapper.classList.add('tilt-left');
+    else if(side === 'right') brandWrapper.classList.add('tilt-right');
+  }
+
+  // --- GÖZ HAREKETLERİ ---
   function setGaze(x, y) {
-    const gx = clamp(x * 22, -22, 22);
-    const gy = clamp(y * 18, -18, 18);
+    // Fixed olduğu için biraz daha hassas olabilir
+    const gx = clamp(x * 24, -24, 24);
+    const gy = clamp(y * 20, -20, 20);
     [eyeL, eyeR].forEach(e => {
       e.style.setProperty('--gx', gx+'px');
       e.style.setProperty('--gy', gy+'px');
@@ -379,36 +416,79 @@
   async function blink() {
     setLids(100); await sleep(120); setLids(0);
   }
-  
-  // Random blink
   setInterval(() => { if(isTracking && Math.random()<0.08) blink(); }, 2500);
 
   async function approveNod() {
     if(!isTracking) return;
-    setGaze(0, 0.9); await sleep(150);
-    setGaze(0, -0.2); await sleep(150);
+    setGaze(0, 0.8); await sleep(150);
+    setGaze(0, -0.4); await sleep(150);
     setGaze(0, 0);
   }
 
-  // --- MOD GEÇİŞLERİ (Layout Değişimi) ---
+  // --- MODE TOGGLE ---
   function toggleMode(active) {
     isTracking = active;
     if(active) {
       appContainer.classList.add('tracking-active');
-      startCamera(); // Otomatik kamera aç (isteğe bağlı)
+      startCamera();
     } else {
       appContainer.classList.remove('tracking-active');
       stopCamera();
       setGaze(0,0);
+      setSeesaw(null); // Reset logo
     }
-    // Chat en alta kaysın değişimde
     setTimeout(scrollChat, 450);
   }
 
   openTrackBtn.addEventListener('click', () => toggleMode(true));
   closeTrackBtn.addEventListener('click', () => toggleMode(false));
 
-  // --- MESAJLAŞMA ---
+  // --- YAZI / OKUMA EFEKTİ ---
+  msgInput.addEventListener('input', () => {
+    msgInput.style.height = 'auto';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+    
+    // Logo: User (Sol) aşağı
+    setSeesaw('left');
+
+    if(isTracking) {
+      // Okuma efekti (Gözler gezinir)
+      const x = Math.sin(msgInput.value.length * 0.15) * 0.5;
+      setGaze(x, 0.7);
+      // Dudak efekti (Mırıldanma)
+      facePanel.classList.add('mumbling');
+    }
+  });
+
+  // Yazmayı bırakınca efektleri durdur
+  let typingTimer;
+  msgInput.addEventListener('keyup', () => {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(() => {
+      facePanel.classList.remove('mumbling');
+      setSeesaw(null); // Dengeye gel
+      if(isTracking) setGaze(0,0);
+    }, 800);
+  });
+
+  // Gönder
+  msgInput.addEventListener('keydown', async (e) => {
+    if(e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const txt = msgInput.value.trim();
+      if(!txt) return;
+      
+      addBubble(txt, 'user');
+      msgInput.value = '';
+      msgInput.style.height = 'auto';
+      facePanel.classList.remove('mumbling');
+      setSeesaw(null); // Anlık denge
+
+      await approveNod();
+      setTimeout(() => botReply(txt, false), 600);
+    }
+  });
+
   function addBubble(txt, type) {
     const d = document.createElement('div');
     d.className = `bubble ${type}`;
@@ -418,83 +498,60 @@
     return d;
   }
 
-  msgInput.addEventListener('input', () => {
-    msgInput.style.height = 'auto';
-    msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
-    // Okuma efekti
-    if(isTracking) {
-      const x = Math.sin(msgInput.value.length * 0.15) * 0.4;
-      setGaze(x, 0.7);
-    }
-  });
-
-  msgInput.addEventListener('keydown', async (e) => {
-    if(e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      const txt = msgInput.value.trim();
-      if(!txt) return;
-      addBubble(txt, 'user');
-      msgInput.value = '';
-      msgInput.style.height = 'auto';
-      await approveNod();
-      setTimeout(() => botReply(txt, false), 600);
-    }
-  });
-
+  // --- BOT CEVABI ---
   async function botReply(userTxt, voiceMode) {
-    // Basit mantık
-    let ans = "Hımm, anladım.";
+    let ans = "Hımm...";
     const t = userTxt.toLowerCase();
+    
     if(t.includes('merhaba')) ans = "Sana da merhaba başkanım.";
-    else if(t.includes('güzel')) ans = "Tabii güzel, ben yaptım.";
-    else if(t.includes('takip')) ans = "Gözüm hep üzerinde merak etme.";
-    else ans = "Bu dediğini not aldım. Başka?";
+    else if(t.includes('takip')) ans = "Gözüm üzerinde, kaçamazsın.";
+    else if(t.includes('nasıl')) ans = "Bomba gibiyim. Sen nasılsın?";
+    else ans = "Bu dediğini not aldım. Devam et.";
 
-    // Konuşma Modu (Dudak + Ses)
+    // Logo: Bot (Sağ) aşağı
+    setSeesaw('right');
+
     if(voiceMode) {
       speak(ans);
     }
 
-    // Yazı efekti
     const b = addBubble('', 'bot');
     for(let c of ans) {
       b.innerText += c;
       scrollChat();
       await sleep(35);
     }
+    
+    // Yazı bitince logo dengede
+    if(!voiceMode) setSeesaw(null);
   }
 
-  // --- TTS & DUDAK SENKRONU ---
+  // --- TTS ---
   function speak(text) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'tr-TR';
     
-    // Konuşurken class ekle -> CSS animasyonu başlar
     u.onstart = () => {
-      facePanel.classList.add('speaking');
-      if(isTracking) setMood('happy'); // Konuşurken hafif mutlu
+      facePanel.classList.add('speaking'); // Dudak hareketlenir
+      if(isTracking) setLids(0, 30); // Göz hafif kısık
     };
     
     u.onend = () => {
       facePanel.classList.remove('speaking');
-      if(isTracking) setMood('normal');
+      setSeesaw(null); // Denge
+      if(isTracking) setLids(0,0);
     };
     
     window.speechSynthesis.speak(u);
   }
 
-  function setMood(m) {
-    if(m==='happy') setLids(0, 40); // Alt kapak kısık
-    else setLids(0,0);
-  }
-
-  // --- MİKROFON ---
+  // --- MIC ---
   micBtn.addEventListener('click', () => {
-    if(!isTracking) toggleMode(true); // Mikrofon basınca yüz gelsin
+    if(!isTracking) toggleMode(true);
     
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return alert("Ses desteği yok");
+    if(!SR) return alert("Mikrofon desteği yok");
     
     if(isMicListening) return;
     
@@ -504,21 +561,24 @@
     micBtn.classList.add('active');
     isMicListening = true;
     
+    r.onstart = () => setSeesaw('left'); // Konuşurken User tarafı aktif
+    
     r.onresult = async (ev) => {
       const txt = ev.results[0][0].transcript;
       addBubble(txt, 'user');
       await approveNod();
-      botReply(txt, true); // Sesli yanıt
+      botReply(txt, true);
     };
     
     r.onend = () => {
       micBtn.classList.remove('active');
       isMicListening = false;
+      setSeesaw(null);
     };
     r.start();
   });
 
-  // --- KAMERA / TOUCH ---
+  // --- CAM & TOUCH ---
   document.addEventListener('pointermove', (e) => {
     if(!isTracking || isCameraOn) return;
     const x = (e.clientX / window.innerWidth)*2 - 1;
@@ -547,24 +607,16 @@
   function stopCamera() {
     isCameraOn = false;
     camBtn.classList.remove('active');
-    // camera.stop() her zaman stabil değil, flag yeterli.
   }
-
-  camBtn.addEventListener('click', () => {
-    if(!isTracking) toggleMode(true);
-    if(isCameraOn) stopCamera(); else startCamera();
-  });
 
   function onFace(res) {
     if(!isTracking || !isCameraOn) return;
     if(res.multiFaceLandmarks && res.multiFaceLandmarks.length>0) {
       const lm = res.multiFaceLandmarks[0];
       const nose = lm[1];
-      // Mirror effect (-x)
       setGaze(-(nose.x-0.5)*3, (nose.y-0.5)*3);
     }
   }
-
 </script>
 </body>
 </html>
