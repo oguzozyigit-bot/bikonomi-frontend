@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
 <title>Caynana AI</title>
 <style>
   :root {
@@ -10,169 +10,196 @@
     --text: #ececec;
     --gold: #ffb300;
     --pistachio: #bef264;
-    --glass: rgba(15, 15, 15, 0.98);
+    --glass: rgba(20, 20, 20, 0.95);
     --border: rgba(255, 255, 255, 0.1);
-    --lip-color: #c62828;
+    --lip-color: #d84315;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* NÜKLEER KORUMA: EKRAN KİLİTLİ */
-  html, body {
+  /* --- LAYOUT YAPISI (KLAVYE DOSTU) --- */
+  body, html {
     margin: 0; padding: 0;
-    width: 100%; height: 100%;
+    width: 100%; height: 100dvh; /* Dinamik Viewport Yüksekliği */
     background: var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     color: var(--text);
-    overflow: hidden;
-    position: fixed; top: 0; left: 0;
+    overflow: hidden; /* Sayfanın kendisi asla scroll olmasın */
+    display: flex;
+    flex-direction: column; /* Dikey dizilim */
   }
 
-  .app-container {
-    width: 100%; height: 100%;
-    max-width: 480px; margin: 0 auto;
-    position: relative;
-    display: flex; flex-direction: column;
-  }
-
-  /* --- TOPBAR --- */
+  /* 1. ÜST BAR (Sabit) */
   .topbar {
-    position: absolute; top: 0; left: 0; right: 0;
-    height: 75px;
+    flex: 0 0 70px; /* Sabit yükseklik */
     background: var(--glass);
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     display: flex; align-items: center; justify-content: space-between;
     padding: 0 16px;
     z-index: 2000;
   }
 
-  .hamb-btn { background: none; border: none; cursor: pointer; padding: 8px; }
-  .hamb-icon { display: block; width: 24px; height: 2px; background: #aaa; position: relative; }
-  .hamb-icon::before, .hamb-icon::after { content:''; position: absolute; left: 0; width: 24px; height: 2px; background: #aaa; }
-  .hamb-icon::before { top: -6px; } .hamb-icon::after { top: 6px; }
+  /* 2. FACE PANEL (Sabit - Topbar altında) */
+  .face-container {
+    flex: 0 0 0px; /* Başlangıçta kapalı */
+    background: linear-gradient(to bottom, var(--bg), transparent);
+    overflow: hidden;
+    transition: flex-basis 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; z-index: 1500;
+  }
+  
+  /* Takip açılınca yer aç */
+  body.tracking-active .face-container {
+    flex-basis: 160px; /* Gözler için yer açılır */
+  }
 
-  .brand-wrapper { display: flex; flex-direction: column; align-items: center; margin-top: 4px; }
+  /* 3. CHAT ALANI (Esnek - Geri kalan her yer) */
+  .chat-area {
+    flex: 1; /* Kalan boşluğu doldur */
+    overflow-y: auto; /* Sadece burası scroll olsun */
+    padding: 20px 16px 10px 16px; /* Alt padding azaldı çünkü dock dışarıda */
+    display: flex; flex-direction: column; gap: 16px;
+    scroll-behavior: smooth;
+  }
+
+  /* 4. INPUT DOCK (Sabit - En altta) */
+  .input-dock {
+    flex: 0 0 auto; /* İçeriği kadar yer kaplar */
+    background: var(--glass);
+    padding: 10px 16px 20px 16px; /* Safe area */
+    z-index: 2000;
+    border-top: 1px solid var(--border);
+  }
+
+  /* --- BİLEŞEN STİLLERİ --- */
+
+  /* Hamburger & Logo */
+  .hamb-btn { background: none; border: none; cursor: pointer; padding: 8px; color: #aaa; font-size: 24px; }
+  .brand-wrapper { display: flex; flex-direction: column; align-items: center; }
   .logo-area { display: flex; align-items: center; gap: 10px; }
-  .brand-name { font-weight: 700; font-size: 16px; letter-spacing: 0.5px; color: #fff; }
-  .slogan { font-size: 10px; color: #888; letter-spacing: 0.3px; margin-top: 2px; font-weight: 400; }
+  .brand-name { font-weight: 700; font-size: 16px; color: #fff; }
+  .slogan { font-size: 10px; color: #888; margin-top: 2px; }
 
-  /* SEESAW SVG */
+  /* Tahtaravalli SVG */
   .seesaw-svg { width: 40px; height: 20px; overflow: visible; }
-  .seesaw-bar { transform-origin: 20px 14px; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .seesaw-bar { transform-origin: 20px 14px; transition: transform 0.4s; }
   .tilt-left .seesaw-bar { transform: rotate(-15deg); }
   .tilt-right .seesaw-bar { transform: rotate(15deg); }
 
-  /* MENU */
-  .menu-overlay {
-    position: fixed; inset: 0; z-index: 3000;
-    background: rgba(0,0,0,0.5); backdrop-filter: blur(5px);
-    opacity: 0; pointer-events: none; transition: 0.3s;
-  }
-  .menu-sidebar {
-    position: absolute; top: 0; left: 0; bottom: 0; width: 260px;
-    background: #1a1a1a; border-right: 1px solid #333;
-    transform: translateX(-100%); transition: 0.3s cubic-bezier(0.19, 1, 0.22, 1);
-    padding: 80px 20px 20px; display: flex; flex-direction: column; gap: 15px;
-  }
-  .menu-overlay.open { opacity: 1; pointer-events: auto; }
-  .menu-overlay.open .menu-sidebar { transform: translateX(0); }
-  .menu-item { color: #ccc; text-decoration: none; font-size: 16px; padding: 10px; border-bottom: 1px solid #333; }
-
-  /* --- FACE PANEL --- */
-  .face-panel {
-    position: absolute; top: 75px; left: 0; right: 0; height: 160px; z-index: 1500;
-    background: linear-gradient(to bottom, var(--bg) 85%, transparent);
+  /* Gözler & Yüz */
+  .face-panel-inner {
+    width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    transform: translateY(-120%); opacity: 0; pointer-events: none;
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    opacity: 0; transform: translateY(-20px);
+    transition: 0.3s;
   }
-  .app-container.tracking-active .face-panel { transform: translateY(0); opacity: 1; pointer-events: auto; }
+  body.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
 
-  /* UYKU & NEFES */
-  .face-panel.sleeping .eyes-row { animation: sleepBreath 3s ease-in-out infinite; }
-  .face-panel.sleeping .brow { transform: translateY(10px) rotate(5deg) !important; transition: 1s; }
-  .face-panel.sleeping .lid-top { height: 60% !important; border-bottom: 3px solid #111; transition: 1s !important; }
-  .face-panel.sleeping .lid-bot { height: 60% !important; border-top: 3px solid #111; transition: 1s !important; }
-  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.96) translateY(2px); } }
-
-  /* GÖZLER */
-  .eyes-row { display: flex; gap: 26px; margin-bottom: 14px; transition: 0.3s; }
+  .eyes-row { display: flex; gap: 26px; margin-bottom: 12px; }
   .eye { width: 100px; height: 70px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; }
   
   .brow { 
-    position: absolute; top: -14px; left: 0; width: 100%; height: 18px; 
+    position: absolute; top: -12px; left: 0; width: 100%; height: 16px; 
     background: #222; border-radius: 99px; transform-origin: center; 
-    transition: 0.3s cubic-bezier(0.2, 1.5, 0.5, 1); /* Kaş hareketi esnek */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.6); 
+    transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.5); 
   }
   
-  .sclera { width: 100%; height: 100%; background: #ddd; border-radius: 50%; overflow: hidden; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); border: 2px solid #222; }
+  .sclera { width: 100%; height: 100%; background: #ddd; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #222; }
   .iris { width: 36px; height: 36px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.2); }
   .pupil { width: 12px; height: 12px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
   .reflection { position: absolute; top: 6px; right: 6px; width: 5px; height: 5px; background: #fff; border-radius: 50%; opacity: 0.8; }
   
-  /* KAPAKLAR - Daha keskin blink için transition süresi JS ile oynanacak */
-  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.08s ease-in-out; }
+  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.1s; }
   .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
   .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
 
-  /* DUYGU MODLARI (CSS) */
-  .eye.angry .brow { transform: translateY(8px) rotate(15deg); }
-  .eye.angry .lid-top { height: 35% !important; } /* Gözleri kısar */
+  /* UYKU EFEKTİ */
+  body.sleeping .eyes-row { animation: sleepBreath 3s infinite ease-in-out; }
+  body.sleeping .brow { transform: translateY(10px) rotate(8deg); }
+  body.sleeping .lid-top { height: 65% !important; border-bottom-width: 4px; }
+  body.sleeping .lid-bot { height: 65% !important; border-top-width: 4px; }
+  @keyframes sleepBreath { 50% { transform: scale(0.98) translateY(2px); } }
+
+  /* DUDAK TASARIMI (Yay Gibi) */
+  .mouth-wrapper { width: 60px; height: 30px; display: flex; justify-content: center; align-items: center; margin-top: 5px; position: relative; }
   
-  .eye.shock .brow { transform: translateY(-15px); }
-  .eye.shock .iris { transform: scale(0.8) translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); } /* Göz bebekleri küçülür */
+  .mouth {
+    width: 44px; height: 12px;
+    border-top: 3px solid var(--lip-color); /* Üst dudak */
+    border-radius: 50% 50% 0 0; /* Yay şekli */
+    position: absolute; top: 8px;
+    transition: 0.15s;
+    opacity: 0.9;
+  }
+  .mouth::after { /* Alt dudak hafif gölge gibi */
+    content: ''; position: absolute; bottom: -4px; left: 10%; width: 80%; height: 3px;
+    background: rgba(216, 67, 21, 0.4); border-radius: 0 0 10px 10px;
+    transition: 0.15s;
+  }
+
+  /* Konuşma Hali */
+  body.speaking .mouth {
+    height: 20px; width: 38px;
+    background: #3e2723; /* Ağız içi */
+    border: 2px solid var(--lip-color);
+    border-radius: 50%;
+    top: 5px;
+    animation: talkAnim 0.18s infinite alternate;
+  }
+  body.speaking .mouth::after { opacity: 0; } /* Konuşurken alt gölgeyi gizle */
   
-  .eye.happy .brow { transform: translateY(-5px); }
-  .eye.happy .lid-bot { height: 40% !important; } /* Alttan kısar (gülümseme) */
+  @keyframes talkAnim { 0% { transform: scaleY(0.8); } 100% { transform: scaleY(1.1); } }
 
-  /* DUDAK */
-  .mouth-wrapper { width: 50px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; }
-  .mouth { width: 36px; height: 4px; background: var(--lip-color); border-radius: 10px; transition: 0.15s; opacity: 0.8; }
-  .face-panel.speaking .mouth { width: 40px; height: 20px; border-radius: 50%; border: 2px solid var(--lip-color); background: #4e1a1a; animation: talkAnim 0.2s infinite alternate; }
-  @keyframes talkAnim { 0% { transform: scaleY(0.7); } 100% { transform: scaleY(1.2); } }
-  .face-panel.mumbling .mouth { height: 6px; width: 38px; animation: mumbleAnim 0.15s infinite alternate; }
-  @keyframes mumbleAnim { 0% { transform: translateX(-1px); } 100% { transform: translateX(1px); } }
+  /* Mırıldanma */
+  body.mumbling .mouth { transform: scaleX(1.1); border-color: #ff5722; }
 
-  .close-track-btn { margin-top: 12px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+  .close-track-btn { margin-top: 8px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 4px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; }
 
-  /* CHAT */
-  .chat-area { flex: 1; overflow-y: auto; padding: 90px 16px 120px 16px; display: flex; flex-direction: column; gap: 16px; transition: padding-top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-  .app-container.tracking-active .chat-area { padding-top: 240px; }
-  .bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.45; animation: pop 0.2s ease; }
-  @keyframes pop { from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+  /* Chat Balonları */
+  .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; }
   .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; }
-  .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; text-align: right; border-top-right-radius: 4px; }
+  .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
 
-  /* DOCK */
-  .input-dock { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, #0e0e0e 85%, transparent); padding: 10px 16px 30px 16px; z-index: 2000; }
-  .main-track-btn { position: absolute; top: -45px; left: 50%; transform: translateX(-50%); background: #1f1f1f; border: 1px solid #444; color: #aaa; font-size: 12px; padding: 8px 18px; border-radius: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: 0.2s; }
-  .app-container.tracking-active .main-track-btn { display: none; }
-  .dock-inner { display: flex; align-items: flex-end; gap: 12px; background: #1a1a1a; border: 1px solid #333; border-radius: 26px; padding: 8px 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-  .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
-  .icon-btn svg { width: 22px; height: 22px; stroke-width: 2; }
+  /* Dock İçeriği */
+  .main-track-btn { 
+    position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
+    background: #1f1f1f; border: 1px solid #444; color: #ccc; 
+    padding: 8px 20px; border-radius: 20px; cursor: pointer; font-size: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s;
+  }
+  body.tracking-active .main-track-btn { display: none; }
+
+  .dock-inner { display: flex; align-items: flex-end; gap: 10px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent; color: #888; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
   .icon-btn.active { color: var(--gold); background: rgba(255,179,0,0.15); }
-  textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px 5px; max-height: 120px; min-height: 24px; font-family: inherit; }
-  .footer { position: absolute; bottom: 6px; width:100%; text-align: center; font-size: 10px; color: #444; pointer-events: none; z-index: 2100; }
+  .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 2; fill: none; }
+  textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; }
+
+  .footer { text-align: center; font-size: 9px; color: #444; margin-top: 10px; }
+  
+  /* Menu Overlay */
+  .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 3000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(4px); }
+  .menu-overlay.open { opacity: 1; pointer-events: auto; }
+  .menu-sidebar { width: 250px; height: 100%; background: #161616; padding: 60px 20px; transform: translateX(-100%); transition: 0.3s; display: flex; flex-direction: column; gap: 15px; }
+  .menu-overlay.open .menu-sidebar { transform: translateX(0); }
+  .menu-item { color: #ccc; text-decoration: none; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
   #camVideo { display: none; }
 </style>
 </head>
 <body>
 
-<div class="app-container" id="appContainer">
-  
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
+      <a href="#" class="menu-item">Hesabım</a>
       <a href="#" class="menu-item">Ayarlar</a>
-      <a href="#" class="menu-item">Geçmişi Temizle</a>
-      <a href="#" class="menu-item">Hakkında</a>
-      <a href="#" class="menu-item" style="color:#d32f2f;">Çıkış</a>
+      <a href="#" class="menu-item" style="color:var(--gold)">Caynana Hakkında</a>
     </div>
   </div>
 
   <div class="topbar">
-    <button class="hamb-btn" id="hambBtn"><span class="hamb-icon"></span></button>
+    <button class="hamb-btn" id="hambBtn">☰</button>
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
@@ -187,61 +214,61 @@
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
-    <div style="width:24px;"></div>
+    <div style="width: 24px;"></div>
   </div>
 
-  <div class="face-panel" id="facePanel">
-    <div class="eyes-row">
-      <div class="eye" id="eyeL">
-        <div class="brow"></div>
-        <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
-        <div class="lid-top"></div><div class="lid-bot"></div>
+  <div class="face-container">
+    <div class="face-panel-inner" id="faceInner">
+      <div class="eyes-row">
+        <div class="eye" id="eyeL">
+          <div class="brow"></div>
+          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+          <div class="lid-top"></div><div class="lid-bot"></div>
+        </div>
+        <div class="eye" id="eyeR">
+          <div class="brow"></div>
+          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+          <div class="lid-top"></div><div class="lid-bot"></div>
+        </div>
       </div>
-      <div class="eye" id="eyeR">
-        <div class="brow"></div>
-        <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
-        <div class="lid-top"></div><div class="lid-bot"></div>
+      <div class="mouth-wrapper">
+        <div class="mouth"></div>
       </div>
+      <button class="close-track-btn" id="closeTrackBtn">Takibi Kapat</button>
     </div>
-    <div class="mouth-wrapper"><div class="mouth"></div></div>
-    <button class="close-track-btn" id="closeTrackBtn">Takibi Kapat</button>
   </div>
 
   <div class="chat-area" id="chat">
-    <div class="bubble bot">Gözüm üzerinde evladım...</div>
+    <div class="bubble bot">Gözüm üzerinde... Ne anlatacaksan anlat bakalım.</div>
   </div>
 
   <div class="input-dock">
     <button class="main-track-btn" id="openTrackBtn">👁️ Takip et</button>
     <div class="dock-inner">
       <button class="icon-btn" id="camBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
       </button>
       <textarea id="msgInput" rows="1" placeholder="Mesaj yaz..."></textarea>
       <button class="icon-btn" id="micBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
       </button>
     </div>
+    <div class="footer">@CaynanAI By Ozyigit's 2026</div>
   </div>
 
-  <div class="footer">@CaynanAI By Ozyigit's 2026</div>
-</div>
-
-<video id="camVideo" autoplay playsinline muted></video>
+  <video id="camVideo" autoplay playsinline muted></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
 <script>
-  const appContainer = document.getElementById('appContainer');
-  const facePanel = document.getElementById('facePanel');
+  // ELEMENTLER
+  const body = document.body;
   const chat = document.getElementById('chat');
   const msgInput = document.getElementById('msgInput');
   const eyeL = document.getElementById('eyeL');
   const eyeR = document.getElementById('eyeR');
   const brandWrapper = document.getElementById('brandWrapper');
-  const menuOverlay = document.getElementById('menuOverlay');
-  const hambBtn = document.getElementById('hambBtn');
   
   const openTrackBtn = document.getElementById('openTrackBtn');
   const closeTrackBtn = document.getElementById('closeTrackBtn');
@@ -254,204 +281,214 @@
   let isMicListening = false;
   let faceMesh, camera;
   let idleTimer = null;
-  const IDLE_LIMIT = 10000;
+  const IDLE_LIMIT = 8000; // 8 sn sonra uyu
 
   const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const scrollChat = () => chat.scrollTop = chat.scrollHeight;
 
-  // --- UYKU MODU: DOZING OFF ---
-  async function dozeSequence() {
-    if(!isTracking || isMicListening || facePanel.classList.contains('speaking')) return;
+  // --- HAREKET TAKİBİ (Fare/Dokunma) ---
+  // window'a ekliyoruz ki her yerde çalışsın
+  window.addEventListener('pointermove', (e) => {
+    resetIdle(); // Harekette uyan
+    if(!isTracking || isCameraOn || body.classList.contains('sleeping')) return;
     
-    // 1. Ağırlaş
-    setLids(70, 0); await sleep(1200);
-    // 2. İrkil (Uyan)
-    if(!isTracking) return; // Kullanıcı araya girmiş olabilir
-    setLids(10, 0); await sleep(600);
-    // 3. Tekrar ağırlaş
-    if(!isTracking) return;
-    setLids(85, 0); await sleep(1500);
-    // 4. Uyu
-    if(!isTracking) return;
-    facePanel.classList.add('sleeping');
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    // Normalize -1..1
+    const x = (e.clientX / w) * 2 - 1;
+    const y = (e.clientY / h) * 2 - 1;
+    setGaze(x, y);
+  });
+
+  // --- GÖZ FONKSİYONLARI ---
+  function setGaze(x, y) {
+    if(body.classList.contains('sleeping')) return;
+    const gx = clamp(x * 24, -24, 24);
+    const gy = clamp(y * 20, -20, 20); // Y ekseni kısıtlı
+    [eyeL, eyeR].forEach(e => { 
+      e.style.setProperty('--gx', gx+'px'); 
+      e.style.setProperty('--gy', gy+'px'); 
+    });
   }
 
+  function setLids(top, bot=0) {
+    if(body.classList.contains('sleeping')) return;
+    [eyeL, eyeR].forEach(e => { 
+      e.style.setProperty('--lidTop', top+'%'); 
+      e.style.setProperty('--lidBot', bot+'%'); 
+    });
+  }
+
+  // --- UYKU MANTIĞI ---
   function resetIdle() {
     if (!isTracking) return;
     clearTimeout(idleTimer);
 
-    // Uyuyorsa uyandır
-    if (facePanel.classList.contains('sleeping')) {
-      facePanel.classList.remove('sleeping');
-      setLids(0, 0);
-      setTimeout(blink, 200);
+    if (body.classList.contains('sleeping')) {
+      body.classList.remove('sleeping');
+      setLids(0, 0); // Uyanınca gözü aç
+      setTimeout(()=>setLids(100), 50); // Hızlı kırp
+      setTimeout(()=>setLids(0), 200);
     }
     
-    // Timer'ı kur
-    idleTimer = setTimeout(dozeSequence, IDLE_LIMIT);
+    // Timer kur
+    idleTimer = setTimeout(() => {
+      if(!isTracking || isMicListening || body.classList.contains('speaking')) return;
+      body.classList.add('sleeping');
+    }, IDLE_LIMIT);
   }
 
-  // Etkileşim dinleyicileri
-  ['mousemove', 'mousedown', 'keydown', 'touchstart', 'input'].forEach(evt => window.addEventListener(evt, resetIdle));
-
-  hambBtn.addEventListener('click', (e) => { e.stopPropagation(); menuOverlay.classList.toggle('open'); });
-  menuOverlay.addEventListener('click', () => menuOverlay.classList.remove('open'));
-
-  // --- GÖZ FONKSİYONLARI ---
-  function setGaze(x, y) {
-    if(facePanel.classList.contains('sleeping')) return;
-    const gx = clamp(x * 24, -24, 24);
-    const gy = clamp(y * 20, -20, 20);
-    [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
-  }
-
-  function setLids(top, bot=0) {
-    if(facePanel.classList.contains('sleeping')) return;
-    [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); });
-  }
-
-  // Her bir gözü ayrı kontrol etmek için (Wink için)
-  function setSingleLid(eye, top) {
-    if(facePanel.classList.contains('sleeping')) return;
-    eye.style.setProperty('--lidTop', top+'%');
-  }
-
-  // Daha belirgin blink
-  async function blink() { 
-    if(facePanel.classList.contains('sleeping')) return;
-    setLids(100); 
-    await sleep(150); // Biraz daha uzun kapalı kalsın
-    setLids(0); 
-  }
-  
-  // Random blink
-  setInterval(() => { if(isTracking && Math.random()<0.08) blink(); }, 2500);
-
-  async function approveNod() {
-    if(!isTracking || facePanel.classList.contains('sleeping')) return;
-    setGaze(0, 0.8); await sleep(150); setGaze(0, -0.4); await sleep(150); setGaze(0, 0);
-  }
-
-  // --- DUYGU ANALİZİ (REAKSİYON) ---
-  function setMood(mood) {
-    [eyeL, eyeR].forEach(e => e.classList.remove('angry', 'shock', 'happy'));
-    if(mood !== 'normal') {
-      [eyeL, eyeR].forEach(e => e.classList.add(mood));
+  // --- BLINK ---
+  setInterval(() => {
+    if(isTracking && !body.classList.contains('sleeping') && Math.random() < 0.1) {
+      setLids(100);
+      setTimeout(() => setLids(0), 150);
     }
-  }
+  }, 2000);
 
-  // --- MOD GEÇİŞİ ---
-  function toggleMode(active) {
-    isTracking = active;
-    if(active) { 
-      appContainer.classList.add('tracking-active'); startCamera(); resetIdle(); 
-    } else { 
-      appContainer.classList.remove('tracking-active'); stopCamera(); setGaze(0,0); 
-      facePanel.classList.remove('sleeping'); clearTimeout(idleTimer);
-      setMood('normal');
-    }
-    setTimeout(scrollChat, 450);
-  }
-  openTrackBtn.addEventListener('click', () => toggleMode(true));
-  closeTrackBtn.addEventListener('click', () => toggleMode(false));
-
-  // --- INPUT / TEXT ---
+  // --- INPUT / DUDAK HAREKETİ ---
   msgInput.addEventListener('input', () => {
     resetIdle();
     msgInput.style.height = 'auto';
-    msgInput.style.height = Math.min(msgInput.scrollHeight, 120) + 'px';
+    msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
+    
     brandWrapper.classList.add('tilt-left');
     if(isTracking) {
-      const x = Math.sin(msgInput.value.length * 0.15) * 0.5;
-      setGaze(x, 0.7);
-      facePanel.classList.add('mumbling');
+      body.classList.add('mumbling');
+      // Okuma efekti
+      const x = Math.sin(msgInput.value.length * 0.2) * 0.6;
+      setGaze(x, 0.8); 
     }
   });
 
   msgInput.addEventListener('keyup', () => {
     resetIdle();
-    setTimeout(() => { facePanel.classList.remove('mumbling'); brandWrapper.classList.remove('tilt-left'); if(isTracking) setGaze(0,0); }, 800);
+    setTimeout(() => {
+      body.classList.remove('mumbling');
+      brandWrapper.classList.remove('tilt-left');
+      if(isTracking) setGaze(0,0);
+    }, 500);
   });
 
-  msgInput.addEventListener('keydown', async (e) => {
-    resetIdle();
+  // Gönder
+  msgInput.addEventListener('keydown', (e) => {
     if(e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       const txt = msgInput.value.trim();
       if(!txt) return;
+      
       addBubble(txt, 'user');
       msgInput.value = '';
-      msgInput.style.height = 'auto';
-      facePanel.classList.remove('mumbling');
-      brandWrapper.classList.remove('tilt-left');
-      await approveNod();
-      setTimeout(() => botReply(txt, false), 600);
+      body.classList.remove('mumbling');
+      
+      // Onaylama
+      if(isTracking) {
+        setGaze(0, 0.8); setTimeout(()=>setGaze(0,0), 300);
+      }
+      
+      setTimeout(() => botReply(txt, false), 500);
     }
   });
 
   function addBubble(txt, type) {
-    const d = document.createElement('div'); d.className = `bubble ${type}`; d.innerText = txt; chat.appendChild(d); scrollChat(); return d;
+    const d = document.createElement('div'); d.className = `bubble ${type}`; d.innerText = txt; 
+    chat.appendChild(d); scrollChat(); 
   }
 
-  async function botReply(userTxt, voiceMode) {
+  // --- BOT CEVABI ---
+  async function botReply(txt, voice) {
     resetIdle();
     let ans = "Hımm...";
-    let mood = "normal";
-    const t = userTxt.toLowerCase();
-
-    // Duygu Analizi
-    if(t.includes('aptal') || t.includes('salak') || t.includes('kötü')) { ans = "Bana mı dedin? Terbiyeni takın!"; mood = "angry"; }
-    else if(t.includes('hahaha') || t.includes('komik') || t.includes('güzel')) { ans = "Hoşuna gitti demek, alem adamsın."; mood = "happy"; }
-    else if(t.includes('yuh') || t.includes('şok') || t.includes('nası')) { ans = "Ben de şaşırdım valla."; mood = "shock"; }
-    else if(t.includes('merhaba')) ans = "Sana da merhaba başkanım.";
-    else ans = "Bunu kaydettim. Başka?";
-
-    if(isTracking) setMood(mood);
+    if(txt.includes('merhaba')) ans = "Sana da merhaba evladım.";
+    else if(txt.includes('takip')) ans = "Gözüm üzerinde, kaçamazsın.";
+    else ans = "Anladım, not aldım bunu.";
 
     brandWrapper.classList.add('tilt-right');
-    if(voiceMode) speak(ans);
-
-    const b = addBubble('', 'bot');
-    for(let c of ans) { b.innerText += c; scrollChat(); await sleep(35); }
-    if(!voiceMode) brandWrapper.classList.remove('tilt-right');
     
-    // Cevap bitince mood sıfırla
-    setTimeout(() => setMood('normal'), 2000);
+    if(voice) speak(ans);
+    else if(isTracking) {
+       // Ses yoksa bile dudak oynasın biraz
+       body.classList.add('speaking');
+       setTimeout(() => body.classList.remove('speaking'), 1500);
+    }
+
+    const b = document.createElement('div'); b.className = 'bubble bot'; chat.appendChild(b);
+    for(let c of ans) {
+      b.innerText += c; scrollChat();
+      await sleep(40);
+    }
+    
+    if(!voice) brandWrapper.classList.remove('tilt-right');
   }
 
+  // --- TTS ---
   function speak(text) {
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'tr-TR';
-    u.onstart = () => { resetIdle(); facePanel.classList.add('speaking'); };
+    u.onstart = () => { resetIdle(); body.classList.add('speaking'); };
     u.onend = () => { 
-      facePanel.classList.remove('speaking'); brandWrapper.classList.remove('tilt-right'); 
+      body.classList.remove('speaking'); 
+      brandWrapper.classList.remove('tilt-right');
       resetIdle(); 
     };
     window.speechSynthesis.speak(u);
   }
 
-  micBtn.addEventListener('click', () => {
-    if(!isTracking) toggleMode(true);
+  // --- MODLAR ---
+  openTrackBtn.addEventListener('click', () => {
+    isTracking = true;
+    body.classList.add('tracking-active');
+    startCamera();
     resetIdle();
+  });
+
+  closeTrackBtn.addEventListener('click', () => {
+    isTracking = false;
+    body.classList.remove('tracking-active');
+    stopCamera();
+    clearTimeout(idleTimer);
+    body.classList.remove('sleeping');
+  });
+
+  // --- MENÜ ---
+  const menuOverlay = document.getElementById('menuOverlay');
+  document.getElementById('hambBtn').addEventListener('click', ()=>menuOverlay.classList.add('open'));
+  menuOverlay.addEventListener('click', ()=>menuOverlay.classList.remove('open'));
+
+  // --- MIC ---
+  micBtn.addEventListener('click', () => {
+    if(!isTracking) openTrackBtn.click();
+    resetIdle();
+    
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return alert("Mikrofon desteği yok");
+    if(!SR) return alert("Mikrofon yok");
     if(isMicListening) return;
+
     const r = new SR(); r.lang = 'tr-TR';
     micBtn.classList.add('active'); isMicListening = true;
+    
     r.onstart = () => brandWrapper.classList.add('tilt-left');
-    r.onresult = async (ev) => { const txt = ev.results[0][0].transcript; addBubble(txt, 'user'); await approveNod(); botReply(txt, true); };
-    r.onend = () => { micBtn.classList.remove('active'); isMicListening = false; brandWrapper.classList.remove('tilt-left'); };
+    r.onresult = (ev) => {
+      const t = ev.results[0][0].transcript;
+      addBubble(t, 'user');
+      botReply(t, true);
+    };
+    r.onend = () => {
+      micBtn.classList.remove('active'); isMicListening = false; brandWrapper.classList.remove('tilt-left');
+    };
     r.start();
   });
 
-  // --- YÜZ TAKİBİ & WINK ---
+  // --- KAMERA (FaceMesh) ---
   async function startCamera() {
     if(isCameraOn) return;
-    faceMesh = new FaceMesh.FaceMesh({locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
-    faceMesh.setOptions({maxNumFaces:1, refineLandmarks:true});
-    faceMesh.onResults(onFace);
+    if(!faceMesh) {
+      faceMesh = new FaceMesh.FaceMesh({locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+      faceMesh.setOptions({maxNumFaces:1, refineLandmarks:true});
+      faceMesh.onResults(onFace);
+    }
     try {
       camera = new Camera(camVideo, { onFrame: async()=>{ await faceMesh.send({image:camVideo}); }, width:640, height:480 });
       await camera.start(); isCameraOn = true; camBtn.classList.add('active');
@@ -459,47 +496,19 @@
   }
   function stopCamera() { isCameraOn = false; camBtn.classList.remove('active'); }
 
-  // Göz açıklığı hesaplama (Basit vertical distance)
-  function getEyeHeight(lm, idxTop, idxBot) {
-    const dy = lm[idxTop].y - lm[idxBot].y; // Normalize
-    return Math.abs(dy); // Mesafe
-  }
-
   function onFace(res) {
-    if(!isTracking || !isCameraOn || facePanel.classList.contains('sleeping')) return;
-    
+    if(!isTracking || !isCameraOn || body.classList.contains('sleeping')) return;
     if(res.multiFaceLandmarks && res.multiFaceLandmarks.length>0) {
       const lm = res.multiFaceLandmarks[0];
       const nose = lm[1];
-      
-      // Kafa Hareketi
       setGaze(-(nose.x-0.5)*3, (nose.y-0.5)*3);
-
-      // Wink Algılama
-      // Sol Göz (Landmarks: 159 top, 145 bot)
-      // Sağ Göz (Landmarks: 386 top, 374 bot)
-      const leftH = getEyeHeight(lm, 159, 145);
-      const rightH = getEyeHeight(lm, 386, 374);
       
-      const THRESHOLD = 0.012; // Kapanma eşiği (kameraya göre değişebilir)
-
-      // Ayna Mantığı: Kullanıcı Sol gözünü kapatırsa -> Ekranda Sağ göz (eyeR) kapanmalı
-      if (leftH < THRESHOLD && rightH > THRESHOLD) {
-        setSingleLid(eyeR, 100); // Kullanıcı Sol kırptı -> Caynana Sağ kırptı
-        setSingleLid(eyeL, 0);
-      } 
-      else if (rightH < THRESHOLD && leftH > THRESHOLD) {
-        setSingleLid(eyeL, 100); // Kullanıcı Sağ kırptı -> Caynana Sol kırptı
-        setSingleLid(eyeR, 0);
-      } 
-      else if (leftH < THRESHOLD && rightH < THRESHOLD) {
-         // İkisi de kapalı (Normal Blink)
-         // Blink fonksiyonu zaten random çalışıyor, burayı boş geçebiliriz veya manuel blink tetikleyebiliriz
-      }
-      else {
-        // İkisi de açık
-        setLids(0,0);
-      }
+      // Wink Algılama
+      const leftH = Math.abs(lm[159].y - lm[145].y);
+      const rightH = Math.abs(lm[386].y - lm[374].y);
+      if(leftH < 0.012 && rightH > 0.012) { eyeR.style.setProperty('--lidTop', '100%'); }
+      else if(rightH < 0.012 && leftH > 0.012) { eyeL.style.setProperty('--lidTop', '100%'); }
+      else { setLids(0,0); }
     }
   }
 </script>
