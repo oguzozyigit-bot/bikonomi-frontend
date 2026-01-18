@@ -1,8 +1,8 @@
-/* js/auth.js - HAFIZA KORUMALI & ÇIKIŞ FIX */
+/* js/auth.js - FINAL STABLE */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY } from "./config.js";
 
 let tokenClient;
-let currentMode = 'login'; // 'login' veya 'signup'
+let currentMode = 'login'; 
 
 export function initAuth() {
     if (window.google) {
@@ -31,7 +31,8 @@ export function handleLogin(provider, mode) {
 
     if (provider === 'google') {
         if(tokenClient) tokenClient.requestAccessToken();
-    } else if (provider === 'apple') {
+        else alert("Google servisi yüklenemedi. Sayfayı yenile.");
+    } else {
         window.location.href = 'pages/apple-yakinda.html';
     }
 }
@@ -42,64 +43,49 @@ function fetchGoogleProfile(accessToken) {
     })
     .then(r => r.json())
     .then(googleData => {
-        
-        // 1. MEVCUT HAFIZAYI OKU
         let storedUser = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
         const newGoogleID = "CYN-" + googleData.sub.substr(0, 10);
 
-        // 2. KULLANICIYI BİRLEŞTİR (MERGE)
-        // storedUser'ı önce yayıyoruz ki eski ayarlar (hitap, botName) silinmesin
         const updatedUser = {
             ...storedUser, 
-            id: storedUser.id || newGoogleID, // Varsa eski ID'yi koru
+            id: storedUser.id || newGoogleID, 
             fullname: googleData.name, 
             email: googleData.email,   
             avatar: googleData.picture,
             provider: 'google'
         };
 
-        // 3. SENARYOLAR
         if (currentMode === 'login') {
-            // GİRİŞ MODU
             if (!updatedUser.isProfileCompleted) {
-                alert("Seni tanıyamadım evladım. Kaydın yok veya profilin yarım kalmış. Lütfen 'ÜYE OL' butonuna bas.");
+                alert("Seni tanıyamadım evladım. Önce 'ÜYE OL' butonuna basmalısın.");
                 return; 
             }
-            
-            // Veriyi güncelle ve içeri al
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-            
-            // Overlay varsa kaldır
-            const overlay = document.getElementById('loginOverlay');
-            if(overlay) overlay.classList.remove('active');
-            
-            // Sohbeti başlat (index.html'deki fonksiyonu tetikle)
-            if(window.startChat) window.startChat(updatedUser);
+            window.location.href = 'index.html'; // Ana sayfaya git (Redirect loop önlemek için)
 
         } else {
-            // KAYIT MODU
             if (updatedUser.isProfileCompleted) {
-                if(confirm("Sen zaten bizim evlatsın. Giriş yapılsın mı?")) {
+                if(confirm("Zaten kayıtlısın. Giriş yapılsın mı?")) {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-                    document.getElementById('loginOverlay').classList.remove('active');
-                    if(window.startChat) window.startChat(updatedUser);
+                    window.location.href = 'index.html';
                     return;
                 }
             }
-            // Yeni kayıt -> Profile git
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
             window.location.href = 'pages/profil.html';
         }
     })
     .catch(err => {
         console.error("Google Hatası:", err);
+        alert("Bağlantı hatası oluştu.");
     });
 }
 
-// Çıkış Fonksiyonu (Artık çalışacak)
+// Global Çıkış Fonksiyonu
 export function logout() {
-    if (confirm("Beni bırakıp gidiyor musun?")) {
+    if (confirm("Çıkış yapmak istiyor musun?")) {
         localStorage.removeItem(STORAGE_KEY); 
-        window.location.href = window.location.origin + '/index.html'; // Tam yenileme
+        localStorage.clear(); // Temizlik
+        window.location.href = '/index.html'; 
     }
 }
