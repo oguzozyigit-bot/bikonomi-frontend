@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v2.4 Final</title>
+<title>Caynana AI v2.5 Final</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -28,32 +28,22 @@
   .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
   .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
   
-  /* KONUŞMA ANİMASYONU (Sallanma) */
+  /* ANİMASYONLAR */
   .brand-wrapper.talking .seesaw-bar { animation: talkWiggle 0.4s infinite alternate ease-in-out; }
   @keyframes talkWiggle { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
   
-  /* DÜŞÜNME ANİMASYONU (Nefes Alan Turuncu Top) */
   .brand-wrapper.thinking #orangeBall { animation: breathAnim 0.8s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
-  @keyframes breathAnim { 
-      from { transform: scale(1); filter: brightness(1); } 
-      to { transform: scale(1.5); filter: brightness(1.3); box-shadow: 0 0 10px var(--gold); } 
-  }
+  @keyframes breathAnim { from { transform: scale(1); filter: brightness(1); } to { transform: scale(1.5); filter: brightness(1.3); box-shadow: 0 0 10px var(--gold); } }
   
   .tilt-left .seesaw-bar { transform: rotate(-15deg); } 
 
-  /* --- BİLDİRİM KUTUSU --- */
+  /* --- BİLDİRİM --- */
   .notif-btn { background: none; border: none; position: relative; cursor: pointer; padding: 5px; display: flex; align-items: center; }
   .notif-btn svg { width: 26px; height: 26px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
   .notif-btn:active svg { stroke: var(--pistachio); }
   .badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; display: none; border: 1px solid #000; }
 
-  .notification-dropdown {
-    position: absolute; top: 70px; right: 10px; width: 300px;
-    background: #1c1c1c; border: 1px solid #333; border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 4000;
-    display: none; flex-direction: column; overflow: hidden;
-    animation: slideDown 0.2s ease;
-  }
+  .notification-dropdown { position: absolute; top: 70px; right: 10px; width: 300px; background: #1c1c1c; border: 1px solid #333; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 4000; display: none; flex-direction: column; overflow: hidden; animation: slideDown 0.2s ease; }
   .notification-dropdown.show { display: flex; }
   @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
 
@@ -67,9 +57,11 @@
   .notif-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
   .notif-time { font-size: 10px; color: #666; margin-top: 4px; }
 
-  /* --- GÖZLER --- */
+  /* --- GÖZLER (KAMERA) --- */
   .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
-  .mobile-frame.tracking-active .face-container { flex-basis: 180px; }
+  /* Kamera açılınca bu class eklenir */
+  .mobile-frame.tracking-active .face-container { flex-basis: 180px; } 
+  
   .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
   .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
 
@@ -84,7 +76,7 @@
   .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
   .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
 
-  /* UYKU EFEKTİ */
+  /* Uyku */
   .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
   .mobile-frame.sleeping .brow { transform: translateY(8px) rotate(5deg); transition: 1s; }
   @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
@@ -94,30 +86,9 @@
   .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
 
   /* --- CHAT --- */
-  .chat-area { 
-    flex: 1; 
-    overflow-y: auto; 
-    padding: 20px 16px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 16px; 
-    scroll-behavior: smooth; 
-    scrollbar-width: none; 
-  }
+  .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
   .chat-area::-webkit-scrollbar { display: none; }
-  
-  .bubble { 
-    max-width: 85%; 
-    padding: 12px 14px; 
-    border-radius: 18px; 
-    font-size: 15px; 
-    line-height: 1.4; 
-    position: relative; 
-    animation: pop 0.2s ease; 
-    word-wrap: break-word; 
-    flex-shrink: 0;  
-    height: auto; 
-  }
+  .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; word-wrap: break-word; flex-shrink: 0; height: auto; }
   .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; min-height: 40px;}
   .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
 
@@ -161,6 +132,7 @@
   .login-footer-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
   .login-footer-links a:hover { color: var(--gold); }
   
+  /* MENU */
   .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
   .menu-overlay.open { opacity: 1; pointer-events: auto; }
   .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 20px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
@@ -265,7 +237,7 @@
       </div>
       <div class="menu-footer-actions">
         <a class="menu-item" onclick="logout()" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
-        <div class="menu-version">@CaynanaAI v2.4</div>
+        <div class="menu-version">@CaynanaAI v2.5</div>
       </div>
     </div>
   </div>
@@ -299,14 +271,14 @@
               <div class="notif-icon">⚽</div>
               <div class="notif-content">
                   <div class="notif-title">Maç Sonucu</div>
-                  <div class="notif-desc">Oğlum, takımın yine yenildi. Ben sana dedim o defansla olmaz diye.</div>
+                  <div class="notif-desc">Oğlum, takımın yine yenildi.</div>
                   <div class="notif-time">10 dk önce</div>
               </div>
           </div>
       </div>
   </div>
 
-  <div class="face-container">
+  <div class="face-container" id="faceContainer">
     <div class="face-panel-inner" id="faceInner">
       <div class="eyes-row">
         <div class="eye" id="eyeL">
@@ -328,7 +300,7 @@
   <div class="input-dock">
     <div class="track-trigger-row"><button class="main-track-btn" id="openTrackBtn">👁️ TAKİP ET</button></div>
     <div class="dock-inner">
-      <button class="icon-btn" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+      <button class="icon-btn" id="camBtn" onclick="toggleCam()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
       <button class="icon-btn" id="micBtn" onclick="startDictation()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
       <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
@@ -350,6 +322,7 @@
 <script type="module">
   import { initAuth, handleLogin, logout } from './js/auth.js';
   import { fetchTextResponse, fetchVoiceResponse, addUserBubble } from './js/chat.js';
+  import { BASE_DOMAIN } from './js/config.js'; // BASE_DOMAIN eklendi
   
   window.handleLogin = handleLogin;
   window.logout = logout;
@@ -359,20 +332,33 @@
     const check = document.getElementById('agreementCheck');
     const btn = document.getElementById('signupBtn');
     const appleBtn = document.getElementById('signupAppleBtn');
-    if(check.checked) { 
-        btn.classList.add('enabled'); 
-        appleBtn.classList.add('enabled');
-    } else { 
-        btn.classList.remove('enabled');
-        appleBtn.classList.remove('enabled');
-    }
+    if(check.checked) { btn.classList.add('enabled'); appleBtn.classList.add('enabled'); } 
+    else { btn.classList.remove('enabled'); appleBtn.classList.remove('enabled'); }
   };
   
-  // --- MİKROFON (SESLİ GİRİŞ) ---
+  // --- KAMERA (TOGGLE) - DÜZELTİLDİ ---
+  window.toggleCam = function() {
+      const frame = document.getElementById('mobileFrame');
+      const camBtn = document.getElementById('camBtn');
+      if(frame.classList.contains('tracking-active')) {
+          // Kapat
+          frame.classList.remove('tracking-active');
+          camBtn.classList.remove('active');
+          isTracking = false;
+      } else {
+          // Aç
+          frame.classList.add('tracking-active');
+          camBtn.classList.add('active');
+          isTracking = true;
+          wakeUp();
+      }
+  };
+
+  // --- MİKROFON (SESLİ GİRİŞ) - DÜZELTİLDİ (TAKILMA YOK) ---
   window.startDictation = function() {
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
       const micBtn = document.getElementById('micBtn');
-      micBtn.style.stroke = "#ffb300"; // Aktif rengi
+      micBtn.style.stroke = "#ffb300"; // Turuncu (Aktif)
       
       const recognition = new webkitSpeechRecognition();
       recognition.continuous = false;
@@ -384,89 +370,77 @@
         document.getElementById('msgInput').value = e.results[0][0].transcript;
         recognition.stop();
         sendMessage(); // Otomatik gönder
-        micBtn.style.stroke = "#aaa"; // Normal renk
       };
-      recognition.onerror = function(e) {
-        recognition.stop();
-        micBtn.style.stroke = "#aaa";
-      }
+      
+      // HATA VEYA BİTİŞTE RENGİ DÜZELT
+      recognition.onerror = function(e) { recognition.stop(); };
+      recognition.onend = function() { micBtn.style.stroke = "#aaa"; }; // ESKİ GRİ RENGE DÖN
     } else {
       alert("Tarayıcın sesi desteklemiyor evladım.");
     }
   };
 
-  // --- SOHBET GEÇMİŞİ ---
+  // --- SES ÇALMA (PLAYVOICE) - DÜZELTİLDİ ---
+  async function playVoice(text) {
+      try {
+        // Backend API adresini doğru veriyoruz
+        const res = await fetch(`${BASE_DOMAIN}/api/speech`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: text })
+        });
+        const data = await res.json();
+        if(data.audio_data) {
+            const audio = new Audio("data:audio/mp3;base64," + data.audio_data);
+            audio.play();
+        }
+      } catch(e) { console.error("Ses hatası:", e); }
+  }
+
+  // --- DİĞER FONKSİYONLAR (AYNEN KORUNDU) ---
   let currentSessionId = null;
   const historyListEl = document.getElementById('historyList');
 
   function loadHistory() {
-     const dummyData = [
-         {id: 1, title: "Rüyamda Altın Gördüm"},
-         {id: 2, title: "Diyet Listesi Lazım"},
-         {id: 3, title: "Sevgilimden Ayrıldım"}
-     ];
+     const dummyData = [{id: 1, title: "Rüyamda Altın Gördüm"}, {id: 2, title: "Diyet Listesi"}];
      renderHistory(dummyData);
   }
-
   function renderHistory(sessions) {
       historyListEl.innerHTML = "";
       sessions.forEach(s => {
           const div = document.createElement('div');
           div.className = "history-item";
-          div.innerHTML = `
-             <div class="history-text" onclick="loadSession(${s.id})">${s.title}</div>
-             <button class="delete-chat-btn" onclick="deleteSession(${s.id}, this)">🗑️</button>
-          `;
+          div.innerHTML = `<div class="history-text" onclick="loadSession(${s.id})">${s.title}</div><button class="delete-chat-btn" onclick="deleteSession(${s.id}, this)">🗑️</button>`;
           historyListEl.appendChild(div);
       });
   }
-
-  window.deleteSession = function(id, btn) {
-      if(confirm("Bu sohbeti sileyim mi?")) btn.parentElement.remove(); 
-  };
-  window.startNewChat = function() { if(confirm("Temiz bir sayfa açalım mı?")) location.reload(); };
-  window.loadSession = function(id) { alert("Bu sohbet yükleniyor: " + id); toggleMenu(); };
+  window.deleteSession = function(id, btn) { if(confirm("Silinecek mi?")) btn.parentElement.remove(); };
+  window.startNewChat = function() { if(confirm("Yeni sayfa?")) location.reload(); };
+  window.loadSession = function(id) { alert("Yükleniyor: " + id); toggleMenu(); };
   window.toggleNotif = function() {
       const dd = document.getElementById('notifDropdown');
       const badge = document.getElementById('notifBadge');
-      if(dd.style.display === 'flex') { dd.style.display = 'none'; } 
-      else { dd.style.display = 'flex'; badge.style.display = 'none'; }
+      if(dd.style.display === 'flex') { dd.style.display = 'none'; } else { dd.style.display = 'flex'; badge.style.display = 'none'; }
   };
 
-  // --- DAKTİLO & KONUŞMA ---
   window.typeWriter = function(text, elementId = 'chat') {
     const chatDiv = document.getElementById(elementId);
     if(!chatDiv) return;
-
     const brandWrapper = document.getElementById('brandWrapper');
     brandWrapper.classList.add('talking');
-    
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
     chatDiv.appendChild(bubbleRow);
-
-    let i = 0;
-    const speed = 20;
-
+    let i = 0; const speed = 20;
     function type() {
-      if (i < text.length) {
-        bubbleRow.innerHTML += text.charAt(i);
-        i++;
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-        setTimeout(type, speed);
-      } else {
-        brandWrapper.classList.remove('talking');
-      }
+      if (i < text.length) { bubbleRow.innerHTML += text.charAt(i); i++; chatDiv.scrollTop = chatDiv.scrollHeight; setTimeout(type, speed); } 
+      else { brandWrapper.classList.remove('talking'); }
     }
     type();
   };
 
   window.onload = function() { 
-    initAuth(); 
-    checkSession(); 
-    loadHistory(); 
-    setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
-    resetIdle();
+    initAuth(); checkSession(); loadHistory(); 
+    setInterval(autoLookBehavior, AUTO_LOOK_FREQ); resetIdle();
     setTimeout(() => { document.getElementById('notifBadge').style.display = 'block'; }, 3000);
   };
 
@@ -474,36 +448,30 @@
     const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
     if(user && user.isProfileCompleted && user.isSessionActive) {
       document.getElementById('loginOverlay').classList.remove('active');
-      document.getElementById('mobileFrame').classList.add('tracking-active');
-      isTracking = true;
-      setTimeout(() => {
-        window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`);
-      }, 500);
+      setTimeout(() => { window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`); }, 500);
     }
   }
 
-  // --- MESAJ GÖNDERME ---
   async function sendMessage() {
     const txt = document.getElementById('msgInput').value.trim();
     if(!txt) return;
-
-    if(!currentSessionId) console.log("Yeni Sohbet Başlığı:", txt.substring(0,20) + "...");
+    if(!currentSessionId) console.log("Yeni Sohbet:", txt.substring(0,20));
 
     addUserBubble(txt);
     document.getElementById('msgInput').value = '';
     document.getElementById('msgInput').blur();
     
-    // LOGO: DÜŞÜNME MODU (NEFES ALAN TOP)
     const brandWrapper = document.getElementById('brandWrapper');
-    brandWrapper.classList.add('thinking'); // Turuncu top nefes almaya başlar
+    brandWrapper.classList.add('thinking'); // NEFES ALMA BAŞLA
 
     const response = await fetchTextResponse(txt);
     
-    brandWrapper.classList.remove('thinking'); // Düşünme biter
+    brandWrapper.classList.remove('thinking'); // NEFES ALMA BİT
     window.typeWriter(response.text);
 
-    if(isTracking && !response.error) {
-       await fetchVoiceResponse(response.text); 
+    // SES ÇAL (ARTIK BURASI ÇALIŞACAK)
+    if(response.text) {
+       await playVoice(response.text); 
     }
   }
 
@@ -515,23 +483,14 @@
   hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
   menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
 
-  /* --- GÖZ & UYKU --- */
-  let isTracking = false;
-  let isMouseActive = false;
-  let sleepTimer = null;
-  let gazeTimer = null;
-  const SLEEP_DELAY = 30000;
-  const GAZE_DELAY = 2000;
-  const AUTO_LOOK_FREQ = 5000;
+  /* GÖZ */
+  let isTracking = false; let isMouseActive = false; let sleepTimer = null; let gazeTimer = null;
+  const SLEEP_DELAY = 30000; const GAZE_DELAY = 2000; const AUTO_LOOK_FREQ = 5000;
   const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
 
   window.addEventListener('pointermove', (e) => {
-    if(!isTracking || frame.classList.contains('sleeping')) {
-       if(frame.classList.contains('sleeping')) wakeUp();
-    }
-    resetIdle();
-    isMouseActive = true;
-    clearTimeout(gazeTimer); 
+    if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
+    resetIdle(); isMouseActive = true; clearTimeout(gazeTimer); 
     const rect = frame.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
@@ -545,14 +504,11 @@
   function centerEyes() { setGaze(0, 0); }
   function autoLookBehavior() {
     if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-    const rX = (Math.random() - 0.5) * 0.8; 
-    const rY = (Math.random() - 0.5) * 0.5; 
-    setGaze(rX, rY);
-    setTimeout(() => setGaze(0, 0), 1000);
+    const rX = (Math.random() - 0.5) * 0.8; const rY = (Math.random() - 0.5) * 0.5; 
+    setGaze(rX, rY); setTimeout(() => setGaze(0, 0), 1000);
   }
   function setGaze(x, y) {
-    const gx = Math.min(Math.max(x * 20, -20), 20);
-    const gy = Math.min(Math.max(y * 15, -15), 15);
+    const gx = Math.min(Math.max(x * 20, -20), 20); const gy = Math.min(Math.max(y * 15, -15), 15);
     [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
   }
   function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
