@@ -1,162 +1,310 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Profil Ayarları</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
+<title>Caynana AI v8.4 Final</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
-  /* --- TEMEL AYARLAR --- */
-  :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
-  body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
-  .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
-  @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); } }
+  :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; --card-bg: #1a1a1a; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .mobile-frame { width: 100%; height: 100%; max-width: 480px; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); overflow: hidden; }
+  @media (min-width: 500px) { .mobile-frame { height: 95dvh; border-radius: 24px; border: 1px solid #333; } }
 
-  /* HEADER & ÇIKIŞ */
-  .header { padding: 20px; text-align: center; border-bottom: 1px solid #222; background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); z-index: 10; position: relative; }
-  .header h2 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; }
-  .header p { margin: 5px 0 0; font-size: 12px; color: #888; }
+  .topbar { flex: 0 0 75px; background: var(--glass); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 3000; }
+  .left-controls { display: flex; gap: 15px; align-items: center; }
+  .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 0; }
+  .brand-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 40px; flex: 1; transition: transform 0.4s; }
+  .logo-area { display: flex; align-items: center; gap: 8px; }
+  .brand-name { font-weight: 700; font-size: 16px; color: #fff; }
+  .slogan { font-size: 11px; color: #888; margin-top: 2px; font-weight: 500; letter-spacing: 0.5px; } 
+
+  .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
+  .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
+  .tilt-left .seesaw-bar { transform: rotate(-15deg); }
+  .tilt-right .seesaw-bar { transform: rotate(15deg); }
+
+  .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
+  .mobile-frame.tracking-active .face-container { flex-basis: 180px; }
+  .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
+  .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
+
+  .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
+  .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .brow { position: absolute; top: -14px; left: 0; width: 100%; height: 16px; background: #222; border-radius: 99px; transform-origin: center; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
+  .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+  .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
+  .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
+  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.1s; }
+  .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
+  .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
+
+  .mobile-frame.sleeping .eyes-row { animation: sleepBreath 3s infinite ease-in-out; opacity: 0.7; }
+  .mobile-frame.sleeping .brow { transform: translateY(10px) rotate(5deg); transition: 1s; }
+  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.96) translateY(2px); } }
+
+  .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
+  .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
+  .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+
+  .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
+  .chat-area::-webkit-scrollbar { display: none; }
+  .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; word-wrap: break-word; }
+  .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; min-height: 40px;}
+  .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
+
+  .input-dock { flex: 0 0 auto; background: var(--glass); padding: 5px 16px 15px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
   
-  .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff5252; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; transition: 0.2s; }
-  .logout-btn:active { background: rgba(255, 82, 82, 0.1); }
-
-  /* FORM */
-  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; }
-  .p-avatar-area { text-align: center; margin-bottom: 10px; }
-  .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
+  .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
+  .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
+  .main-track-btn { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
   
-  .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
-  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; }
-  .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
-  .form-input, .form-select { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
-  .form-input:focus, .form-select:focus { border-color: var(--gold); background: #222; }
-  .form-input:disabled { opacity: 0.5; background: #111; color: #666; }
+  .dock-inner { display: flex; align-items: flex-end; gap: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
+  .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+  .icon-btn svg { width: 22px; height: 22px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
+  .icon-btn:hover svg, .icon-btn.active svg { stroke: var(--gold); }
+  .icon-btn.active { background: rgba(255,179,0,0.15); }
+  .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
+  .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
+  textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
+
+  /* FOOTER (EN ALTA ALINDI) */
+  .footer-container { text-align: center; width: 100%; padding: 10px 0; background: #0e0e0e; border-top: 1px solid #222; }
+  .footer-container span { font-size: 13px; color: #aaa; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; }
+  .footer-ver { font-size: 10px; color: #666; font-family: monospace; margin-top: 2px; }
+
+  /* LOGIN & MENU */
+  .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s ease; padding: 20px; }
+  .full-overlay.active { opacity: 1; pointer-events: auto; }
+  .login-card { width: 100%; max-width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; }
+  .login-logo { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+  .login-logo span { color: var(--gold); }
+  .auth-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+  .auth-btn.enabled { opacity: 1; pointer-events: auto; filter: grayscale(0); }
+  .btn-google { background: #fff; color: #333; } 
+  .btn-apple { background: #111; color: #fff; border: 1px solid #333; }
+  .agreement-box { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; justify-content: center; margin-top: 10px; text-align: left; }
+  .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .login-footer-links { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; border-top: 1px solid #222; padding-top: 20px; }
+  .login-footer-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
+  .login-footer-links a:hover { color: var(--gold); }
   
-  /* --- DÜZELTME: YAN YANA ALANLAR --- */
-  .row-group { display: flex; gap: 10px; }
-  .row-group > div { flex: 1; min-width: 0; } /* min-width:0 taşmayı önler */
-
-  /* ID KUTUSU */
-  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 12px; border-radius: 10px; border: 1px dashed #333; position: relative; }
-  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; }
-  .copy-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: #666; }
-
-  /* DİNAMİK */
-  .conditional-field { display: none; animation: fadeIn 0.4s; border-left: 2px solid var(--gold); padding-left: 15px; margin-left: 5px; margin-bottom: 10px; }
-  .conditional-field.show { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-  .save-btn { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; box-shadow: 0 5px 20px rgba(255, 179, 0, 0.15); }
+  .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
+  .menu-overlay.open { opacity: 1; pointer-events: auto; }
+  .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 60px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
+  .menu-overlay.open .menu-sidebar { transform: translateX(0); }
+  .menu-list { flex: 1; display: flex; flex-direction: column; gap: 0; }
+  .menu-item { color: #ccc; text-decoration: none; padding: 16px 10px; border-bottom: 1px solid #222; font-size: 15px; cursor: pointer; display: block; }
+  .menu-footer-actions { margin-top: auto; padding-top: 20px; border-top: 1px solid #333; }
+  .delete-account { color: #ff5252; font-size: 13px; cursor: pointer; padding: 10px; text-align: center; border: 1px solid #ff5252; border-radius: 8px; }
+  .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
+  #camVideo { display: none; }
 </style>
 </head>
 <body>
 
-<div class="mobile-frame">
-  <div class="header">
-    <button class="logout-btn" onclick="logoutFromProfile()">
-      <span style="font-size:16px;">🚪</span> Çıkış
-    </button>
-    <h2>Profil Ayarları</h2>
-    <p>Caynana seni daha iyi tanısın</p>
+<div class="mobile-frame" id="mobileFrame">
+  <div class="full-overlay active" id="loginOverlay">
+    <div class="login-card">
+      <div class="login-logo">Caynana<span>.AI</span></div>
+      <div style="font-size:13px; color:#888;">Yapay Zekânın Geleneksel Aklı</div>
+      <br>
+      <div style="border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
+        <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Zaten Üye Misin?</div>
+        <button class="auth-btn btn-google enabled" style="opacity:1; filter:none;" onclick="handleLogin('google', 'login')">Google ile Giriş Yap</button>
+      </div>
+      <div>
+        <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Aramıza Katıl</div>
+        <div class="agreement-box" style="margin-bottom:10px;">
+          <input type="checkbox" id="agreementCheck" onchange="toggleSignupBtn()">
+          <label for="agreementCheck"><a href="pages/sozlesme.html">Sözleşmeyi</a> okudum.</label>
+        </div>
+        <button class="auth-btn btn-google" id="signupBtn" onclick="handleLogin('google', 'signup')">Google ile Üye Ol</button>
+      </div>
+      <div class="login-footer-links">
+        <a href="pages/hakkimizda.html">Hakkımızda</a>
+        <a href="pages/sss.html">SSS</a>
+        <a href="pages/gizlilik.html">Gizlilik</a>
+        <a href="pages/sozlesme.html">Kullanım</a>
+      </div>
+    </div>
   </div>
 
-  <div class="scroll-content">
-    <div class="p-avatar-area">
-      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" alt="Avatar">
-      <div style="font-size:11px; color:#666; margin-top:8px;">Google Hesabın</div>
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <div class="menu-list">
+        <a class="menu-item" href="pages/profil.html">👤 Profil / Giriş</a>
+        <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
+        <a class="menu-item" href="pages/sss.html">❓ SSS</a>
+        <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
+        <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
+        <a class="menu-item" onclick="logout()">🛡️ Güvenli Çıkış</a>
+      </div>
+      <div class="menu-footer-actions">
+        <div class="delete-account" onclick="deleteAccount()">Hesabımı Kalıcı Olarak Sil</div>
+        <div class="menu-version">@CaynanaAI By Ozyigits 2026 v8.4</div>
+      </div>
     </div>
+  </div>
 
-    <div class="section-title">Mecburi Alanlar</div>
+  <div class="topbar">
+    <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          <g class="seesaw-bar" id="seesawBar">
+             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+             <circle cx="3" cy="5" r="3" fill="#bef264" />
+             <circle cx="37" cy="5" r="3" fill="#ffb300" />
+          </g>
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">İlişkisel Asistan v8.4</div>
+    </div>
+  </div>
+
+  <div class="face-container">
+    <div class="face-panel-inner" id="faceInner">
+      <div class="eyes-row">
+        <div class="eye" id="eyeL">
+          <div class="brow"></div>
+          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+          <div class="lid-top"></div><div class="lid-bot"></div>
+        </div>
+        <div class="eye" id="eyeR">
+          <div class="brow"></div>
+          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+          <div class="lid-top"></div><div class="lid-bot"></div>
+        </div>
+      </div>
+      <div class="mouth-wrapper"><div class="mouth"></div></div>
+      <button class="close-track-btn" id="closeTrackBtn">Takibi Kapat</button>
+    </div>
+  </div>
+
+  <div class="chat-area" id="chat"></div>
+
+  <div class="input-dock">
+    <div class="track-trigger-row"><button class="main-track-btn" id="openTrackBtn">👁️ TAKİP ET</button></div>
     
-    <div class="form-group">
-      <label class="form-label">Caynana sana nasıl hitap etsin?</label>
-      <input type="text" id="formHitap" class="form-input" placeholder="Örn: Kızım, Gelinim, Damadım">
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
+      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
+      <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
     </div>
-    
-    <div class="form-group">
-      <label class="form-label">Caynana'ya bir isim ver</label>
-      <input type="text" id="formBotName" class="form-input" placeholder="Örn: Sultan Hanım, Şerife Teyze">
-    </div>
+  </div>
 
-    <div class="form-group">
-      <label class="form-label">Ad Soyad (Google)</label>
-      <input type="text" id="formFullname" class="form-input" disabled>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">ID Numarası (Değişmez)</label>
-      <div class="id-copy-box">
-        <span id="formID" class="id-text">...</span>
-        <button class="copy-btn" onclick="copyID()" title="Kopyala">📋</button>
-      </div>
-    </div>
-
-    <div class="form-group row-group">
-      <div>
-        <label class="form-label">Doğum Tarihi</label>
-        <input type="date" id="formDob" class="form-input">
-      </div>
-      <div>
-        <label class="form-label">Cinsiyet</label>
-        <select id="formGender" class="form-select">
-          <option value="">Seçiniz</option>
-          <option value="Kadın">Kadın</option>
-          <option value="Erkek">Erkek</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="section-title" style="margin-top:10px;">Detaylar</div>
-
-    <div class="form-group">
-      <label class="form-label">Medeni Durum</label>
-      <select id="formStatus" class="form-select" onchange="toggleMarriedFields()">
-        <option value="Bekar">Bekar</option>
-        <option value="Evli">Evli</option>
-      </select>
-    </div>
-
-    <div id="marriedFields" class="conditional-field">
-      <div class="form-group">
-        <label class="form-label">Eşinin Adı</label>
-        <input type="text" id="formSpouse" class="form-input" placeholder="Yenge/Enişte adı">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Çocuk Sayısı</label>
-      <select id="formChildCount" class="form-select" onchange="toggleChildFields()">
-        <option value="0">Yok</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3+</option>
-      </select>
-    </div>
-
-    <div id="childFields" class="conditional-field">
-      <div class="form-group">
-        <label class="form-label">Çocukların İsimleri</label>
-        <input type="text" id="formChildNames" class="form-input" placeholder="Örn: Ali, Ayşe">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Çocukların Yaşları</label>
-        <input type="text" id="formChildAges" class="form-input" placeholder="Örn: 5, 8">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Tuttuğu Takım</label>
-      <input type="text" id="formTeam" class="form-input" placeholder="Örn: Beşiktaş">
-    </div>
-    
-    <div class="form-group">
-      <label class="form-label">Yaşadığı İl</label>
-      <input type="text" id="formCity" class="form-input" placeholder="Örn: Ankara">
-    </div>
-
-    <button class="save-btn" onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
+  <div class="footer-container">
+    <span>@CaynanaAI By Ozyigits</span>
+    <div class="footer-ver">2026 - v8.4</div>
   </div>
 </div>
 
-<script type="module" src="../js/profile.js"></script>
+<video id="camVideo" autoplay playsinline muted></video>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+
+<script type="module">
+  import { initAuth, handleLogin, logout } from './js/auth.js';
+  
+  window.handleLogin = handleLogin;
+  window.logout = logout;
+  window.deleteAccount = function() { if(confirm("Hesabını silmek istediğine emin misin?")) logout(); };
+  window.toggleSignupBtn = function() {
+    const check = document.getElementById('agreementCheck');
+    const btn = document.getElementById('signupBtn');
+    if(check.checked) { btn.classList.add('enabled'); } else { btn.classList.remove('enabled'); }
+  };
+
+  window.onload = function() { 
+    initAuth(); 
+    checkSession(); 
+    // OTOMATİK TAKİP BAŞLAT
+    isTracking = true;
+    document.getElementById('mobileFrame').classList.add('tracking-active');
+    startLifeCycle(); 
+  };
+
+  function checkSession() {
+    const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
+    if(user && user.isProfileCompleted) {
+      document.getElementById('loginOverlay').classList.remove('active');
+      startChat(user);
+    }
+  }
+
+  const menuOverlay = document.getElementById('menuOverlay');
+  const hambBtn = document.getElementById('hambBtn');
+  hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
+  menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
+
+  /* YAŞAM DÖNGÜSÜ & GÖZ ZEKA */
+  let isTracking = false, isCameraOn = false, idleTimer = null, mouseIdleTimer = null, isMouseActive = false;
+  const IDLE_LIMIT = 8000; 
+  const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame'), brandWrapper = document.getElementById('brandWrapper');
+
+  function startLifeCycle() { setInterval(() => { if(!frame.classList.contains('sleeping')) blink(); }, Math.random() * 3000 + 3000); }
+  function blink() { setLids(100); setTimeout(() => setLids(0), 150); }
+  async function goSleep() { if(frame.classList.contains('sleeping')) return; await blink(); await new Promise(r => setTimeout(r, 300)); await blink(); await new Promise(r => setTimeout(r, 300)); frame.classList.add('sleeping'); setLids(100, 100); }
+  function wakeUp() { if(!frame.classList.contains('sleeping')) return; frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
+  function resetIdle() { if (!isTracking) return; clearTimeout(idleTimer); if (frame.classList.contains('sleeping')) wakeUp(); idleTimer = setTimeout(goSleep, IDLE_LIMIT); }
+
+  window.addEventListener('pointermove', (e) => {
+    resetIdle();
+    if(!isTracking || isCameraOn || frame.classList.contains('sleeping')) return;
+    isMouseActive = true; clearTimeout(mouseIdleTimer);
+    const rect = frame.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setGaze(x, y);
+    mouseIdleTimer = setTimeout(() => { isMouseActive = false; setGaze(0, 0); }, 2000);
+  });
+
+  function setGaze(x, y) {
+    const gx = Math.min(Math.max(x * 20, -20), 20);
+    const gy = Math.min(Math.max(y * 15, -15), 15);
+    [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
+  }
+  function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
+
+  /* CHAT & LOGO */
+  const chat = document.getElementById('chat'), msgInput = document.getElementById('msgInput');
+  msgInput.addEventListener('input', () => { resetIdle(); brandWrapper.classList.add('tilt-left'); brandWrapper.classList.remove('tilt-right'); });
+  msgInput.addEventListener('focus', () => { wakeUp(); resetIdle(); });
+  msgInput.addEventListener('blur', () => { brandWrapper.classList.remove('tilt-left'); });
+  function botTalkAnim() { brandWrapper.classList.add('tilt-right'); brandWrapper.classList.remove('tilt-left'); setTimeout(() => brandWrapper.classList.remove('tilt-right'), 2000); }
+
+  window.startChat = function(user) {
+    if(chat.children.length === 0) {
+        const hitap = user.hitap || user.fullname || "Evladım";
+        const bot = user.botName || "Caynana";
+        setTimeout(() => { addBubble(`Hoş geldin ${hitap}.`, 'bot'); }, 500);
+        setTimeout(() => { addBubble(`Ben ${bot}. Anlat bakalım?`, 'bot'); }, 1500);
+    }
+  }
+
+  function addBubble(txt, type) { const d = document.createElement('div'); d.className = `bubble ${type}`; d.innerText = txt; chat.appendChild(d); chat.scrollTop = chat.scrollHeight; }
+  async function sendMessage() {
+    const txt = msgInput.value.trim(); if(!txt) return;
+    addBubble(txt, 'user'); msgInput.value = ''; msgInput.blur();
+    setTimeout(() => { const u = JSON.parse(localStorage.getItem('caynana_user_v8')); botTalkAnim(); addBubble(`Anlaşıldı ${u ? (u.hitap || 'evladım') : 'evladım'}.`, 'bot'); }, 800);
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+  document.getElementById('openTrackBtn').addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); resetIdle(); });
+  document.getElementById('closeTrackBtn').addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
+  document.getElementById('camBtn').addEventListener('click', ()=>{ 
+    if(!isTracking) { isTracking=true; frame.classList.add('tracking-active'); }
+    const btn = document.getElementById('camBtn'); btn.classList.toggle('active');
+  });
+</script>
 </body>
 </html>
