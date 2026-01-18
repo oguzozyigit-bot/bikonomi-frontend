@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v2.5 Final</title>
+<title>Caynana AI v2.6 Final (Fal Modülü)</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -59,7 +59,6 @@
 
   /* --- GÖZLER (KAMERA) --- */
   .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
-  /* Kamera açılınca bu class eklenir */
   .mobile-frame.tracking-active .face-container { flex-basis: 180px; } 
   
   .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
@@ -149,7 +148,7 @@
   .delete-chat-btn { display: none; background: none; border: none; color: #ff5252; cursor: pointer; font-size: 16px; padding: 0 5px; }
 
   .menu-static-links { border-top: 1px solid #2a2a2a; padding-top: 10px; }
-  .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; }
+  .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; cursor:pointer; }
   .menu-item:hover { color: var(--gold); }
 
   .menu-footer-actions { margin-top: auto; padding-top: 10px; border-top: 1px solid #333; }
@@ -229,6 +228,7 @@
       <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
       <div class="menu-static-links">
+        <a class="menu-item" onclick="openFal()">☕ Kahve Falı</a>
         <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
         <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
         <a class="menu-item" href="pages/sss.html">❓ SSS</a>
@@ -237,7 +237,7 @@
       </div>
       <div class="menu-footer-actions">
         <a class="menu-item" onclick="logout()" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
-        <div class="menu-version">@CaynanaAI v2.5</div>
+        <div class="menu-version">@CaynanaAI v2.6</div>
       </div>
     </div>
   </div>
@@ -313,6 +313,42 @@
   </div>
 </div>
 
+<div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000;">
+    <button onclick="closeFal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
+    
+    <div style="text-align:center; margin-top:60px;">
+        <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px;">
+             <g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="20" cy="5" r="5" fill="#6d4c41"/></g>
+        </svg>
+        <h2 style="color:#d9f99d; margin:10px 0;">Kaynana Fal</h2>
+        <p style="color:#888; font-size:12px; padding:0 20px;">
+            Günde sadece 1 kez bakılır evladım. Umudunu fala bağlama, falsız kalma.
+        </p>
+    </div>
+
+    <div id="falStep1" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+        <div id="falStatus" style="color:#fff; font-size:16px; text-align:center; padding:20px;">Hadi fincanı çek bakalım...</div>
+        
+        <label for="falInput" class="main-track-btn" style="padding:20px; border-radius:50%; width:80px; height:80px; justify-content:center;">
+            <svg viewBox="0 0 24 24" width="40" height="40" stroke="#ffb300" fill="none" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </label>
+        <input type="file" id="falInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFalFile(this)">
+    </div>
+
+    <div id="falStep2" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;">
+        <div class="brand-wrapper thinking" style="transform:scale(2); margin-bottom:30px;">
+             <svg class="seesaw-svg" viewBox="0 0 40 20"><g class="seesaw-bar"><circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall"/></g></svg>
+        </div>
+        <div id="loadingText" style="color:#d9f99d; font-size:18px; text-align:center; padding:20px;">Vay vay vay...</div>
+    </div>
+
+    <div id="falResult" style="flex:1; display:none; flex-direction:column; padding:20px; overflow-y:auto;">
+        <div id="falText" style="background:#222; padding:20px; border-radius:12px; color:#ececec; line-height:1.6; border:1px solid #333;">
+            </div>
+        <button onclick="closeFal()" class="auth-btn btn-google enabled" style="margin-top:20px; filter:none;">Tamamdır Anne</button>
+    </div>
+</div>
+
 <video id="camVideo" autoplay playsinline muted></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -322,8 +358,10 @@
 <script type="module">
   import { initAuth, handleLogin, logout } from './js/auth.js';
   import { fetchTextResponse, fetchVoiceResponse, addUserBubble } from './js/chat.js';
-  import { BASE_DOMAIN } from './js/config.js'; // BASE_DOMAIN eklendi
+  import { BASE_DOMAIN } from './js/config.js'; 
+  import { openFalPanel, closeFalPanel, handleFalPhoto } from './js/fal.js'; // FAL MODÜLÜ BAĞLANDI
   
+  // GLOBAL FONKSİYONLAR
   window.handleLogin = handleLogin;
   window.logout = logout;
   window.appleAlert = function() { alert("Acele etme evladım, hazırlanıyor. Şimdilik Google ile devam et."); };
@@ -336,17 +374,20 @@
     else { btn.classList.remove('enabled'); appleBtn.classList.remove('enabled'); }
   };
   
-  // --- KAMERA (TOGGLE) - DÜZELTİLDİ ---
+  // FAL MODÜLÜ FONKSİYONLARI
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = (input) => handleFalPhoto(input);
+
+  // --- KAMERA (TOGGLE) ---
   window.toggleCam = function() {
       const frame = document.getElementById('mobileFrame');
       const camBtn = document.getElementById('camBtn');
       if(frame.classList.contains('tracking-active')) {
-          // Kapat
           frame.classList.remove('tracking-active');
           camBtn.classList.remove('active');
           isTracking = false;
       } else {
-          // Aç
           frame.classList.add('tracking-active');
           camBtn.classList.add('active');
           isTracking = true;
@@ -354,11 +395,11 @@
       }
   };
 
-  // --- MİKROFON (SESLİ GİRİŞ) - DÜZELTİLDİ (TAKILMA YOK) ---
+  // --- MİKROFON ---
   window.startDictation = function() {
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
       const micBtn = document.getElementById('micBtn');
-      micBtn.style.stroke = "#ffb300"; // Turuncu (Aktif)
+      micBtn.style.stroke = "#ffb300"; 
       
       const recognition = new webkitSpeechRecognition();
       recognition.continuous = false;
@@ -369,21 +410,18 @@
       recognition.onresult = function(e) {
         document.getElementById('msgInput').value = e.results[0][0].transcript;
         recognition.stop();
-        sendMessage(); // Otomatik gönder
+        sendMessage(); 
       };
-      
-      // HATA VEYA BİTİŞTE RENGİ DÜZELT
       recognition.onerror = function(e) { recognition.stop(); };
-      recognition.onend = function() { micBtn.style.stroke = "#aaa"; }; // ESKİ GRİ RENGE DÖN
+      recognition.onend = function() { micBtn.style.stroke = "#aaa"; }; 
     } else {
       alert("Tarayıcın sesi desteklemiyor evladım.");
     }
   };
 
-  // --- SES ÇALMA (PLAYVOICE) - DÜZELTİLDİ ---
+  // --- SES ÇALMA ---
   async function playVoice(text) {
       try {
-        // Backend API adresini doğru veriyoruz
         const res = await fetch(`${BASE_DOMAIN}/api/speech`, {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: text })
@@ -396,7 +434,7 @@
       } catch(e) { console.error("Ses hatası:", e); }
   }
 
-  // --- DİĞER FONKSİYONLAR (AYNEN KORUNDU) ---
+  // --- DİĞER FONKSİYONLAR ---
   let currentSessionId = null;
   const historyListEl = document.getElementById('historyList');
 
@@ -462,14 +500,13 @@
     document.getElementById('msgInput').blur();
     
     const brandWrapper = document.getElementById('brandWrapper');
-    brandWrapper.classList.add('thinking'); // NEFES ALMA BAŞLA
+    brandWrapper.classList.add('thinking'); 
 
     const response = await fetchTextResponse(txt);
     
-    brandWrapper.classList.remove('thinking'); // NEFES ALMA BİT
+    brandWrapper.classList.remove('thinking'); 
     window.typeWriter(response.text);
 
-    // SES ÇAL (ARTIK BURASI ÇALIŞACAK)
     if(response.text) {
        await playVoice(response.text); 
     }
