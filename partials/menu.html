@@ -1,0 +1,169 @@
+// js/partials.js
+// Menü partial + dinamik sohbet listesi
+const SESSIONS_KEY = "caynana_sessions_v1"; // ✅ biz bunu standart yapıyoruz
+
+function safeJsonParse(s, fallback) {
+  try { return JSON.parse(s); } catch { return fallback; }
+}
+
+function words10(text) {
+  const t = String(text || "").trim().replace(/\s+/g, " ");
+  if (!t) return "Yeni Sohbet";
+  const parts = t.split(" ").slice(0, 10);
+  return parts.join(" ");
+}
+
+function deriveTitle(session) {
+  if (session?.title && String(session.title).trim()) return session.title;
+  const msgs = session?.messages || [];
+  const firstUser = msgs.find(m => (m.role || m.type) === "user" && (m.text || m.content));
+  const sample = firstUser ? (firstUser.text || firstUser.content) : (session?.preview || "");
+  return words10(sample);
+}
+
+export function getSessions() {
+  const raw = localStorage.getItem(SESSIONS_KEY);
+  const sessions = safeJsonParse(raw, []);
+  return Array.isArray(sessions) ? sessions : [];
+}
+
+export function saveSessions(sessions) {
+  localStorage.setItem(SESSIONS_KEY, JSON.stringify(sessions || []));
+}
+
+export function upsertSession(sessionId, patch = {}) {
+  const sessions = getSessions();
+  const idx = sessions.findIndex(s => s.id === sessionId);
+  if (idx >= 0) sessions[idx] = { ...sessions[idx], ...patch, updated_at: Date.now() };
+  else sessions.unshift({ id: sessionId, messages: [], created_at: Date.now(), updated_at: Date.now(), ...patch });
+  // Son 50 tut (istersen 200 yap)
+  saveSessions(sessions.slice(0, 50));
+  return sessions[0]?.id || sessionId;
+}
+
+export function appendMessage(sessionId, role, text) {
+  if (!sessionId) return;
+  const sessions = getSessions();
+  let s = sessions.find(x => x.id === sessionId);
+  if (!s) {
+    s = { id: sessionId, messages: [], created_at: Date.now(), updated_at: Date.now() };
+    sessions.unshift(s);
+  }
+  s.messages = s.messages || [];
+  s.messages.push({ role, text: String(text || ""), ts: Date.now() });
+  s.updated_at = Date.now();
+
+  // title yoksa ilk user mesajından üret
+  if (!s.title) s.title = deriveTitle(s);
+
+  // en üste taşı (en güncel)
+  const filtered = sessions.filter(x => x.id !== sessionId);
+  filtered.unshift(s);
+
+  saveSessions(filtered.slice(0, 50));
+}
+
+export function deleteSession(sessionId) {
+  const sessions = getSessions().filter(s => s.id !== sessionId);
+  saveSessions(sessions);
+}
+
+export function renderHistoryIntoMenu(sessions, { limit = 10 } = {}) {
+  const list = document.getElementById("historyList");
+  if (!list) return;
+
+  const top = (sessions || []).slice(0, limit);
+  list.innerHTML = "";
+
+  if (top.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "history-item";
+    empty.style.opacity = "0.7";
+    empty.innerHTML = `<div class="history-text">Henüz sohbet yok</div>`;
+    list.appendChild(empty);
+    return;
+  }
+
+  top.forEach(s => {
+    const title = deriveTitle(s);
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <div class="history-text" data-action="load-session" data-session-id="${s.id}">${title}</div>
+      <button class="delete-chat-btn" data-action="delete-session" data-session-id="${s.id}">🗑️</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+export async function loadMenuPartial({ containerId = "menuMount" } = {}) {
+  const mount = document.getElementById(containerId);
+  if (!mount) return;
+
+  const res = await fetch("partials/menu.html", { cache: "no-cache" });
+  mount.innerHTML = await res.text();
+
+  // Dışa tıklayınca kapansın
+  const menuOverlay = document.getElementById("menuOverlay");
+  if (menuOverlay) {
+    menuOverlay.addEventListener("click", (e) => {
+      if (e.target === menuOverlay) window.toggleMenu?.();
+    });
+  }
+
+  // İlk render: storage'dan çek ve bas
+  renderHistoryIntoMenu(getSessions());
+
+  // Tek yerden menü action yönetimi
+  mount.addEventListener("click", (e) => {
+    const el = e.target.closest("[data-action]");
+    if (!el) return;
+
+    const act = el.getAttribute("data-action");
+
+    if (act === "new-chat") {
+      // Yeni session yarat
+      const newId = "S-" + Math.random().toString(36).slice(2, 10);
+      upsertSession(newId, { title: "Yeni Sohbet", messages: [] });
+
+      // index tarafında senin mevcut startNewChat'ın varsa onu çağır
+      // yoksa sadece sayfayı yenileme: session id'yi globalde tut
+      window.currentSessionId = newId;
+      renderHistoryIntoMenu(getSessions());
+      window.toggleMenu?.();
+      if (typeof window.startNewChat === "function") window.startNewChat();
+      return;
+    }
+
+    if (act === "load-session") {
+      const sid = el.getAttribute("data-session-id");
+      window.currentSessionId = sid;
+      window.toggleMenu?.();
+      if (typeof window.loadSession === "function") window.loadSession(sid);
+      else alert("Session: " + sid);
+      return;
+    }
+
+    if (act === "delete-session") {
+      const sid = el.getAttribute("data-session-id");
+      if (confirm("Silinsin mi?")) {
+        deleteSession(sid);
+        renderHistoryIntoMenu(getSessions());
+      }
+      return;
+    }
+
+    if (act === "open-fal") { window.openFal?.(); window.toggleMenu?.(); return; }
+    if (act === "open-shopping") { window.openShopping?.(); window.toggleMenu?.(); return; }
+    if (act === "open-horoscope") { window.openHoroscope?.(); window.toggleMenu?.(); return; }
+    if (act === "logout") { window.logout?.(); return; }
+  });
+
+  // Dışarıdan çağırmak için global yardımcılar (index dokunmadan güncelleme)
+  window.MenuHistory = {
+    refresh: () => renderHistoryIntoMenu(getSessions()),
+    appendMessage,
+    upsertSession,
+    deleteSession
+  };
+}
