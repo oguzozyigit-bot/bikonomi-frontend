@@ -31,17 +31,16 @@ function resetFal() {
 }
 
 function updateStatus(text) {
-    const statusEl = document.getElementById('falStatus');
-    if(statusEl) statusEl.innerText = text;
+    const el = document.getElementById('falStatus');
+    if(el) el.innerText = text;
 }
 
-// Fotoğraf Çekme İşlemi
+// Fotoğraf Çekme İşlemi (HATA DÜZELTİLDİ)
 export async function handleFalPhoto(fileInput) {
     const file = fileInput.files[0];
     if (!file) return;
 
-    // Yükleniyor bilgisi ver
-    updateStatus("Resim işleniyor, bekle...");
+    updateStatus("Resim yükleniyor, bekle...");
 
     const reader = new FileReader();
     reader.onload = async function(e) {
@@ -56,26 +55,26 @@ export async function handleFalPhoto(fileInput) {
                     body: JSON.stringify({ image: base64 })
                 });
                 
-                // HATA KONTROLÜ (GÜNCELLENDİ)
+                // SUNUCU HATASI VARSA YAKALA
                 if (!checkRes.ok) {
-                    const errData = await checkRes.json().catch(() => ({}));
-                    alert(errData.detail || errData.reason || "Sunucu hatası oluştu evladım. İnternetini kontrol et.");
+                    const errText = await checkRes.text();
+                    alert("Sunucu Hatası: " + errText); // Detaylı hatayı göster
                     updateStatus("Hata oldu, tekrar dene.");
-                    fileInput.value = ""; // Inputu temizle
+                    fileInput.value = ""; 
                     return;
                 }
 
                 const checkData = await checkRes.json();
                 if (!checkData.ok) {
-                    alert(checkData.reason || "Bu fincana benzemiyor."); 
+                    alert(checkData.reason || "Bilinmeyen bir hata oluştu."); 
                     updateStatus("Düzgün çek şunu!");
                     fileInput.value = "";
                     return;
                 }
             } catch(e) { 
                 console.error(e);
-                alert("Bağlantı hatası evladım.");
-                updateStatus("Bağlantı koptu.");
+                alert("İnternet bağlantını kontrol et evladım.");
+                updateStatus("Bağlantı hatası.");
                 return;
             }
         }
@@ -88,8 +87,6 @@ export async function handleFalPhoto(fileInput) {
         } else {
             startFalAnalysis();
         }
-        
-        // Inputu temizle ki aynı dosyayı tekrar seçebilsin
         fileInput.value = ""; 
     };
     reader.readAsDataURL(file);
@@ -120,7 +117,7 @@ async function startFalAnalysis() {
         clearInterval(msgInterval);
         
         if(!res.ok) {
-             alert(data.detail || "Fal bakarken başıma ağrılar girdi.");
+             alert(data.detail || "Fal bakarken bir sorun çıktı.");
              closeFalPanel();
              return;
         }
