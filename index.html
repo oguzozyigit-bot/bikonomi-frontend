@@ -157,7 +157,6 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- LOGIN OVERLAY -->
   <div class="full-overlay active" id="loginOverlay">
     <div class="login-card">
       <div style="display:flex; justify-content:center; margin-bottom:10px;">
@@ -203,7 +202,6 @@
     </div>
   </div>
 
-  <!-- TERMS OVERLAY -->
   <div class="full-overlay" id="termsOverlay" style="z-index:6500; background:#000;">
     <div class="login-card" style="max-width:420px;">
       <div class="login-logo">Sözleşme<span>.Onay</span></div>
@@ -226,9 +224,7 @@
     </div>
   </div>
 
-  <!-- MENU MOUNT -->
   <div id="menuMount">
-    <!-- MENU (aynı) -->
     <div class="menu-overlay" id="menuOverlay">
       <div class="menu-sidebar">
         <div class="sidebar-header">
@@ -252,7 +248,6 @@
     </div>
   </div>
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
     <div class="brand-wrapper" id="brandWrapper">
@@ -270,7 +265,6 @@
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
 
-    <!-- NOTIF MOUNT -->
     <div id="notifMount">
       <button class="notif-btn" id="notifBtn" onclick="toggleNotif()">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
@@ -370,21 +364,22 @@
 <script type="module">
   import { initPartials } from './js/partials.js';
   import { initNotif } from './js/notif.js';
-
   import { initAuth, handleLogin, logout, acceptTerms } from './js/auth.js';
   import { addUserBubble } from './js/chat.js';
   import { BASE_DOMAIN, STORAGE_KEY } from './js/config.js';
   import { openFalPanel, closeFalPanel, handleFalPhoto } from './js/fal.js';
 
-  // ------------------------------
-  // SAFE HELPERS
-  // ------------------------------
-  const $ = (id) => document.getElementById(id);
+  // ------------------------------------
+  // --- HAFIZA (HISTORY) YÖNETİMİ ---
+  // ------------------------------------
+  // Konuşma geçmişini burada tutacağız.
+  let chatHistory = []; 
 
+  // --- YARDIMCI FONKSİYONLAR ---
   function firstNameOnly(fullname="") {
     const s = (fullname || "").trim();
     if(!s) return "";
-    return s.split(/\\s+/)[0];
+    return s.split(/\s+/)[0]; 
   }
 
   function getProfileMeta(){
@@ -399,79 +394,6 @@
     return "Evladım";
   }
 
-  // ------------------------------
-  // EYE TRACKING FUNCTIONS (define early!)
-  // ------------------------------
-  let isTracking = false;
-  let isMouseActive = false;
-  let sleepTimer = null;
-  let gazeTimer = null;
-
-  const SLEEP_DELAY = 30000;
-  const GAZE_DELAY  = 2000;
-  const AUTO_LOOK_FREQ = 5000;
-
-  function setGaze(x, y) {
-    const eyeL = $("eyeL");
-    const eyeR = $("eyeR");
-    if(!eyeL || !eyeR) return;
-    const gx = Math.min(Math.max(x * 20, -20), 20);
-    const gy = Math.min(Math.max(y * 15, -15), 15);
-    [eyeL, eyeR].forEach(e => {
-      e.style.setProperty('--gx', gx+'px');
-      e.style.setProperty('--gy', gy+'px');
-    });
-  }
-
-  function setLids(top, bot=0) {
-    const eyeL = $("eyeL");
-    const eyeR = $("eyeR");
-    if(!eyeL || !eyeR) return;
-    [eyeL, eyeR].forEach(e => {
-      e.style.setProperty('--lidTop', top+'%');
-      e.style.setProperty('--lidBot', bot+'%');
-    });
-  }
-
-  function resetIdle() {
-    clearTimeout(sleepTimer);
-    sleepTimer = setTimeout(goSleep, SLEEP_DELAY);
-  }
-
-  function goSleep() {
-    const frame = $("mobileFrame");
-    if(!frame) return;
-    if(frame.classList.contains('sleeping')) return;
-    frame.classList.add('sleeping');
-    setLids(100, 100);
-  }
-
-  function wakeUp() {
-    const frame = $("mobileFrame");
-    if(!frame) return;
-    frame.classList.remove('sleeping');
-    setLids(0, 0);
-    resetIdle();
-  }
-
-  function centerEyes() { setGaze(0, 0); }
-
-  function autoLookBehavior() {
-    const frame = $("mobileFrame");
-    if (!frame) return;
-    if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-    const rX = (Math.random() - 0.5) * 0.8;
-    const rY = (Math.random() - 0.5) * 0.5;
-    setGaze(rX, rY);
-    setTimeout(() => setGaze(0, 0), 1000);
-  }
-
-  // ------------------------------
-  // NOTIFICATIONS (safe local refresh)
-  // ------------------------------
-  function escapeHtml(s=""){
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
   function iconFor(type){
     if(type==="match") return "⚽";
     if(type==="horoscope") return "♈";
@@ -482,27 +404,36 @@
     if(type==="period_check") return "🌙";
     return "🔔";
   }
+
   function timeLabel(daysLeft){
     if(daysLeft === 0) return "Bugün";
     if(daysLeft === 1) return "Yarın";
     if(daysLeft > 1) return daysLeft + " gün kaldı";
     return "";
   }
+  
+  function escapeHtml(s=""){ 
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); 
+  }
+
+  // --- BİLDİRİMLER ---
   async function fetchNotificationsToday(){
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     if(!user?.id) return [];
     try{
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`, { cache: "no-store" });
+      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`);
       const data = await res.json();
       return data?.items || [];
     }catch(e){ return []; }
   }
+
   async function refreshNotifications(){
-    const list = $("notifList");
-    const badge = $("notifBadge");
-    if(!list) return;
     const items = await fetchNotificationsToday();
-    if (badge) badge.style.display = items.length ? "block" : "none";
+    const badge = document.getElementById("notifBadge");
+    const list = document.getElementById("notifList");
+    if(!list) return;
+
+    if(badge) badge.style.display = items.length ? "block" : "none";
 
     if(!items.length){
       list.innerHTML = `
@@ -532,40 +463,9 @@
     }).join("");
   }
 
-  // ------------------------------
-  // GLOBAL EXPORTS
-  // ------------------------------
-  window.handleLogin = handleLogin;
-  window.logout = logout;
-
-  // Fal
-  window.openFal = openFalPanel;
-  window.closeFal = closeFalPanel;
-  window.handleFalFile = (input) => handleFalPhoto(input);
-
-  // Terms overlay (SAFE)
-  window.showTermsOverlay = function(){
-    const el = $("termsOverlay");
-    if(!el) return;
-    el.classList.add("active");
-  };
-  window.hideTermsOverlay = function(){
-    const el = $("termsOverlay");
-    if(!el) return;
-    el.classList.remove("active");
-  };
-
-  window.acceptTermsAndEnter = async function(){
-    const cb = $("termsCheck");
-    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-    const ok = await acceptTerms();
-    if(ok) window.enterApp();
-    else alert("Onay kaydedilemedi evladım.");
-  };
-
-  // App giriş (SAFE)
+  // --- APP GİRİŞ ---
   window.enterApp = function () {
-    $("loginOverlay")?.classList.remove('active');
+    document.getElementById('loginOverlay')?.classList.remove('active');
     window.hideTermsOverlay?.();
 
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -574,16 +474,37 @@
     const bot = profile?.bot_name || user?.bot_name || user?.botName || "Caynana";
 
     setTimeout(() => {
-      window.typeWriter?.(`Hoş geldin ${who}. Ben ${bot}.`);
+      const greeting = `Hoş geldin ${who}. Ben ${bot}.`;
+      window.typeWriter(greeting);
+      // İlk selamı hafızaya ekle
+      chatHistory.push({ role: "assistant", content: greeting });
     }, 400);
 
     refreshNotifications();
   };
 
-  // Camera toggle (SAFE)
+  // --- GLOBAL EXPORTS ---
+  window.handleLogin = handleLogin;
+  window.logout = logout;
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = (input) => handleFalPhoto(input);
+
+  window.showTermsOverlay = function(){ document.getElementById("termsOverlay").classList.add("active"); };
+  window.hideTermsOverlay = function(){ document.getElementById("termsOverlay").classList.remove("active"); };
+  window.acceptTermsAndEnter = async function(){
+    const cb = document.getElementById("termsCheck");
+    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
+    const ok = await acceptTerms();
+    if(ok) window.enterApp();
+    else alert("Onay kaydedilemedi evladım.");
+  };
+
+  // --- KAMERA & MİKROFON & SES ---
+  let isTracking = false;
   window.toggleCam = function() {
-    const frame = $("mobileFrame");
-    const camBtn = $("camBtn");
+    const frame = document.getElementById('mobileFrame');
+    const camBtn = document.getElementById('camBtn');
     if(!frame || !camBtn) return;
 
     if(frame.classList.contains('tracking-active')) {
@@ -600,16 +521,19 @@
 
   window.startDictation = function() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) { alert("Ses desteği yok evladım."); return; }
-    const recognition = new SpeechRecognition();
-    recognition.lang = "tr-TR";
-    recognition.start();
-    recognition.onresult = function(e) {
-      const inputEl = $("msgInput");
-      if(inputEl) inputEl.value = e.results[0][0].transcript;
-      recognition.stop();
-      sendMessage();
-    };
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "tr-TR";
+      recognition.start();
+      recognition.onresult = function(e) {
+        const inputEl = document.getElementById('msgInput');
+        if(inputEl) inputEl.value = e.results[0][0].transcript;
+        recognition.stop();
+        sendMessage();
+      };
+    } else {
+      alert("Ses desteği yok evladım.");
+    }
   };
 
   async function playVoice(text) {
@@ -627,22 +551,24 @@
     } catch(e) { console.error("Ses hatası:", e); }
   }
 
-  // Notif dropdown toggle (SAFE)
+  // --- MENÜ ---
+  const menuOverlay = document.getElementById('menuOverlay');
+  window.toggleMenu = function() {
+    if(!menuOverlay) return;
+    if(menuOverlay.classList.contains('open')) menuOverlay.classList.remove('open');
+    else menuOverlay.classList.add('open');
+  };
   window.toggleNotif = function() {
-    const dd = $("notifDropdown");
-    const badge = $("notifBadge");
-    if(!dd) return;
-    dd.classList.toggle("show");
-    if(dd.classList.contains("show") && badge) badge.style.display = "none";
-    setTimeout(refreshNotifications, 50);
+    const dd = document.getElementById('notifDropdown');
+    if(dd) dd.classList.toggle('show');
   };
 
-  // Typewriter (SAFE)
+  // --- CHAT VE TYPEWRITER ---
   window.typeWriter = function(text, elementId = 'chat') {
-    const chatDiv = $(elementId);
+    const chatDiv = document.getElementById(elementId);
     if(!chatDiv) return;
-    const brandWrapper = $("brandWrapper");
-    brandWrapper?.classList.add('talking');
+    const brandWrapper = document.getElementById('brandWrapper');
+    if(brandWrapper) brandWrapper.classList.add('talking');
 
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
@@ -656,128 +582,150 @@
         chatDiv.scrollTop = chatDiv.scrollHeight;
         setTimeout(type, speed);
       } else {
-        brandWrapper?.classList.remove('talking');
+        if(brandWrapper) brandWrapper.classList.remove('talking');
       }
     }
     type();
   };
 
-  // Chat history
-  let chatHistory = [];
-
+  // --- MESAJ GÖNDERME (HAFIZALI VERSİYON) ---
   async function sendMessage() {
-    const inputEl = $("msgInput");
-    if(!inputEl) return;
+    const inputEl = document.getElementById('msgInput');
     const txt = inputEl.value.trim();
     if(!txt) return;
 
+    // 1. Kullanıcı baloncuğunu ekle
     addUserBubble(txt);
     inputEl.value = '';
     inputEl.blur();
 
+    // 2. Hafızaya ekle (Kullanıcı mesajı)
     chatHistory.push({ role: "user", content: txt });
-    if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-    const brandWrapper = $("brandWrapper");
-    brandWrapper?.classList.add('thinking');
+    // Hafıza çok şişmesin diye son 10 mesajı tutalım
+    if(chatHistory.length > 10) {
+        chatHistory = chatHistory.slice(-10);
+    }
+
+    const brandWrapper = document.getElementById('brandWrapper');
+    if(brandWrapper) brandWrapper.classList.add('thinking');
 
     try {
       const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      
+      // 3. Backend'e HEM mesajı HEM DE geçmişi gönderiyoruz
       const response = await fetch(`${BASE_DOMAIN}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          text: txt,
-          user_id: user.id || "guest",
-          history: chatHistory
-        })
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+              text: txt,
+              user_id: user.id || "guest",
+              history: chatHistory // <-- İŞTE SİHİR BURADA
+          })
       });
 
       const data = await response.json();
-      brandWrapper?.classList.remove('thinking');
+      if(brandWrapper) brandWrapper.classList.remove('thinking');
 
       if(data && data.text) {
-        window.typeWriter?.(data.text);
+        // 4. Botun cevabını ekrana yaz
+        window.typeWriter(data.text);
+        
+        // 5. Botun cevabını da hafızaya ekle
         chatHistory.push({ role: "assistant", content: data.text });
+        
         await playVoice(data.text);
       }
     } catch(e) {
       console.error("Chat Error:", e);
-      brandWrapper?.classList.remove('thinking');
-      window.typeWriter?.("Evladım tansiyonum düştü, internetine bir bakıver.");
+      if(brandWrapper) brandWrapper.classList.remove('thinking');
+      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
     }
   }
 
-  // ------------------------------
-  // ONLOAD: IMPORTANT ORDER
-  // ------------------------------
-  window.onload = async function() {
-    // auth init
-    try { if(typeof initAuth === 'function') initAuth(); } catch(e){ console.log(e); }
+  // Event Listeners
+  const sendBtn = document.getElementById('sendBtn');
+  if(sendBtn) sendBtn.addEventListener('click', sendMessage);
+  const msgInput = document.getElementById('msgInput');
+  if(msgInput) msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+  
+  const hambBtn = document.getElementById('hambBtn');
+  if(hambBtn) hambBtn.addEventListener('click', () => window.toggleMenu());
+  if(menuOverlay) menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
 
-    // partials first
+  // Göz Takip
+  let isMouseActive = false; let sleepTimer = null; let gazeTimer = null;
+  const SLEEP_DELAY = 30000; const GAZE_DELAY = 2000; const AUTO_LOOK_FREQ = 5000;
+  const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
+
+  if(frame) {
+    window.addEventListener('pointermove', (e) => {
+      if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
+      resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
+      const rect = frame.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      setGaze(x, y);
+      gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
+    });
+  }
+
+  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, SLEEP_DELAY); }
+  function goSleep() { 
+    if(!frame) return;
+    if(frame.classList.contains('sleeping')) return; frame.classList.add('sleeping'); setLids(100, 100); 
+  }
+  function wakeUp() { 
+    if(!frame) return;
+    frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); 
+  }
+  function centerEyes() { setGaze(0, 0); }
+  function autoLookBehavior() {
+    if (!frame) return;
+    if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+    const rX = (Math.random() - 0.5) * 0.8; const rY = (Math.random() - 0.5) * 0.5;
+    setGaze(rX, rY); setTimeout(() => setGaze(0, 0), 1000);
+  }
+  function setGaze(x, y) {
+    const gx = Math.min(Math.max(x * 20, -20), 20); const gy = Math.min(Math.max(y * 15, -15), 15);
+    if(eyeL && eyeR) [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
+  }
+  function setLids(top, bot=0) { if(eyeL && eyeR) [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
+
+  const openTrackBtn = document.getElementById('openTrackBtn');
+  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
+  const closeTrackBtn = document.getElementById('closeTrackBtn');
+  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
+
+  // ONLOAD
+  window.onload = async function() {
+    // 1. Partials (Header/Footer vs)
     try { await initPartials(); } catch(e) { console.log("Partials yüklenemedi:", e); }
 
-    // notif init
+    // 2. Auth init
+    if(typeof initAuth === 'function') initAuth();
+
+    // 3. Notif Init
     try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) { console.log("Notif init hatası:", e); }
 
-    // bind menu now (after partial)
-    const menuOverlay = $("menuOverlay");
-    const hambBtn = $("hambBtn");
-    window.toggleMenu = function() {
-      if(!menuOverlay) return;
-      menuOverlay.classList.toggle('open');
-    };
-    hambBtn?.addEventListener('click', () => window.toggleMenu());
-    menuOverlay?.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
-
-    // send listeners
-    $("sendBtn")?.addEventListener('click', sendMessage);
-    $("msgInput")?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
-
-    // tracking buttons
-    $("openTrackBtn")?.addEventListener('click', ()=>{ isTracking=true; $("mobileFrame")?.classList.add('tracking-active'); wakeUp(); });
-    $("closeTrackBtn")?.addEventListener('click', ()=>{ isTracking=false; $("mobileFrame")?.classList.remove('tracking-active'); });
-
-    // gaze listener
-    const frame = $("mobileFrame");
-    if(frame) {
-      window.addEventListener('pointermove', (e) => {
-        if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
-        resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
-
-        const rect = frame.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-        const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-        setGaze(x, y);
-
-        gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
-      });
-    }
-
-    // session check
+    // 4. Session Check
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     if(user && user.isSessionActive && user.email) {
-      if(!user.terms_accepted_at) window.showTermsOverlay?.();
-      else window.enterApp?.();
+       if(!user.terms_accepted_at) window.showTermsOverlay();
+       else window.enterApp();
     }
+    
+    // History demo yükleme (Opsiyonel)
+    const historyListEl = document.getElementById('historyList');
+    if(historyListEl) { historyListEl.innerHTML = ""; }
 
-    // idle + autolook
+    // Idle
     setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
     resetIdle();
-
-    // notif refresh periodic
+    
+    // Refresh Notifs
     refreshNotifications();
     setInterval(refreshNotifications, 60000);
-
-    // google button binding
-    const googleBtn = $("googleLoginBtn") || document.querySelector('.google-login-btn');
-    if (googleBtn) {
-      googleBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        handleLogin('google');
-      });
-    }
   };
 </script>
 
