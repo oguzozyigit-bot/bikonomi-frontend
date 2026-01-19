@@ -1,4 +1,4 @@
-/* js/auth.js - TEK GİRİŞ (AUTO ID + TERMS + PROFILE SUGGEST) - FAIL-SAFE FIXED */
+/* js/auth.js - TEK GİRİŞ (AUTO ID + TERMS + PROFILE SUGGEST) - FINAL */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
 
 let tokenClient;
@@ -23,49 +23,30 @@ export function handleLogin(provider) {
     else alert("Google servisi bekleniyor...");
     return;
   }
-  // Apple şimdilik placeholder
   alert("Apple yakında evladım. Şimdilik Google ile devam et.");
 }
 
-/**
- * FAIL-SAFE STRATEJİ:
- * 1) Önce Google userinfo endpoint’ini dene
- * 2) Patlarsa (CORS / network / 3rd party), access token JWT ise içinden email çek
- * 3) Yine email yoksa: Uygulamayı kilitleme -> kullanıcıya uyarı + chat'e misafir devam
- */
 async function fetchGoogleProfile(accessToken) {
   try {
     let googleData = null;
 
-    // 1) Normal yöntem: Google userinfo endpoint
+    // 1) Google userinfo (başarısız olabilir)
     try {
       const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      // bazı durumlarda 401/403 vb
-      if (r.ok) {
-        googleData = await r.json();
-      } else {
-        // response body okunamayabilir, geç
-        googleData = null;
-      }
+      if (r.ok) googleData = await r.json();
     } catch (e) {
-      // CORS/network hatası
       console.warn("Google userinfo fetch failed (will fallback):", e);
-      googleData = null;
     }
 
-    // 2) Fallback: token içinden email çıkar (JWT ise)
-    // NOT: access_token her zaman JWT olmayabilir; olursa çalışır.
+    // 2) Fallback: token JWT ise email çek
     const fallbackClaims = decodeJwtPayload(accessToken);
+    const email = ((googleData?.email || "") || (fallbackClaims?.email || "")).trim().toLowerCase();
 
-    const email =
-      ((googleData?.email || "") || (fallbackClaims?.email || "")).trim().toLowerCase();
-
-    // Email yoksa: uygulamayı öldürme, misafir devam
+    // Email yoksa: misafir devam (chat açılsın)
     if (!email) {
       console.warn("Google email alınamadı. Misafir moduna geçiliyor.");
-      // Misafir session aç
       const storedUser = safeJson(localStorage.getItem(STORAGE_KEY), {});
       const updatedUser = {
         ...storedUser,
@@ -82,7 +63,7 @@ async function fetchGoogleProfile(accessToken) {
     // ✅ Ana kimlik: email
     const uid = email;
 
-    // Localdeki eski veriyi bozmadan merge
+    // Local merge
     const storedUser = safeJson(localStorage.getItem(STORAGE_KEY), {});
     const updatedUser = {
       ...storedUser,
@@ -94,35 +75,38 @@ async function fetchGoogleProfile(accessToken) {
       isSessionActive: true,
       lastLoginAt: new Date().toISOString(),
     };
-
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
 
-    // ✅ Sunucudan profile meta çek (terms / profile completeness)
-    // Fail olursa bile app kilitlenmesin
-    const serverMeta = await fetchServerProfile(uid, email);
+    // ✅ Sunucu profili (fail olursa kilitleme)
+    let serverMeta = {};
+    try {
+      serverMeta = await fetchServerProfile(uid, email);
+    } catch (e) {
+      console.warn("Server profile alınamadı, chat devam ediyor", e);
+      serverMeta = {};
+    }
 
-    if (serverMeta) {
+    // Sunucu meta varsa local’e göm
+    if (serverMeta && typeof serverMeta === "object") {
       Object.assign(updatedUser, serverMeta);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
     }
 
-    // ✅ Terms yoksa -> sözleşme overlay aç
-    // (Server meta gelmese bile localde varsa kullan)
+    // ✅ Terms varsa iyi, yoksa sadece overlay göster (kilitleme yok)
     const termsOk = !!(serverMeta?.terms_accepted_at || updatedUser.terms_accepted_at);
-
     if (!termsOk) {
       window.showTermsOverlay?.();
-      return;
+      // return YOK: chat açılsın
     }
 
-    // ✅ İçeri al
+    // ✅ Tek noktadan içeri al (chat açılsın)
     window.enterApp?.();
+    return;
 
   } catch (err) {
     console.error("Auth Error:", err);
 
-    // 🔥 EN KRİTİK: burada app'i kilitlemiyoruz
-    // kullanıcı chat'e girebilsin
+    // Burada da kilitleme yok → misafir devam
     const storedUser = safeJson(localStorage.getItem(STORAGE_KEY), {});
     const updatedUser = {
       ...storedUser,
@@ -194,10 +178,6 @@ function safeJson(s, fallback) {
   try { return JSON.parse(s || ""); } catch { return fallback; }
 }
 
-/**
- * JWT payload decode (signature doğrulamaz; sadece fallback amaçlı)
- * access_token JWT değilse null döner.
- */
 function decodeJwtPayload(token) {
   try {
     const parts = String(token || "").split(".");
@@ -210,7 +190,7 @@ function decodeJwtPayload(token) {
         .join("")
     );
     return JSON.parse(json);
-  } catch (e) {
+  } catch {
     return null;
   }
 }
