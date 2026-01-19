@@ -1,8 +1,10 @@
+// js/notif.js
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 
-function escapeHtml(s=""){ 
-  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); 
+function escapeHtml(s=""){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
+
 function iconFor(type){
   if(type==="match") return "⚽";
   if(type==="horoscope") return "♈";
@@ -10,9 +12,12 @@ function iconFor(type){
   if(type==="spouse_bday") return "🎂";
   if(type==="child_bday") return "🧒";
   if(type==="wedding") return "💍";
+  if(type==="engagement") return "💐";
+  if(type==="met") return "✨";
   if(type==="period_check") return "🌙";
   return "🔔";
 }
+
 function timeLabel(daysLeft){
   if(daysLeft === 0) return "Bugün";
   if(daysLeft === 1) return "1 gün kaldı";
@@ -26,7 +31,8 @@ async function fetchNotificationsToday(){
   if(!user?.id) return [];
 
   try{
-    const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`);
+    const url = `${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`;
+    const res = await fetch(url, { cache: "no-store" });
     const data = await res.json();
     return data?.items || [];
   }catch(e){
@@ -38,7 +44,7 @@ async function fetchNotificationsToday(){
 function renderNotifications(items){
   const badge = document.getElementById("notifBadge");
   const list = document.getElementById("notifList");
-  if(!list || !badge) return;
+  if(!badge || !list) return;
 
   badge.style.display = items.length ? "block" : "none";
 
@@ -66,8 +72,16 @@ function renderNotifications(items){
           <div class="notif-desc">${escapeHtml(it.message || "")}</div>
           <div class="notif-time">${timeLabel(it.days_left)}</div>
         </div>
-      </div>`;
+      </div>
+    `;
   }).join("");
+}
+
+export async function loadNotifPartial({ containerId = "notifMount" } = {}){
+  const mount = document.getElementById(containerId);
+  if(!mount) return;
+  const res = await fetch("partials/notif.html", { cache: "no-cache" });
+  mount.innerHTML = await res.text();
 }
 
 export async function initNotifications(){
@@ -76,11 +90,11 @@ export async function initNotifications(){
     renderNotifications(items);
   }
 
-  // ilk yükleme + dakika refresh
+  // İlk yük + periyodik yenile
   await refresh();
-  setInterval(refresh, 60000);
+  setInterval(refresh, 60_000);
 
-  // dropdown açıkken de güncel kalsın (opsiyonel)
+  // Dropdown açıldığında da tazele (kullanıcı “hemen” görsün)
   const btn = document.getElementById("notifBtn");
   if(btn){
     btn.addEventListener("click", () => setTimeout(refresh, 50));
