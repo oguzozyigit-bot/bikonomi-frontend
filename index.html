@@ -369,17 +369,13 @@
 <script type="module">
   console.log("BOOT OK");
 
-import * as CFG from "./js/config.js";
-console.log("CFG:", CFG);
-console.log("BASE_DOMAIN:", CFG.BASE_DOMAIN);
-console.log("STORAGE_KEY:", CFG.STORAGE_KEY);
+import { initPartials } from '/js/partials.js';
+import { initNotif } from '/js/notif.js';
+import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
+import { addUserBubble } from '/js/chat.js';
+import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
+import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
 
-  import { initPartials } from './js/partials.js';
-  import { initNotif } from './js/notif.js';
-  import { initAuth, handleLogin, logout, acceptTerms } from './js/auth.js';
-  import { addUserBubble } from './js/chat.js';
-  import { BASE_DOMAIN, STORAGE_KEY } from './js/config.js';
-  import { openFalPanel, closeFalPanel, handleFalPhoto } from './js/fal.js';
 
   // ------------------------------------
   // --- HAFIZA (HISTORY) YÖNETİMİ ---
