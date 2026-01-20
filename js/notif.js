@@ -1,4 +1,3 @@
-// js/notif.js
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 
 let RUNTIME_BASE = null;
@@ -47,9 +46,9 @@ async function fetchNotificationsToday(){
 function renderNotifications(items){
   const badge = document.getElementById("notifBadge");
   const list = document.getElementById("notifList");
-  if(!badge || !list) return;
+  if(!list) return;
 
-  badge.style.display = items.length ? "block" : "none";
+  if(badge) badge.style.display = items.length ? "block" : "none";
 
   if(!items.length){
     list.innerHTML = `
@@ -84,22 +83,19 @@ export async function loadNotifPartial({ containerId = "notifMount" } = {}){
   const mount = document.getElementById(containerId);
   if(!mount) return;
 
-  // mount doluysa dokunma (partial loader boşsa inject mantığı)
+  // Zaten doluysa tekrar yükleme (index.html'de varsa koru)
   if (mount.children.length > 0 || (mount.innerHTML || "").trim().length > 0) return;
 
+  // Eğer HTML boşsa partial yükle (Fallback)
   try{
     const res = await fetch("./partials/notif.html", { cache: "no-cache" });
     if(!res.ok) throw new Error("notif partial http " + res.status);
     mount.innerHTML = await res.text();
   }catch(e){
-    console.warn("notif partial fetch failed, fallback devam:", e);
-    // Fallback: minimum DOM'u bas (çökmesin)
+    // Partial yoksa manuel bas
     mount.innerHTML = `
       <button class="notif-btn" id="notifBtn">
-        <svg viewBox="0 0 24 24">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         <div class="badge" id="notifBadge" style="display:none;"></div>
       </button>
       <div class="notification-dropdown" id="notifDropdown">
@@ -116,59 +112,18 @@ export async function initNotifications(){
     renderNotifications(items);
   }
 
-  // DOM hazır değilse (partial geç geldiyse) 1 kere daha dene
-  // ama çökmeden
-  const ensureDom = () => {
-    const ok = document.getElementById("notifBtn") && document.getElementById("notifDropdown");
-    return !!ok;
-  };
-
-  // İlk yük
+  // İlk yükleme
   await refresh();
 
-  // Periyodik yenile
+  // Dakikada bir güncelle
   setInterval(refresh, 60_000);
 
-  // Dropdown açıldığında da tazele
-  const btn = document.getElementById("notifBtn");
-  if(btn){
-    btn.addEventListener("click", () => setTimeout(refresh, 50));
-  }
-
-  // Dropdown toggle (eğer html onclick yoksa diye)
-  const dd = document.getElementById("notifDropdown");
-  if(btn && dd){
-    btn.addEventListener("click", () => dd.classList.toggle("show"));
-    document.addEventListener("click", (e) => {
-      if(!dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove("show");
-    });
-  } else if (!ensureDom()) {
-    // partial sonradan gelirse diye küçük retry
-    setTimeout(async () => {
-      const btn2 = document.getElementById("notifBtn");
-      const dd2 = document.getElementById("notifDropdown");
-      if(btn2 && dd2){
-        btn2.addEventListener("click", () => dd2.classList.toggle("show"));
-        document.addEventListener("click", (e) => {
-          if(!dd2.contains(e.target) && !btn2.contains(e.target)) dd2.classList.remove("show");
-        });
-      }
-      await refresh();
-    }, 300);
-  }
+  // NOT: Buradaki click listener'ları sildim çünkü index.html zaten yönetiyor.
+  // Çakışma engellendi.
 }
 
-/**
- * ✅ BACKWARD COMPAT EXPORT
- * index.html / script: import { initNotif } from './js/notif.js';
- */
 export async function initNotif({ baseUrl } = {}) {
   if (baseUrl) RUNTIME_BASE = baseUrl;
-
-  // partial'ı burada da çağırabilirsin (istersen),
-  // ama sen zaten initPartials içinde yapıyorsun diye zorunlu değil.
-  // Yine de güvenli olsun:
   await loadNotifPartial({ containerId: "notifMount" });
-
   return initNotifications();
 }
