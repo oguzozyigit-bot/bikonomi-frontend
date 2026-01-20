@@ -712,90 +712,128 @@
   // Boot
   // ---------------------------
   document.addEventListener("DOMContentLoaded", async () => {
-  // 1) Önce Google token client hazırla
-  initAuth();
 
-  // 2) Sonra butonlara tıklama bağla
-  document.getElementById("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
-  document.getElementById("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
+  // ---------------------------
+  // 1) AUTH (ÖNCE)
+  // ---------------------------
+  if (typeof initAuth === "function") initAuth();
 
-  // 3) Diğer başlangıç işleri
-  applyDailyYP();
+  // Login buttons
+  $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
+  $("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
 
-  try { await initPartials(); } catch(e) {}
-  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
-});
+  // ---------------------------
+  // 2) YP
+  // ---------------------------
+  try { applyDailyYP(); } catch(e){}
 
-    // partials/notif/auth
-    try{ await initPartials(); }catch(e){}
-    try{ initNotif({ baseUrl: BASE_DOMAIN }); }catch(e){}
-    if(typeof initAuth==="function") initAuth();
+  // ---------------------------
+  // 3) Partials & Notif
+  // ---------------------------
+  try { await initPartials(); } catch(e){}
+  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
-    // profile btn
-    $("profileBtn")?.addEventListener("click", ()=> location.href="pages/profil.html");
+  // ---------------------------
+  // 4) Profile
+  // ---------------------------
+  $("profileBtn")?.addEventListener("click", () => {
+    location.href = "pages/profil.html";
+  });
 
-    // menu
-    $("hambBtn")?.addEventListener("click", ()=> toggleMenu());
-    $("menuOverlay")?.addEventListener("click", (e)=>{ if(e.target?.id==="menuOverlay") toggleMenu(false); });
+  // ---------------------------
+  // 5) Menu
+  // ---------------------------
+  $("hambBtn")?.addEventListener("click", () => toggleMenu());
+  $("menuOverlay")?.addEventListener("click", (e) => {
+    if (e.target?.id === "menuOverlay") toggleMenu(false);
+  });
 
-    // notif
-    $("notifBtn")?.addEventListener("click", ()=>{ toggleNotif(); refreshNotifications(); });
-    document.addEventListener("click", (e)=>{
-      const dd = $("notifDropdown");
-      const btn = $("notifBtn");
-      if(!dd || !btn) return;
-      if(dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove("show");
-    });
-
-    // terms
-    $("termsAcceptBtn")?.addEventListener("click", acceptTermsAndEnter);
-
-    // send
-    $("sendBtn")?.addEventListener("click", ()=> doSend());
-    $("msgInput")?.addEventListener("keydown", (e)=>{
-      if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); doSend(); }
-    });
-
-    // new chat
-    $("newChatBtn")?.addEventListener("click", ()=> newChat());
-
-    // menu actions
-    document.querySelectorAll(".menu-action").forEach(el=>{
-      el.addEventListener("click", ()=> handleMenuAction(el.getAttribute("data-action")));
-    });
-
-    // logout/delete
-    $("logoutBtn")?.addEventListener("click", ()=> logout());
-    $("deleteAccountBtn")?.addEventListener("click", deleteAccountTriple);
-
-    // fal hooks
-    window.openFal = openFalPanel;
-    window.closeFal = closeFalPanel;
-    window.handleFalFile = handleFalPhoto;
-
-    // session check
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    // chat state
-    renderChatList();
-    if(loadChats().length && !currentChatId){
-      currentChatId = loadChats().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0))[0]?.id || null;
-    }
-
-    if(user && user.isSessionActive && user.email){
-      $("loginOverlay")?.classList.remove("active");
-      if(!user.terms_accepted_at){
-        $("termsOverlay")?.classList.add("active");
-      } else {
-        enterApp();
-      }
-    }
-
-    // if no chat created, create one
-    if(!loadChats().length) newChat();
-
-    // initial notif
+  // ---------------------------
+  // 6) Notifications
+  // ---------------------------
+  $("notifBtn")?.addEventListener("click", () => {
+    toggleNotif();
     refreshNotifications();
   });
+
+  document.addEventListener("click", (e) => {
+    const dd = $("notifDropdown");
+    const btn = $("notifBtn");
+    if (!dd || !btn) return;
+    if (dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)) {
+      dd.classList.remove("show");
+    }
+  });
+
+  // ---------------------------
+  // 7) Terms
+  // ---------------------------
+  $("termsAcceptBtn")?.addEventListener("click", acceptTermsAndEnter);
+
+  // ---------------------------
+  // 8) Chat send
+  // ---------------------------
+  $("sendBtn")?.addEventListener("click", () => doSend());
+  $("msgInput")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      doSend();
+    }
+  });
+
+  // ---------------------------
+  // 9) New chat
+  // ---------------------------
+  $("newChatBtn")?.addEventListener("click", () => newChat());
+
+  // ---------------------------
+  // 10) Menu actions (icons)
+  // ---------------------------
+  document.querySelectorAll(".menu-action").forEach(el => {
+    el.addEventListener("click", () => {
+      handleMenuAction(el.getAttribute("data-action"));
+    });
+  });
+
+  // ---------------------------
+  // 11) Logout / Delete account
+  // ---------------------------
+  $("logoutBtn")?.addEventListener("click", () => logout());
+  $("deleteAccountBtn")?.addEventListener("click", deleteAccountTriple);
+
+  // ---------------------------
+  // 12) Fal hooks
+  // ---------------------------
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = handleFalPhoto;
+
+  // ---------------------------
+  // 13) Session check
+  // ---------------------------
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+  renderChatList();
+
+  const chats = loadChats();
+  if (chats.length && !currentChatId) {
+    currentChatId = chats.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0]?.id || null;
+  }
+
+  if (user && user.isSessionActive && user.email) {
+    $("loginOverlay")?.classList.remove("active");
+    if (!user.terms_accepted_at) {
+      $("termsOverlay")?.classList.add("active");
+    } else {
+      enterApp();
+    }
+  }
+
+  if (!loadChats().length) newChat();
+
+  refreshNotifications();
+});
+
 </script>
 </body>
 </html>
