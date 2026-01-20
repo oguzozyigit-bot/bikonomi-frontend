@@ -413,9 +413,11 @@
       // Backend -> chat.js üzerinden (garanti)
       const out = await fetchTextResponse(txt, "chat");
       const reply = out?.text || "Evladım bir şeyler ters gitti.";
-
+      console.log("CHAT REPLY:", reply, out);
       // UI: bot bubble
-      typeWriterLib(reply, "chat");
+      if (window.typeWriter) window.typeWriter(reply);
+else typeWriterLib(reply, "chat");
+
     }
 
     // ✅ klik garanti (eski listenerları ezer)
