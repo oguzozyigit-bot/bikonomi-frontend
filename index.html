@@ -380,375 +380,315 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
   <script type="module">
-    // --- IMPORTLAR ---
-    import { initPartials } from '/js/partials.js';
-    import { initNotif } from '/js/notif.js';
-    import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
-    import { addUserBubble, fetchTextResponse, typeWriter as typeWriterLib } from '/js/chat.js';
-    import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
-    import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
-    // ---- SEND (tek kaynak) ----
-function bindSend() {
-  const sendBtn = document.getElementById("sendBtn");
-  const inputEl = document.getElementById("msgInput");
+  // --- IMPORTLAR ---
+  import { initPartials } from '/js/partials.js';
+  import { initNotif } from '/js/notif.js';
+  import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
+  import { addUserBubble, fetchTextResponse, typeWriter as typeWriterLib } from '/js/chat.js';
+  import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
+  import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
 
-  if (!sendBtn || !inputEl) {
-    console.warn("sendBtn/msgInput yok, send bağlanamadı");
-    return;
-  }
+  // --- HELPERS ---
+  const $ = (id) => document.getElementById(id);
+  let chatHistory = [];
 
-  async function doSend() {
-    const txt = (inputEl.value || "").trim();
-    if (!txt) return;
+  // ---- SEND (tek kaynak, garanti) ----
+  function bindSend() {
+    const sendBtn = $("sendBtn");
+    const inputEl = $("msgInput");
 
-    // UI: user bubble
-    addUserBubble(txt);
-    inputEl.value = "";
-
-    // backend -> chat.js üzerinden
-    const out = await fetchTextResponse(txt, "chat");
-    const reply = out?.text || "Evladım bir şeyler ters gitti.";
-
-    // UI: bot bubble (typewriter)
-    typeWriterLib(reply, "chat");
-  }
-
-  // ✅ klik garanti (önceki listenerları ezer)
-  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
-
-  // ✅ Enter ile gönder (Shift+Enter yeni satır)
-  inputEl.onkeydown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      doSend();
+    if (!sendBtn || !inputEl) {
+      console.warn("sendBtn/msgInput yok, send bağlanamadı");
+      return;
     }
-  };
 
-  console.log("✅ SEND bağlandı");
-}
+    async function doSend() {
+      const txt = (inputEl.value || "").trim();
+      if (!txt) return;
 
-    // --- GLOBAL & HELPERS ---
-    let chatHistory = [];
-    const $ = (id) => document.getElementById(id);
-
-    // --- GLOBAL’E ATAMALAR ---
-    window.handleLogin = handleLogin;
-    window.logout = logout;
-    window.openFal = openFalPanel;
-    window.closeFal = closeFalPanel;
-    window.handleFalFile = handleFalPhoto;
-
-    window.toggleMenu = function() {
-      const el = $('menuOverlay');
-      if (el) el.classList.toggle('open');
-    };
-
-    window.toggleNotif = function() {
-      const el = $('notifDropdown');
-      if (el) el.classList.toggle('show');
-    };
-
-    window.showTermsOverlay = function() {
-      $('termsOverlay')?.classList.add('active');
-    };
-
-    // 1) Terms kabul ve gir
-    async function acceptTermsAndEnter(){
-      const cb = $('termsCheck');
-      if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-      const ok = await acceptTerms();
-      if(ok) window.enterApp();
-      else alert("Onay kaydedilemedi evladım.");
-    }
-    window.acceptTermsAndEnter = acceptTermsAndEnter;
-
-    // 2) App giriş
-    window.enterApp = function() {
-      $('loginOverlay')?.classList.remove('active');
-      $('termsOverlay')?.classList.remove('active');
-
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const name = user.fullname || user.name || user.email || "Evladım";
-
-      setTimeout(() => {
-        window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
-      }, 500);
-
-      window.refreshNotifications?.();
-    };
-
-    // 3) Mesaj gönder
-    window.sendMessage = async function() {
-      const inputEl = $('msgInput');
-      if (!inputEl) { console.error("Input bulunamadı"); return; }
-
-      const txt = inputEl.value.trim();
-      if(!txt) return;
-
+      // UI: user bubble
       addUserBubble(txt);
-      inputEl.value = '';
-      inputEl.blur();
+      inputEl.value = "";
 
-      chatHistory.push({ role: "user", content: txt });
-      if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+      // Backend -> chat.js üzerinden (garanti)
+      const out = await fetchTextResponse(txt, "chat");
+      const reply = out?.text || "Evladım bir şeyler ters gitti.";
 
-      const brand = $('brandWrapper');
-      if(brand) brand.classList.add('thinking');
-
-      try {
-        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-
-        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: txt,
-            user_id: user.id || "guest",
-            history: chatHistory
-          })
-        });
-
-        const data = await res.json();
-        if(brand) brand.classList.remove('thinking');
-
-        if(data && data.text) {
-          window.typeWriter(data.text);
-          chatHistory.push({ role: "assistant", content: data.text });
-
-          if(data.audio) {
-            const audio = new Audio("data:audio/mp3;base64," + data.audio);
-            audio.play().catch(e => console.log("Ses hatası:", e));
-          }
-        } else {
-          window.typeWriter("Evladım bir şeyler ters gitti, bir daha dene.");
-        }
-
-      } catch(e) {
-        console.error("Chat Error:", e);
-        const brand = $('brandWrapper');
-        if(brand) brand.classList.remove('thinking');
-        window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
-      }
-    };
-
-    // 4) Typewriter
-    window.typeWriter = function(text) {
-      const chatDiv = $('chat');
-      const brand = $('brandWrapper');
-      if(!chatDiv) return;
-
-      if(brand) brand.classList.add('talking');
-      const bubble = document.createElement("div");
-      bubble.className = "bubble bot";
-      chatDiv.appendChild(bubble);
-
-      let i = 0;
-      function type() {
-        if(i < text.length) {
-          bubble.textContent += text.charAt(i);
-          i++;
-          chatDiv.scrollTop = chatDiv.scrollHeight;
-          setTimeout(type, 20);
-        } else {
-          if(brand) brand.classList.remove('talking');
-        }
-      }
-      type();
-    };
-
-    // 5) Bildirim refresh (basit)
-    window.refreshNotifications = async function() {
-      const list = $('notifList');
-      const badge = $('notifBadge');
-      if(!list) return;
-
-      try {
-        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${user.id || 'guest'}`);
-        const data = await res.json();
-        const items = data.items || [];
-
-        if(badge) badge.style.display = items.length ? "block" : "none";
-
-        if(!items.length) {
-          list.innerHTML = `<div class="notif-item"><div class="notif-content"><div class="notif-title">Sakin</div><div class="notif-desc">Hatırlatma yok evladım.</div></div></div>`;
-          return;
-        }
-
-        list.innerHTML = items.map(it => `
-          <div class="notif-item">
-            <div class="notif-icon">🔔</div>
-            <div class="notif-content">
-              <div class="notif-title">${it.title}</div>
-              <div class="notif-desc">${it.message}</div>
-            </div>
-          </div>
-        `).join("");
-      } catch(e) {
-        console.log("Notif error:", e);
-      }
-    };
-
-    // --- Göz Takip Yardımcıları ---
-    let isTracking = false, isMouseActive = false, sleepTimer = null, gazeTimer = null;
-    const eyeL = $('eyeL'), eyeR = $('eyeR'), frame = $('mobileFrame');
-
-    function setGaze(x, y) {
-      const gx = Math.min(Math.max(x * 20, -20), 20), gy = Math.min(Math.max(y * 15, -15), 15);
-      [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
-    }
-    function setLids(top, bot=0) {
-      [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } });
-    }
-    function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, 30000); }
-    function goSleep() { if(frame) { frame.classList.add('sleeping'); setLids(100, 100); } }
-    function wakeUp() { if(frame) { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); } }
-    function centerEyes() { setGaze(0, 0); }
-    function autoLookBehavior() {
-      if (!frame || isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-      setGaze((Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.5);
-      setTimeout(() => setGaze(0, 0), 1000);
+      // UI: bot bubble
+      typeWriterLib(reply, "chat");
     }
 
-    window.toggleCam = function() {
-      if(!frame) return;
-      if(frame.classList.contains('tracking-active')) {
-        frame.classList.remove('tracking-active');
-        $('camBtn')?.classList.remove('active');
-        isTracking = false;
-      } else {
-        frame.classList.add('tracking-active');
-        $('camBtn')?.classList.add('active');
-        isTracking = true;
-        wakeUp();
+    // ✅ klik garanti (eski listenerları ezer)
+    sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+
+    // ✅ Enter ile gönder (Shift+Enter yeni satır)
+    inputEl.onkeydown = (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        doSend();
       }
     };
 
-    // --- BAŞLANGIÇ ---
-    // ---- SEND (tek kaynak, garanti) ----
-function bindSend() {
-  const sendBtn = document.getElementById("sendBtn");
-  const inputEl = document.getElementById("msgInput");
-
-  if (!sendBtn || !inputEl) {
-    console.warn("sendBtn/msgInput yok, send bağlanamadı");
-    return;
+    console.log("✅ SEND bağlandı");
   }
 
-  async function doSend() {
-    const txt = (inputEl.value || "").trim();
-    if (!txt) return;
+  // --- GLOBAL’E ATAMALAR ---
+  window.handleLogin = handleLogin;
+  window.logout = logout;
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = handleFalPhoto;
 
-    // UI: user bubble
+  window.toggleMenu = function() {
+    const el = $("menuOverlay");
+    if (el) el.classList.toggle("open");
+  };
+
+  window.toggleNotif = function() {
+    const el = $("notifDropdown");
+    if (el) el.classList.toggle("show");
+  };
+
+  window.showTermsOverlay = function() {
+    $("termsOverlay")?.classList.add("active");
+  };
+
+  // 1) Terms kabul ve gir
+  async function acceptTermsAndEnter() {
+    const cb = $("termsCheck");
+    if (!cb || !cb.checked) { alert("Onay kutusunu işaretle evladım."); return; }
+    const ok = await acceptTerms();
+    if (ok) window.enterApp();
+    else alert("Onay kaydedilemedi evladım.");
+  }
+  window.acceptTermsAndEnter = acceptTermsAndEnter;
+
+  // 2) App giriş
+  window.enterApp = function() {
+    $("loginOverlay")?.classList.remove("active");
+    $("termsOverlay")?.classList.remove("active");
+
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const name = user.fullname || user.name || user.email || "Evladım";
+
+    setTimeout(() => {
+      window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
+    }, 500);
+
+    window.refreshNotifications?.();
+  };
+
+  // 3) (Eski sendMessage kalsın – ama bindSend zaten kendi yolunu kullanıyor)
+  window.sendMessage = async function() {
+    const inputEl = $("msgInput");
+    if (!inputEl) return;
+
+    const txt = inputEl.value.trim();
+    if(!txt) return;
+
     addUserBubble(txt);
-    inputEl.value = "";
+    inputEl.value = '';
 
-    // Backend -> chat.js (tek güvenilir yol)
-    const out = await fetchTextResponse(txt, "chat");
-    const reply = out?.text || "Evladım bir şeyler ters gitti.";
+    chatHistory.push({ role: "user", content: txt });
+    if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-    // UI: bot bubble
-    typeWriterLib(reply, "chat");
-  }
+    const brand = $("brandWrapper");
+    if(brand) brand.classList.add("thinking");
 
-  // ✅ klik garanti (eski listenerları ezer)
-  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+    try {
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: txt, user_id: user.id || "guest", history: chatHistory })
+      });
 
-  // ✅ Enter ile gönder (Shift+Enter yeni satır)
-  inputEl.onkeydown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      doSend();
+      const data = await res.json();
+      if(brand) brand.classList.remove("thinking");
+
+      if(data && data.text) window.typeWriter(data.text);
+      else window.typeWriter("Evladım bir şeyler ters gitti, bir daha dene.");
+
+    } catch(e) {
+      console.error("Chat Error:", e);
+      const brand = $("brandWrapper");
+      if(brand) brand.classList.remove("thinking");
+      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
     }
   };
 
-  console.log("✅ SEND bağlandı");
-}
+  // 4) Typewriter (mevcut)
+  window.typeWriter = function(text) {
+    const chatDiv = $("chat");
+    const brand = $("brandWrapper");
+    if(!chatDiv) return;
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      console.log("Caynana v2.7 Başlatılıyor...");
+    if(brand) brand.classList.add("talking");
+    const bubble = document.createElement("div");
+    bubble.className = "bubble bot";
+    chatDiv.appendChild(bubble);
 
-      // Partials
-      try { await initPartials(); } catch(e) { console.log("Partials hatası:", e); }
+    let i = 0;
+    function type() {
+      if(i < text.length) {
+        bubble.textContent += text.charAt(i);
+        i++;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        setTimeout(type, 20);
+      } else {
+        if(brand) brand.classList.remove("talking");
+      }
+    }
+    type();
+  };
 
-      // Auth init
-      if(typeof initAuth === 'function') initAuth();
+  // 5) Bildirim refresh (basit)
+  window.refreshNotifications = async function() {
+    const list = $("notifList");
+    const badge = $("notifBadge");
+    if(!list) return;
 
-      // Notif init
-      try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
-      bindSend();
-});
-      // BUTON BAĞLANTILARI (KRİTİK)
-      $('googleLoginBtn')?.addEventListener('click', () => window.handleLogin('google'));
-      $('appleLoginBtn')?.addEventListener('click', () => window.handleLogin('apple'));
-      $('termsAcceptBtn')?.addEventListener('click', acceptTermsAndEnter);
-
-      $('hambBtn')?.addEventListener('click', window.toggleMenu);
-      $('menuOverlay')?.addEventListener('click', (e) => { if(e.target?.id === 'menuOverlay') window.toggleMenu(); });
-
-      $('notifBtn')?.addEventListener('click', window.toggleNotif);
-      document.addEventListener('click', (e) => {
-        const dd = $('notifDropdown');
-        const btn = $('notifBtn');
-        if(!dd || !btn) return;
-        if(dd.classList.contains('show') && !dd.contains(e.target) && !btn.contains(e.target)){
-          dd.classList.remove('show');
-        }
-      });
-
-      $('sendBtn')?.addEventListener('click', window.sendMessage);
-      $('msgInput')?.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMessage(); }
-      });
-
-      $('camBtn')?.addEventListener('click', window.toggleCam);
-      $('openTrackBtn')?.addEventListener('click', window.toggleCam);
-      $('closeTrackBtn')?.addEventListener('click', window.toggleCam);
-
-      // Session kontrol
+    try {
       const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if(user && user.isSessionActive && user.email) {
-        if(!user.terms_accepted_at) $('termsOverlay')?.classList.add('active');
-        else window.enterApp();
-        $('loginOverlay')?.classList.remove('active');
+      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${user.id || "guest"}`);
+      const data = await res.json();
+      const items = data.items || [];
+
+      if(badge) badge.style.display = items.length ? "block" : "none";
+
+      if(!items.length) {
+        list.innerHTML = `<div class="notif-item"><div class="notif-content"><div class="notif-title">Sakin</div><div class="notif-desc">Hatırlatma yok evladım.</div></div></div>`;
+        return;
       }
 
-      setInterval(autoLookBehavior, 5000);
-      resetIdle();
+      list.innerHTML = items.map(it => `
+        <div class="notif-item">
+          <div class="notif-icon">🔔</div>
+          <div class="notif-content">
+            <div class="notif-title">${it.title}</div>
+            <div class="notif-desc">${it.message}</div>
+          </div>
+        </div>
+      `).join("");
 
-      // Pointer gaze
-      if(frame) {
-        window.addEventListener('pointermove', (e) => {
-          if(!isTracking) return;
-          if(frame.classList.contains('sleeping')) wakeUp();
-          resetIdle();
-          isMouseActive = true;
-          clearTimeout(gazeTimer);
+    } catch(e) {
+      console.log("Notif error:", e);
+    }
+  };
 
-          const rect = frame.getBoundingClientRect();
-          setGaze(((e.clientX - rect.left) / rect.width) * 2 - 1, ((e.clientY - rect.top) / rect.height) * 2 - 1);
+  // --- Göz Takip Yardımcıları (senin mevcut fonksiyonların çalışsın diye) ---
+  let isTracking = false, isMouseActive = false, sleepTimer = null, gazeTimer = null;
+  const eyeL = $("eyeL"), eyeR = $("eyeR"), frame = $("mobileFrame");
 
-          gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, 2000);
-        });
+  function setGaze(x, y) {
+    const gx = Math.min(Math.max(x * 20, -20), 20), gy = Math.min(Math.max(y * 15, -15), 15);
+    [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
+  }
+  function setLids(top, bot=0) {
+    [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } });
+  }
+  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, 30000); }
+  function goSleep() { if(frame) { frame.classList.add('sleeping'); setLids(100, 100); } }
+  function wakeUp() { if(frame) { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); } }
+  function centerEyes() { setGaze(0, 0); }
+  function autoLookBehavior() {
+    if (!frame || isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+    setGaze((Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.5);
+    setTimeout(() => setGaze(0, 0), 1000);
+  }
+
+  window.toggleCam = function() {
+    if(!frame) return;
+    if(frame.classList.contains('tracking-active')) {
+      frame.classList.remove('tracking-active');
+      $("camBtn")?.classList.remove('active');
+      isTracking = false;
+    } else {
+      frame.classList.add('tracking-active');
+      $("camBtn")?.classList.add('active');
+      isTracking = true;
+      wakeUp();
+    }
+  };
+
+  // --- BAŞLANGIÇ ---
+  window.addEventListener("DOMContentLoaded", async () => {
+    console.log("Caynana v2.7 Başlatılıyor...");
+
+    try { await initPartials(); } catch(e) { console.log("Partials hatası:", e); }
+
+    if(typeof initAuth === "function") initAuth();
+
+    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+
+    // ✅ SEND bağla
+    bindSend();
+
+    // BUTON BAĞLANTILARI
+    $("googleLoginBtn")?.addEventListener("click", () => window.handleLogin("google"));
+    $("appleLoginBtn")?.addEventListener("click", () => window.handleLogin("apple"));
+    $("termsAcceptBtn")?.addEventListener("click", acceptTermsAndEnter);
+
+    $("hambBtn")?.addEventListener("click", window.toggleMenu);
+    $("menuOverlay")?.addEventListener("click", (e) => { if(e.target?.id === "menuOverlay") window.toggleMenu(); });
+
+    $("notifBtn")?.addEventListener("click", window.toggleNotif);
+    document.addEventListener("click", (e) => {
+      const dd = $("notifDropdown");
+      const btn = $("notifBtn");
+      if(!dd || !btn) return;
+      if(dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)){
+        dd.classList.remove("show");
       }
-
-      // Ses tanıma
-      window.startDictation = function() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) { alert("Ses desteği yok."); return; }
-        const r = new SpeechRecognition();
-        r.lang = "tr-TR";
-        r.start();
-        r.onresult = function(ev) {
-          $('msgInput').value = ev.results[0][0].transcript;
-          r.stop();
-          window.sendMessage();
-        };
-      };
-
-      $('micBtn')?.addEventListener('click', window.startDictation);
-      $('logoutBtn')?.addEventListener('click', window.logout);
     });
-  </script>
+
+    $("camBtn")?.addEventListener("click", window.toggleCam);
+    $("openTrackBtn")?.addEventListener("click", window.toggleCam);
+    $("closeTrackBtn")?.addEventListener("click", window.toggleCam);
+
+    // Session kontrol
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    if(user && user.isSessionActive && user.email) {
+      if(!user.terms_accepted_at) $("termsOverlay")?.classList.add("active");
+      else window.enterApp();
+      $("loginOverlay")?.classList.remove("active");
+    }
+
+    setInterval(autoLookBehavior, 5000);
+    resetIdle();
+
+    if(frame) {
+      window.addEventListener("pointermove", (e) => {
+        if(!isTracking) return;
+        if(frame.classList.contains("sleeping")) wakeUp();
+        resetIdle();
+        isMouseActive = true;
+        clearTimeout(gazeTimer);
+
+        const rect = frame.getBoundingClientRect();
+        setGaze(((e.clientX - rect.left) / rect.width) * 2 - 1, ((e.clientY - rect.top) / rect.height) * 2 - 1);
+
+        gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, 2000);
+      });
+    }
+
+    // Ses tanıma
+    window.startDictation = function() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) { alert("Ses desteği yok."); return; }
+      const r = new SpeechRecognition();
+      r.lang = "tr-TR";
+      r.start();
+      r.onresult = function(ev) {
+        $("msgInput").value = ev.results[0][0].transcript;
+        r.stop();
+        window.sendMessage();
+      };
+    };
+
+    $("micBtn")?.addEventListener("click", window.startDictation);
+    $("logoutBtn")?.addEventListener("click", window.logout);
+  });
+</script>
 </body>
 </html>
