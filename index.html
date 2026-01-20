@@ -712,6 +712,21 @@
   // Boot
   // ---------------------------
   window.addEventListener("DOMContentLoaded", async ()=>{
+
+  // 1️⃣ ÖNCE Google Auth hazırla
+  if (typeof initAuth === "function") initAuth();
+
+  // 2️⃣ SONRA click bağla
+  $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
+  $("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
+
+  // 3️⃣ Diğerleri
+  applyDailyYP();
+
+  try { await initPartials(); } catch(e){}
+  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
+
+});
     // YP daily apply
     applyDailyYP();
 
