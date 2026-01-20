@@ -1,4 +1,4 @@
-/* js/chat.js (v13.2 - FINAL FIX: Backend 'text' uyumu + daha iyi hata yakalama) */
+/* js/chat.js (v13.3 - SAFE TYPEWRITER + TIMEOUT + mode) */
 
 import { BASE_DOMAIN, STORAGE_KEY } from './config.js';
 
@@ -19,13 +19,16 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
   if (SAFETY_PATTERNS.explicit.test(userMessage))
     return { text: "Terbiyesizleşme! Karşında anan yaşında kadın var. Ağzına biber sürerim!", error: true };
 
-  // Kullanıcı verisi
-  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  // Kullanıcı verisi (parse hatasına dayanıklı)
+  let user = {};
+  try { user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e) { user = {}; }
+
   const token = localStorage.getItem("google_token"); // Varsa token
 
-  // ✅ BACKEND UYUMU: main.py ChatRequest -> text, user_id, user_meta, persona, history
+  // ✅ BACKEND UYUMU: ChatRequest -> text, user_id, user_meta, persona, history (+mode)
   const payload = {
     text: userMessage, // 🔥 KRİTİK: message değil text
+    mode,              // ✅ varsa backend bunu kullanır
     user_id: user?.id || user?.user_id || "guest",
     user_meta: {
       hitap: user?.hitap,
@@ -33,8 +36,12 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
       email: user?.email
     },
     persona: "normal",
-    history: Array.isArray(user?.history) ? user.history : [] // opsiyonel
+    history: Array.isArray(user?.history) ? user.history : []
   };
+
+  // ✅ TIMEOUT (takılmaları bitirir)
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), 30000); // 30sn
 
   try {
     const url = `${BASE_DOMAIN}/api/chat`;
@@ -45,24 +52,25 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
         "Content-Type": "application/json",
         ...(token ? { "Authorization": `Bearer ${token}` } : {})
       },
-      // credentials burada YOK (cookie kullanmıyoruz)
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
 
-    // ✅ Hata varsa cevabı da yakala (422 vs. hemen görürüz)
+    clearTimeout(t);
+
+    // ✅ Hata varsa cevabı da yakala
     if (!res.ok) {
       let detail = "";
       try { detail = await res.text(); } catch (e) {}
       throw new Error(`Sunucu hatası: ${res.status} ${detail}`.trim());
     }
 
-    const data = await res.json();
+    let data = null;
+    try { data = await res.json(); } catch (e) { data = null; }
 
-    // ✅ BACKEND DÖNÜŞÜ: ChatResponse -> { text, intent, yp, ... }
     const assistantText = (data && typeof data.text === "string") ? data.text : "";
 
     if (!assistantText) {
-      // Beklenmeyen format gelirse yine kullanıcıya düzgün dönelim
       console.warn("Beklenmeyen response formatı:", data);
       return { text: "Evladım bir şeyler ters gitti, bir daha dene.", error: true, data };
     }
@@ -70,14 +78,21 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
     return { text: assistantText, data };
 
   } catch (e) {
+    clearTimeout(t);
     console.error("Chat Hatası:", e);
+
+    // Abort (timeout) mesajı daha net olsun
+    const isAbort = (e && (e.name === "AbortError" || String(e).includes("AbortError")));
+    if (isAbort) {
+      return { text: "Evladım server biraz naz yaptı, cevap gecikti. Bir daha tıkla, hallederiz.", error: true };
+    }
+
     return { text: "Evladım tansiyonum çıktı galiba, internetim çekmiyor. Birazdan gel.", error: true };
   }
 }
 
 // 2. SES İSTEĞİ (OPSİYONEL)
 export async function fetchVoiceResponse(textToRead) {
-  // Burası şimdilik kapalı kalsa da olur, önce yazı çalışsın.
   return true;
 }
 
@@ -95,7 +110,8 @@ export function typeWriter(text, elementId = 'chat') {
 
   function type() {
     if (i < text.length) {
-      bubbleRow.innerHTML += text.charAt(i);
+      // ✅ innerHTML yerine textContent (bozulma + XSS riskini azaltır)
+      bubbleRow.textContent += text.charAt(i);
       i++;
       chatDiv.scrollTop = chatDiv.scrollHeight;
       setTimeout(type, speed);
