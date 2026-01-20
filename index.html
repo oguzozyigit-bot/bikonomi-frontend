@@ -175,7 +175,7 @@
           <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Devam Et</div>
 
           <button class="auth-btn btn-google enabled" id="googleLoginBtn" type="button">
-            <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23.06-2.46 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
             Google ile Devam Et
           </button>
 
@@ -394,74 +394,72 @@
 
   // ---- SEND (tek kaynak, garanti) ----
   function bindSend() {
-  const sendBtn = $("sendBtn");
-  const inputEl = $("msgInput");
-  const brand = $("brandWrapper");
+    const sendBtn = $("sendBtn");
+    const inputEl = $("msgInput");
+    const brand = $("brandWrapper");
 
-  if (!sendBtn || !inputEl) {
-    console.warn("sendBtn/msgInput yok, send bağlanamadı");
-    return;
-  }
-
-  async function doSend(forcedText = null) {
-    const txt = (forcedText ?? inputEl.value ?? "").trim();
-    if (!txt) return;
-
-    // UI: user bubble
-    addUserBubble(txt);
-    if (forcedText == null) inputEl.value = "";
-
-    // history (son 10)
-    try {
-      chatHistory.push({ role: "user", content: txt });
-      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      user.history = chatHistory;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } catch (e) {}
-
-    if (brand) brand.classList.add("thinking");
-
-    // Backend -> chat.js üzerinden (garanti)
-    const out = await fetchTextResponse(txt, "chat");
-    const reply = out?.text || "Evladım bir şeyler ters gitti.";
-    console.log("CHAT REPLY:", reply, out);
-
-    if (brand) brand.classList.remove("thinking");
-
-    // history (bot)
-    try {
-      chatHistory.push({ role: "assistant", content: reply });
-      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      user.history = chatHistory;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } catch (e) {}
-
-    // UI: bot bubble
-    if (window.typeWriter) window.typeWriter(reply);
-    else typeWriterLib(reply, "chat");
-  }
-
-  // ✅ herkes aynı fonksiyonu kullansın
-  window.sendMessage = doSend;
-
-  // ✅ klik garanti
-  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
-
-  // ✅ Enter ile gönder
-  inputEl.onkeydown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      doSend();
+    if (!sendBtn || !inputEl) {
+      console.warn("sendBtn/msgInput yok, send bağlanamadı");
+      return;
     }
-  };
 
-  console.log("✅ SEND bağlandı (tek kaynak)");
-}
+    async function doSend(forcedText = null) {
+      const txt = (forcedText ?? inputEl.value ?? "").trim();
+      if (!txt) return;
 
+      // UI: user bubble
+      addUserBubble(txt);
+      if (forcedText == null) inputEl.value = "";
+
+      // history (son 10)
+      try {
+        chatHistory.push({ role: "user", content: txt });
+        if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        user.history = chatHistory;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      } catch (e) {}
+
+      if (brand) brand.classList.add("thinking");
+
+      // Backend -> chat.js üzerinden (garanti)
+      const out = await fetchTextResponse(txt, "chat");
+      const reply = out?.text || "Evladım bir şeyler ters gitti.";
+      console.log("CHAT REPLY:", reply, out);
+
+      if (brand) brand.classList.remove("thinking");
+
+      // history (bot)
+      try {
+        chatHistory.push({ role: "assistant", content: reply });
+        if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        user.history = chatHistory;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+      } catch (e) {}
+
+      // ✅ UI: bot bubble (TEK yazdırıcı)
+      typeWriterLib(reply, "chat");
+    }
+
+    // ✅ herkes aynı fonksiyonu kullansın
+    window.sendMessage = doSend;
+
+    // ✅ klik garanti
+    sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+
+    // ✅ Enter ile gönder
+    inputEl.onkeydown = (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        doSend();
+      }
+    };
+
+    console.log("✅ SEND bağlandı (tek kaynak)");
+  }
 
   // --- GLOBAL’E ATAMALAR ---
   window.handleLogin = handleLogin;
@@ -503,13 +501,13 @@
     const name = user.fullname || user.name || user.email || "Evladım";
 
     setTimeout(() => {
-      window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
+      typeWriterLib(`Hoş geldin ${name}. Ben Caynana.`, "chat");
     }, 500);
 
     window.refreshNotifications?.();
   };
 
-  // 4) Typewriter (mevcut)
+  // 4) Typewriter (mevcut) - (KALSIN, ama chat akışında kullanmıyoruz)
   window.typeWriter = function(text) {
     const chatDiv = $("chat");
     const brand = $("brandWrapper");
@@ -681,6 +679,6 @@
     $("micBtn")?.addEventListener("click", window.startDictation);
     $("logoutBtn")?.addEventListener("click", window.logout);
   });
-</script>
+  </script>
 </body>
 </html>
