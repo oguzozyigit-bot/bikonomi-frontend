@@ -394,45 +394,74 @@
 
   // ---- SEND (tek kaynak, garanti) ----
   function bindSend() {
-    const sendBtn = $("sendBtn");
-    const inputEl = $("msgInput");
+  const sendBtn = $("sendBtn");
+  const inputEl = $("msgInput");
+  const brand = $("brandWrapper");
 
-    if (!sendBtn || !inputEl) {
-      console.warn("sendBtn/msgInput yok, send bağlanamadı");
-      return;
-    }
-
-    async function doSend() {
-      const txt = (inputEl.value || "").trim();
-      if (!txt) return;
-
-      // UI: user bubble
-      addUserBubble(txt);
-      inputEl.value = "";
-
-      // Backend -> chat.js üzerinden (garanti)
-      const out = await fetchTextResponse(txt, "chat");
-      const reply = out?.text || "Evladım bir şeyler ters gitti.";
-      console.log("CHAT REPLY:", reply, out);
-      // UI: bot bubble
-      if (window.typeWriter) window.typeWriter(reply);
-else typeWriterLib(reply, "chat");
-
-    }
-
-    // ✅ klik garanti (eski listenerları ezer)
-    sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
-
-    // ✅ Enter ile gönder (Shift+Enter yeni satır)
-    inputEl.onkeydown = (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        doSend();
-      }
-    };
-
-    console.log("✅ SEND bağlandı");
+  if (!sendBtn || !inputEl) {
+    console.warn("sendBtn/msgInput yok, send bağlanamadı");
+    return;
   }
+
+  async function doSend(forcedText = null) {
+    const txt = (forcedText ?? inputEl.value ?? "").trim();
+    if (!txt) return;
+
+    // UI: user bubble
+    addUserBubble(txt);
+    if (forcedText == null) inputEl.value = "";
+
+    // history (son 10)
+    try {
+      chatHistory.push({ role: "user", content: txt });
+      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      user.history = chatHistory;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    } catch (e) {}
+
+    if (brand) brand.classList.add("thinking");
+
+    // Backend -> chat.js üzerinden (garanti)
+    const out = await fetchTextResponse(txt, "chat");
+    const reply = out?.text || "Evladım bir şeyler ters gitti.";
+    console.log("CHAT REPLY:", reply, out);
+
+    if (brand) brand.classList.remove("thinking");
+
+    // history (bot)
+    try {
+      chatHistory.push({ role: "assistant", content: reply });
+      if (chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      user.history = chatHistory;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    } catch (e) {}
+
+    // UI: bot bubble
+    if (window.typeWriter) window.typeWriter(reply);
+    else typeWriterLib(reply, "chat");
+  }
+
+  // ✅ herkes aynı fonksiyonu kullansın
+  window.sendMessage = doSend;
+
+  // ✅ klik garanti
+  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+
+  // ✅ Enter ile gönder
+  inputEl.onkeydown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      doSend();
+    }
+  };
+
+  console.log("✅ SEND bağlandı (tek kaynak)");
+}
+
 
   // --- GLOBAL’E ATAMALAR ---
   window.handleLogin = handleLogin;
@@ -478,45 +507,6 @@ else typeWriterLib(reply, "chat");
     }, 500);
 
     window.refreshNotifications?.();
-  };
-
-  // 3) (Eski sendMessage kalsın – ama bindSend zaten kendi yolunu kullanıyor)
-  window.sendMessage = async function() {
-    const inputEl = $("msgInput");
-    if (!inputEl) return;
-
-    const txt = inputEl.value.trim();
-    if(!txt) return;
-
-    addUserBubble(txt);
-    inputEl.value = '';
-
-    chatHistory.push({ role: "user", content: txt });
-    if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
-
-    const brand = $("brandWrapper");
-    if(brand) brand.classList.add("thinking");
-
-    try {
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: txt, user_id: user.id || "guest", history: chatHistory })
-      });
-
-      const data = await res.json();
-      if(brand) brand.classList.remove("thinking");
-
-      if(data && data.text) window.typeWriter(data.text);
-      else window.typeWriter("Evladım bir şeyler ters gitti, bir daha dene.");
-
-    } catch(e) {
-      console.error("Chat Error:", e);
-      const brand = $("brandWrapper");
-      if(brand) brand.classList.remove("thinking");
-      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
-    }
   };
 
   // 4) Typewriter (mevcut)
