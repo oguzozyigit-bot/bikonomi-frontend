@@ -1,48 +1,69 @@
-/* js/auth.js - TEK GİRİŞ (AUTO ID + TERMS + PROFILE SUGGEST) - FINAL */
+/* js/auth.js - TEK GİRİŞ (ID_TOKEN) + TERMS + PROFILE - FINAL (CORS FIX) */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
 
-let tokenClient;
+/*
+  ✅ Bu sürümde:
+  - google.accounts.id (One Tap / Sign in with Google) ile ID TOKEN (JWT) alırız.
+  - Tarayıcıdan googleapis userinfo çağrısı YOK → CORS yok.
+  - Email / name / picture JWT içinden gelir.
+  - Mevcut backend /api/profile/get ve /api/profile/update aynı şekilde çalışır.
+*/
 
 export function initAuth() {
-  if (window.google) {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: GOOGLE_CLIENT_ID,
-      scope: "https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
-      callback: (tokenResponse) => {
-        if (tokenResponse && tokenResponse.access_token) {
-          fetchGoogleProfile(tokenResponse.access_token);
-        }
-      },
-    });
+  // Google Identity Services yüklendiyse init et
+  if (!window.google || !google.accounts || !google.accounts.id) {
+    console.warn("Google Identity henüz hazır değil.");
+    return;
   }
+
+  // Button render (istersen görünür buton yerine kendi butonunu kullan)
+  // Biz kendi butonumuza basınca prompt tetikleyeceğiz.
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: (response) => {
+      const idToken = (response && response.credential) ? String(response.credential) : "";
+      if (!idToken) {
+        console.warn("Google credential (id_token) gelmedi.");
+        return;
+      }
+      // Token'ı sakla (ileride backend auth yaparsan kullanırsın)
+      localStorage.setItem("google_id_token", idToken);
+      fetchGoogleProfileFromIdToken(idToken);
+    },
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
 }
 
 export function handleLogin(provider) {
   if (provider === "google") {
-    if (tokenClient) tokenClient.requestAccessToken();
-    else alert("Google servisi bekleniyor...");
+    if (!window.google || !google.accounts || !google.accounts.id) {
+      alert("Google servisi bekleniyor...");
+      return;
+    }
+    // One Tap / popup prompt
+    google.accounts.id.prompt((notif) => {
+      // Bazı tarayıcılarda prompt kapalıysa kullanıcıya bilgi verelim
+      if (notif.isNotDisplayed?.() || notif.isSkippedMoment?.()) {
+        console.warn("Google prompt gösterilemedi:", notif.getNotDisplayedReason?.() || notif.getSkippedReason?.());
+      }
+    });
     return;
   }
+
   alert("Apple yakında evladım. Şimdilik Google ile devam et.");
 }
 
-async function fetchGoogleProfile(accessToken) {
+/* =========================
+   ID TOKEN ile Profil Çekme
+========================= */
+async function fetchGoogleProfileFromIdToken(idToken) {
   try {
-    let googleData = null;
-
-    // 1) Google userinfo (başarısız olabilir)
-    try {
-      const r = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      if (r.ok) googleData = await r.json();
-    } catch (e) {
-      console.warn("Google userinfo fetch failed (will fallback):", e);
-    }
-
-    // 2) Fallback: token JWT ise email çek
-    const fallbackClaims = decodeJwtPayload(accessToken);
-    const email = ((googleData?.email || "") || (fallbackClaims?.email || "")).trim().toLowerCase();
+    // JWT decode → email, name, picture
+    const claims = decodeJwtPayload(idToken) || {};
+    const email = String(claims.email || "").trim().toLowerCase();
+    const name = String(claims.name || "").trim();
+    const picture = String(claims.picture || "").trim();
 
     // Email yoksa: misafir devam (chat açılsın)
     if (!email) {
@@ -69,15 +90,15 @@ async function fetchGoogleProfile(accessToken) {
       ...storedUser,
       id: uid,
       email,
-      fullname: googleData?.name || storedUser.fullname || "",
-      avatar: googleData?.picture || storedUser.avatar || "",
+      fullname: name || storedUser.fullname || "",
+      avatar: picture || storedUser.avatar || "",
       provider: "google",
       isSessionActive: true,
       lastLoginAt: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
 
-    // ✅ Sunucu profili (fail olursa kilitleme)
+    // ✅ Sunucu profili (fail olursa kilitleme yok)
     let serverMeta = {};
     try {
       serverMeta = await fetchServerProfile(uid, email);
@@ -92,14 +113,13 @@ async function fetchGoogleProfile(accessToken) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
     }
 
-    // ✅ Terms varsa iyi, yoksa sadece overlay göster (kilitleme yok)
+    // ✅ Terms kontrol (kilitleme yok, sadece overlay)
     const termsOk = !!(serverMeta?.terms_accepted_at || updatedUser.terms_accepted_at);
     if (!termsOk) {
       window.showTermsOverlay?.();
-      // return YOK: chat açılsın
     }
 
-    // ✅ Tek noktadan içeri al (chat açılsın)
+    // ✅ Tek noktadan içeri al
     window.enterApp?.();
     return;
 
@@ -120,6 +140,9 @@ async function fetchGoogleProfile(accessToken) {
   }
 }
 
+/* =========================
+   Backend Profile
+========================= */
 async function fetchServerProfile(uid, email) {
   try {
     const url = `${BASE_DOMAIN}/api/profile/get?user_id=${encodeURIComponent(uid)}&email=${encodeURIComponent(email)}`;
@@ -178,6 +201,9 @@ function safeJson(s, fallback) {
   try { return JSON.parse(s || ""); } catch { return fallback; }
 }
 
+/*
+  ID Token (JWT) payload decode
+*/
 function decodeJwtPayload(token) {
   try {
     const parts = String(token || "").split(".");
