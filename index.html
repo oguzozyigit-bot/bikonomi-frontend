@@ -641,9 +641,9 @@
   }
 
   // ---------------------------
-  // Notif fetch
-  // ---------------------------
-  async function refreshNotifications(){
+// Notif fetch
+// ---------------------------
+async function refreshNotifications(){
   const list = $("notifList");
   const badge = $("notifBadge");
   if(!list) return;
@@ -680,10 +680,8 @@
 
   } catch(e){
     console.log("Notif error:", e);
-    // istersen UI'ye de hata basabiliriz, ama şimdilik sessiz kalsın
   }
 }
-
 
       list.innerHTML = items.map(it => `
         <div class="notif-item">
