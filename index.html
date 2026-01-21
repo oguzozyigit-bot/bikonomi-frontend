@@ -683,20 +683,6 @@ async function refreshNotifications(){
   }
 }
 
-      list.innerHTML = items.map(it => `
-        <div class="notif-item">
-          <div class="notif-icon">🔔</div>
-          <div class="notif-content">
-            <div class="notif-title">${escapeHtml(it.title)}</div>
-            <div class="notif-desc">${escapeHtml(it.message)}</div>
-          </div>
-        </div>
-      `).join("");
-    } catch(e){
-      console.log("Notif error:", e);
-    }
-  }
-
   // ---------------------------
   // Brand seesaw
   // ---------------------------
