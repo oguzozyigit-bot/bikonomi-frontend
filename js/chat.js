@@ -1,4 +1,4 @@
-/* js/chat.js (v13.3 - SAFE TYPEWRITER + TIMEOUT + mode) */
+/* js/chat.js (v13.4 - PROFILE META + HISTORY PARAM + SAFE TYPEWRITER + TIMEOUT + mode) */
 
 import { BASE_DOMAIN, STORAGE_KEY } from './config.js';
 
@@ -9,8 +9,56 @@ const SAFETY_PATTERNS = {
   explicit: /s[iı]k|yarak|a[nm]cık|orospu|fahişe/i
 };
 
+const PROFILE_KEY = "caynana_profile_v2";
+
+function safeJsonParse(s, fallback){
+  try { return JSON.parse(s || ""); } catch(e){ return fallback; }
+}
+
+function loadProfileMeta(){
+  const p = safeJsonParse(localStorage.getItem(PROFILE_KEY) || "{}", {});
+  return (p && typeof p === "object") ? p : {};
+}
+
+function buildMemorySummary(user, profile){
+  // kısa ve stabil bir “kimlik özeti”
+  const hitap = (profile.hitap || user.hitap || "").trim();
+  const botName = (profile.bot_name || user.botName || user.bot_name || "").trim();
+  const birth = (profile.birth_date || user.dob || user.birth_date || "").trim();
+  const gender = (profile.gender || user.gender || "").trim();
+  const spouse = (profile.spouse_name || user.spouse || "").trim();
+  const team = (profile.team || user.team || "").trim();
+  const region = (profile.region || user.city || user?.raw_data?.region || "").trim();
+
+  const kids = Array.isArray(profile.children) ? profile.children : [];
+  const kidsStr = kids
+    .filter(k => (k?.name || "").trim())
+    .map(k => `${String(k.name).trim()}${k.bday_dm ? ` (${k.bday_dm})` : ""}`)
+    .join(", ");
+
+  const periodOn = !!profile.period_tracking_enabled;
+  const periodStr = periodOn
+    ? `Regl takibi açık (son: ${profile.last_period_start || "—"}, döngü: ${profile.cycle_length_days || 28}g, süre: ${profile.period_length_days || 5}g)`
+    : "";
+
+  const parts = [
+    hitap ? `Hitap: ${hitap}` : "",
+    botName ? `Kaynana adı: ${botName}` : "",
+    birth ? `Doğum tarihi: ${birth}` : "",
+    gender ? `Cinsiyet: ${gender}` : "",
+    region ? `Şehir: ${region}` : "",
+    team ? `Takım: ${team}` : "",
+    spouse ? `Eş: ${spouse}` : "",
+    kidsStr ? `Çocuklar: ${kidsStr}` : "",
+    periodStr ? periodStr : ""
+  ].filter(Boolean);
+
+  return parts.join(" | ");
+}
+
 // 1. SOHBET İSTEĞİ (YAZI)
-export async function fetchTextResponse(userMessage, mode = "chat") {
+// ✅ history param eklendi
+export async function fetchTextResponse(userMessage, mode = "chat", history = []) {
   // Güvenlik Kontrolü
   if (SAFETY_PATTERNS.suicide.test(userMessage))
     return { text: "Aman evladım ağzından yel alsın! Bir bardak su iç, derin nefes al.", error: true };
@@ -24,22 +72,48 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
   try { user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e) { user = {}; }
 
   const token = localStorage.getItem("google_token"); // Varsa token
+  const profile = loadProfileMeta();
+  const memory_summary = buildMemorySummary(user, profile);
+
+  // history güvenliği
+  const safeHistory = Array.isArray(history) ? history : [];
 
   // ✅ BACKEND UYUMU: ChatRequest -> text, user_id, user_meta, persona, history (+mode)
   const payload = {
-    text: userMessage, // 🔥 KRİTİK: message değil text
-    mode,              // ✅ varsa backend bunu kullanır
+    text: userMessage,
+    mode,
     user_id: user?.id || user?.user_id || "guest",
     user_meta: {
-      hitap: user?.hitap,
-      region: user?.raw_data?.region,
-      email: user?.email
+      // eskiler
+      hitap: profile?.hitap || user?.hitap,
+      region: profile?.region || user?.raw_data?.region,
+      email: user?.email,
+
+      // profil (kalıcı hafıza)
+      bot_name: profile?.bot_name,
+      birth_date: profile?.birth_date,
+      gender: profile?.gender,
+      marital_status: profile?.marital_status,
+      spouse_name: profile?.spouse_name,
+      spouse_bday_dm: profile?.spouse_bday_dm,
+      wedding_dm: profile?.wedding_dm,
+      engagement_dm: profile?.engagement_dm,
+      met_dm: profile?.met_dm,
+      team: profile?.team,
+      children: Array.isArray(profile?.children) ? profile.children : [],
+      period_tracking_enabled: !!profile?.period_tracking_enabled,
+      last_period_start: profile?.last_period_start,
+      cycle_length_days: profile?.cycle_length_days,
+      period_length_days: profile?.period_length_days
     },
     persona: "normal",
-    history: Array.isArray(user?.history) ? user.history : []
+    history: safeHistory,
+
+    // ✅ modele kısa özet (backend prompt’a koyacak)
+    memory_summary
   };
 
-  // ✅ TIMEOUT (takılmaları bitirir)
+  // ✅ TIMEOUT
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), 30000); // 30sn
 
@@ -81,7 +155,6 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
     clearTimeout(t);
     console.error("Chat Hatası:", e);
 
-    // Abort (timeout) mesajı daha net olsun
     const isAbort = (e && (e.name === "AbortError" || String(e).includes("AbortError")));
     if (isAbort) {
       return { text: "Evladım server biraz naz yaptı, cevap gecikti. Bir daha tıkla, hallederiz.", error: true };
@@ -110,7 +183,6 @@ export function typeWriter(text, elementId = 'chat') {
 
   function type() {
     if (i < text.length) {
-      // ✅ innerHTML yerine textContent (bozulma + XSS riskini azaltır)
       bubbleRow.textContent += text.charAt(i);
       i++;
       chatDiv.scrollTop = chatDiv.scrollHeight;
