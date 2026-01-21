@@ -25,11 +25,15 @@ async function initMenuPartial() {
   if (mount.children.length > 0) return;
 
   try {
-    // İstersen ileride fetch ile HTML de çekebilirsin
     // Şimdilik: index.html içindeki mevcut menuOverlay'i kullan
     const existingMenu = document.getElementById("menuOverlay");
     if (existingMenu) {
-      mount.appendChild(existingMenu);
+      // ✅ Fail-safe: taşıma yerine kopyala (DOM kırılmasın)
+      const clone = existingMenu.cloneNode(true);
+      mount.appendChild(clone);
+
+      // İstersen orijinali gizleyebilirsin (UI'da iki tane görünmesin diye)
+      // existingMenu.style.display = "none";
     }
   } catch (e) {
     console.warn("Menu partial yüklenemedi:", e);
@@ -47,6 +51,8 @@ async function initNotifPartial() {
   if (mount.children.length > 0) return;
 
   try {
+    // ✅ ID çakışması riskini azalt: içeride yine id bırakıyoruz ama
+    // event binding'i mount scope'unda yapıyoruz.
     mount.innerHTML = `
       <button class="notif-btn" id="notifBtn">
         <svg viewBox="0 0 24 24">
@@ -71,13 +77,17 @@ async function initNotifPartial() {
       </div>
     `;
 
-    // Buton davranışı (fail-safe)
-    const btn = document.getElementById("notifBtn");
-    const dd  = document.getElementById("notifDropdown");
-    const badge = document.getElementById("notifBadge");
+    // ✅ Buton davranışı (fail-safe + scope)
+    const btn = mount.querySelector("#notifBtn");
+    const dd = mount.querySelector("#notifDropdown");
+    const badge = mount.querySelector("#notifBadge");
 
     if (btn && dd) {
-      btn.addEventListener("click", () => {
+      // Çift init olursa çift event olmasın diye clone yaklaşımı
+      const newBtn = btn.cloneNode(true);
+      btn.parentNode.replaceChild(newBtn, btn);
+
+      newBtn.addEventListener("click", () => {
         dd.classList.toggle("show");
         if (badge) badge.style.display = "none";
       });
