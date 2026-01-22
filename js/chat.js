@@ -1,8 +1,6 @@
-/* js/chat.js (v13.4 - PROFILE META + HISTORY PARAM + SAFE TYPEWRITER + TIMEOUT + mode) */
-
+/* js/chat.js (v13.5 - AUTH UYUMLU + HISTORY + SAFE TYPEWRITER + TIMEOUT) */
 import { BASE_DOMAIN, STORAGE_KEY } from './config.js';
 
-// --- GÜVENLİK FİLTRESİ ---
 const SAFETY_PATTERNS = {
   suicide: /intihar|ölmek istiyorum|bileklerimi|kendimi asıcam|kendimi asacağım/i,
   substance: /uyuşturucu|bonzai|kokain|esrar|hap/i,
@@ -14,14 +12,12 @@ const PROFILE_KEY = "caynana_profile_v2";
 function safeJsonParse(s, fallback){
   try { return JSON.parse(s || ""); } catch(e){ return fallback; }
 }
-
 function loadProfileMeta(){
   const p = safeJsonParse(localStorage.getItem(PROFILE_KEY) || "{}", {});
   return (p && typeof p === "object") ? p : {};
 }
 
 function buildMemorySummary(user, profile){
-  // kısa ve stabil bir “kimlik özeti”
   const hitap = (profile.hitap || user.hitap || "").trim();
   const botName = (profile.bot_name || user.botName || user.bot_name || "").trim();
   const birth = (profile.birth_date || user.dob || user.birth_date || "").trim();
@@ -41,7 +37,7 @@ function buildMemorySummary(user, profile){
     ? `Regl takibi açık (son: ${profile.last_period_start || "—"}, döngü: ${profile.cycle_length_days || 28}g, süre: ${profile.period_length_days || 5}g)`
     : "";
 
-  const parts = [
+  return [
     hitap ? `Hitap: ${hitap}` : "",
     botName ? `Kaynana adı: ${botName}` : "",
     birth ? `Doğum tarihi: ${birth}` : "",
@@ -51,15 +47,10 @@ function buildMemorySummary(user, profile){
     spouse ? `Eş: ${spouse}` : "",
     kidsStr ? `Çocuklar: ${kidsStr}` : "",
     periodStr ? periodStr : ""
-  ].filter(Boolean);
-
-  return parts.join(" | ");
+  ].filter(Boolean).join(" | ");
 }
 
-// 1. SOHBET İSTEĞİ (YAZI)
-// ✅ history param eklendi
 export async function fetchTextResponse(userMessage, mode = "chat", history = []) {
-  // Güvenlik Kontrolü
   if (SAFETY_PATTERNS.suicide.test(userMessage))
     return { text: "Aman evladım ağzından yel alsın! Bir bardak su iç, derin nefes al.", error: true };
   if (SAFETY_PATTERNS.substance.test(userMessage))
@@ -67,29 +58,26 @@ export async function fetchTextResponse(userMessage, mode = "chat", history = []
   if (SAFETY_PATTERNS.explicit.test(userMessage))
     return { text: "Terbiyesizleşme! Karşında anan yaşında kadın var. Ağzına biber sürerim!", error: true };
 
-  // Kullanıcı verisi (parse hatasına dayanıklı)
   let user = {};
-  try { user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch (e) { user = {}; }
+  try { user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { user = {}; }
 
-  const token = localStorage.getItem("google_token"); // Varsa token
+  const idToken = (localStorage.getItem("google_id_token") || "").trim();
   const profile = loadProfileMeta();
   const memory_summary = buildMemorySummary(user, profile);
 
-  // history güvenliği
   const safeHistory = Array.isArray(history) ? history : [];
 
-  // ✅ BACKEND UYUMU: ChatRequest -> text, user_id, user_meta, persona, history (+mode)
   const payload = {
     text: userMessage,
     mode,
     user_id: user?.id || user?.user_id || "guest",
+    email: user?.email || "",
+    google_id_token: idToken || "",
     user_meta: {
-      // eskiler
       hitap: profile?.hitap || user?.hitap,
       region: profile?.region || user?.raw_data?.region,
       email: user?.email,
 
-      // profil (kalıcı hafıza)
       bot_name: profile?.bot_name,
       birth_date: profile?.birth_date,
       gender: profile?.gender,
@@ -108,68 +96,45 @@ export async function fetchTextResponse(userMessage, mode = "chat", history = []
     },
     persona: "normal",
     history: safeHistory,
-
-    // ✅ modele kısa özet (backend prompt’a koyacak)
     memory_summary
   };
 
-  // ✅ TIMEOUT
   const controller = new AbortController();
-  const t = setTimeout(() => controller.abort(), 30000); // 30sn
+  const t = setTimeout(() => controller.abort(), 30000);
 
   try {
-    const url = `${BASE_DOMAIN}/api/chat`;
-
-    const res = await fetch(url, {
+    const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { "Authorization": `Bearer ${token}` } : {})
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
       signal: controller.signal
     });
 
     clearTimeout(t);
 
-    // ✅ Hata varsa cevabı da yakala
     if (!res.ok) {
       let detail = "";
-      try { detail = await res.text(); } catch (e) {}
+      try { detail = await res.text(); } catch {}
       throw new Error(`Sunucu hatası: ${res.status} ${detail}`.trim());
     }
 
-    let data = null;
-    try { data = await res.json(); } catch (e) { data = null; }
+    const data = await res.json().catch(() => ({}));
+    const assistantText =
+      (typeof data?.text === "string" && data.text) ||
+      (typeof data?.assistant_text === "string" && data.assistant_text) ||
+      "";
 
-    const assistantText = (data && typeof data.text === "string") ? data.text : "";
-
-    if (!assistantText) {
-      console.warn("Beklenmeyen response formatı:", data);
-      return { text: "Evladım bir şeyler ters gitti, bir daha dene.", error: true, data };
-    }
-
+    if (!assistantText) return { text: "Evladım bir şeyler ters gitti, bir daha dene.", error: true, data };
     return { text: assistantText, data };
 
   } catch (e) {
     clearTimeout(t);
-    console.error("Chat Hatası:", e);
-
     const isAbort = (e && (e.name === "AbortError" || String(e).includes("AbortError")));
-    if (isAbort) {
-      return { text: "Evladım server biraz naz yaptı, cevap gecikti. Bir daha tıkla, hallederiz.", error: true };
-    }
-
+    if (isAbort) return { text: "Evladım server biraz naz yaptı, cevap gecikti. Bir daha tıkla, hallederiz.", error: true };
     return { text: "Evladım tansiyonum çıktı galiba, internetim çekmiyor. Birazdan gel.", error: true };
   }
 }
 
-// 2. SES İSTEĞİ (OPSİYONEL)
-export async function fetchVoiceResponse(textToRead) {
-  return true;
-}
-
-// --- UI YARDIMCILARI ---
 export function typeWriter(text, elementId = 'chat') {
   const chatDiv = document.getElementById(elementId);
   if (!chatDiv) return;
@@ -179,7 +144,7 @@ export function typeWriter(text, elementId = 'chat') {
   chatDiv.appendChild(bubbleRow);
 
   let i = 0;
-  const speed = 20;
+  const speed = 18;
 
   function type() {
     if (i < text.length) {
