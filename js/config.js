@@ -1,10 +1,11 @@
-// MEVCUT AYARLARIN (Bunlar kalsın)
+// TEMEL AYARLAR
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 export const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com";
 export const STORAGE_KEY = "caynana_user_v8";
 export const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
-// 🔥 YENİ EKLENEN MODÜL LİSTESİ (Bunu en alta ekle) 🔥
+// 🔥 GELİŞTİRİCİ İÇİN MASTER MODÜL LİSTESİ 🔥
+// Menüleri ve yetkileri buradan yöneteceksin.
 export const APP_MODULES = {
   "app_version": "v16.0",
   "modules": [
