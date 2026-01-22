@@ -6,17 +6,17 @@ export function authHeaders(){
 }
 
 export async function apiPOST(endpoint, body){
-  const res = await fetch(`${BASE_DOMAIN}${endpoint}`, {
+  const url = endpoint.startsWith("http") ? endpoint : `${BASE_DOMAIN}${endpoint.startsWith('/')?'':'/'}${endpoint}`;
+  const res = await fetch(url, {
     method:"POST",
     headers:{ "Content-Type":"application/json", ...authHeaders() },
-    body: JSON.stringify(body)
+    body: JSON.stringify(body || {})
   });
   return res;
 }
 
 export async function apiGET(endpoint){
-  const res = await fetch(`${BASE_DOMAIN}${endpoint}`, {
-    headers:{ ...authHeaders() }
-  });
+  const url = endpoint.startsWith("http") ? endpoint : `${BASE_DOMAIN}${endpoint.startsWith('/')?'':'/'}${endpoint}`;
+  const res = await fetch(url, { headers:{ ...authHeaders() } });
   return await res.json();
 }
