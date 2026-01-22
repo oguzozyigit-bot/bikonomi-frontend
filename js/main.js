@@ -1,11 +1,10 @@
-import { APP_MODULES } from "./config.js";
+import { APP_MODULES, STORAGE_KEY } from "./config.js"; // Config'den modülleri çekiyoruz
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
 import { initEyes, showPage, closePage } from "./ui.js";
 import { initNotif } from "./notif.js";
 import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
 import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
 import { openDedikoduPanel } from "./dedikodu.js";
-import { STORAGE_KEY } from "./config.js";
 
 const $ = (id) => document.getElementById(id);
 window.currentAppMode = 'chat';
@@ -49,7 +48,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $('googleLoginBtn')?.addEventListener('click', () => handleLogin('google'));
     $('appleLoginBtn')?.addEventListener('click', () => handleLogin('apple'));
     
-    // 🔥 TEST GİRİŞİ (BYPASS) BUTONU 🔥
+    // 🔥 TEST GİRİŞİ (BYPASS) BUTONU (DÜZELTİLDİ VE TAMAMLANDI) 🔥
     $('devLoginBtn')?.addEventListener('click', () => {
         const fakeUser = {
             id: "test-user-id",
@@ -59,9 +58,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             termsAccepted: true,
             isSessionActive: true
         };
+        // Kaydet ve yenile
         localStorage.setItem(STORAGE_KEY, JSON.stringify(fakeUser));
-        localStorage.setItem("google_id_token", "dev_token_bypass"); // Sahte token
-        window.location.reload(); // Sayfayı yenile ve içeri gir
+        localStorage.setItem("google_id_token", "dev_token_bypass"); // Token varmış gibi yap
+        window.location.reload();
     });
 
     // 5. Sözleşme Onayı
@@ -75,41 +75,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
-    // 6. Diğer UI İşlevleri (Fal, Modal vb.)
+    // 6. UI İşlevleri (Fal, Modal vb.)
     $('closeFalBtn')?.addEventListener('click', closeFalPanel);
     $('falInput')?.addEventListener('change', (e) => handleFalPhoto(e.target));
     $('closePageBtn')?.addEventListener('click', closePage);
 
-    // 7. Grid Menü Butonları
-    const actions = {
-        'fal': openFalPanel,
-        'dedikodu': openDedikoduPanel,
-        'shopping': () => { window.currentAppMode='shopping'; sendMessage("Alışveriş modundayız, ne lazım?"); },
-        'diet': () => { window.currentAppMode='diet'; sendMessage("Diyet için boyun kilon kaç?"); },
-        'health': () => { window.currentAppMode='health'; sendMessage("Neren ağrıyor evladım?"); },
-        'translate': () => { window.currentAppMode='trans'; sendMessage("Çevireceğin şeyi yaz."); },
-        'astro': () => window.location.href = 'pages/burc.html',
-        'dream': () => window.location.href = 'pages/ruya.html',
-        'tarot': () => window.location.href = 'pages/tarot.html'
-    };
-
+    // 7. 🔥 DINAMİK MENÜ OLUŞTURUCU (Config.js'den Çeker) 🔥
     const grid = $('mainMenu');
-    if(grid) {
-        grid.innerHTML = `
-            <div class="menu-action" data-act="shopping"><div class="ico">🛍️</div><div>Alışveriş</div></div>
-            <div class="menu-action" data-act="translate"><div class="ico">🌍</div><div>Tercüman</div></div>
-            <div class="menu-action" data-act="diet"><div class="ico">🥗</div><div>Diyet</div></div>
-            <div class="menu-action" data-act="health"><div class="ico">❤️</div><div>Sağlık</div></div>
-            <div class="menu-action" data-act="fal"><div class="ico">☕</div><div>Fal</div></div>
-            <div class="menu-action" data-act="dedikodu"><div class="ico">🤫</div><div>Dedikodu</div></div>
-            <div class="menu-action" data-act="astro"><div class="ico">♈</div><div>Burç</div></div>
-            <div class="menu-action" data-act="tarot"><div class="ico">🃏</div><div>Tarot</div></div>
-        `;
-        grid.querySelectorAll('.menu-action').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const act = btn.dataset.act;
-                $('menuOverlay').classList.remove('open');
-                if(actions[act]) actions[act]();
+    if(grid && APP_MODULES && APP_MODULES.modules) {
+        grid.innerHTML = ""; // Temizle
+        
+        // Config'deki her grubu ve item'ı dön
+        APP_MODULES.modules.forEach(group => {
+            group.items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "menu-action";
+                div.innerHTML = `<div class="ico">${item.icon}</div><div>${item.name}</div>`;
+                
+                // Tıklama Olayı
+                div.onclick = () => {
+                    $('menuOverlay').classList.remove('open'); // Menüyü kapat
+                    handleMenuAction(item.action);
+                };
+                
+                grid.appendChild(div);
             });
         });
     }
@@ -127,12 +116,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     checkSession();
 });
 
+// --- MENÜ AKSİYON YÖNETİCİSİ ---
+function handleMenuAction(action) {
+    // 1. Fal & Dedikodu (Overlay)
+    if (action === 'fal') openFalPanel();
+    else if (action === 'dedikodu') openDedikoduPanel();
+    
+    // 2. Mod Değiştiren Sohbetler
+    else if (action.startsWith('mode_')) {
+        const mode = action.replace('mode_', ''); // shopping, diet, health...
+        window.currentAppMode = mode;
+        
+        let msg = "Konuş bakalım.";
+        if(mode === 'shopping') msg = "Alışveriş modundayız, ne lazım?";
+        if(mode === 'diet') msg = "Diyet konuşalım, boyun kilon kaç?";
+        if(mode === 'health') msg = "Neren ağrıyor evladım?";
+        if(mode === 'trans') msg = "Çevireceğin şeyi yaz.";
+        
+        sendMessage(msg);
+    }
+    
+    // 3. Sayfa Yönlendirmeleri
+    else if (action.startsWith('page_')) {
+        const page = action.replace('page_', '');
+        window.location.href = `pages/${page}.html`;
+    }
+    
+    // 4. Varsayılan Chat
+    else if (action === 'chat') {
+        window.currentAppMode = 'chat';
+        sendMessage("Sohbet edelim.");
+    }
+}
+
 async function sendMessage(overrideText) {
     const inp = $('msgInput');
     const txt = typeof overrideText === 'string' ? overrideText : inp.value.trim();
     if(!txt) return;
 
-    // Token yoksa uyarı ver
     if(!localStorage.getItem("google_id_token")) {
         alert("Önce giriş yap evladım.");
         return;
@@ -150,7 +171,6 @@ async function sendMessage(overrideText) {
 
     $('brandWrapper').classList.add('thinking');
     
-    // API'ye gönder
     const res = await fetchTextResponse(txt);
     
     loadBubble.remove();
@@ -168,7 +188,6 @@ async function sendMessage(overrideText) {
 
 function checkSession() {
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    // Eğer kullanıcı varsa login ekranını kaldır
     if(user && user.id) {
         $('loginOverlay').classList.remove('active');
         if(!user.termsAccepted) {
@@ -179,7 +198,6 @@ function checkSession() {
             if($('chat').children.length === 0) setTimeout(() => typeWriter(`Hoş geldin ${user.name || 'evladım'}.`), 500);
         }
     } else {
-        // Yoksa login ekranını göster
         $('loginOverlay').classList.add('active');
     }
 }
