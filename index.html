@@ -361,13 +361,9 @@ import { initNotif } from './js/notif.js';
 const $ = (id) => document.getElementById(id);
 let chatHistory = [], idleTimer = null, isTracking = false;
 
-// ------- GLOBAL UI HOOKS (auth.js bunları çağırıyor) -------
+// auth.js hook'ları
 window.enterApp = () => {
-  // Login overlay kapat
-  const lo = $("loginOverlay");
-  if (lo) lo.classList.remove("active");
-
-  // Terms accepted değilse auth.js zaten showTermsOverlay çağırır
+  $("loginOverlay")?.classList.remove("active");
 };
 
 window.showTermsOverlay = () => {
@@ -377,12 +373,6 @@ window.showTermsOverlay = () => {
   t.classList.add("active");
 };
 
-window.showGoogleButtonFallback = (reason="unknown") => {
-  const hint = $("loginHint");
-  if (hint) hint.textContent = `Google penceresi açılamadı (${reason}). Lütfen tekrar dene.`;
-};
-
-// --- ✅ GSI WAIT (async script yüzünden) ---
 async function waitForGsi(timeoutMs = 8000){
   const t0 = Date.now();
   while (Date.now() - t0 < timeoutMs){
@@ -391,17 +381,13 @@ async function waitForGsi(timeoutMs = 8000){
   }
   return false;
 }
-
 function enableAuthButtons(){
-  const gBtn = $("googleLoginBtn");
-  const aBtn = $("appleLoginBtn");
-  const hint = $("loginHint");
-  if(gBtn){ gBtn.classList.remove("disabled"); }
-  if(aBtn){ aBtn.classList.remove("disabled"); }
-  if(hint){ hint.textContent = "Devam et evladım."; }
+  $("googleLoginBtn")?.classList.remove("disabled");
+  $("appleLoginBtn")?.classList.remove("disabled");
+  if ($("loginHint")) $("loginHint").textContent = "Devam et evladım.";
 }
 
-// --- 1. EYES ENGINE (Aynı) ---
+// EYES
 function setGaze(x, y) {
   const L=$("eyeL"), R=$("eyeR");
   if(!L || !R) return;
@@ -435,7 +421,6 @@ function resetIdle() {
     }
   }, 30000);
 }
-
 window.addEventListener("pointermove", (e) => {
   resetIdle();
   if(isTracking) return;
@@ -446,7 +431,7 @@ window.addEventListener("pointermove", (e) => {
   setGaze(x,y);
 }, { passive:true });
 
-// --- 2. CHAT LOGIC ---
+// CHAT
 async function doSend(forcedText=null){
   const inputEl = $("msgInput");
   const txt = (forcedText ?? inputEl?.value ?? "").trim();
@@ -456,7 +441,6 @@ async function doSend(forcedText=null){
   if(inputEl && forcedText==null) inputEl.value = "";
   chatHistory.push({ role: "user", content: txt });
 
-  // Loading bubble
   const holder = document.createElement("div");
   holder.className = "bubble bot loading";
   holder.textContent = "…";
@@ -467,19 +451,16 @@ async function doSend(forcedText=null){
   try{
     const out = await fetchTextResponse(txt, "chat", chatHistory);
     reply = out?.text || reply;
-  }catch(e){
-    console.log("Chat fetch error:", e);
-  }
-  try{ holder.remove(); }catch(e){}
+  }catch(e){}
 
+  try{ holder.remove(); }catch(e){}
   typeWriterLib(reply, "chat");
   chatHistory.push({ role: "assistant", content: reply });
 }
 
-// --- 3. MENU ---
+// MENU ACTIONS
 function handleMenuAction(action){
   $("menuOverlay")?.classList.remove("open");
-
   if(action==="fal"){ openFalPanel(); return; }
   if(action==="shopping"){ doSend("Alışveriş moduna geçelim: Ne almak istiyorsun?"); return; }
   if(action==="translate"){ doSend("Tercüman: Metni yapıştır, dili söyle (TR/EN/DE/AR vs)."); return; }
@@ -487,24 +468,20 @@ function handleMenuAction(action){
   if(action==="health"){ doSend("Sağlık: Ne şikayetin var evladım?"); return; }
   if(action==="special"){ doSend("Özel Gün: Hangi tarihleri hatırlatayım?"); return; }
   if(action==="reminder"){ location.href = "pages/hatirlatici.html"; return; }
-
   if(action==="tarot"){ location.href="pages/tarot.html"; return; }
   if(action==="horoscope"){ location.href="pages/burc.html"; return; }
   if(action==="dream"){ location.href="pages/ruya.html"; return; }
-
   location.href = `pages/${action}.html`;
 }
 
-// --- 4. ACCOUNT ACTIONS ---
+// ACCOUNT DELETE
 async function deleteAccount(){
   const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   if(!user?.id) return alert("Önce giriş yap evladım.");
-
   if(!confirm("Hesabını silmek istiyor musun?")) return;
 
   const idToken = (localStorage.getItem("google_id_token") || "").trim();
 
-  // 1) /api/profile/delete varsa dene
   try{
     const r = await fetch(`${BASE_DOMAIN}/api/profile/delete`, {
       method:"POST",
@@ -519,7 +496,6 @@ async function deleteAccount(){
     }
   }catch(e){}
 
-  // 2) fallback deleted_at
   try{
     const r2 = await fetch(`${BASE_DOMAIN}/api/profile/update`, {
       method:"POST",
@@ -538,23 +514,20 @@ async function deleteAccount(){
     }
   }catch(e){}
 
-  alert("Silme endpoint'i yok/çalışmıyor. Backend tarafına bakacağız.");
+  alert("Silme endpoint'i yok/çalışmıyor.");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   resetIdle();
   setInterval(autoLook, 4000);
 
-  // Notif başlat
+  // notif başlat
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
 
-  // GSI bekle + auth init
   const okGsi = await waitForGsi();
   if(okGsi) enableAuthButtons();
-  else {
-    const hint = $("loginHint");
-    if(hint) hint.textContent = "Google yüklenemedi evladım (GSI yok).";
-  }
+  else if($("loginHint")) $("loginHint").textContent = "Google yüklenemedi evladım (GSI yok).";
+
   initAuth();
 
   $("sendBtn")?.addEventListener("click", () => doSend());
@@ -569,7 +542,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.addEventListener("click", () => handleMenuAction(el.getAttribute("data-action")));
   });
 
-  // cam toggle
   const camT = () => {
     $("mobileFrame")?.classList.toggle("tracking-active");
     isTracking = !isTracking;
@@ -578,32 +550,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("camBtn")?.addEventListener("click", camT);
   window.toggleCam = camT;
 
-  // notif dropdown toggle
   $("notifBtn")?.addEventListener("click", () => $("notifDropdown")?.classList.toggle("show"));
 
-  // login
   $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
   $("appleLoginBtn")?.addEventListener("click", () => alert("Apple ile giriş yakında evladım."));
 
-  // terms
   $("termsAcceptBtn")?.addEventListener("click", async () => {
     if(!$("termsCheck")?.checked) return alert("Onayla evladım.");
-    try{
-      const ok = await acceptTerms();
-      if(!ok) throw new Error("acceptTerms false");
-      $("termsOverlay").style.display="none";
-      $("termsOverlay").classList.remove("active");
-      window.enterApp?.();
-      const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const name = u.fullname || u.name || u.email || "Evladım";
-      setTimeout(()=> typeWriterLib(`Hoş geldin ${name}. Ben Caynana.`, "chat"), 500);
-    }catch(e){
-      console.log("Terms accept error:", e);
-      alert("Sözleşme onayı kaydedilemedi evladım.");
-    }
+    const ok = await acceptTerms();
+    if(!ok) return alert("Sözleşme onayı kaydedilemedi.");
+    $("termsOverlay").style.display="none";
+    $("termsOverlay").classList.remove("active");
+    window.enterApp?.();
   });
 
-  // menu footer actions
   $("logoutBtn")?.addEventListener("click", () => logout());
   $("deleteAccountBtn")?.addEventListener("click", () => deleteAccount());
 
@@ -611,21 +571,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   if(user && (user.id || user.email)) {
     $("loginOverlay")?.classList.remove("active");
-    if(!user.terms_accepted_at) {
-      window.showTermsOverlay?.();
-    } else {
-      const name = user.fullname || user.name || user.email || "Evladım";
-      setTimeout(()=> typeWriterLib(`Hoş geldin ${name}.`, "chat"), 500);
-    }
+    if(!user.terms_accepted_at) window.showTermsOverlay?.();
   }
 });
 
-// Global helpers
-window.toggleMenu = () => $("menuOverlay")?.classList.toggle("open");
 window.openFal = openFalPanel;
 window.closeFal = closeFalPanel;
 window.handleFalFile = handleFalPhoto;
 </script>
-
 </body>
 </html>
