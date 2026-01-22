@@ -18,14 +18,21 @@ function getIdToken(){ return (localStorage.getItem("google_id_token") || "").tr
 export function openFalPanel() {
   const overlay = document.getElementById('falOverlay');
   if (!overlay) return;
+
+  // ✅ display:none ise görünür yap
+  overlay.style.display = "flex";
   overlay.classList.add('active');
+
   resetFal();
 }
 
 export function closeFalPanel() {
   const overlay = document.getElementById('falOverlay');
   if (!overlay) return;
+
   overlay.classList.remove('active');
+  // ✅ tekrar gizle
+  overlay.style.display = "none";
 }
 
 function resetFal() {
@@ -48,8 +55,10 @@ function updateStatus(text) {
   if (el) el.innerText = text;
 }
 
-// Fotoğraf Çekme İşlemi
 export async function handleFalPhoto(fileInput) {
+  // ✅ 3 foto sonrası ekstra tetiklemeleri engelle
+  if (photoCount >= 3) return;
+
   const file = fileInput?.files?.[0];
   if (!file) return;
 
@@ -60,13 +69,14 @@ export async function handleFalPhoto(fileInput) {
     try {
       const raw = String(e?.target?.result || "");
       const base64 = raw.includes(",") ? raw.split(",")[1] : raw;
+
       if (!base64) {
         updateStatus("Resim okunamadı, tekrar dene.");
         if (fileInput) fileInput.value = "";
         return;
       }
 
-      // İlk resimde fincan kontrolü yap
+      // İlk resimde fincan kontrolü
       if (photoCount === 0) {
         updateStatus("Dur bakayım bu fincan mı...");
 
@@ -163,11 +173,9 @@ async function startFalAnalysis() {
     });
 
     const data = await res.json().catch(() => ({}));
-    clearInterval(msgInterval);
 
     if (!res.ok) {
       alert(data.detail || "Fal bakarken bir sorun çıktı.");
-      // UI'ı toparla
       closeFalPanel();
       return;
     }
@@ -175,9 +183,11 @@ async function startFalAnalysis() {
     showResult(data);
 
   } catch (err) {
-    clearInterval(msgInterval);
     alert("Bağlantı koptu evladım.");
     closeFalPanel();
+  } finally {
+    // ✅ interval her koşulda dursun
+    clearInterval(msgInterval);
   }
 }
 
