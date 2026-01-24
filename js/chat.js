@@ -10,6 +10,7 @@ import { STORAGE_KEY } from "./config.js";
   - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
   - Backend’e son 30 mesaj gider
   - İlk mesajı asistan yazmaz (main.js kontrolünde)
+  - Hitap: önce profile.hitap, yoksa profile.fullname'in ilk adı, yoksa yakalanan isim
 */
 
 const SAFETY_PATTERNS = {
@@ -22,6 +23,12 @@ function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {
 
 function hasLoginToken() {
   return !!(localStorage.getItem("google_id_token") || "").trim();
+}
+
+function firstNameFromFullname(full=""){
+  const s = String(full||"").trim();
+  if(!s) return "";
+  return s.split(/\s+/)[0];
 }
 
 // --------------------
@@ -51,8 +58,12 @@ function maybePersistNameFromUserMessage(userMessage){
   const name = extractNameFromText(userMessage);
   if(!name) return;
 
+  // fullname olarak yakalananı yaz (tek kelimeyse zaten ad)
   p.fullname = name;
-  if(!p.hitap) p.hitap = name;
+
+  // hitap = ilk isim
+  const fn = firstNameFromFullname(name);
+  if(!p.hitap) p.hitap = fn || name;
 
   setProfile(p);
 }
@@ -135,9 +146,17 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
   const cleanHistory = limitHistory(normalizeHistory(history), 30);
 
+  // Hitap önceliği: hitap > fullname(first name)
+  const displayName =
+    String(profile.hitap || "").trim() ||
+    firstNameFromFullname(profile.fullname || "") ||
+    "";
+
   const memoryProfile = {
     hitap: profile.hitap || null,
     fullname: profile.fullname || null,
+    display_name: displayName || null,
+
     botName: profile.botName || null,
     dob: profile.dob || null,
     gender: profile.gender || null,
@@ -156,7 +175,16 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     user_id: userId,
     mode,
     history: cleanHistory,
+
+    // 🔥 KİŞİSEL VERİ KAYNAĞI
     profile: memoryProfile,
+
+    // 🔥 Hitap kuralını backend’e taşımak için ekstra ipucu
+    // Backend yok sayarsa sorun olmaz; kullanan backend ise hitap oturur.
+    system_hint: displayName
+      ? `Kullanıcıya "${displayName}" diye hitap et. Profil doluysa profili öncelikle kullan.`
+      : `Profil doluysa profili öncelikle kullan. Kullanıcı adını söylediyse onu hatırla.`,
+
     web: "auto",
     enable_web_search: true
   };
