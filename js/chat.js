@@ -1,32 +1,70 @@
-// js/chat.js (FINAL - Profile-aware memory, History limit, Login required, 1x retry)
+// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
 
 /*
-  KURALLAR (KİLİTLİ):
-  - Guest yok (login zorunlu)
-  - History backend’e SON 30 mesaj gider
-  - Profil doluysa KİŞİSEL cevaplarda profil ÖNCELİKLİ
-  - Profil boşsa sohbetten çıkarım yapılır
-  - "Adım Oğuz" gibi bilgiler unutulmaz (profil + history)
+  KİLİT DAVRANIŞ:
+  - Guest yok (google_id_token yoksa cevap yok)
+  - Profil doluysa (hitap/fullname) öncelikle oradan hitap
+  - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
+  - Backend’e son 30 mesaj gider
+  - İlk mesajı asistan yazmaz (main.js kontrolünde)
 */
 
-// Sadece bariz risk durumunda frontend keser
 const SAFETY_PATTERNS = {
   self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
 };
 
-function safeJson(s, fb = {}) {
-  try { return JSON.parse(s || ""); } catch { return fb; }
-}
-
-function getProfile() {
-  return safeJson(localStorage.getItem(STORAGE_KEY), {});
-}
+function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
+function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
+function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {})); }
 
 function hasLoginToken() {
   return !!(localStorage.getItem("google_id_token") || "").trim();
+}
+
+// --------------------
+// NAME CAPTURE (profil yoksa)
+// --------------------
+function firstTokenName(s=""){
+  const t = String(s||"").trim();
+  if(!t) return "";
+  // "Oğuz Başkan" gelirse "Oğuz"
+  return t.split(/\s+/)[0];
+}
+
+function extractNameFromText(text=""){
+  // basit ama işe yarar: "adım oğuz", "ismim oğuz", "ben oğuz"
+  const s = String(text||"").trim();
+
+  // adım X / ismim X
+  let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
+  if(m && m[2]) return m[2];
+
+  // ben X'im / ben X (çok agresif olmasın)
+  m = s.match(/\bben\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
+  if(m && m[1]) return m[1];
+
+  return "";
+}
+
+function maybePersistNameFromUserMessage(userMessage){
+  const p = getProfile();
+
+  // Profilde zaten fullname/hitap varsa elleme
+  const has = !!(String(p.hitap||"").trim() || String(p.fullname||"").trim());
+  if(has) return;
+
+  const name = extractNameFromText(userMessage);
+  if(!name) return;
+
+  // Profilde fullname yoksa set et
+  p.fullname = name;
+  // hitap yoksa da basit hitap oluştur (sadece ad)
+  if(!p.hitap) p.hitap = name;
+
+  setProfile(p);
 }
 
 // --------------------
@@ -34,9 +72,8 @@ function hasLoginToken() {
 // --------------------
 function normalizeHistory(history = []) {
   if (!Array.isArray(history)) return [];
-
   return history
-    .map(h => {
+    .map((h) => {
       if (!h || typeof h !== "object") return null;
 
       const roleRaw = String(h.role || h.type || "").toLowerCase();
@@ -45,18 +82,16 @@ function normalizeHistory(history = []) {
         roleRaw === "user" ? "user" :
         null;
 
-      const content =
-        (h.content ?? h.text ?? h.message ?? "").toString().trim();
-
+      const content = String(h.content ?? h.text ?? h.message ?? "").trim();
       if (!role || !content) return null;
       return { role, content };
     })
     .filter(Boolean);
 }
 
-function limitHistory(history, max = 30) {
-  if (history.length <= max) return history;
-  return history.slice(history.length - max);
+function limitHistory(history, maxItems = 30) {
+  if (history.length <= maxItems) return history;
+  return history.slice(history.length - maxItems);
 }
 
 // --------------------
@@ -64,14 +99,7 @@ function limitHistory(history, max = 30) {
 // --------------------
 function pickAssistantText(data) {
   if (!data || typeof data !== "object") return "";
-  const keys = [
-    "assistant_text",
-    "text",
-    "assistant",
-    "reply",
-    "answer",
-    "output"
-  ];
+  const keys = ["assistant_text","text","assistant","reply","answer","output"];
   for (const k of keys) {
     const v = String(data[k] || "").trim();
     if (v) return v;
@@ -79,10 +107,10 @@ function pickAssistantText(data) {
   return "";
 }
 
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 // --------------------
-// MAIN API CALL
+// MAIN
 // --------------------
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
   const message = String(msg || "").trim();
@@ -91,47 +119,40 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   // Signature uyumu
   let mode = "chat";
   let history = [];
-
   if (Array.isArray(modeOrHistory)) {
     history = modeOrHistory;
   } else {
-    mode = String(modeOrHistory || "chat");
+    mode = String(modeOrHistory || "chat").trim() || "chat";
     history = maybeHistory;
   }
 
   // Login zorunlu
   if (!hasLoginToken()) {
-    return {
-      text: "Önce giriş yapman lazım evladım. 🙂",
-      error: true,
-      code: "AUTH_REQUIRED"
-    };
+    return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
   }
 
-  // Güvenlik
+  // Self-harm guard
   if (SAFETY_PATTERNS.self_harm.test(message)) {
     return {
-      text:
-        "Aman evladım sakın. Yalnız değilsin. Eğer acil risk varsa 112’yi ara. " +
-        "İstersen ne olduğunu anlat, buradayım.",
+      text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen ne olduğunu anlat, buradayım.",
       error: true,
       code: "SAFETY"
     };
   }
 
+  // Profil yoksa ad yakala ve profile’a yaz
+  maybePersistNameFromUserMessage(message);
+
   const profile = getProfile();
-  const userId = profile.id || "guest";
+  const userId = (profile?.id || "").trim() || "guest";
 
-  const cleanHistory = limitHistory(
-    normalizeHistory(history),
-    30
-  );
+  const cleanHistory = limitHistory(normalizeHistory(history), 30);
 
-  // 🔥 PROFİL HAFIZASI (ÖNCELİKLİ)
+  // Profile-first memory paketi
   const memoryProfile = {
     hitap: profile.hitap || null,
-    botName: profile.botName || null,
     fullname: profile.fullname || null,
+    botName: profile.botName || null,
     dob: profile.dob || null,
     gender: profile.gender || null,
     maritalStatus: profile.maritalStatus || null,
@@ -147,10 +168,10 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     text: message,
     message: message,
     user_id: userId,
-    mode: mode,
+    mode,
     history: cleanHistory,
 
-    // 👇 Modelin hafızası buradan beslenir
+    // 🔥 KİŞİSEL VERİ KAYNAĞI
     profile: memoryProfile,
 
     // Web arama sinyali
@@ -162,17 +183,13 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     const res = await apiPOST("/api/chat", payload);
 
     if (res.status === 401 || res.status === 403) {
-      return {
-        text: "Oturumun düşmüş gibi. Çıkış yapıp tekrar girer misin?",
-        error: true,
-        code: "AUTH_EXPIRED"
-      };
+      return { text: "Oturumun düşmüş gibi. Çıkış yapıp tekrar girer misin?", error: true, code: "AUTH_EXPIRED" };
     }
 
     if (!res.ok) {
-      const t = await res.text().catch(() => "");
-      const err = new Error(`API ${res.status}: ${t}`);
-      err.isServer = res.status >= 500;
+      const bodyText = await res.text().catch(() => "");
+      const err = new Error(`API Error ${res.status} ${bodyText}`);
+      err.isServer = res.status >= 500 && res.status <= 599;
       err.status = res.status;
       throw err;
     }
@@ -187,15 +204,12 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   try {
     return await attempt();
   } catch (e) {
-    if (e.isServer || e.status == null) {
+    const shouldRetry = !!e?.isServer || (e?.status == null);
+    if (shouldRetry) {
       await sleep(600);
       try { return await attempt(); } catch {}
     }
-    return {
-      text: "Bağlantı koptu gibi. Bir daha dener misin?",
-      error: true,
-      code: "NETWORK"
-    };
+    return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
   }
 }
 
