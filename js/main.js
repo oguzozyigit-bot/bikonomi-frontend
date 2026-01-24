@@ -291,16 +291,19 @@ async function deleteAccount(){
       throw new Error(t || "Silme başarısız");
     }
 
-    // ✅ Sözleşme onayı da temizlensin (hesap silindi)
+    // ✅ terms kaydını da sil (yeniden girerse sözleşme sorulsun)
     const termsKey = `caynana_terms_accepted_at::${String(u.email||u.id).toLowerCase()}`;
     localStorage.removeItem(termsKey);
 
-    // ✅ Oturumu temizle
+    // ✅ session temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
 
     alert("Hesabın silindi.");
-    location.reload();
+
+    // ❗️reload YOK
+    window.location.href = "/";
+
   } catch (e) {
     console.error(e);
     alert("Hesap silinemedi. Lütfen tekrar dene.");
