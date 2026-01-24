@@ -765,3 +765,5 @@ button:focus, a:focus, textarea:focus{
 }
 /* Menüde HTML'in "Asistan" başlığını gizle (biz zaten grup başlığı basıyoruz) */
 .menu-sidebar .section-title:nth-of-type(2){ display:none !important; }
+/* "Son Sohbetler" kalsın, bir sonraki section-title gizlensin */
+.menu-sidebar .section-title + .history-list + .section-title{ display:none !important; }
