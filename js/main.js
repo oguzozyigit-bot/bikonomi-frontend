@@ -1,4 +1,4 @@
-// js/main.js (v5.2 PREMIUM - NO HTML LOSS)
+// js/main.js (v5.2 FINAL - Google Only, No Eyes/Tracking)
 // HTML'e dokunmadan: giriş, terms, menü, notif, fal, chat, animasyonları bağlar.
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
@@ -36,7 +36,7 @@ window.showTermsOverlay = () => {
   t.style.display = "flex";
 };
 
-// Google prompt gösterilemezse dev hint
+// Google prompt gösterilemezse fallback hint
 window.showGoogleButtonFallback = (reason = "unknown") => {
   const hint = $("loginHint");
   if (hint) hint.textContent = `Google penceresi açılamadı (${reason}). Alttaki butonu tekrar dene.`;
@@ -260,7 +260,6 @@ async function sendForced(text, mode="chat") {
 function specialAnswerIfNeeded(txt){
   const s = String(txt || "").trim();
 
-  // kim yazdı / kim yarattı
   if (/(seni\s*kim\s*(yazd[ıi]|yaratt[ıi]|yapt[ıi])|kim\s*yazd[ıi]\s*seni|kim\s*yaratt[ıi])/i.test(s)){
     return "Benim arkamda işinde tecrübeli oldukça büyük bir yazılım kadrosu var. Beni şu yazdı ya da yarattı diye kesin isim veremem; ama akıl takımının başı Oğuz Özyiğit, onu söyleyebilirim.";
   }
@@ -315,77 +314,6 @@ async function doSend(forcedText = null, isSystem = false) {
 }
 
 // --------------------
-// Eyes tracking (premium smooth, donmasız)
-// --------------------
-function setGaze(x, y) {
-  const L = $("eyeL"), R = $("eyeR");
-  if (!L || !R) return;
-  const gx = Math.min(Math.max(x * 20, -20), 20);
-  const gy = Math.min(Math.max(y * 14, -14), 14);
-  L.style.setProperty("--gx", gx + "px"); L.style.setProperty("--gy", gy + "px");
-  R.style.setProperty("--gx", gx + "px"); R.style.setProperty("--gy", gy + "px");
-}
-function setLids(top, bot=0) {
-  const L = $("eyeL"), R = $("eyeR");
-  if (!L || !R) return;
-  [L, R].forEach(e => {
-    e.querySelector(".lid-top").style.height = top + "%";
-    e.querySelector(".lid-bot").style.height = bot + "%";
-  });
-}
-
-let isTracking = false;
-let idleTimer = null;
-
-function resetIdle() {
-  $("mobileFrame")?.classList.remove("sleeping");
-  setLids(0,0);
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    if (!isTracking) {
-      $("mobileFrame")?.classList.add("sleeping");
-      setLids(60,20);
-    }
-  }, 30000);
-}
-
-function autoLook() {
-  if ($("mobileFrame")?.classList.contains("sleeping") || isTracking) return;
-  const rx = (Math.random()-0.5)*1.6;
-  const ry = (Math.random()-0.5)*0.6;
-  setGaze(rx, ry);
-  setTimeout(() => setGaze(0,0), 900);
-}
-
-// pointermove throttle
-let _raf=0, _lastEvt=null, _rect=null, _rectAt=0, _idleAt=0;
-function getRect(){
-  const now = performance.now();
-  if(!_rect || (now - _rectAt) > 250){
-    _rect = $("mobileFrame")?.getBoundingClientRect() || null;
-    _rectAt = now;
-  }
-  return _rect;
-}
-window.addEventListener("resize", ()=>{ _rect=null; });
-
-window.addEventListener("pointermove", (e)=>{
-  _lastEvt = e;
-  const now = performance.now();
-  if(now - _idleAt > 500){ _idleAt = now; resetIdle(); }
-  if(isTracking) return;
-  if(_raf) return;
-  _raf = requestAnimationFrame(()=>{
-    _raf=0;
-    const r = getRect();
-    if(!r || r.width<=0 || r.height<=0) return;
-    const x = ((_lastEvt.clientX - r.left) / r.width) * 2 - 1;
-    const y = ((_lastEvt.clientY - r.top) / r.height) * 2 - 1;
-    setGaze(x,y);
-  });
-}, { passive:true });
-
-// --------------------
 // Fal binding
 // --------------------
 function bindFalUI(){
@@ -425,13 +353,11 @@ function bindPageOverlay(){
   $("pageOverlay") && ($("pageOverlay").onclick = (e)=>{ if(e.target === $("pageOverlay")) closePage(); });
 }
 
-// ✅ PRO: Footer + Login alt linkleri overlay'e bağla (HTML'e dokunmadan)
+// ✅ PRO: Footer + Login alt linkleri overlay'e bağla
 function bindStaticLinks(){
-  // footer linkleri (pages/*.html ise yakala, overlay aç)
   document.querySelectorAll(".footer-links a").forEach(a=>{
     a.addEventListener("click", (e)=>{
       const href = (a.getAttribute("href") || "").toLowerCase();
-      // eğer zaten data-page varsa ona göre
       const dp = a.getAttribute("data-page");
       if(dp && STATIC_PAGES[dp]){
         e.preventDefault();
@@ -445,7 +371,6 @@ function bindStaticLinks(){
     });
   });
 
-  // login alt linkleri varsa (data-page veya href ile)
   document.querySelectorAll("[data-page]").forEach(a=>{
     const k = a.getAttribute("data-page");
     if(!k || !STATIC_PAGES[k]) return;
@@ -518,17 +443,9 @@ async function waitForGsi(timeoutMs = 8000){
 function bindAuthUI(){
   $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
 
-  // ✅ PRO: Apple tıklayana Kaynana dili (hazırlanıyor)
+  // Apple tıklayana bilgi (hazırlanıyor)
   $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
     alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel, elin boş dönme 🙂");
-  });
-
-  $("devLoginBtn") && ($("devLoginBtn").onclick = () => {
-    const fake = { id:"dev@local", email:"dev@local", fullname:"Test Kullanıcı", avatar:"", provider:"dev", isSessionActive:true, lastLoginAt:new Date().toISOString() };
-    setUser(fake);
-    $("loginOverlay")?.classList.remove("active");
-    $("loginOverlay") && ($("loginOverlay").style.display = "none");
-    refreshPremiumBars();
   });
 
   $("termsAcceptBtn") && ($("termsAcceptBtn").onclick = async () => {
@@ -594,15 +511,8 @@ function bindComposer(){
     }
   }));
 
-  // tracking toggle
-  const toggle = ()=>{
-    $("mobileFrame")?.classList.toggle("tracking-active");
-    isTracking = !isTracking;
-    resetIdle();
-  };
-  $("camBtn") && ($("camBtn").onclick = toggle);
-  $("mainTrackBtn") && ($("mainTrackBtn").onclick = toggle);
-  $("trackToggleBtn") && ($("trackToggleBtn").onclick = toggle);
+  // Kamera butonu: Fal panelini aç (göz/takip kaldırıldı)
+  $("camBtn") && ($("camBtn").onclick = () => openFalPanel());
 }
 
 // --------------------
@@ -620,7 +530,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   bindPageOverlay();
   bindAuthUI();
 
-  // ✅ PRO: footer/login linkleri overlay'e bağla
+  // footer/login linkleri overlay'e bağla
   bindStaticLinks();
 
   // profile btn route
@@ -641,7 +551,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   if(okGsi) $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
   initAuth();
 
-  // logout / delete
+  // logout / delete (refreshPremiumBars zaten login kontrolü yapıyor)
   $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
   $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = () => deleteAccount());
 
@@ -660,6 +570,4 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   }
 
   refreshPremiumBars();
-  resetIdle();
-  setInterval(autoLook, 4000);
 });
