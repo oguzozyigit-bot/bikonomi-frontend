@@ -174,7 +174,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     user_id: userId,
     chat_id: localStorage.getItem("caynana_chat_id"), // ✅ SOHBET HAFIZASI
     mode,
-    history: cleanHistory,
     profile: memoryProfile,
     system_hint: displayName
       ? `Kullanıcıya "${displayName}" diye hitap et.`
