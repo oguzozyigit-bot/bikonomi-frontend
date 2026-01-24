@@ -117,9 +117,24 @@
 
 <!-- LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
-  <div class="login-card">
-    <div class="brand-name" style="font-size:24px; margin-bottom:5px;">Caynana.AI</div>
-    <div style="font-size:12px; color:#888; margin-bottom:10px;">Yapay Zekânın Geleneksel Aklı</div>
+  <div class="login-card login-premium">
+
+    <!-- Tahtaravalli (animasyon) -->
+    <div class="login-seesaw-wrap" aria-hidden="true">
+      <svg class="login-seesaw" viewBox="0 0 220 70">
+        <!-- bar -->
+        <g class="login-seesaw-bar">
+          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="20" r="10" fill="#bef264"/>
+          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
+        </g>
+        <!-- pivot -->
+        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
+      </svg>
+    </div>
+
+    <div class="brand-name" style="font-size:24px; margin:6px 0 4px;">Caynana.AI</div>
+    <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
 
     <div class="login-sub">
       <b>Ücretsiz üyelik</b> için lütfen giriş yapın. İlk defa girişte sözleşme onayı istenir.
@@ -130,33 +145,39 @@
     <button class="auth-btn apple disabled" id="appleLoginBtn">Apple ile Devam Et</button>
     <div class="coming-soon">Apple girişi hazırlanıyor… (şimdilik nazlanıyor 😄)</div>
 
-    <div class="trust-links">
-      <a href="#" data-page="about">Hakkımızda</a>
-      <a href="#" data-page="faq">SSS</a>
-      <a href="#" data-page="privacy">Gizlilik</a>
-      <a href="#" data-page="contact">İletişim</a>
-      <a href="#" data-page="terms">Sözleşme</a>
+    <!-- /pages linkleri -->
+    <div class="trust-links trust-links-clean">
+      <a href="/pages/about.html">Hakkımızda</a>
+      <a href="/pages/faq.html">SSS</a>
+      <a href="/pages/privacy.html">Gizlilik</a>
+      <a href="/pages/contact.html">İletişim</a>
+      <a href="/pages/terms.html">Sözleşme</a>
     </div>
 
-    <div id="loginHint" style="font-size:10px; color:#555; margin-top:12px;">Servisler yükleniyor...</div>
+    <div class="login-footer">@CaynanaAI By Ozyigits 2026</div>
+
+    <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
   </div>
 </div>
 
+
 <!-- TERMS (ilk girişte zorunlu) -->
 <div class="full-overlay" id="termsOverlay">
-  <div class="login-card">
+  <div class="login-card login-premium">
     <div class="brand-name">Sözleşme</div>
-    <div style="font-size:12px; color:#888; margin-bottom:10px;">Okudum de geç evladım.</div>
-    <div style="border:1px solid #333; height:150px; overflow-y:auto; font-size:10px; text-align:left; padding:10px; margin-bottom:10px; background:#111;">
-      <p>1. Caynana AI eğlence amaçlıdır. Ciddiye alıp küsme.</p>
-      <p>2. Fal ve yorumlar yapay zeka üretimidir.</p>
-      <p>3. Kişisel veriler, hizmeti sunmak ve güvenliği sağlamak için işlenir.</p>
+    <div class="login-slogan" style="margin-bottom:10px;">Okudum de geç evladım.</div>
+
+    <div class="terms-frame-wrap">
+      <iframe id="termsFrame" src="/pages/terms.html" title="Kullanıcı Sözleşmesi"></iframe>
     </div>
+
     <div class="agreement-box">
       <input type="checkbox" id="termsCheck">
       <label for="termsCheck">Okudum, onaylıyorum.</label>
     </div>
+
     <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+    <div class="login-footer">@CaynanaAI By Ozyigits 2026</div>
   </div>
 </div>
 
