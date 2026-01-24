@@ -715,3 +715,19 @@ button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
 }
+/* GRUP BAŞLIKLARI RENKLERİ */
+.menu-action[data-action="chat"]::before{
+  color: rgba(255,179,0,.55) !important; /* ASİSTAN = turuncu */
+}
+
+.menu-action[data-action="about"]::before{
+  color: rgba(255,82,82,.55) !important; /* KURUMSAL = kırmızı */
+}
+
+/* İstersen chip içindeki minimal ikon rengi de grup rengine yakın olsun */
+.menu-action[data-action="chat"] .ico::before{
+  color: rgba(255,179,0,.80) !important;
+}
+.menu-action[data-action="about"] .ico::before{
+  color: rgba(255,82,82,.80) !important;
+}
