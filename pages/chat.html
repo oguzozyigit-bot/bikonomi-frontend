@@ -46,6 +46,7 @@ header{
   padding:10px 14px;
   border-radius:14px;
   line-height:1.4;
+  white-space:pre-wrap;
 }
 .user{align-self:flex-end;background:#1e1e1e}
 .bot{align-self:flex-start;background:var(--panel);border:1px solid var(--border)}
@@ -54,14 +55,20 @@ header{
   gap:8px;
   padding:12px;
   border-top:1px solid var(--border);
+  align-items:flex-end;
 }
-.composer input{
+.composer textarea{
   flex:1;
   padding:12px;
   border-radius:12px;
   border:1px solid var(--border);
   background:#111;
   color:var(--text);
+  resize:none;
+  overflow:hidden;
+  min-height:44px;
+  max-height:160px;
+  line-height:1.4;
 }
 .btn{
   padding:10px 12px;
@@ -85,11 +92,11 @@ header{
   <input type="file" id="fileInput" multiple style="display:none" />
   <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" />
 
-  <button class="btn" onclick="fileInput.click()">📎</button>
-  <button class="btn" onclick="cameraInput.click()">📷</button>
+  <button class="btn" id="fileBtn">📎</button>
+  <button class="btn" id="cameraBtn">📷</button>
   <button class="btn" id="micBtn">🎙️</button>
 
-  <input id="msgInput" placeholder="Bir şey sor…" />
+  <textarea id="msgInput" placeholder="Bir şey sor…"></textarea>
   <button class="btn" id="sendBtn">➤</button>
 </div>
 
@@ -104,6 +111,12 @@ const input = document.getElementById("msgInput");
 
 ChatStore.load(chatEl);
 
+// textarea auto-grow
+input.addEventListener("input", ()=>{
+  input.style.height = "auto";
+  input.style.height = input.scrollHeight + "px";
+});
+
 async function send(){
   const text = input.value.trim();
   if(!text) return;
@@ -111,39 +124,49 @@ async function send(){
   addUserBubble(text);
   ChatStore.add("user", text);
   input.value="";
+  input.style.height="auto";
 
   const res = await fetchTextResponse(text,"chat",ChatStore.history());
   typeWriter(res.text);
   ChatStore.add("assistant",res.text);
 }
 
-sendBtn.onclick = send;
-input.onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); send(); } };
+document.getElementById("sendBtn").onclick = send;
+
+input.addEventListener("keydown", e=>{
+  if(e.key==="Enter" && !e.shiftKey){
+    e.preventDefault();
+    send();
+  }
+});
 
 // Mikrofon → yazıya çevir
 let rec;
-micBtn.onclick = ()=>{
+document.getElementById("micBtn").onclick = ()=>{
   if(!window.SpeechRecognition && !window.webkitSpeechRecognition){
     alert("Tarayıcı desteklemiyor");return;
   }
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   rec = new SR();
   rec.lang="tr-TR";
-  rec.onresult=e=> input.value += " " + e.results[0][0].transcript;
+  rec.onresult=e=> input.value += (input.value ? " " : "") + e.results[0][0].transcript;
   rec.start();
 };
 
-// Dosya / Foto mesaj olarak düşsün
+// Dosya / Foto
+document.getElementById("fileBtn").onclick = ()=> fileInput.click();
+document.getElementById("cameraBtn").onclick = ()=> cameraInput.click();
+
 fileInput.onchange = e=>{
   [...e.target.files].forEach(f=>{
-    addUserBubble("📎 Dosya eklendi: "+f.name);
-    ChatStore.add("user","Dosya yüklendi: "+f.name);
+    addUserBubble("📎 Dosya eklendi: " + f.name);
+    ChatStore.add("user","[DOSYA] " + f.name);
   });
 };
 cameraInput.onchange = e=>{
   if(e.target.files[0]){
     addUserBubble("📷 Fotoğraf eklendi");
-    ChatStore.add("user","Fotoğraf yüklendi");
+    ChatStore.add("user","[FOTO] Kullanıcı fotoğraf yükledi");
   }
 };
 </script>
