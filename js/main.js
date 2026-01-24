@@ -276,25 +276,22 @@ async function deleteAccount(){
   }
 
   try {
-    // ✅ DÜZELTİLDİ: update değil set
     const r = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    // ✅ Backend header istiyorsa burada yakalar:
-    "Authorization": `Bearer ${idToken}`,
-    "X-Google-Token": idToken
-  },
-  body: JSON.stringify({
-    user_id: uid,
-    meta: {
-      email: email,
-      deleted_at: new Date().toISOString()
-    },
-    // body'de de kalsın (bazı backendler buradan okur)
-    google_id_token: idToken
-  })
-});
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${idToken}`, // ✅
+        "X-Google-Token": idToken            // ✅
+      },
+      body: JSON.stringify({
+        user_id: uid,
+        meta: {
+          email: email,
+          deleted_at: new Date().toISOString()
+        },
+        google_id_token: idToken
+      })
+    });
 
     const bodyText = await r.text().catch(()=> "");
 
@@ -304,11 +301,9 @@ async function deleteAccount(){
       return;
     }
 
-    // terms kaydını temizle
     const termsKey = `caynana_terms_accepted_at::${email}`;
     localStorage.removeItem(termsKey);
 
-    // session temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
 
