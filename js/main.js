@@ -1,5 +1,4 @@
-// js/main.js (v5.2 FINAL - Google Only, Pages Routing, Terms Gate)
-// HTML'e dokunmadan: giriş, terms, menü, notif, fal, chat bağlar.
+// js/main.js (v5.2 FINAL - Google Only, Pages Routing, Terms Gate + Google Login Fix)
 // Statik sayfalar overlay değil: /pages/*.html üzerinden açılır.
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
@@ -37,10 +36,9 @@ window.showTermsOverlay = () => {
   t.style.display = "flex";
 };
 
-// Google prompt gösterilemezse fallback hint
 window.showGoogleButtonFallback = (reason = "unknown") => {
   const hint = $("loginHint");
-  if (hint) hint.textContent = `Google penceresi açılamadı (${reason}). Alttaki butonu tekrar dene.`;
+  if (hint) hint.textContent = `Google girişi açılamadı (${reason}). Sayfayı yenileyip tekrar dene.`;
 };
 
 // --------------------
@@ -55,13 +53,11 @@ function refreshPremiumBars() {
   const hint = $("loginHint");
   if (hint && !logged) hint.textContent = "Servisler hazır. Google ile devam et evladım.";
 
-  // Samimiyet meter (şimdilik local)
   const yp = Number((u?.yp_percent ?? 50));
   const p = Math.max(5, Math.min(100, yp));
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
 
-  // Profil butonu login yoksa overlay açsın
   const profileBtn = $("profileBtn");
   if (profileBtn) {
     profileBtn.onclick = () => {
@@ -74,7 +70,6 @@ function refreshPremiumBars() {
     };
   }
 
-  // Menü footer aksiyonları login yoksa auth açsın
   $("logoutBtn") && ($("logoutBtn").onclick = () => {
     if (!logged) {
       $("loginOverlay")?.classList.add("active");
@@ -85,20 +80,16 @@ function refreshPremiumBars() {
   });
 
   $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
-    if (!logged) {
-      alert("Önce giriş yap evladım.");
-      return;
-    }
+    if (!logged) return alert("Önce giriş yap evladım.");
     await deleteAccount();
   });
 
-  // Brand title subtitle
   const bw = $("brandWrapper");
   if (bw) bw.dataset.user = logged ? name : "MİSAFİR";
 }
 
 // --------------------
-// Menu (grid doldur + aksiyon bağla)
+// Menu (grid + aksiyon)
 // --------------------
 const MENU_ITEMS = [
   { key: "chat",       label: "Sohbet",      sub: "Dertleş",      ico: "💬" },
@@ -114,12 +105,13 @@ const MENU_ITEMS = [
   { key: "horoscope",  label: "Burç",        sub: "Günlük",       ico: "♈" },
   { key: "dream",      label: "Rüya",        sub: "Yorumla",      ico: "🌙" },
 
-  // ✅ /pages statik sayfalar
-  { key: "about",      label: "Hakkımızda",  sub: "Biz kimiz?",   ico: "ℹ️" },
-  { key: "faq",        label: "SSS",         sub: "Sorular",      ico: "❓" },
-  { key: "privacy",    label: "Gizlilik",    sub: "Güven",        ico: "🔒" },
-  { key: "contact",    label: "İletişim",    sub: "Bize yaz",     ico: "✉️" },
-  { key: "terms",      label: "Sözleşme",    sub: "Kurallar",     ico: "📄" },
+  // ✅ /pages statik sayfalar (senin dosya adların)
+  { key: "hakkimizda", label: "Hakkımızda",  sub: "Biz kimiz?",   ico: "ℹ️" },
+  { key: "sss",        label: "SSS",         sub: "Sorular",      ico: "❓" },
+  { key: "gizlilik",   label: "Gizlilik",    sub: "Güven",        ico: "🔒" },
+  { key: "iletisim",   label: "İletişim",    sub: "Bize yaz",     ico: "✉️" },
+  { key: "sozlesme",   label: "Sözleşme",    sub: "Kurallar",     ico: "📄" },
+  { key: "uyelik",     label: "Üyelik",      sub: "Detaylar",     ico: "🪪" },
 ];
 
 function populateMenuGrid() {
@@ -139,13 +131,13 @@ function openMenu() { $("menuOverlay")?.classList.add("open"); }
 function closeMenu() { $("menuOverlay")?.classList.remove("open"); }
 
 function goPage(key){
-  // burada dosya adlarını senin /pages yapına göre mapliyoruz
   const map = {
-    about:   "/pages/about.html",
-    faq:     "/pages/faq.html",
-    privacy: "/pages/privacy.html",
-    contact: "/pages/contact.html",
-    terms:   "/pages/terms.html",
+    hakkimizda: "/pages/hakkimizda.html",
+    iletisim:   "/pages/iletisim.html",
+    gizlilik:   "/pages/gizlilik.html",
+    sozlesme:   "/pages/sozlesme.html",
+    sss:        "/pages/sss.html",
+    uyelik:     "/pages/uyelik.html",
   };
   const url = map[key];
   if (url) location.href = url;
@@ -154,8 +146,7 @@ function goPage(key){
 async function handleMenuAction(action) {
   closeMenu();
 
-  // ✅ /pages sayfalar
-  if (["about","faq","privacy","contact","terms"].includes(action)) {
+  if (["hakkimizda","iletisim","gizlilik","sozlesme","sss","uyelik"].includes(action)) {
     goPage(action);
     return;
   }
@@ -166,7 +157,6 @@ async function handleMenuAction(action) {
   if (action === "horoscope") { location.href = "pages/burc.html"; return; }
   if (action === "dream") { location.href = "pages/ruya.html"; return; }
 
-  // chat modları
   if (action === "dedikodu") { await sendForced("Dedikodu modundayız. Anlat bakalım… 😏", "dedikodu"); return; }
   if (action === "shopping") { await sendForced("Alışverişe geçtik. Ne alacaksın?", "shopping"); return; }
   if (action === "translate") { await sendForced("Çeviri: metni yapıştır, dilini söyle.", "trans"); return; }
@@ -175,12 +165,11 @@ async function handleMenuAction(action) {
   if (action === "special") { await sendForced("Özel gün: hangi tarihleri ekleyelim?", "chat"); return; }
   if (action === "chat") { await sendForced("Anlat bakalım evladım.", "chat"); return; }
 
-  // fallback
   location.href = `pages/${action}.html`;
 }
 
 // --------------------
-// Chat send
+// Chat
 // --------------------
 let currentMode = "chat";
 let chatHistory = [];
@@ -203,7 +192,6 @@ async function sendForced(text, mode="chat") {
   await doSend(text, true);
 }
 
-// “kim yazdı/yarattı” özel cevap
 function specialAnswerIfNeeded(txt){
   const s = String(txt || "").trim();
   if (/(seni\s*kim\s*(yazd[ıi]|yaratt[ıi]|yapt[ıi])|kim\s*yazd[ıi]\s*seni|kim\s*yaratt[ıi])/i.test(s)){
@@ -262,7 +250,6 @@ function bindFalUI(){
   $("closeFalBtn") && ($("closeFalBtn").onclick = () => closeFalPanel());
   const fi = $("falInput");
   if (fi) fi.onchange = () => handleFalPhoto(fi);
-
   const lt = $("loadingText");
   if (lt) lt.style.color = "var(--gold)";
 }
@@ -313,7 +300,7 @@ async function deleteAccount(){
 }
 
 // --------------------
-// Login / Terms
+// Login / Terms (Google Fix)
 // --------------------
 async function waitForGsi(timeoutMs = 8000){
   const t0 = Date.now();
@@ -324,13 +311,37 @@ async function waitForGsi(timeoutMs = 8000){
   return false;
 }
 
-function bindAuthUI(){
-  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
+// ✅ Google login: önce prompt dene (GSI hazırsa), olmazsa auth.js handleLogin'e düş
+async function googleLoginSmart(){
+  const hint = $("loginHint");
+  try{
+    if(window.google?.accounts?.id){
+      // prompt deneyelim (bazı kurulumlarda renderButton/prompt initAuth içinde yapılır)
+      window.google.accounts.id.prompt((n)=>{
+        // Not displayed vs durumlarında fallback
+        if (n?.isNotDisplayed?.() || n?.isSkippedMoment?.()){
+          if(hint) hint.textContent = "Google penceresi açılamadı. Tekrar deniyorum...";
+          handleLogin("google");
+        }
+      });
+      return;
+    }
+  }catch(e){}
 
+  // fallback
+  handleLogin("google");
+}
+
+function bindAuthUI(){
+  // Google
+  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => googleLoginSmart());
+
+  // Apple (şimdilik)
   $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
-    alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel, elin boş dönme 🙂");
+    alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel 🙂");
   });
 
+  // Terms accept
   $("termsAcceptBtn") && ($("termsAcceptBtn").onclick = async () => {
     if(!$("termsCheck")?.checked) return alert("Onayla evladım.");
     const ok = await acceptTerms();
@@ -360,7 +371,7 @@ function bindNotifUI(){
 }
 
 // --------------------
-// Menu UI binding
+// Menu UI
 // --------------------
 function bindMenuUI(){
   $("hambBtn") && ($("hambBtn").onclick = openMenu);
@@ -392,7 +403,6 @@ function bindComposer(){
     }
   }));
 
-  // Kamera butonu: Fal panelini aç
   $("camBtn") && ($("camBtn").onclick = () => openFalPanel());
 }
 
@@ -409,23 +419,17 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   bindFalUI();
   bindAuthUI();
 
-  // profile btn route
-  $("profileBtn") && ($("profileBtn").onclick = () => {
-    const u = getUser();
-    const logged = !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
-    if(!logged){
-      $("loginOverlay")?.classList.add("active");
-      if ($("loginOverlay")) $("loginOverlay").style.display = "flex";
-      return;
-    }
-    location.href = "pages/profil.html";
-  });
-
   // init notif + auth
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+
+  // GSI bekle
   const okGsi = await waitForGsi();
   if(okGsi && $("loginHint")) $("loginHint").textContent = "Google hazır. Devam et evladım.";
-  initAuth();
+
+  // init auth (render/prompt setup burada olmalı)
+  try { initAuth(); } catch(e) {
+    window.showGoogleButtonFallback?.("initAuth hata");
+  }
 
   // logout / delete
   $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
