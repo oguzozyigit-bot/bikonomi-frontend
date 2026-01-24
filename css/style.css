@@ -599,3 +599,10 @@ button:focus, a:focus, textarea:focus{
   padding-top: 18px !important;
   border-top: 1px solid rgba(255,255,255,.10) !important;
 }
+/* ASTRO AI – çok hafif vurgu */
+.menu-action[data-action="fal"]::after,
+.menu-action[data-action="tarot"]::after,
+.menu-action[data-action="horoscope"]::after,
+.menu-action[data-action="dream"]::after{
+  color: rgba(190,242,100,.75);
+}
