@@ -1,248 +1,150 @@
-// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required)
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Caynana Sohbet</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* CHAT SAYFASINA ÖZEL EK STİLLER */
+        body { display: flex; height: 100dvh; overflow: hidden; background: #000; }
+        
+        /* SIDEBAR (GEÇMİŞ) */
+        .sidebar {
+            width: 280px; background: #111; border-right: 1px solid #222;
+            display: flex; flex-direction: column; transition: transform 0.3s;
+            z-index: 100;
+        }
+        .sidebar-header { padding: 15px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        .new-chat-btn {
+            background: #222; color: #ccc; border: 1px solid #333;
+            padding: 10px; width: 100%; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; font-size: 13px; transition: 0.2s;
+        }
+        .new-chat-btn:hover { background: #333; color: #fff; }
+        
+        .history-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .chat-item {
+            padding: 10px; border-radius: 6px; color: #bbb; cursor: pointer;
+            font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;
+        }
+        .chat-item:hover { background: #1a1a1a; color: #fff; }
+        .chat-item.active { background: #222; color: #bef264; font-weight: bold; }
+        .chat-item .del-btn { opacity: 0; color: #ef5350; transition: 0.2s; padding: 5px; }
+        .chat-item:hover .del-btn { opacity: 1; }
 
-import { apiPOST } from "./api.js";
-import { STORAGE_KEY } from "./config.js";
+        /* MAIN CHAT AREA */
+        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; background: #000; }
+        
+        /* HEADER (MOBILE TOGGLE) */
+        .chat-header {
+            padding: 10px 15px; display: flex; align-items: center; gap: 15px;
+            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
+            border-bottom: 1px solid #222;
+        }
+        .mobile-menu-btn { background: none; border: none; color: #fff; font-size: 20px; cursor: pointer; display: none; }
+        
+        /* MESSAGES */
+        .messages-container {
+            flex: 1; overflow-y: auto; padding: 20px;
+            display: flex; flex-direction: column; gap: 20px;
+            max-width: 900px; margin: 0 auto; width: 100%;
+        }
+        
+        .bubble { max-width: 85%; padding: 12px 16px; border-radius: 18px; line-height: 1.5; font-size: 15px; position: relative; }
+        .bubble.user { align-self: flex-end; background: #222; color: #fff; border-bottom-right-radius: 4px; }
+        .bubble.bot { align-self: flex-start; background: transparent; color: #ddd; padding-left: 0; }
+        
+        /* INPUT AREA */
+        .input-wrapper {
+            padding: 20px; background: #000;
+            display: flex; justify-content: center;
+        }
+        .input-box {
+            background: #1e1e1e; border-radius: 24px; padding: 8px 15px;
+            display: flex; align-items: center; gap: 10px;
+            width: 100%; max-width: 800px; border: 1px solid #333;
+            transition: border-color 0.3s;
+        }
+        .input-box:focus-within { border-color: #555; }
+        
+        .chat-input {
+            flex: 1; background: transparent; border: none; color: #fff;
+            font-size: 15px; padding: 10px; resize: none; max-height: 150px; outline: none;
+        }
+        
+        .action-btn {
+            background: none; border: none; color: #888; cursor: pointer;
+            padding: 8px; border-radius: 50%; transition: 0.2s; font-size: 18px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .action-btn:hover { background: #333; color: #fff; }
+        .send-btn { background: #fff; color: #000; }
+        .send-btn:hover { background: #ddd; color: #000; }
+        
+        /* MOBILE RESPONSIVE */
+        @media (max-width: 768px) {
+            .sidebar { position: absolute; height: 100%; transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .mobile-menu-btn { display: block; }
+        }
+        
+        /* LOADING DOTS */
+        .typing-indicator span {
+            display: inline-block; width: 6px; height: 6px; background: #888;
+            border-radius: 50%; margin: 0 2px; animation: bounce 0.6s infinite alternate;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { to { transform: translateY(-6px); } }
+    </style>
+</head>
+<body>
 
-/*
-  KİLİT DAVRANIŞ:
-  - Guest yok (google_id_token yoksa cevap yok)
-  - Profil doluysa (hitap/fullname) öncelikle oradan hitap
-  - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
-  - Backend’e son 30 mesaj gider
-  - İlk mesajı asistan yazmaz (main.js kontrolünde)
-*/
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="new-chat-btn" id="newChatBtn">
+                <i class="fa-solid fa-plus"></i> Yeni Sohbet
+            </button>
+        </div>
+        <div class="history-list" id="historyList">
+            </div>
+        <div style="padding:15px; border-top:1px solid #222; font-size:12px; color:#555;">
+            Caynana AI v5.3
+        </div>
+    </div>
 
-const SAFETY_PATTERNS = {
-  self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
-};
+    <div class="main-chat">
+        <div class="chat-header">
+            <button class="mobile-menu-btn" id="menuToggle"><i class="fa-solid fa-bars"></i></button>
+            <span style="font-weight:bold; color:#ccc;">Caynana <span style="font-size:10px; color:#bef264; border:1px solid #bef264; padding:1px 4px; border-radius:4px;">PRO</span></span>
+        </div>
 
-function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
-function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
-function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {})); }
+        <div class="messages-container" id="messagesContainer">
+            <div style="text-align:center; margin-top:100px; color:#444;">
+                <i class="fa-solid fa-brain" style="font-size:40px; margin-bottom:20px;"></i>
+                <h3>Ne lazım evladım?</h3>
+            </div>
+        </div>
 
-function hasLoginToken() {
-  return !!(localStorage.getItem("google_id_token") || "").trim();
-}
+        <div class="input-wrapper">
+            <input type="file" id="fileInput" hidden>
+            
+            <div class="input-box">
+                <button class="action-btn" id="attachBtn" title="Dosya Ekle"><i class="fa-solid fa-paperclip"></i></button>
+                <textarea id="msgInput" class="chat-input" rows="1" placeholder="Bir şeyler yaz..."></textarea>
+                <button class="action-btn" id="micBtn" title="Konuş"><i class="fa-solid fa-microphone"></i></button>
+                <button class="action-btn send-btn" id="sendBtn"><i class="fa-solid fa-arrow-up"></i></button>
+            </div>
+            <div id="filePreview" style="position:absolute; bottom:80px; left:50%; transform:translateX(-50%); background:#222; padding:5px 10px; border-radius:8px; display:none; border:1px solid #444; font-size:12px;">
+                <i class="fa-solid fa-image"></i> <span id="fileName">Resim.jpg</span> <i class="fa-solid fa-xmark" onclick="clearFile()" style="cursor:pointer; margin-left:5px;"></i>
+            </div>
+        </div>
+    </div>
 
-// --------------------
-// NAME CAPTURE (profil yoksa)
-// --------------------
-function firstTokenName(s=""){
-  const t = String(s||"").trim();
-  if(!t) return "";
-  // "Oğuz Başkan" gelirse "Oğuz"
-  return t.split(/\s+/)[0];
-}
+    <script type="module" src="js/pages/main.js"></script>
 
-function extractNameFromText(text=""){
-  // basit ama işe yarar: "adım oğuz", "ismim oğuz", "ben oğuz"
-  const s = String(text||"").trim();
-
-  // adım X / ismim X
-  let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if(m && m[2]) return m[2];
-
-  // ben X'im / ben X (çok agresif olmasın)
-  m = s.match(/\bben\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if(m && m[1]) return m[1];
-
-  return "";
-}
-
-function maybePersistNameFromUserMessage(userMessage){
-  const p = getProfile();
-
-  // Profilde zaten fullname/hitap varsa elleme
-  const has = !!(String(p.hitap||"").trim() || String(p.fullname||"").trim());
-  if(has) return;
-
-  const name = extractNameFromText(userMessage);
-  if(!name) return;
-
-  // Profilde fullname yoksa set et
-  p.fullname = name;
-  // hitap yoksa da basit hitap oluştur (sadece ad)
-  if(!p.hitap) p.hitap = name;
-
-  setProfile(p);
-}
-
-// --------------------
-// HISTORY NORMALIZE
-// --------------------
-function normalizeHistory(history = []) {
-  if (!Array.isArray(history)) return [];
-  return history
-    .map((h) => {
-      if (!h || typeof h !== "object") return null;
-
-      const roleRaw = String(h.role || h.type || "").toLowerCase();
-      const role =
-        roleRaw === "assistant" || roleRaw === "bot" ? "assistant" :
-        roleRaw === "user" ? "user" :
-        null;
-
-      const content = String(h.content ?? h.text ?? h.message ?? "").trim();
-      if (!role || !content) return null;
-      return { role, content };
-    })
-    .filter(Boolean);
-}
-
-function limitHistory(history, maxItems = 30) {
-  if (history.length <= maxItems) return history;
-  return history.slice(history.length - maxItems);
-}
-
-// --------------------
-// RESPONSE PICKER
-// --------------------
-function pickAssistantText(data) {
-  if (!data || typeof data !== "object") return "";
-  const keys = ["assistant_text","text","assistant","reply","answer","output"];
-  for (const k of keys) {
-    const v = String(data[k] || "").trim();
-    if (v) return v;
-  }
-  return "";
-}
-
-async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
-
-// --------------------
-// MAIN
-// --------------------
-export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
-  const message = String(msg || "").trim();
-  if (!message) return { text: "", error: true };
-
-  // Signature uyumu
-  let mode = "chat";
-  let history = [];
-  if (Array.isArray(modeOrHistory)) {
-    history = modeOrHistory;
-  } else {
-    mode = String(modeOrHistory || "chat").trim() || "chat";
-    history = maybeHistory;
-  }
-
-  // Login zorunlu
-  if (!hasLoginToken()) {
-    return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
-  }
-
-  // Self-harm guard
-  if (SAFETY_PATTERNS.self_harm.test(message)) {
-    return {
-      text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen ne olduğunu anlat, buradayım.",
-      error: true,
-      code: "SAFETY"
-    };
-  }
-
-  // Profil yoksa ad yakala ve profile’a yaz
-  maybePersistNameFromUserMessage(message);
-
-  const profile = getProfile();
-  const userId = (profile?.id || "").trim() || "guest";
-
-  const cleanHistory = limitHistory(normalizeHistory(history), 30);
-
-  // Profile-first memory paketi
-  const memoryProfile = {
-    hitap: profile.hitap || null,
-    fullname: profile.fullname || null,
-    botName: profile.botName || null,
-    dob: profile.dob || null,
-    gender: profile.gender || null,
-    maritalStatus: profile.maritalStatus || null,
-    spouse: profile.spouse || null,
-    childCount: profile.childCount || null,
-    childNames: profile.childNames || null,
-    team: profile.team || null,
-    city: profile.city || null,
-    isProfileCompleted: !!profile.isProfileCompleted
-  };
-
-  const payload = {
-    text: message,
-    message: message,
-    user_id: userId,
-    mode,
-    history: cleanHistory,
-
-    // 🔥 KİŞİSEL VERİ KAYNAĞI
-    profile: memoryProfile,
-
-    // Web arama sinyali
-    web: "auto",
-    enable_web_search: true
-  };
-
-  const attempt = async () => {
-    const res = await apiPOST("/api/chat", payload);
-
-    if (res.status === 401 || res.status === 403) {
-      return { text: "Oturumun düşmüş gibi. Çıkış yapıp tekrar girer misin?", error: true, code: "AUTH_EXPIRED" };
-    }
-
-    if (!res.ok) {
-      const bodyText = await res.text().catch(() => "");
-      const err = new Error(`API Error ${res.status} ${bodyText}`);
-      err.isServer = res.status >= 500 && res.status <= 599;
-      err.status = res.status;
-      throw err;
-    }
-
-    let data = {};
-    try { data = await res.json(); } catch {}
-
-    const out = pickAssistantText(data);
-    return { text: out || "Bir aksilik oldu evladım." };
-  };
-
-  try {
-    return await attempt();
-  } catch (e) {
-    const shouldRetry = !!e?.isServer || (e?.status == null);
-    if (shouldRetry) {
-      await sleep(600);
-      try { return await attempt(); } catch {}
-    }
-    return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
-  }
-}
-
-// --------------------
-// UI HELPERS
-// --------------------
-export function typeWriter(text, elId = "chat") {
-  const div = document.getElementById(elId);
-  if (!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
-  div.appendChild(bubble);
-
-  const s = String(text || "");
-  let i = 0;
-
-  (function type() {
-    if (i < s.length) {
-      bubble.textContent += s.charAt(i++);
-      div.scrollTop = div.scrollHeight;
-      setTimeout(type, 15);
-    }
-  })();
-}
-
-export function addUserBubble(text) {
-  const div = document.getElementById("chat");
-  if (!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble user";
-  bubble.textContent = String(text || "");
-  div.appendChild(bubble);
-  div.scrollTop = div.scrollHeight;
-}
+</body>
+</html>
