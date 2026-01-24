@@ -303,3 +303,38 @@ button:focus, a:focus, textarea:focus{
 .menu-action:hover {
   background: rgba(255,255,255,.06);
 }
+/* MENU: ULTRA PRO – ICONS OFF */
+.menu-action .ico {
+  display: none;
+}
+
+/* Kart içi hizalama ikon yokken düzelsin */
+.menu-action {
+  padding: 16px 14px;
+  align-items: flex-start;
+}
+
+/* Başlık daha güçlü */
+.menu-action div div {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .3px;
+}
+
+/* Alt açıklama daha zarif */
+.menu-action small {
+  font-size: 12px;
+  color: #9a9a9a;
+  margin-top: 4px;
+}
+
+/* Kartlar daha clean */
+.menu-action {
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.menu-action:hover,
+.menu-action:active {
+  background: rgba(255,255,255,.06);
+}
