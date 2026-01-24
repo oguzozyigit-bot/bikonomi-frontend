@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Caynana AI – Chat</title>
+
+<style>
+:root{
+  --bg:#0e0e0e;
+  --panel:#141414;
+  --border:rgba(255,255,255,.1);
+  --text:#ececec;
+}
+body{
+  margin:0;
+  background:#000;
+  color:var(--text);
+  font-family:system-ui,-apple-system,Segoe UI,Roboto;
+  display:flex;
+  justify-content:center;
+}
+.app{
+  width:100%;
+  max-width:720px; /* ChatGPT hissi */
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+}
+header{
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  font-weight:700;
+}
+#chat{
+  flex:1;
+  overflow:auto;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.bubble{
+  max-width:80%;
+  padding:10px 14px;
+  border-radius:14px;
+  line-height:1.4;
+}
+.user{align-self:flex-end;background:#1e1e1e}
+.bot{align-self:flex-start;background:var(--panel);border:1px solid var(--border)}
+.composer{
+  display:flex;
+  gap:8px;
+  padding:12px;
+  border-top:1px solid var(--border);
+}
+.composer input{
+  flex:1;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:#111;
+  color:var(--text);
+}
+.btn{
+  padding:10px 12px;
+  border-radius:12px;
+  background:#111;
+  border:1px solid var(--border);
+  color:var(--text);
+  cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>Caynana AI</header>
+
+<div id="chat"></div>
+
+<div class="composer">
+  <input type="file" id="fileInput" multiple style="display:none" />
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" />
+
+  <button class="btn" onclick="fileInput.click()">📎</button>
+  <button class="btn" onclick="cameraInput.click()">📷</button>
+  <button class="btn" id="micBtn">🎙️</button>
+
+  <input id="msgInput" placeholder="Bir şey sor…" />
+  <button class="btn" id="sendBtn">➤</button>
+</div>
+
+</div>
+
+<script type="module">
+import { fetchTextResponse, addUserBubble, typeWriter } from "/js/chat.js";
+import { ChatStore } from "/js/chat_store.js";
+
+const chatEl = document.getElementById("chat");
+const input = document.getElementById("msgInput");
+
+ChatStore.load(chatEl);
+
+async function send(){
+  const text = input.value.trim();
+  if(!text) return;
+
+  addUserBubble(text);
+  ChatStore.add("user", text);
+  input.value="";
+
+  const res = await fetchTextResponse(text,"chat",ChatStore.history());
+  typeWriter(res.text);
+  ChatStore.add("assistant",res.text);
+}
+
+sendBtn.onclick = send;
+input.onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); send(); } };
+
+// Mikrofon → yazıya çevir
+let rec;
+micBtn.onclick = ()=>{
+  if(!window.SpeechRecognition && !window.webkitSpeechRecognition){
+    alert("Tarayıcı desteklemiyor");return;
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  rec = new SR();
+  rec.lang="tr-TR";
+  rec.onresult=e=> input.value += " " + e.results[0][0].transcript;
+  rec.start();
+};
+
+// Dosya / Foto mesaj olarak düşsün
+fileInput.onchange = e=>{
+  [...e.target.files].forEach(f=>{
+    addUserBubble("📎 Dosya eklendi: "+f.name);
+    ChatStore.add("user","Dosya yüklendi: "+f.name);
+  });
+};
+cameraInput.onchange = e=>{
+  if(e.target.files[0]){
+    addUserBubble("📷 Fotoğraf eklendi");
+    ChatStore.add("user","Fotoğraf yüklendi");
+  }
+};
+</script>
+
+</body>
+</html>
