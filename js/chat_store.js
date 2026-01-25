@@ -68,11 +68,11 @@ export const ChatStore = {
     const index = loadIndex();
     const i = index.findIndex(c => c.id === this.currentId);
     if(i >= 0) {
-        // Eğer zaten varsa değiştirme, yoksa ekle
-        if(index[i].server_id !== serverId) {
-            index[i].server_id = serverId;
-            saveIndex(index);
-        }
+      // Eğer zaten varsa değiştirme, yoksa ekle
+      if(index[i].server_id !== serverId) {
+        index[i].server_id = serverId;
+        saveIndex(index);
+      }
     }
   },
 
@@ -151,5 +151,28 @@ export const ChatStore = {
   clearCurrent(){
     if(!this.currentId) return;
     saveChat(this.currentId, []);
+  },
+
+  // ✅ API'ye gidecek history: sadece {role, content} ve son N mesaj
+  getLastForApi(limit = 30){
+    if(!this.currentId) this.init();
+    const h = loadChat(this.currentId) || [];
+    return h.slice(-limit).map(m => ({
+      role: m.role,
+      content: String(m.content || "")
+    }));
+  },
+
+  // ✅ Debug: gerçekten birikiyor mu / currentId değişiyor mu?
+  debug(){
+    if(!this.currentId) this.init();
+    const index = loadIndex();
+    const h = loadChat(this.currentId);
+    return {
+      currentId: this.currentId,
+      chats: index.filter(c=>!c.deleted_at).length,
+      currentLen: (h||[]).length,
+      last: (h||[]).slice(-3)
+    };
   }
 };
