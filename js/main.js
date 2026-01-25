@@ -1,5 +1,7 @@
 // js/main.js (FINAL - Single Bind, Pages, Terms Gate, Delete Account via backend token)
 // + ChatStore sohbet listesi + kalıcı hafıza (son 10) + menüden geçiş/silme
+// ✅ FIX: ChatStore.load() yoktu → UI render fonksiyonu eklendi (eksiltme yok)
+// ✅ FIX: Çift kayıt (user/assistant iki kez ekleniyordu) → storeAddOnce guard (eksiltme yok)
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
@@ -192,8 +194,6 @@ async function handleMenuAction(action) {
 // CHAT
 // --------------------
 let currentMode = "chat";
-// chatHistory artık “tek kaynak” değil; UI için ChatStore var.
-// Yine de backend çağrısında anlık history’yi ChatStore’dan alacağız.
 let chatHistory = [];
 
 function setBrandState(state) {
@@ -209,14 +209,51 @@ function setBrandState(state) {
   }
 }
 
-// ChatStore → UI’yı ve chatHistory’yi senkronla
+// ChatStore → chatHistory senkronu
 function syncFromStore(){
   try{
     const h = ChatStore.history() || [];
-    // ChatStore mesajları {role, content, at} olabilir
     chatHistory = h.map(m => ({ role: m.role, content: m.content }));
   }catch(e){
     chatHistory = [];
+  }
+}
+
+// ✅ ChatStore.load() yoktu → UI render eklendi
+function renderChatFromStore(){
+  const chatEl = $("chat");
+  if(!chatEl) return;
+
+  chatEl.innerHTML = "";
+  let h = [];
+  try { h = ChatStore.history() || []; } catch(e){ h = []; }
+
+  h.forEach(m => {
+    const role = String(m?.role || "").toLowerCase();
+    const content = String(m?.content || "");
+    if(!content) return;
+
+    const bubble = document.createElement("div");
+    bubble.className = `bubble ${role === "user" ? "user" : "bot"}`;
+    bubble.textContent = content;
+    chatEl.appendChild(bubble);
+  });
+
+  chatEl.scrollTop = chatEl.scrollHeight;
+  syncFromStore();
+}
+
+// ✅ Çift ekleme olmasın (chat.js de store'a yazıyor)
+function storeAddOnce(role, content){
+  try{
+    const h = ChatStore.history() || [];
+    const last = h[h.length - 1];
+    const r = String(role || "").toLowerCase();
+    const c = String(content || "");
+    if(last && String(last.role||"").toLowerCase() === r && String(last.content||"") === c) return;
+    ChatStore.add(r, c);
+  }catch(e){
+    try{ ChatStore.add(role, content); }catch(_){}
   }
 }
 
@@ -229,8 +266,8 @@ async function doSend(forcedText = null) {
   addUserBubble(txt);
   if (input && forcedText === null) input.value = "";
 
-  // ✅ Kalıcı hafızaya yaz
-  ChatStore.add("user", txt);
+  // ✅ Kalıcı hafızaya yaz (guard ile)
+  storeAddOnce("user", txt);
   syncFromStore();
 
   setTimeout(() => setBrandState("thinking"), 120);
@@ -241,7 +278,7 @@ async function doSend(forcedText = null) {
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
-    // ✅ Backend’e giden history: ChatStore’dan (son 30 zaten chat.js limitliyor)
+    // ✅ Backend’e giden history: ChatStore’dan (chat.js içi zaten store'u esas alıyor)
     const out = await fetchTextResponse(txt, currentMode, chatHistory);
     reply = out?.text || reply;
   } catch (e) {}
@@ -252,8 +289,8 @@ async function doSend(forcedText = null) {
   setTimeout(() => setBrandState("talking"), 120);
   typeWriter(reply, "chat");
 
-  // ✅ Asistan cevabını da kalıcı hafızaya yaz
-  ChatStore.add("assistant", reply);
+  // ✅ Asistan cevabını da kalıcı hafızaya yaz (guard ile)
+  storeAddOnce("assistant", reply);
   syncFromStore();
 
   setTimeout(() => setBrandState(null), 650);
@@ -381,7 +418,6 @@ function renderHistoryList(){
     row.className = "history-row";
     row.setAttribute("data-id", c.id);
 
-    // title basit: boşsa "Sohbet"
     const title = (c.title || "Sohbet").toString();
 
     row.innerHTML = `
@@ -392,8 +428,7 @@ function renderHistoryList(){
     // sohbete geç
     row.addEventListener("click", () => {
       ChatStore.currentId = c.id;
-      ChatStore.load($("chat"));
-      syncFromStore();
+      renderChatFromStore();
       closeMenu();
     });
 
@@ -402,6 +437,8 @@ function renderHistoryList(){
       e.stopPropagation();
       ChatStore.deleteChat(c.id);
       renderHistoryList();
+      // eğer silinen current ise, store init/newChat çalışmış olabilir → yeniden render
+      renderChatFromStore();
     });
 
     listEl.appendChild(row);
@@ -418,8 +455,7 @@ function bindMenuUI(){
   // ✅ Yeni sohbet artık ChatStore ile
   $("newChatBtn") && ($("newChatBtn").onclick = () => {
     ChatStore.newChat();
-    ChatStore.load($("chat"));
-    syncFromStore();
+    renderChatFromStore();
     renderHistoryList();
     setBrandState(null);
     currentMode = "chat";
@@ -500,8 +536,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ✅ ChatStore: ilk açılışta sohbeti yükle ve menüye bas
   try{
     ChatStore.init();
-    ChatStore.load($("chat"));
-    syncFromStore();
+    renderChatFromStore();
     renderHistoryList();
   }catch(e){}
 });
