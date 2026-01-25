@@ -10,7 +10,11 @@ export async function initNotif(){
     try {
       const res = await apiGET(`/api/reminders/today?user_id=${encodeURIComponent(user.id)}`);
       // devamı aynı
-    } catch(e){}
+    } catch(e){
+      // ✅ Endpoint yoksa (404) sessizce geç (özellik henüz aktif değil)
+      const msg = String(e?.message || "");
+      if (msg.includes("404")) return;
+    }
   };
 
   check();
