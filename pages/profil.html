@@ -34,6 +34,8 @@
     padding:16px 16px 14px; border-bottom:1px solid var(--border);
     background:rgba(20,20,20,.95);
     display:flex; align-items:center; gap:12px;
+    z-index: 10; /* Header hep üstte */
+    position: relative;
   }
   .back-btn{
     width:38px; height:38px; border-radius:12px; border:1px solid #333;
@@ -49,9 +51,10 @@
   .card{
     background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
     border:1px solid var(--border); border-radius:16px; padding:14px;
+    flex-shrink: 0;
   }
 
-  /* ✅ Premium Progress Hero */
+  /* ✅ DÜZELTİLEN HERO ALANI */
   .hero{
     padding:14px;
     border-radius:18px;
@@ -62,7 +65,16 @@
       linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,0));
     position:relative;
     overflow:hidden;
+    flex-shrink: 0; /* Mobilde sıkışıp ezilmesin */
+    z-index: 1;
   }
+
+  /* İçeriklerin SVG'nin üzerinde kalmasını garantiye alıyoruz */
+  .hero-top, .hero-sub, .bar, .hero-foot, .hero-chip {
+    position: relative;
+    z-index: 3; /* Yazılar en üstte */
+  }
+
   .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .hero-title{ font-weight:900; font-size:13px; letter-spacing:.2px; }
 
@@ -92,6 +104,7 @@
   .hero-chip.great{ border-color: rgba(34,197,94,.35); color:#22c55e; }
 
   .hero-sub{ margin-top:8px; font-size:12px; color:rgba(255,255,255,.72); line-height:1.35; }
+  
   .bar{
     margin-top:12px;
     height:10px; border-radius:999px;
@@ -110,9 +123,15 @@
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     font-size:11px; color:rgba(255,255,255,.62);
   }
+
+  /* Spark Efekti - Arkada kalsın */
   .spark{
-    position:absolute; inset:auto -40px -80px -40px; height:220px;
+    position:absolute; 
+    inset:auto -40px -80px -40px; 
+    height:220px;
     opacity:.75;
+    z-index: 0; /* Yazıların altında */
+    pointer-events: none;
   }
 
   .pill{
@@ -166,7 +185,6 @@
     box-shadow:0 8px 20px rgba(255,179,0,.15);
   }
 
-  /* ✅ Toast */
   .toast{
     position:fixed; left:50%; transform:translateX(-50%);
     bottom:78px; z-index:9999;
@@ -183,7 +201,6 @@
   .toast.show{ display:block; animation:pop .18s ease; }
   @keyframes pop{ from{ opacity:0; transform:translateX(-50%) translateY(10px);} to{opacity:1; transform:translateX(-50%) translateY(0);} }
 
-  /* ✅ Footer: stil bozulmasın */
   .footer{
     border-top:0 !important;
     background: linear-gradient(180deg, rgba(14,14,14,0), rgba(14,14,14,.75)) !important;
@@ -211,7 +228,6 @@
 
   <div class="content">
 
-    <!-- ✅ Premium progress hero -->
     <div class="hero" id="hero">
       <svg class="spark" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true">
         <path d="M0,170 C120,120 160,40 260,70 C340,95 360,170 430,160 C520,146 540,85 600,95 L600,220 L0,220 Z"
@@ -269,7 +285,7 @@
           <div style="display:flex; align-items:center; gap:12px;">
             <img id="avatarImg" src="" alt="avatar"
                  style="width:54px;height:54px;border-radius:999px;border:1px solid #333;object-fit:cover;display:none;">
-            <div class="mini" id="avatarHint">Yapay Zekanın Geleneksel Aklı... (Görsel Google’dan gelir)</div>
+            <div class="mini" id="avatarHint">Yapay Zekanın Geleneksel Aklı.</div>
           </div>
         </div>
 
@@ -343,7 +359,6 @@
       </div>
     </div>
 
-    <!-- REGL TAKİBİ -->
     <div class="card conditional" id="periodFields">
       <div class="section-title">Regl Takibi (opsiyonel)</div>
 
@@ -374,7 +389,6 @@
       <div class="mini">Not: Bu takip sadece hatırlatma içindir.</div>
     </div>
 
-    <!-- EVLİ ALANLARI -->
     <div class="card conditional" id="marriedFields">
       <div class="section-title">Özel Günler</div>
 
@@ -442,7 +456,6 @@
       <div class="mini">Geçersiz gün/ay seçilirse kaydetmez.</div>
     </div>
 
-    <!-- ÇOCUKLAR -->
     <div class="card">
       <div class="section-title">Çocuklar (opsiyonel)</div>
 
