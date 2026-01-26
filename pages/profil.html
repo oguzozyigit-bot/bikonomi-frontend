@@ -146,6 +146,21 @@
           <button class="copy-btn" onclick="copyID()" title="Kopyala">📋</button>
         </div>
         <div class="mini" id="emailDisplay">Email: —</div>
+
+        <div class="form-group" style="margin-top:10px;">
+          <label>Ad Soyad (Google’dan gelir)</label>
+          <input type="text" id="formFullname" placeholder="—" readonly disabled>
+        </div>
+
+        <div class="form-group" style="margin-top:10px;">
+          <label>Profil Fotoğrafı</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <img id="avatarImg" src="" alt="avatar"
+                 style="width:54px;height:54px;border-radius:999px;border:1px solid #333;object-fit:cover;display:none;">
+            <div class="mini" id="avatarHint">Google profil foto varsa burada görünür.</div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -181,15 +196,19 @@
         </div>
       </div>
 
-      <!-- ✅ Yaşadığı İl + Doğduğu İl (Yaşadığı İl aynen kaldı) -->
+      <!-- ✅ Yaşadığı İl + Doğduğu İl (81 il dropdown) -->
       <div class="row">
         <div class="form-group">
           <label>Yaşadığı İl</label>
-          <input type="text" id="formCity" placeholder="Örn: Ankara">
+          <select id="formCity">
+            <option value="">Seç</option>
+          </select>
         </div>
         <div class="form-group">
           <label>Doğduğu İl</label>
-          <input type="text" id="formBirthCity" placeholder="Örn: Trabzon">
+          <select id="formBirthCity">
+            <option value="">Seç</option>
+          </select>
         </div>
       </div>
 
@@ -346,7 +365,7 @@
   </div>
 
   <div class="footer">
-    <div class="brand">@CaynanaAI By Ozyigits</div>
+    <div class="brand">@CaynanaAI By Ozyigit's 2026</div>
     <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
   </div>
 </div>
@@ -358,19 +377,59 @@
 
   const PROFILE_KEY = "caynana_profile_v2";
   const PROFILE_BONUS_KEY = "caynana_profile_bonus_v1"; // +5 sadece bir kez
+  const GENERATED_IDS_KEY = "caynana_generated_ids_v1"; // üretilen id’ler (çakışma olmasın)
 
   // --------- helpers ----------
   const pad2 = (n) => String(n).padStart(2, "0");
 
-  function fillDayOptions(selectId){
+  const TR_CITIES_81 = [
+    "Adana","Adıyaman","Afyonkarahisar","Ağrı","Amasya","Ankara","Antalya","Artvin","Aydın","Balıkesir",
+    "Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli",
+    "Diyarbakır","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkari",
+    "Hatay","Isparta","Mersin","İstanbul","İzmir","Kars","Kastamonu","Kayseri","Kırklareli","Kırşehir",
+    "Kocaeli","Konya","Kütahya","Malatya","Manisa","Kahramanmaraş","Mardin","Muğla","Muş","Nevşehir",
+    "Niğde","Ordu","Rize","Sakarya","Samsun","Siirt","Sinop","Sivas","Tekirdağ","Tokat",
+    "Trabzon","Tunceli","Şanlıurfa","Uşak","Van","Yozgat","Zonguldak","Aksaray","Bayburt","Karaman",
+    "Kırıkkale","Batman","Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye","Düzce"
+  ];
+
+  function fillCitySelects(){
+    const s1 = document.getElementById("formCity");
+    const s2 = document.getElementById("formBirthCity");
+    if(!s1 || !s2) return;
+
+    if(s1.dataset.filled === "1" && s2.dataset.filled === "1") return;
+
+    const makeOpts = () => TR_CITIES_81.map(c => `<option value="${c}">${c}</option>`).join("");
+
+    s1.insertAdjacentHTML("beforeend", makeOpts());
+    s2.insertAdjacentHTML("beforeend", makeOpts());
+
+    s1.dataset.filled = "1";
+    s2.dataset.filled = "1";
+  }
+
+  function daysInMonth(year, month){ // month: 1-12
+    if(!year || !month) return 31;
+    const y = parseInt(year,10);
+    const m = parseInt(month,10);
+    if(!y || !m) return 31;
+    return new Date(y, m, 0).getDate();
+  }
+
+  function fillDayOptions(selectId, maxDays=31){
     const s = document.getElementById(selectId);
     if(!s) return;
-    // tekrar init olursa çoğaltmasın
-    if(s.dataset.filled === "1") return;
-    for(let i=1;i<=31;i++){
+
+    const cur = s.value || "";
+    s.innerHTML = `<option value="">G</option>`;
+    for(let i=1;i<=maxDays;i++){
       s.innerHTML += `<option value="${pad2(i)}">${i}</option>`;
     }
-    s.dataset.filled = "1";
+    if(cur){
+      const n = parseInt(cur,10) || 0;
+      if(n >= 1 && n <= maxDays) s.value = pad2(n);
+    }
   }
 
   function fillYearOptions(selectId, start=1950){
@@ -382,6 +441,30 @@
       s.innerHTML += `<option value="${y}">${y}</option>`;
     }
     s.dataset.filled = "1";
+  }
+
+  function refreshBirthDayOptions(){
+    const y = document.getElementById("yearSelect")?.value || "";
+    const m = document.getElementById("monthSelect")?.value || "";
+    const max = daysInMonth(y, m);
+    fillDayOptions("daySelect", max);
+  }
+
+  function isValidDM(d, m){
+    const dd = parseInt(d,10);
+    const mm = parseInt(m,10);
+    if(!dd || !mm) return false;
+    if(mm < 1 || mm > 12) return false;
+    const max = new Date(2024, mm, 0).getDate(); // 2024: leap year
+    return dd >= 1 && dd <= max;
+  }
+
+  function isValidBirthDate(d, m, y){
+    const dd = parseInt(d,10), mm = parseInt(m,10), yy = parseInt(y,10);
+    if(!dd || !mm || !yy) return false;
+    if(mm < 1 || mm > 12) return false;
+    const max = new Date(yy, mm, 0).getDate();
+    return dd >= 1 && dd <= max;
   }
 
   function getDM(dayId, monthId){
@@ -410,6 +493,7 @@
     const any = !!(d || m || y);
     const full = !!(d && m && y);
     if(any && !full) return { ok:false, value:"" };
+    if(full && !isValidBirthDate(d,m,y)) return { ok:false, value:"" };
     return { ok:true, value: full ? `${d}.${m}.${y}` : "" };
   }
 
@@ -423,11 +507,77 @@
       if(d) d.value = p[0];
       if(m) m.value = p[1];
       if(y) y.value = p[2];
+      refreshBirthDayOptions();
     }
   }
 
   // ✅ ID normalize (bu sayfa kendi içinde emniyetli olsun)
   function norm(v){ return String(v || "").trim(); }
+
+  function randInt(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function pickLetter(except){
+    const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let ch = "";
+    for(let t=0;t<50;t++){
+      ch = A[randInt(0, A.length-1)];
+      if(ch !== except) return ch;
+    }
+    return ch || "X";
+  }
+
+  // ✅ ardışık yok + aynı tekrar yok (yan yana)
+  function buildNonSequentialDigits(len=8){
+    const digits = [];
+    for(let i=0;i<len;i++){
+      let d = randInt(0,9);
+      for(let t=0;t<100;t++){
+        const prev = digits[i-1];
+        const prev2 = digits[i-2];
+
+        const ok1 = (prev === undefined) ? true : (d !== prev && Math.abs(d - prev) !== 1);
+        const ok2 = (prev2 === undefined) ? true : (d !== prev2);
+
+        if(ok1 && ok2) break;
+        d = randInt(0,9);
+      }
+      digits.push(d);
+    }
+    return digits.join("");
+  }
+
+  function getGeneratedIds(){
+    try{
+      const a = JSON.parse(localStorage.getItem(GENERATED_IDS_KEY) || "[]");
+      return Array.isArray(a) ? a : [];
+    }catch(e){ return []; }
+  }
+
+  function saveGeneratedId(id){
+    const ids = getGeneratedIds();
+    if(!ids.includes(id)) ids.push(id);
+    try{ localStorage.setItem(GENERATED_IDS_KEY, JSON.stringify(ids)); }catch(e){}
+  }
+
+  function generateStableRandomId(){
+    const used = new Set(getGeneratedIds());
+
+    for(let tries=0; tries<200; tries++){
+      const a = pickLetter("");
+      const b = pickLetter(a);
+      const nums = buildNonSequentialDigits(8);
+      const id = `${a}${b}${nums}`;
+      if(!used.has(id)){
+        saveGeneratedId(id);
+        return id;
+      }
+    }
+    const fallback = `XZ${buildNonSequentialDigits(8)}`;
+    saveGeneratedId(fallback);
+    return fallback;
+  }
 
   function ensureIdentity(user){
     if(!user || typeof user !== "object") user = {};
@@ -436,8 +586,11 @@
     user.email = norm(user.email);
     user.user_id = norm(user.user_id);
 
-    if(!user.id && user.email) user.id = user.email;
-    if(!user.email && user.id && user.id.includes("@")) user.email = user.id;
+    // ✅ ID gmail'den alınmaz. Yoksa random üret.
+    if(!user.id){
+      user.id = generateStableRandomId();
+    }
+
     if(!user.user_id) user.user_id = user.email || user.id;
     if(!user.id) user.id = user.user_id;
 
@@ -535,7 +688,8 @@
       `;
       container.appendChild(box);
 
-      fillDayOptions(`child_day_${i}`);
+      // çocuk günleri max 31; validasyon save'de yapılıyor
+      fillDayOptions(`child_day_${i}`, 31);
     }
   };
 
@@ -632,20 +786,35 @@
     // doğum tarihi kontrol
     const bd = getBirthDate();
     if(!bd.ok){
-      alert("Doğum tarihini Gün/Ay/Yıl tam seç ya da tamamen boş bırak.");
+      alert("Doğum tarihini Gün/Ay/Yıl geçerli olacak şekilde tam seç ya da tamamen boş bırak.");
       return;
     }
 
-    // evli gün/ay kontrolleri
+    // ✅ 30 Şubat vb. geçersiz gün/ayları engelle (eş/özel günler)
+    const pairs = [
+      { label:"Eşinin doğum günü", d: document.getElementById("spouseBDay")?.value, m: document.getElementById("spouseBMonth")?.value },
+      { label:"Evlilik günü", d: document.getElementById("wDay")?.value, m: document.getElementById("wMonth")?.value },
+      { label:"Nişan günü", d: document.getElementById("eDay")?.value, m: document.getElementById("eMonth")?.value },
+      { label:"İlk tanışma günü", d: document.getElementById("mDay")?.value, m: document.getElementById("mMonth")?.value }
+    ];
+    for(const p of pairs){
+      const any = !!(p.d || p.m);
+      const full = !!(p.d && p.m);
+      if(full && !isValidDM(p.d, p.m)){
+        alert(`${p.label} için geçersiz tarih seçtin.`);
+        return;
+      }
+      if(any && !full){
+        alert(`${p.label} için Gün/Ay ikilisini ya tam seç, ya tamamen boş bırak.`);
+        return;
+      }
+    }
+
+    // evli gün/ay stringleri
     const spouseB = getDM("spouseBDay","spouseBMonth");
     const wed = getDM("wDay","wMonth");
     const eng = getDM("eDay","eMonth");
     const met = getDM("mDay","mMonth");
-
-    if(!spouseB.ok || !wed.ok || !eng.ok || !met.ok){
-      alert("Özel günlerde Gün/Ay ikilisini ya tam seç, ya tamamen boş bırak.");
-      return;
-    }
 
     // çocuklar
     const childCount = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
@@ -655,10 +824,16 @@
       const name = (document.getElementById(`child_name_${i}`)?.value || "").trim();
       const d = document.getElementById(`child_day_${i}`)?.value || "";
       const m = document.getElementById(`child_month_${i}`)?.value || "";
+
       if((d && !m) || (!d && m)){
         alert(`Çocuk ${i} için Gün/Ay ikilisini ya tam seç, ya boş bırak.`);
         return;
       }
+      if(d && m && !isValidDM(d,m)){
+        alert(`Çocuk ${i} için geçersiz tarih seçtin.`);
+        return;
+      }
+
       const dm = (d && m) ? `${d}.${m}` : "";
       if(name || dm) kids.push({ name, bday_dm: dm });
     }
@@ -683,7 +858,7 @@
       region: document.getElementById('formCity')?.value || "",
       birth_city: document.getElementById('formBirthCity')?.value || "",
       team: document.getElementById('formTeam')?.value || "",
-      birth_date: bd.value,
+            birth_date: bd.value,
 
       // evli
       spouse_name: document.getElementById('formSpouse')?.value || "",
@@ -793,46 +968,3 @@
     window.location.href = "../index.html";
   };
 
-  // --------- init ----------
-  async function init(){
-    const user = getUser();
-    if(!user) return;
-
-    document.getElementById('formID').innerText = user.id;
-    document.getElementById('emailDisplay').innerText = `Email: ${user.email || "—"}`;
-
-    // tarih selectleri
-    fillDayOptions('daySelect');
-    fillYearOptions('yearSelect', 1950);
-
-    // evli alan günleri
-    ["spouseBDay","wDay","eDay","mDay"].forEach(fillDayOptions);
-
-    // local profil
-    let localMeta = {};
-    try { localMeta = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}"); } catch {}
-    if(localMeta && Object.keys(localMeta).length){
-      fillFormFields(localMeta);
-    }
-
-    // server profil (en güncel)
-    try{
-      if(BASE_DOMAIN){
-        const stableUserId = user.user_id || user.email || user.id;
-        const url = `${BASE_DOMAIN}/api/profile/get?user_id=${encodeURIComponent(stableUserId)}&email=${encodeURIComponent(user.email || "")}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if(data?.found && data?.meta){
-          fillFormFields(data.meta);
-          try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data.meta)); } catch {}
-        }
-      }
-    }catch(e){
-      console.log("Profil senkron hatası:", e);
-    }
-  }
-
-  init();
-</script>
-</body>
-</html>
