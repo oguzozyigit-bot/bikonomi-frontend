@@ -22,11 +22,6 @@ import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
 import { ChatStore } from "./chat_store.js";
 
 // 🔹 IMPORTLARDAN SONRA NORMAL KOD GELİR
-function firstName(full = "") {
-  const s = String(full || "").trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
-}
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
