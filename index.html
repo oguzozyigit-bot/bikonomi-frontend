@@ -1,502 +1,365 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caynana AI v5.2 FINAL</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=1">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- ✅ PREMIUM OVERRIDES (style.css bozulmadan üstüne ek) -->
-  <style>
-    /* --- MENU PREMIUM SKIN --- */
-    .menu-sidebar{
-      background:
-        radial-gradient(1200px 400px at 20% -10%, rgba(190,242,100,.12), transparent 55%),
-        radial-gradient(900px 420px at 85% 0%, rgba(255,179,0,.10), transparent 50%),
-        rgba(12,12,12,.98);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 30px 90px rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
+<style>
+    /* --- ULTRA PREMIUM RESET & CORE --- */
+    :root {
+        --bg-deep: #050505;
+        --bg-panel: rgba(20, 20, 20, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --glass-shine: rgba(255, 255, 255, 0.03);
+        --primary-lime: #bef264;
+        --primary-orange: #ffb300;
+        --text-main: #ededed;
+        --text-muted: #888888;
+        --font-stack: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
     }
 
-    .new-chat-btn{
-      position:relative;
-      border-radius:16px;
-      box-shadow:
-        0 14px 30px rgba(0,0,0,.45),
-        inset 0 1px 0 rgba(255,255,255,.14);
-      transform: translateZ(0);
-    }
-    .new-chat-btn:active{ transform: translateY(1px); }
-
-    /* Profil kısayol (Yeni sohbet altında turuncu, 3D) */
-    .profile-shortcut-wrap{
-      margin:10px 0 10px;
-      padding:0 2px;
-    }
-    .profile-shortcut-btn{
-      display:flex; align-items:center; gap:10px;
-      padding:12px 12px;
-      border-radius:16px;
-      cursor:pointer;
-      user-select:none;
-      background: linear-gradient(180deg, rgba(255,179,0,.22), rgba(0,0,0,0));
-      border: 1px solid rgba(255,179,0,.45);
-      box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
-    .profile-shortcut-ico{
-      width:34px; height:34px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      background: rgba(255,179,0,.18);
-      border:1px solid rgba(255,179,0,.35);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-      font-size:18px;
-    }
-    .profile-shortcut-title{ font-weight:950; color:#ffb300; line-height:1.1; }
-    .profile-shortcut-sub{ font-size:12px; color:#ffb300; opacity:.88; margin-top:2px; }
-
-    /* Bloklar */
-    .menu-block{
-      background: rgba(20,20,20,.55);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:12px;
-      margin:10px 0;
-      box-shadow: 0 14px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
-    }
-    .block-head{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:2px 2px 10px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      margin-bottom:10px;
-      letter-spacing:.8px;
-      text-transform:uppercase;
-      font-weight:900;
-      font-size:11px;
-      opacity:.95;
-    }
-    .block-head small{ text-transform:none; letter-spacing:0; font-weight:700; opacity:.65; }
-
-    /* Blok başlık renkleri */
-    .menu-block.asistan .block-head{ color:#bef264; }
-    .menu-block.astro .block-head{ color:#a78bfa; }
-    .menu-block.kurumsal .block-head{ color:#60a5fa; }
-
-    /* Grid */
-    .menu-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+        margin: 0;
+        background-color: var(--bg-deep);
+        color: var(--text-main);
+        font-family: var(--font-stack);
+        overflow: hidden; /* App hissi için */
+        /* Arka plan: Hareketli ve derin */
+        background-image: 
+            radial-gradient(circle at 15% 50%, rgba(190, 242, 100, 0.08), transparent 25%),
+            radial-gradient(circle at 85% 30%, rgba(255, 179, 0, 0.06), transparent 25%);
     }
 
-    /* Menü butonları (3D) */
-    .menu-action{
-      display:flex; align-items:center; gap:12px;
-      border-radius:16px;
-      padding:12px 12px;
-      cursor:pointer;
-      user-select:none;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 14px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .menu-action:active{ transform: translateY(1px); filter: brightness(.98); }
-
-    /* İkon kapsülü modern */
-    .menu-action .ico{
-      width:38px; height:38px;
-      border-radius:14px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px;
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    /* Noise Texture (Premium Doku) */
+    body::after {
+        content: "";
+        position: fixed; inset: 0;
+        background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.04'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: overlay;
     }
 
-    /* Grup renkleri */
-    .menu-action.grp-asistan .ico{
-      background: rgba(190,242,100,.16);
-      border-color: rgba(190,242,100,.22);
-      color:#bef264;
-    }
-    .menu-action.grp-astro .ico{
-      background: rgba(167,139,250,.16);
-      border-color: rgba(167,139,250,.22);
-      color:#a78bfa;
-    }
-    .menu-action.grp-kurumsal .ico{
-      background: rgba(96,165,250,.16);
-      border-color: rgba(96,165,250,.22);
-      color:#60a5fa;
+    /* --- MOBILE FRAME (Desktop için Merkezleme) --- */
+    .mobile-frame {
+        width: 100%; height: 100dvh;
+        display: flex; flex-direction: column;
+        position: relative;
+        background: transparent;
     }
 
-    /* Profil Düzenle (menü içinde turuncu vurgu) */
-    .menu-action.tone-orange{
-      border-color: rgba(255,179,0,.35);
-      background: linear-gradient(180deg, rgba(255,179,0,.16), rgba(0,0,0,0));
-    }
-    .menu-action.tone-orange .ico{
-      background: rgba(255,179,0,.18);
-      border-color: rgba(255,179,0,.28);
-      color:#ffb300;
-    }
-    .menu-action.tone-orange small{ color:#ffb300; opacity:.85; }
-
-    /* History satırı: aynı satır title + ikon (kibar) */
-    .history-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .history-del{
-      width:34px; height:34px;
-      border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-      cursor:pointer;
-      color: rgba(255,255,255,.65);
-    }
-    .history-del:active{ transform: translateY(1px); }
-    .history-del .ico-trash{ opacity:.9; }
-
-    /* Chat boşken görünmesin: main.js zaten display none yapıyor; burada sadece olur da görünürse */
-    .chat-empty::before{
-      content:"Yeni sohbet başlat ya da bir mesaj yaz evladım 🙂";
-      display:block;
-      color: rgba(255,255,255,.55);
-      font-weight:800;
-      padding: 16px;
-      text-align:center;
+    /* --- TOPBAR: Minimalist & Corporate --- */
+    .topbar {
+        height: 60px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 16px;
+        backdrop-filter: blur(12px);
+        background: rgba(5, 5, 5, 0.6);
+        border-bottom: 1px solid var(--glass-border);
+        z-index: 100;
     }
 
-    /* ✅ (EK) Google renderButton alanı - tasarımı bozmadan aynı yerde dursun */
-    #googleBtnWrap{
-      width:100%;
-      display:flex;
-      justify-content:center;
+    .brand-wrapper {
+        display: flex; flex-direction: column; align-items: center;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    #googleBtnWrap > div{
-      width:100% !important;
-      display:flex !important;
-      justify-content:center !important;
+    .brand-wrapper:active { transform: scale(0.98); }
+
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    .brand-name {
+        font-weight: 800; font-size: 18px; letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #fff 30%, #aaa 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-  </style>
-</head>
+    .slogan { font-size: 10px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; margin-top: -2px; }
 
-<body>
+    /* Seesaw SVG Refine */
+    .seesaw-svg { width: 32px; height: 16px; }
 
-<div class="mobile-frame" id="mobileFrame">
-  <div class="topbar">
-    <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
+    /* Buttons: Iconic & Clean */
+    .hamb-btn, .icon-btn-top {
+        background: transparent; border: none; color: var(--text-main);
+        cursor: pointer; padding: 8px; border-radius: 50%;
+        transition: background 0.2s;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .hamb-btn { font-size: 20px; }
+    .icon-btn-top svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+    .hamb-btn:hover, .icon-btn-top:hover { background: rgba(255,255,255,0.08); }
 
-    <div class="brand-wrapper" id="brandWrapper">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
-          <g class="seesaw-bar" id="seesawBar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-            <circle cx="3" cy="5" r="3" fill="#bef264" />
-            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-        </svg>
-        <div class="brand-name">Caynana AI</div>
-      </div>
-      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
+    /* YP Chip: Tech Look */
+    .yp-chip {
+        display: flex; align-items: center; gap: 6px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--glass-border);
+        padding: 4px 10px; border-radius: 20px;
+        margin-right: 8px;
+    }
+    .yp-label { font-size: 9px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; }
+    .yp-meter { width: 30px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+    .yp-fill { height: 100%; background: var(--primary-lime); width: 10%; box-shadow: 0 0 8px var(--primary-lime); }
+    .yp-num { font-size: 10px; font-weight: 700; color: var(--primary-lime); width: 24px; text-align: right; }
 
-    <div class="right-controls">
-      <div class="yp-chip">
-        <div class="yp-label">SAMİMİYET</div>
-        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-        <div class="yp-num" id="ypNum">10%</div>
-      </div>
-
-      <div class="notif-row">
-        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <div class="badge" id="notifBadge"></div>
-        </button>
-
-        <div class="notification-dropdown" id="notifDropdown">
-          <div class="notif-header">Bildirimler</div>
-          <div class="notif-list" id="notifList"></div>
-        </div>
-
-        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MENU -->
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-sidebar">
-      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
-
-      <!-- ✅ Yeni sohbet altında turuncu profil kısayolu (main.js de basabilir, burada hazır dursun) -->
-      <div class="profile-shortcut-wrap" id="profileShortcutMount">
-        <div class="profile-shortcut-btn" id="profileShortcutBtn">
-          <div class="profile-shortcut-ico">👤</div>
-          <div style="min-width:0;">
-            <div class="profile-shortcut-title">Profil Düzenle</div>
-            <div class="profile-shortcut-sub">Bilgilerini güncelle</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title">GEÇMİŞ SOHBETLER</div>
-      <div class="history-list" id="historyList"></div>
-
-      <!-- ✅ 3 BLOK MENÜ -->
-      <div class="menu-block asistan">
-        <div class="block-head">Asistan <small>Günlük işler</small></div>
-        <div class="menu-grid" id="menuAsistan"></div>
-      </div>
-
-      <div class="menu-block astro">
-        <div class="block-head">Astro AI <small>Yorum & fal</small></div>
-        <div class="menu-grid" id="menuAstro"></div>
-      </div>
-
-      <div class="menu-block kurumsal">
-        <div class="block-head">Kurumsal <small>Bilgi & sözleşme</small></div>
-        <div class="menu-grid" id="menuKurumsal"></div>
-      </div>
-
-      <div class="menu-footer-actions">
-        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
-        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
-        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CHAT -->
-  <div class="chat-area" id="chat"></div>
-
-  <!-- DOCK -->
-  <div class="input-dock">
-    <div class="dock-inner">
-      <button class="icon-btn" id="camBtn" aria-label="Kamera">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-      </button>
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-      <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-      </button>
-    </div>
-  </div>
-
-  <!-- FOOTER (her sayfada sabit) -->
-  <div class="footer-container">
-    <div class="footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
-    </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
-  </div>
-</div>
-
-<!-- PAGE OVERLAY (Hakkımızda/SSS/Gizlilik/İletişim/Sözleşme burada açılıyor) -->
-<div class="full-overlay" id="pageOverlay">
-  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
-      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
-      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
-    </div>
-    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
-  </div>
-</div>
-
-<!-- LOGIN -->
-<div class="full-overlay active" id="loginOverlay">
-  <div class="login-card login-premium">
-
-    <!-- Tahtaravalli (animasyon) -->
-    <div class="login-seesaw-wrap" aria-hidden="true">
-      <svg class="login-seesaw" viewBox="0 0 220 70">
-        <!-- bar -->
-        <g class="login-seesaw-bar">
-          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
-          <circle cx="30" cy="20" r="10" fill="#bef264"/>
-          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
-        </g>
-        <!-- pivot -->
-        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
-      </svg>
-    </div>
-
-    <div class="brand-name" style="font-size:24px; margin:6px 0 4px;">Caynana.AI</div>
-    <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
-
-    <div class="login-sub">
-      <b>Ücretsiz üyelik</b> için lütfen giriş yapın.
-    </div>
-
-    <!-- ✅ VAR OLAN BUTON (EKSİLTMEDİM) -->
-    <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
-
-    <!-- ✅ EK: Eğer main.js renderButton kullanıyorsa buraya basabilir (tasarımı bozmadan aynı bölgede) -->
-    <div id="googleBtnWrap" style="margin-top:10px;"></div>
-
-    <button class="auth-btn apple disabled" id="appleLoginBtn" type="button">Apple Girişi Hazırlanıyor...</button>
-    <div class="coming-soon"></div>
-
-    <!-- /pages linkleri -->
-    <div class="trust-links trust-links-clean">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
-      <a href="/pages/sozlesme.html">Sözleşme</a>
-      <a href="/pages/uyelik.html">Üyelik</a>
-    </div>
-
-    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
-
-    <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
-  </div>
-</div>
-
-<!-- TERMS (ilk girişte zorunlu) -->
-<div class="full-overlay" id="termsOverlay">
-  <div class="login-card login-premium">
-    <div class="terms-head">
-      <div class="brand-name">Sözleşme</div>
-      <button id="closeTermsBtn" class="x-btn" aria-label="Kapat">×</button>
-    </div>
-
-    <div class="terms-frame-wrap">
-      <iframe id="termsFrame" src="/pages/sozlesme.html" title="Kullanıcı Sözleşmesi"></iframe>
-    </div>
-
-    <div class="agreement-box">
-      <input type="checkbox" id="termsCheck">
-      <label for="termsCheck">Onaylıyorum.</label>
-    </div>
-
-    <button class="auth-btn" id="termsAcceptBtn" type="button">Onayla ve Gir</button>
-    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
-  </div>
-</div>
-
-<!-- küçük toast -->
-<div class="toast" id="toast"></div>
-
-<!-- ✅ GSI / FedCM AbortError KALKANı (main.js kaç kez dokunsa da kırılmasın) -->
-<script>
-  (function(){
-    // Tekil durum
-    if(!window.__CAYNANA_GSI__) window.__CAYNANA_GSI__ = {
-      patched:false,
-      initCalled:false,
-      promptCalled:false
-    };
-
-    function patchGSI(){
-      try{
-        if(window.__CAYNANA_GSI__.patched) return;
-        if(!window.google || !google.accounts || !google.accounts.id) return;
-
-        const id = google.accounts.id;
-
-        // initialize guard (2. kez çağrılırsa yut)
-        const _init = id.initialize.bind(id);
-        id.initialize = function(opts){
-          if(window.__CAYNANA_GSI__.initCalled){
-            // ikinci initialize -> AbortError tetiklememek için yut
-            return;
-          }
-          window.__CAYNANA_GSI__.initCalled = true;
-          return _init(opts);
-        };
-
-        // prompt guard (spam olursa AbortError)
-        const _prompt = id.prompt ? id.prompt.bind(id) : null;
-        if(_prompt){
-          id.prompt = function(cb){
-            if(window.__CAYNANA_GSI__.promptCalled){
-              return;
-            }
-            window.__CAYNANA_GSI__.promptCalled = true;
-            return _prompt(cb);
-          };
-        }
-
-        window.__CAYNANA_GSI__.patched = true;
-      }catch(e){
-        // sessiz
-      }
+    /* Notif Badge */
+    .notif-row { position: relative; display: flex; align-items: center; gap: 4px; }
+    .badge {
+        position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
+        background: #ef4444; border-radius: 50%; border: 1px solid var(--bg-deep);
+        display: none; /* JS ile açılır */
     }
 
-    // GSI async geldiği için birkaç kez dene
-    let tries = 0;
-    const t = setInterval(()=>{
-      patchGSI();
-      tries++;
-      if(window.__CAYNANA_GSI__.patched || tries > 60) clearInterval(t);
-    }, 100);
-
-    // Profil sayfasından dönünce bfcache olayı tetikleyebilir -> prompt tekrar spam olmasın diye sıfırlama yapma
-    window.addEventListener("pageshow", (e) => {
-      // burada reset yok; amaç spam'i engellemek
-    });
-
-    // Butona basınca: main.js zaten handle ediyor olabilir.
-    // Yine de “fallback” olarak GSI renderButton kullanıyorsan diye sadece güvenli yardımcı koyuyoruz:
-    window.__tryRenderGoogleButton = function(){
-      try{
-        if(!window.google?.accounts?.id) return false;
-        const wrap = document.getElementById("googleBtnWrap");
-        if(!wrap) return false;
-        // main.js render ediyorsa dokunma
-        if(wrap.dataset.rendered === "1") return true;
-
-        // Eğer global bir client id varsa (main.js koyuyor olabilir) render edebilir:
-        const cid = window.GOOGLE_CLIENT_ID || window.googleClientId || "";
-        if(!cid) return false;
-
-        google.accounts.id.initialize({
-          client_id: cid,
-          callback: window.handleGoogleCredential || function(){},
-          auto_select: false,
-          cancel_on_tap_outside: false,
-          use_fedcm_for_prompt: true
-        });
-
-        wrap.innerHTML = "";
-        google.accounts.id.renderButton(wrap, { theme:"outline", size:"large", shape:"pill", text:"continue_with" });
-        wrap.dataset.rendered = "1";
-        return true;
-      }catch(e){ return false; }
-    };
-  })();
-</script>
-
-<script type="module" src="js/main.js"></script>
-
-<!-- ✅ Profil kısayoluna direkt yön -->
-<script>
-  // main.js de bunu bağlayacak; burada da “yedeği” var.
-  document.addEventListener("DOMContentLoaded", () => {
-    const btn = document.getElementById("profileShortcutBtn");
-    if(btn){
-      btn.addEventListener("click", () => location.href = "/pages/profil.html");
+    /* --- MENU SIDEBAR: The Obsidian Slab --- */
+    .menu-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(4px); z-index: 200;
+        opacity: 0; pointer-events: none; transition: opacity 0.3s;
     }
-  });
-</script>
-</body>
-</html>
+    .menu-overlay.active { opacity: 1; pointer-events: auto; }
+
+    .menu-sidebar {
+        position: absolute; top: 0; left: 0; bottom: 0; width: 85%; max-width: 320px;
+        background: rgba(12, 12, 12, 0.95);
+        backdrop-filter: blur(25px);
+        border-right: 1px solid var(--glass-border);
+        box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+        transform: translateX(-100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex; flex-direction: column;
+        padding: 20px 16px; overflow-y: auto;
+    }
+    .menu-overlay.active .menu-sidebar { transform: translateX(0); }
+
+    /* NEW CHAT BUTTON: Hero Element */
+    .new-chat-btn {
+        width: 100%; padding: 14px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #fff; font-weight: 600; font-size: 14px; letter-spacing: 0.5px;
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        cursor: pointer; position: relative; overflow: hidden;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .new-chat-btn span { font-size: 18px; font-weight: 300; }
+    /* Shimmer Effect */
+    .new-chat-btn::before {
+        content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: skewX(-20deg); transition: 0.5s;
+    }
+    .new-chat-btn:hover { border-color: rgba(255,255,255,0.25); transform: translateY(-1px); }
+    .new-chat-btn:hover::before { left: 150%; transition: 0.7s; }
+
+    /* Profile Shortcut */
+    .profile-shortcut-wrap { margin: 16px 0; }
+    .profile-shortcut-btn {
+        display: flex; align-items: center; gap: 12px; padding: 12px;
+        background: linear-gradient(90deg, rgba(255, 179, 0, 0.05), transparent);
+        border: 1px solid rgba(255, 179, 0, 0.15);
+        border-radius: 12px; cursor: pointer; transition: 0.2s;
+    }
+    .profile-shortcut-btn:hover { background: rgba(255, 179, 0, 0.08); border-color: rgba(255, 179, 0, 0.3); }
+    .profile-shortcut-ico { font-size: 18px; filter: drop-shadow(0 0 5px rgba(255, 179, 0, 0.4)); }
+    .profile-shortcut-title { color: var(--primary-orange); font-size: 13px; font-weight: 700; }
+    .profile-shortcut-sub { color: rgba(255,255,255,0.5); font-size: 11px; }
+
+    /* Menu Blocks & Grid */
+    .section-title { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; margin: 24px 0 8px 4px; letter-spacing: 1px; }
+    
+    .menu-block {
+        background: transparent; padding: 0; border: none; box-shadow: none; margin-bottom: 20px;
+    }
+    .block-head {
+        font-size: 13px; font-weight: 700; margin-bottom: 12px; padding-left: 4px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .block-head small { font-weight: 400; opacity: 0.5; font-size: 11px; margin-left: auto; text-transform: none; letter-spacing: 0; }
+
+    /* Menu Actions (Cards) */
+    .menu-grid { display: grid; gap: 8px; }
+    .menu-action {
+        display: flex; align-items: center; gap: 12px;
+        padding: 10px 12px; border-radius: 10px;
+        background: transparent;
+        border: 1px solid transparent;
+        transition: 0.2s; cursor: pointer;
+    }
+    .menu-action:hover {
+        background: rgba(255,255,255,0.03);
+        border-color: var(--glass-border);
+    }
+    
+    /* Icons in Menu */
+    .menu-action .ico {
+        width: 32px; height: 32px; border-radius: 8px;
+        display: flex; align-items: center; justify-content: center; font-size: 16px;
+        background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border);
+        transition: 0.2s;
+    }
+    .menu-action:hover .ico { background: rgba(255,255,255,0.08); color: #fff !important; transform: scale(1.05); }
+
+    /* Group Specific Colors (Subtle Glows) */
+    .grp-asistan .ico { color: #bef264; box-shadow: inset 0 0 10px rgba(190, 242, 100, 0.05); }
+    .grp-astro .ico { color: #a78bfa; box-shadow: inset 0 0 10px rgba(167, 139, 250, 0.05); }
+    .grp-kurumsal .ico { color: #60a5fa; box-shadow: inset 0 0 10px rgba(96, 165, 250, 0.05); }
+    
+    .menu-text-wrap { display: flex; flex-direction: column; }
+    .menu-text-title { font-size: 13px; font-weight: 500; color: #ddd; }
+    .menu-text-sub { font-size: 11px; color: #777; }
+
+    /* Footer Actions */
+    .menu-footer-actions { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--glass-border); }
+    .action-link { display: block; padding: 10px; font-size: 13px; color: #888; cursor: pointer; transition: 0.2s; }
+    .action-link:hover { color: #fff; }
+    .delete-acc { color: #ef4444; opacity: 0.7; }
+    .delete-acc:hover { opacity: 1; }
+    .footer-copy { font-size: 10px; color: #444; margin-top: 10px; text-align: center; font-family: monospace; }
+
+    /* --- CHAT AREA --- */
+    .chat-area {
+        flex: 1; overflow-y: auto; padding: 20px 16px 80px;
+        display: flex; flex-direction: column; gap: 16px;
+        scroll-behavior: smooth;
+    }
+    
+    /* Messages */
+    .msg-row { display: flex; gap: 10px; max-width: 100%; animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+    .msg-bubble {
+        padding: 12px 16px; border-radius: 18px;
+        font-size: 14px; line-height: 1.5;
+        position: relative; max-width: 85%;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* User Message */
+    .msg-row.user { justify-content: flex-end; }
+    .msg-row.user .msg-bubble {
+        background: linear-gradient(135deg, #333, #222);
+        color: #fff; border: 1px solid rgba(255,255,255,0.1);
+        border-bottom-right-radius: 4px;
+    }
+    
+    /* Bot Message */
+    .msg-row.bot { justify-content: flex-start; }
+    .msg-row.bot .msg-bubble {
+        background: rgba(255,255,255,0.03); /* Glass */
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.06);
+        color: #eee;
+        border-bottom-left-radius: 4px;
+    }
+
+    /* --- INPUT DOCK: Floating Glass Bar --- */
+    .input-dock {
+        position: absolute; bottom: 0; left: 0; width: 100%;
+        padding: 0 12px 12px; z-index: 50;
+        background: linear-gradient(to top, var(--bg-deep) 40%, transparent);
+    }
+    .dock-inner {
+        display: flex; align-items: flex-end; gap: 8px;
+        background: rgba(30, 30, 30, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 24px; padding: 8px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    
+    #msgInput {
+        flex: 1; background: transparent; border: none; outline: none;
+        color: #fff; font-size: 14px; max-height: 100px; padding: 10px 4px;
+        resize: none; font-family: var(--font-stack);
+    }
+    #msgInput::placeholder { color: rgba(255,255,255,0.3); }
+
+    .icon-btn {
+        width: 36px; height: 36px; border-radius: 50%;
+        border: none; background: transparent; color: #aaa;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .icon-btn svg { width: 20px; height: 20px; stroke-width: 2; fill: none; stroke: currentColor; }
+
+    .send-btn {
+        width: 40px; height: 40px; border-radius: 50%;
+        background: #fff; color: #000; border: none;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s; box-shadow: 0 0 15px rgba(255,255,255,0.2);
+    }
+    .send-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+    .send-btn svg { width: 20px; height: 20px; fill: currentColor; }
+
+    /* --- LOGIN OVERLAY: Cinematic --- */
+    .full-overlay {
+        position: fixed; inset: 0; z-index: 2000;
+        background: #000; display: none;
+        align-items: center; justify-content: center;
+    }
+    .full-overlay.active { display: flex; }
+
+    .login-card {
+        width: 90%; max-width: 380px;
+        background: rgba(20,20,20,0.8);
+        backdrop-filter: blur(30px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 24px; padding: 32px 24px;
+        text-align: center;
+        box-shadow: 
+            0 0 0 1px rgba(0,0,0,0.5),
+            0 40px 80px rgba(0,0,0,0.6);
+        position: relative; overflow: hidden;
+    }
+    
+    /* Login Glow Effect */
+    .login-card::before {
+        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+        background: conic-gradient(transparent, rgba(255,255,255,0.05), transparent 30%);
+        animation: rotate 10s linear infinite; pointer-events: none;
+    }
+    @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+    .login-seesaw-wrap { margin-bottom: 20px; position: relative; z-index: 2; }
+    .login-seesaw { width: 140px; height: auto; drop-shadow: 0 0 10px rgba(190, 242, 100, 0.3); }
+
+    .brand-name { font-size: 24px; margin-bottom: 4px; color: #fff; position: relative; z-index: 2; }
+    .login-slogan { font-size: 12px; color: var(--text-muted); margin-bottom: 24px; letter-spacing: 1px; text-transform: uppercase; position: relative; z-index: 2; }
+
+    .login-sub { font-size: 13px; color: #ccc; margin-bottom: 24px; position: relative; z-index: 2; }
+
+    .auth-btn {
+        width: 100%; padding: 14px; border-radius: 12px;
+        font-weight: 600; font-size: 14px; cursor: pointer;
+        border: 1px solid transparent; position: relative; z-index: 2;
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .auth-btn.google {
+        background: #fff; color: #000;
+        box-shadow: 0 4px 15px rgba(255,255,255,0.15);
+    }
+    .auth-btn.google:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,255,255,0.25); }
+    
+    .auth-btn.apple {
+        background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px;
+    }
+    .auth-btn.disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .trust-links { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; position: relative; z-index: 2; }
+    .trust-links a { font-size: 11px; color: #666; text-decoration: none; transition: 0.2s; }
+    .trust-links a:hover { color: #fff; text-decoration: underline; }
+
+    .login-footer { margin-top: 20px; font-size: 10px; color: #444; position: relative; z-index: 2; font-family: monospace; }
+
+    /* --- FOOTER (Desktop) --- */
+    .footer-container { display: none; } /* Mobile first, gizle */
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* Page Overlay (Modals) */
+    #closePageBtn { color: #fff !important; opacity: 0.7; font-size: 24px !important; cursor: pointer; }
+    #closePageBtn:hover { opacity: 1; }
+
+</style>
