@@ -3,7 +3,15 @@
 // ✅ FIX: Türkçe karakter bozulması -> JWT payload UTF-8 decode (TextDecoder)
 // ✅ FIX: ID gmail değil -> 2 harf + 8 rakam random, ardışık yok (kalıcı)
 
-import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
+// js/config.js
+
+export const GOOGLE_CLIENT_ID =
+  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
+
+export const STORAGE_KEY = "caynana_user_v1";
+
+// ✅ SENİN DOMAIN’İN
+export const BASE_DOMAIN = "https://caynana.ai";
 
 const API_TOKEN_KEY = "caynana_api_token";
 const STABLE_ID_KEY = "caynana_stable_id_v1";
