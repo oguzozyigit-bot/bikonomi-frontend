@@ -2,11 +2,12 @@
 // + ChatStore sohbet listesi + kalıcı hafıza (son 10) + menüden geçiş/silme
 // ✅ FIX: ChatStore.load() yoktu → UI render fonksiyonu eklendi (eksiltme yok)
 // ✅ FIX: Çift kayıt (user/assistant iki kez ekleniyordu) → storeAddOnce guard (eksiltme yok)
-
-// ✅ PATCH: Profil erişimi (üst ikon + hamburger kısayol + menü item)
-// ✅ PATCH: History çöp kutusu daha kibar SVG + aynı satır
-// ✅ PATCH: Yeni sohbet başlığı = ilk user mesajı (max 10 karakter)
-// ✅ PATCH: Yeni sohbet oluşmadan chat alanı görünmez (boş state)
+//
+// ✅ FINAL: 3 BLOK MENU (Asistan / Astro AI / Kurumsal)
+// ✅ FINAL: Profil erişimi (üst ikon + menü + yeni sohbet altı turuncu kısayol)
+// ✅ FINAL: Yeni sohbet başlığı = ilk user mesajı (max 10 karakter)
+// ✅ FINAL: History silme ikonu kibar SVG + aynı satır
+// ✅ FINAL: Yeni sohbet oluşmadan chat alanı görünmez
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
@@ -127,7 +128,6 @@ function setChatVisibilityFromStore(){
   let h = [];
   try { h = ChatStore.history() || []; } catch(e){ h = []; }
 
-  // ✅ Yeni sohbet oluşmadan chat alanı görünmesin
   if(!h || h.length === 0){
     chatEl.style.display = "none";
     chatEl.classList.add("chat-empty");
@@ -144,7 +144,6 @@ function ensureChatVisible(){
   chatEl.classList.remove("chat-empty");
 }
 
-// ✅ Kibar çöp kutusu (SVG)
 function trashSvg(){
   return `
   <svg class="ico-trash" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -154,14 +153,12 @@ function trashSvg(){
   </svg>`;
 }
 
-// ✅ Yeni sohbet başlığı: ilk user mesajı max 10 karakter
 function makeChatTitleFromFirstMsg(text=""){
   const s = String(text || "").trim().replace(/\s+/g, " ");
   if(!s) return "Sohbet";
   return s.slice(0, 10);
 }
 
-// ✅ ChatStore title set (varsa)
 function trySetChatTitle(title){
   const t = String(title || "").trim();
   if(!t) return;
@@ -179,11 +176,9 @@ function trySetChatTitle(title){
       ChatStore.updateTitle(ChatStore.currentId, t);
       return;
     }
-    // fallback: yoksa yapacak bir şey yok (ama UI yine de çalışır)
   }catch(e){}
 }
 
-// ✅ Mevcut chat’in title boşsa ilk user mesajından set et
 function ensureTitleOnFirstUserMessage(userText){
   try{
     const list = ChatStore.list?.() || [];
@@ -197,39 +192,31 @@ function ensureTitleOnFirstUserMessage(userText){
   }catch(e){}
 }
 
-// --------------------
-// MENU
-// --------------------
+// ✅ PROFIL NAV
+function goProfile(){
+  location.href = "/pages/profil.html";
+}
 
-// ✅ Profil menu item (modern SVG, turuncu hissi için class veriyoruz; CSS/index tarafında parlatacağız)
-const PROFILE_MENU_ITEM = {
-  key: "profile",
-  label: "Profil Düzenle",
-  sub: "Bilgilerini güncelle",
-  ico: "👤",
-  group: "kurumsal",
-  tone: "orange"
-};
-
-// NOTE: Menü mimarisi (Asistan/Astro/Kurumsal) görsel olarak index.html+css’de
-// burada altyapı için group alanı koyduk (ileride blok blok basacağız).
+// --------------------
+// MENU (3 BLOK)
+// --------------------
 const MENU_ITEMS = [
-  // Asistan
+  // ASISTAN
   { key: "chat",       label: "Sohbet",      sub: "Dertleş",      ico: "💬", group:"asistan" },
   { key: "dedikodu",   label: "Dedikodu",    sub: "Özel oda",     ico: "🕵️", group:"asistan" },
   { key: "shopping",   label: "Alışveriş",   sub: "Tasarruf et",  ico: "🛍️", group:"asistan" },
   { key: "translate",  label: "Tercüman",    sub: "Çeviri",       ico: "🌍", group:"asistan" },
   { key: "diet",       label: "Diyet",       sub: "Plan",         ico: "🥗", group:"asistan" },
   { key: "health",     label: "Sağlık",      sub: "Danış",        ico: "❤️", group:"asistan" },
+
+  // ASTRO
   { key: "fal",        label: "Kahve Falı",  sub: "Günde 1",      ico: "☕", group:"astro" },
   { key: "tarot",      label: "Tarot",       sub: "Kart seç",     ico: "🃏", group:"astro" },
   { key: "horoscope",  label: "Burç",        sub: "Günlük",       ico: "♈", group:"astro" },
   { key: "dream",      label: "Rüya",        sub: "Yorumla",      ico: "🌙", group:"astro" },
 
-  // ✅ Profil (Kurumsal)
-  PROFILE_MENU_ITEM,
-
-  // Kurumsal / Sayfalar
+  // KURUMSAL
+  { key: "profile",    label: "Profil Düzenle", sub: "Bilgilerini güncelle", ico: "👤", group:"kurumsal", tone:"orange" },
   { key: "hakkimizda", label: "Hakkımızda",  sub: "Biz kimiz?",   ico: "ℹ️", group:"kurumsal" },
   { key: "sss",        label: "SSS",         sub: "Sorular",      ico: "❓", group:"kurumsal" },
   { key: "gizlilik",   label: "Gizlilik",    sub: "Güven",        ico: "🔒", group:"kurumsal" },
@@ -238,22 +225,39 @@ const MENU_ITEMS = [
   { key: "uyelik",     label: "Üyelik",      sub: "Detaylar",     ico: "🪪", group:"kurumsal" },
 ];
 
-function populateMenuGrid() {
-  const grid = $("mainMenu");
-  if (!grid) return;
-  if (grid.children.length > 0) return;
-
-  // ✅ kadınsa regl takibi açılacak (index+css’de bloklayacağız), şimdiden altyapı:
-  // meta = caynana_profile_v2.gender === "Kadın" ise ileride period item eklenebilir.
-  // (Şimdilik bu dosyada period item eklemedim; istersen bir sonraki adımda ekleriz.)
-
-  // Şimdilik tek grid basıyoruz (blok görünümü index.html’de yapılacak)
-  grid.innerHTML = MENU_ITEMS.map(m => `
+function menuItemHtml(m){
+  return `
     <div class="menu-action ${m.group ? `grp-${m.group}` : ""} ${m.tone ? `tone-${m.tone}` : ""}" data-action="${m.key}">
       <div class="ico">${m.ico}</div>
       <div><div>${m.label}</div><small>${m.sub}</small></div>
     </div>
-  `).join("");
+  `;
+}
+
+function populateMenuGrid() {
+  // 3 grid
+  const gA = $("menuAsistan");
+  const gB = $("menuAstro");
+  const gC = $("menuKurumsal");
+
+  // fallback: eski id varsa
+  const legacy = $("mainMenu");
+
+  // zaten doluysa tekrar basma
+  if ((gA && gA.children.length) || (gB && gB.children.length) || (gC && gC.children.length) || (legacy && legacy.children.length)) return;
+
+  const asistanItems = MENU_ITEMS.filter(x => x.group === "asistan");
+  const astroItems   = MENU_ITEMS.filter(x => x.group === "astro");
+  const kurumsalItems= MENU_ITEMS.filter(x => x.group === "kurumsal");
+
+  if(gA) gA.innerHTML = asistanItems.map(menuItemHtml).join("");
+  if(gB) gB.innerHTML = astroItems.map(menuItemHtml).join("");
+  if(gC) gC.innerHTML = kurumsalItems.map(menuItemHtml).join("");
+
+  // legacy varsa hepsini bas (geriye uyum)
+  if(legacy && (!gA && !gB && !gC)){
+    legacy.innerHTML = MENU_ITEMS.map(menuItemHtml).join("");
+  }
 }
 
 function openMenu() { $("menuOverlay")?.classList.add("open"); }
@@ -280,17 +284,13 @@ async function handleMenuAction(action) {
     return;
   }
 
-  // ✅ profil
-  if (action === "profile") { location.href = "/pages/profil.html"; return; }
+  if (action === "profile") { goProfile(); return; }
 
   if (action === "fal") { openFalPanel(); return; }
   if (action === "tarot") { location.href = "pages/tarot.html"; return; }
   if (action === "horoscope") { location.href = "pages/burc.html"; return; }
   if (action === "dream") { location.href = "pages/ruya.html"; return; }
 
-  // NOT: Sen “ilk mesajı kullanıcı yazsın” dedin.
-  // Bu yüzden burada otomatik zorla mesaj göndermiyoruz.
-  // Sadece mode değiştiriyoruz (UI’da bir şey yazdırmıyoruz).
   if (action === "dedikodu") { currentMode = "dedikodu"; return; }
   if (action === "shopping") { currentMode = "shopping"; return; }
   if (action === "translate") { currentMode = "trans"; return; }
@@ -320,7 +320,6 @@ function setBrandState(state) {
   }
 }
 
-// ChatStore → chatHistory senkronu
 function syncFromStore(){
   try{
     const h = ChatStore.history() || [];
@@ -330,7 +329,6 @@ function syncFromStore(){
   }
 }
 
-// ✅ ChatStore.load() yoktu → UI render eklendi
 function renderChatFromStore(){
   const chatEl = $("chat");
   if(!chatEl) return;
@@ -352,12 +350,9 @@ function renderChatFromStore(){
 
   chatEl.scrollTop = chatEl.scrollHeight;
   syncFromStore();
-
-  // ✅ boşsa chat alanını kapat
   setChatVisibilityFromStore();
 }
 
-// ✅ Çift ekleme olmasın (chat.js de store'a yazıyor)
 function storeAddOnce(role, content){
   try{
     const h = ChatStore.history() || [];
@@ -376,21 +371,16 @@ async function doSend(forcedText = null) {
   const txt = String(forcedText ?? input?.value ?? "").trim();
   if (!txt) return;
 
-  // ✅ ilk mesaj gelince chat alanını aç
   ensureChatVisible();
 
   setBrandState("usering");
   addUserBubble(txt);
   if (input && forcedText === null) input.value = "";
 
-  // ✅ Kalıcı hafızaya yaz (guard ile)
   storeAddOnce("user", txt);
-
-  // ✅ başlık: ilk user mesajından (max 10 karakter)
   ensureTitleOnFirstUserMessage(txt);
-
   syncFromStore();
-  renderHistoryList(); // başlık hemen menüde güncellensin
+  renderHistoryList();
 
   setTimeout(() => setBrandState("thinking"), 120);
   const holder = document.createElement("div");
@@ -400,7 +390,6 @@ async function doSend(forcedText = null) {
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
-    // ✅ Backend’e giden history: ChatStore’dan (chat.js içi zaten store'u esas alıyor)
     const out = await fetchTextResponse(txt, currentMode, chatHistory);
     reply = out?.text || reply;
   } catch (e) {}
@@ -411,7 +400,6 @@ async function doSend(forcedText = null) {
   setTimeout(() => setBrandState("talking"), 120);
   typeWriter(reply, "chat");
 
-  // ✅ Asistan cevabını da kalıcı hafızaya yaz (guard ile)
   storeAddOnce("assistant", reply);
   syncFromStore();
 
@@ -540,11 +528,9 @@ function renderHistoryList(){
     row.className = "history-row";
     row.setAttribute("data-id", c.id);
 
-    // ✅ title max 10 karakter (UI güvenliği)
     let title = (c.title || "Sohbet").toString();
     title = title.trim().slice(0, 10) || "Sohbet";
 
-    // ✅ çöp kutusu aynı satır + kibar SVG
     row.innerHTML = `
       <div class="history-title">${title}</div>
       <button class="history-del" aria-label="Sil" title="Sil">
@@ -552,14 +538,12 @@ function renderHistoryList(){
       </button>
     `;
 
-    // sohbete geç
     row.addEventListener("click", () => {
       ChatStore.currentId = c.id;
       renderChatFromStore();
       closeMenu();
     });
 
-    // sil
     row.querySelector(".history-del")?.addEventListener("click", (e) => {
       e.stopPropagation();
       ChatStore.deleteChat(c.id);
@@ -574,46 +558,12 @@ function renderHistoryList(){
 // --------------------
 // MENU UI
 // --------------------
-function injectProfileShortcutUnderNewChat(){
-  const newBtn = $("newChatBtn");
-  if(!newBtn) return;
-
-  // zaten eklendiyse tekrar ekleme
-  if(document.getElementById("profileShortcut")) return;
-
-  const wrap = document.createElement("div");
-  wrap.id = "profileShortcut";
-  wrap.style.margin = "10px 0 8px";
-
-  // 3D / turuncu hissini CSS’de güzelleştireceğiz.
-  // Şimdilik inline ile “turuncu alt çizgi” gibi bir vurgu verdim.
-  wrap.innerHTML = `
-    <div class="menu-action profile-edit-shortcut" data-action="profile"
-         style="
-           border:1px solid rgba(255,179,0,.35);
-           background:linear-gradient(180deg, rgba(255,179,0,.16), rgba(0,0,0,.0));
-           border-radius:14px;
-           padding:12px;
-           display:flex;
-           gap:10px;
-           align-items:center;
-           cursor:pointer;
-         ">
-      <div class="ico" style="font-size:18px;">👤</div>
-      <div style="min-width:0;">
-        <div style="font-weight:900; color:#ffb300;">Profil Düzenle</div>
-        <small style="color:#ffb300; opacity:.85;">Bilgilerini güncelle</small>
-      </div>
-    </div>
-  `;
-
-  // newChatBtn’in hemen altına
-  newBtn.insertAdjacentElement("afterend", wrap);
-
-  // tık
-  wrap.querySelector(".menu-action")?.addEventListener("click", () => {
-    closeMenu();
-    location.href = "/pages/profil.html";
+function bindMenuDelegationTo(el){
+  if(!el) return;
+  el.addEventListener("click", (e)=>{
+    const it = e.target?.closest?.(".menu-action");
+    if(!it) return;
+    handleMenuAction(it.getAttribute("data-action"));
   });
 }
 
@@ -621,7 +571,6 @@ function bindMenuUI(){
   $("hambBtn") && ($("hambBtn").onclick = openMenu);
   $("menuOverlay") && ($("menuOverlay").onclick = (e)=>{ if(e.target === $("menuOverlay")) closeMenu(); });
 
-  // ✅ Yeni sohbet artık ChatStore ile
   $("newChatBtn") && ($("newChatBtn").onclick = () => {
     ChatStore.newChat();
     renderChatFromStore();
@@ -631,14 +580,19 @@ function bindMenuUI(){
     closeMenu();
   });
 
-  $("mainMenu") && ($("mainMenu").onclick = (e)=>{
-    const it = e.target?.closest?.(".menu-action");
-    if(!it) return;
-    handleMenuAction(it.getAttribute("data-action"));
-  });
+  // ✅ 3 grid delegation
+  bindMenuDelegationTo($("menuAsistan"));
+  bindMenuDelegationTo($("menuAstro"));
+  bindMenuDelegationTo($("menuKurumsal"));
 
-  // ✅ hamburger içinde “Profil Düzenle” kısayolu
-  injectProfileShortcutUnderNewChat();
+  // ✅ legacy grid delegation (eski html kalırsa)
+  bindMenuDelegationTo($("mainMenu"));
+
+  // ✅ Yeni sohbet altında turuncu profil kısayolu (index.html’de var)
+  $("profileShortcutBtn") && ($("profileShortcutBtn").onclick = () => {
+    closeMenu();
+    goProfile();
+  });
 }
 
 // --------------------
@@ -653,7 +607,6 @@ function bindComposer(){
     }
   }));
 
-  // kamera butonu fal paneli (mevcut akış)
   $("camBtn") && ($("camBtn").onclick = () => openFalPanel());
 }
 
@@ -670,8 +623,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindFalUI();
   bindAuthUI();
 
-  // ✅ üstteki profil ikonuna tıklayınca profil sayfasına git
-  $("profileBtn") && ($("profileBtn").onclick = () => location.href = "/pages/profil.html");
+  // ✅ üst profil ikon
+  $("profileBtn") && ($("profileBtn").onclick = () => goProfile());
 
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
@@ -697,7 +650,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("loginOverlay") && ($("loginOverlay").style.display = "flex");
   }
 
-  // tek bind: logout + delete
   $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
   $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
     const u2 = getUser();
@@ -708,13 +660,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   refreshPremiumBars();
 
-  // ✅ ChatStore: ilk açılışta sohbeti yükle ve menüye bas
   try{
     ChatStore.init();
     renderChatFromStore();
     renderHistoryList();
   }catch(e){}
 
-  // ✅ boş state kontrol (init sonrası)
   setChatVisibilityFromStore();
 });
