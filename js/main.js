@@ -8,6 +8,10 @@
 // ✅ FINAL: Yeni sohbet başlığı = ilk user mesajı (max 10 karakter)
 // ✅ FINAL: History silme ikonu kibar SVG + aynı satır
 // ✅ FINAL: Yeni sohbet oluşmadan chat alanı görünmez
+//
+// ✅ FIX (YENİ): FedCM AbortError / Google giriş bazen “profil dönüşü” sonrası bozuluyor
+//    Sebep: GSI init/prompt iki kez tetiklenebiliyor (özellikle bfcache / tekrar mount / çift click).
+//    Çözüm: main.js içinde “tek sefer initAuth + tek sefer handleLogin” kilidi eklendi. (Eksiltme yok)
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
@@ -37,6 +41,19 @@ function termsKey(email=""){
 function getApiToken(){ return (localStorage.getItem(API_TOKEN_KEY) || "").trim(); }
 function setApiToken(t){ if(t) localStorage.setItem(API_TOKEN_KEY, t); }
 function clearApiToken(){ localStorage.removeItem(API_TOKEN_KEY); }
+
+// --------------------
+// ✅ GSI / AUTH KİLİTLERİ (AbortError önleme)
+// --------------------
+function getBootState(){
+  if(!window.__CAYNANA_BOOT__) window.__CAYNANA_BOOT__ = {
+    gsiReady: false,
+    authInited: false,
+    loginInFlight: false,
+    lastLoginAt: 0
+  };
+  return window.__CAYNANA_BOOT__;
+}
 
 // --- backend token al (Google token -> backend token) ---
 async function ensureBackendSessionToken(){
@@ -479,7 +496,25 @@ async function deleteAccount(){
 // AUTH UI
 // --------------------
 function bindAuthUI(){
-  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
+  // ✅ FIX: Çift tık / çift bind / bfcache sonrası spam login olmasın
+  $("googleLoginBtn") && ($("googleLoginBtn").onclick = async () => {
+    const st = getBootState();
+    const now = Date.now();
+
+    // 900ms içinde tekrar tıklamayı yut
+    if(st.loginInFlight) return;
+    if(now - (st.lastLoginAt || 0) < 900) return;
+
+    st.loginInFlight = true;
+    st.lastLoginAt = now;
+
+    try{
+      await handleLogin("google");
+    }finally{
+      // küçük gecikme: GSI popup açılırken ikinci click'i engeller
+      setTimeout(()=>{ st.loginInFlight = false; }, 1200);
+    }
+  });
 
   $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
     alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel 🙂");
@@ -628,11 +663,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
-  // GSI
+  // ✅ GSI (tek sefer initAuth) - AbortError önleme
   try{
     await waitForGsi();
     $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
-    initAuth();
+
+    const st = getBootState();
+    if(!st.authInited){
+      st.authInited = true;
+      initAuth();
+    }
   }catch(e){
     window.showGoogleButtonFallback?.("GSI yüklenemedi");
   }
@@ -667,4 +707,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }catch(e){}
 
   setChatVisibilityFromStore();
+});
+
+// ✅ bfcache / geri dönüşlerde: UI barlarını güncelle (eksiltme yok, sadece toparlar)
+window.addEventListener("pageshow", () => {
+  try{ refreshPremiumBars(); }catch(e){}
 });
