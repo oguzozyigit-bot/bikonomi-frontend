@@ -7,6 +7,76 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/css/style.css?v=1">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- ✅ EK: Menü 3D + Profil Düzenle butonu + Boş sohbet ekranı (CSS’e dokunmadan) -->
+  <style>
+    .profile-edit-btn{
+      width:100%;
+      margin:10px 0 14px;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,179,0,.35);
+      background: rgba(255,179,0,.12);
+      color:#ffb300;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      box-shadow: 0 10px 20px rgba(255,179,0,.08), inset 0 1px 0 rgba(255,255,255,.12);
+      transform: translateZ(0);
+    }
+    .profile-edit-btn:active{ transform: translateY(1px); box-shadow: 0 6px 14px rgba(255,179,0,.08), inset 0 1px 0 rgba(255,255,255,.10); }
+    .profile-edit-btn .pico{
+      width:28px;height:28px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      background: rgba(255,179,0,.18);
+      border:1px solid rgba(255,179,0,.25);
+    }
+
+    /* Menü grid butonlarına 3D dokunuş */
+    .menu-action{
+      box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      transform: translateZ(0);
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .menu-action:active{
+      transform: translateY(1px);
+      box-shadow: 0 6px 12px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.05);
+    }
+
+    /* Boş sohbet durumu */
+    .chat-area.empty{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .empty-state{
+      max-width:360px;
+      width:100%;
+      padding:16px;
+      border-radius:16px;
+      background: rgba(20,20,20,.72);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+      text-align:center;
+      color:#ddd;
+    }
+    .empty-state .t{ font-weight:900; font-size:14px; margin-bottom:6px; }
+    .empty-state .s{ font-size:12px; opacity:.85; line-height:1.35; }
+    .empty-state .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:#bef264;
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+
+    /* History delete icon modern */
+    .history-del svg{ width:18px; height:18px; display:block; }
+  </style>
 </head>
 <body>
 
@@ -59,6 +129,12 @@
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
+      <!-- ✅ EK: Profil Düzenle (turuncu, yeni sohbetin altında) -->
+      <button class="profile-edit-btn" id="profileEditBtn">
+        <span class="pico">👤</span>
+        <span>Profil Düzenle</span>
+      </button>
+
       <div class="section-title">GEÇMİŞ SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
 
@@ -74,7 +150,14 @@
   </div>
 
   <!-- CHAT -->
-  <div class="chat-area" id="chat"></div>
+  <div class="chat-area" id="chat">
+    <!-- ✅ EK: yeni sohbet oluşmadan “boş ekran” -->
+    <div class="empty-state" id="emptyState" style="display:none;">
+      <div class="t">Ne lazım evladım?</div>
+      <div class="s">İlk mesajını yazınca sohbet başlar. Kaynana burada…</div>
+      <div class="hint">İpucu: “Bugün ne yesem?”</div>
+    </div>
+  </div>
 
   <!-- DOCK -->
   <div class="input-dock">
@@ -95,11 +178,11 @@
   <!-- FOOTER (her sayfada sabit) -->
   <div class="footer-container">
     <div class="footer-links">
-  <a href="/pages/hakkimizda.html">Hakkımızda</a>
-  <a href="/pages/sss.html">SSS</a>
-  <a href="/pages/gizlilik.html">Gizlilik</a>
-  <a href="/pages/iletisim.html">İletişim</a>
-</div>
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
     <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
   </div>
 </div>
@@ -147,14 +230,14 @@
 
     <!-- /pages linkleri -->
     <div class="trust-links trust-links-clean">
-  <a href="/pages/hakkimizda.html">Hakkımızda</a>
-  <a href="/pages/sss.html">SSS</a>
-  <a href="/pages/gizlilik.html">Gizlilik</a>
-  <a href="/pages/iletisim.html">İletişim</a>
-  <a href="/pages/sozlesme.html">Sözleşme</a>
-  <a href="/pages/uyelik.html">Üyelik</a>
-</div>
-    
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+      <a href="/pages/sozlesme.html">Sözleşme</a>
+      <a href="/pages/uyelik.html">Üyelik</a>
+    </div>
+
     <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
 
     <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
