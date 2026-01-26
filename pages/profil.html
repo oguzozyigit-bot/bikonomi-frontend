@@ -88,16 +88,29 @@
   }
   .footer .brand{ font-size:12px; color:#aaa; font-weight:700; letter-spacing:.3px; }
   .footer .slogan{ font-size:11px; color:#777; margin-top:4px; }
+
   /* Desktop’ta köşeye kaymasın, tam ortalansın */
-html, body { height:100%; }
-body{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.frame{
-  margin:0 auto;
-}
+  html, body { height:100%; }
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .frame{
+    margin:0 auto;
+  }
+
+  /* ✅ Footer siyah bar gibi durmasın: premium fade */
+  .footer{
+    border-top:0 !important;
+    background: linear-gradient(180deg, rgba(14,14,14,0), rgba(14,14,14,.75)) !important;
+    padding:10px 10px 8px !important;
+  }
+  .footer .brand{
+    color: rgba(255,255,255,.62) !important; /* kırık beyaz */
+    font-size:11px !important;
+  }
+  .footer .slogan{ display:none !important; }
 </style>
 </head>
 
@@ -168,11 +181,19 @@ body{
         </div>
       </div>
 
+      <!-- ✅ Yaşadığı İl + Doğduğu İl (Yaşadığı İl aynen kaldı) -->
       <div class="row">
         <div class="form-group">
           <label>Yaşadığı İl</label>
           <input type="text" id="formCity" placeholder="Örn: Ankara">
         </div>
+        <div class="form-group">
+          <label>Doğduğu İl</label>
+          <input type="text" id="formBirthCity" placeholder="Örn: Trabzon">
+        </div>
+      </div>
+
+      <div class="row">
         <div class="form-group">
           <label>Tuttuğu Takım</label>
           <input type="text" id="formTeam" placeholder="Örn: Beşiktaş">
@@ -330,23 +351,13 @@ body{
   </div>
 </div>
 
+<!-- ✅ Kırık "container.innerHTML..." çöp bloğu tamamen kaldırıldı -->
 
-    container.innerHTML = "";
-    for(let i=1;i<=count;i++){
-      const box = document.createElement('div');
-      box.className = "child-card";
-
-      box.innerHTML = `
-        <div class="mini">Çocuk ${i}</div>
-
-        <div class="form-group" style="margin:0;">
-          <label>Ad</label>
-          <input type="text" id="child_name_${i}" placeholder="Örn: Ali">
-        </div>
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from '../js/config.js';
 
   const PROFILE_KEY = "caynana_profile_v2";
+  const PROFILE_BONUS_KEY = "caynana_profile_bonus_v1"; // +5 sadece bir kez
 
   // --------- helpers ----------
   const pad2 = (n) => String(n).padStart(2, "0");
@@ -563,6 +574,7 @@ body{
     }
 
     if(meta.region) document.getElementById('formCity').value = meta.region;
+    if(meta.birth_city) document.getElementById('formBirthCity').value = meta.birth_city;
     if(meta.team) document.getElementById('formTeam').value = meta.team;
 
     if(meta.birth_date) setBirthDate(meta.birth_date);
@@ -669,6 +681,7 @@ body{
       gender,
       marital_status: document.getElementById('formStatus')?.value || "",
       region: document.getElementById('formCity')?.value || "",
+      birth_city: document.getElementById('formBirthCity')?.value || "",
       team: document.getElementById('formTeam')?.value || "",
       birth_date: bd.value,
 
@@ -692,6 +705,60 @@ body{
       // asistan
       reminder_opt_in: true
     };
+
+    // ✅ Profil tam doluysa samimiyet +5 (tek sefer)
+    function isFullProfile(meta){
+      const baseOk =
+        !!String(meta.hitap||"").trim() &&
+        !!String(meta.bot_name||"").trim() &&
+        !!String(meta.gender||"").trim() &&
+        !!String(meta.birth_date||"").trim() &&
+        !!String(meta.region||"").trim() &&
+        !!String(meta.birth_city||"").trim();
+
+      if(!baseOk) return false;
+
+      // Evliyse: eş adı + en az bir özel gün
+      if(String(meta.marital_status||"") === "Evli"){
+        const spouseOk = !!String(meta.spouse_name||"").trim();
+        const anyDay = !!(meta.spouse_bday_dm || meta.wedding_dm || meta.engagement_dm || meta.met_dm);
+        if(!spouseOk || !anyDay) return false;
+      }
+
+      // Çocuk varsa: en az bir çocuk bilgisi
+      const cc = parseInt(meta.child_count || "0", 10) || 0;
+      if(cc > 0){
+        const kids = Array.isArray(meta.children) ? meta.children : [];
+        const hasKidData = kids.some(k => (k?.name && String(k.name).trim()) || (k?.bday_dm && String(k.bday_dm).trim()));
+        if(!hasKidData) return false;
+      }
+
+      // Regl açık ise tarih şart
+      if(meta.period_tracking_enabled){
+        if(!String(meta.last_period_start||"").trim()) return false;
+        if(!String(meta.cycle_length_days||"").trim()) return false;
+        if(!String(meta.period_length_days||"").trim()) return false;
+      }
+
+      return true;
+    }
+
+    try{
+      const eligible = isFullProfile(meta);
+      const bonusState = JSON.parse(localStorage.getItem(PROFILE_BONUS_KEY) || "{}");
+      const userKey = (user.user_id || user.email || user.id || "").toLowerCase();
+
+      if(eligible && userKey && !bonusState[userKey]){
+        const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        const cur = Number(u?.yp_percent ?? 10);
+        const next = Math.max(5, Math.min(100, cur + 5));
+        u.yp_percent = next;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+
+        bonusState[userKey] = { awarded_at: new Date().toISOString(), added: 5 };
+        localStorage.setItem(PROFILE_BONUS_KEY, JSON.stringify(bonusState));
+      }
+    }catch(e){}
 
     // ✅ local: google'dan bağımsız profil kaydı
     try{
