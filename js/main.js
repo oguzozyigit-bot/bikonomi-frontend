@@ -126,7 +126,7 @@ function refreshPremiumBars() {
   const logged = !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
   document.body.classList.toggle("is-logged", logged);
 
-  const name = (u.hitap || firstName(u.fullname) || u.email || "MİSAFİR").toUpperCase();
+  const name = (u.hitap || (u.fullname || "").split(/\s+/)[0] || u.email || "MİSAFİR").toUpperCase();
 
   const yp = Number((u?.yp_percent ?? 50));
   const p = Math.max(5, Math.min(100, yp));
