@@ -1,17 +1,6 @@
-// js/auth.js (FINAL - Google GSI + JWT base64url UTF-8 decode + terms kalıcı + backend token cache)
-// ✅ FIX: FedCM AbortError (prompt spam / çift init) -> kilit + throttle + cancel
-// ✅ FIX: Türkçe karakter bozulması -> JWT payload UTF-8 decode (TextDecoder)
-// ✅ FIX: ID gmail değil -> 2 harf + 8 rakam random, ardışık yok (kalıcı)
+// js/auth.js (FINAL)
 
-// js/config.js
-
-export const GOOGLE_CLIENT_ID =
-  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
-
-export const STORAGE_KEY = "caynana_user_v1";
-
-// ✅ SENİN DOMAIN’İN
-export const BASE_DOMAIN = "https://caynana.ai";
+import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
 
 const API_TOKEN_KEY = "caynana_api_token";
 const STABLE_ID_KEY = "caynana_stable_id_v1";
@@ -35,9 +24,7 @@ export async function waitForGsi(timeoutMs = 8000){
   return false;
 }
 
-// ---------------------------
-// ✅ JWT decode (UTF-8 correct)
-// ---------------------------
+// ✅ JWT payload UTF-8 decode (Türkçe karakter bozulmasın)
 function base64UrlToBytes(base64Url){
   let b64 = String(base64Url || "").replace(/-/g, "+").replace(/_/g, "/");
   const pad = b64.length % 4;
@@ -67,20 +54,13 @@ function termsKey(email=""){
   return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`;
 }
 
-function setApiToken(t){
-  if(t) localStorage.setItem(API_TOKEN_KEY, t);
-}
-function clearApiToken(){
-  localStorage.removeItem(API_TOKEN_KEY);
-}
+function setApiToken(t){ if(t) localStorage.setItem(API_TOKEN_KEY, t); }
+function clearApiToken(){ localStorage.removeItem(API_TOKEN_KEY); }
 
-// ---------------------------
-// ✅ Random ID: 2 harf + 8 rakam (ardışık yok)
-// ---------------------------
+// ✅ ID üret: 2 harf + 8 rakam (ardışık yok)
 function randInt(min, max){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 function pickLetter(except){
   const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let ch = "";
@@ -90,7 +70,6 @@ function pickLetter(except){
   }
   return ch || "X";
 }
-
 function buildNonSequentialDigits(len=8){
   const digits = [];
   for(let i=0;i<len;i++){
@@ -98,10 +77,8 @@ function buildNonSequentialDigits(len=8){
     for(let t=0;t<120;t++){
       const prev = digits[i-1];
       const prev2 = digits[i-2];
-
       const ok1 = (prev === undefined) ? true : (d !== prev && Math.abs(d - prev) !== 1);
       const ok2 = (prev2 === undefined) ? true : (d !== prev2);
-
       if(ok1 && ok2) break;
       d = randInt(0,9);
     }
@@ -109,7 +86,6 @@ function buildNonSequentialDigits(len=8){
   }
   return digits.join("");
 }
-
 function getOrCreateStableId(){
   const existing = (localStorage.getItem(STABLE_ID_KEY) || "").trim();
   if(existing) return existing;
@@ -118,14 +94,11 @@ function getOrCreateStableId(){
   const b = pickLetter(a);
   const nums = buildNonSequentialDigits(8);
   const id = `${a}${b}${nums}`;
-
   localStorage.setItem(STABLE_ID_KEY, id);
   return id;
 }
 
-// ---------------------------
 // Backend session token al (Google id_token -> backend token)
-// ---------------------------
 async function fetchBackendToken(googleIdToken){
   const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
     method: "POST",
@@ -159,9 +132,6 @@ async function fetchBackendToken(googleIdToken){
   return token;
 }
 
-// ---------------------------
-// Google callback
-// ---------------------------
 async function handleGoogleResponse(res){
   try{
     const idToken = (res?.credential || "").trim();
@@ -178,21 +148,17 @@ async function handleGoogleResponse(res){
     const email = String(payload.email).toLowerCase().trim();
     const savedTermsAt = localStorage.getItem(termsKey(email)) || null;
 
-    // ✅ ID gmail değil: kalıcı random ID
     const stableId = getOrCreateStableId();
 
-    // user (main.js ile uyumlu)
     const user = {
       id: stableId,
       user_id: stableId,
-      email: email,
+      email,
 
-      // ✅ Türkçe karakter bozulmaz (UTF-8 decode fix)
       fullname: payload.name || "",
       name: payload.name || "",
       display_name: payload.name || "",
 
-      // ✅ profil sayfası picture/avatar arıyor olabilir
       picture: payload.picture || "",
       avatar: payload.picture || "",
 
@@ -205,7 +171,6 @@ async function handleGoogleResponse(res){
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
 
-    // Backend session token’ı da al (silme vs. için gerekli)
     try{
       await fetchBackendToken(idToken);
     }catch(e){
@@ -213,7 +178,6 @@ async function handleGoogleResponse(res){
       clearApiToken();
     }
 
-    // ✅ reload (mevcut akışın)
     window.location.reload();
   }catch(e){
     console.error("handleGoogleResponse error:", e);
@@ -221,9 +185,6 @@ async function handleGoogleResponse(res){
   }
 }
 
-// ---------------------------
-// initAuth (tek sefer, FedCM uyumlu)
-// ---------------------------
 export function initAuth() {
   const st = getAuthState();
   if(st.inited) return;
@@ -240,58 +201,47 @@ export function initAuth() {
     client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleResponse,
     auto_select: false,
-
-    // ✅ FedCM stabilitesi
     use_fedcm_for_prompt: true,
     cancel_on_tap_outside: false
   });
 }
 
-// ---------------------------
-// handleLogin (prompt spam yok, AbortError önleme)
-// ---------------------------
 export function handleLogin(provider) {
-  if(provider === "google") {
-    if(!window.google?.accounts?.id){
-      alert("Google servisi yüklenemedi (GSI).");
-      return;
-    }
-
-    // init garanti
-    initAuth();
-
-    const st = getAuthState();
-    const now = Date.now();
-
-    // ✅ 1) spam engeli
-    if(st.promptInFlight) return;
-    if(now - (st.lastPromptAt || 0) < 1200) return;
-
-    st.promptInFlight = true;
-    st.lastPromptAt = now;
-
-    try{
-      // ✅ 2) önceki prompt kalıntısını temizle (varsa)
-      try{ window.google.accounts.id.cancel?.(); }catch(e){}
-
-      // ✅ 3) prompt tek sefer (moment kontrolü)
-      window.google.accounts.id.prompt((n)=>{
-        try{
-          if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
-            window.showGoogleButtonFallback?.("prompt not displayed");
-          }
-        }catch(e){}
-        // kilidi bırak
-        setTimeout(()=>{ st.promptInFlight = false; }, 600);
-      });
-    }catch(e){
-      console.error("google prompt error:", e);
-      window.showGoogleButtonFallback?.("prompt error");
-      st.promptInFlight = false;
-    }
-
-  } else {
+  if(provider !== "google"){
     alert("Apple girişi yakında evladım.");
+    return;
+  }
+
+  if(!window.google?.accounts?.id){
+    alert("Google servisi yüklenemedi (GSI).");
+    return;
+  }
+
+  initAuth();
+
+  const st = getAuthState();
+  const now = Date.now();
+  if(st.promptInFlight) return;
+  if(now - (st.lastPromptAt || 0) < 1200) return;
+
+  st.promptInFlight = true;
+  st.lastPromptAt = now;
+
+  try{
+    try{ window.google.accounts.id.cancel?.(); }catch(e){}
+
+    window.google.accounts.id.prompt((n)=>{
+      try{
+        if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
+          window.showGoogleButtonFallback?.("prompt not displayed");
+        }
+      }catch(e){}
+      setTimeout(()=>{ st.promptInFlight = false; }, 600);
+    });
+  }catch(e){
+    console.error("google prompt error:", e);
+    window.showGoogleButtonFallback?.("prompt error");
+    st.promptInFlight = false;
   }
 }
 
@@ -314,7 +264,6 @@ export function logout() {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
     localStorage.removeItem(API_TOKEN_KEY);
-    // stable id kalsın (istersen sileriz ama genelde kalsın)
     window.location.reload();
   }
 }
