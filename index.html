@@ -175,6 +175,18 @@
       padding: 16px;
       text-align:center;
     }
+
+    /* ✅ (EK) Google renderButton alanı - tasarımı bozmadan aynı yerde dursun */
+    #googleBtnWrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+    #googleBtnWrap > div{
+      width:100% !important;
+      display:flex !important;
+      justify-content:center !important;
+    }
   </style>
 </head>
 
@@ -334,9 +346,13 @@
       <b>Ücretsiz üyelik</b> için lütfen giriş yapın.
     </div>
 
-    <button class="auth-btn google" id="googleLoginBtn">Google ile Devam Et</button>
+    <!-- ✅ VAR OLAN BUTON (EKSİLTMEDİM) -->
+    <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
 
-    <button class="auth-btn apple disabled" id="appleLoginBtn">Apple Girişi Hazırlanıyor...</button>
+    <!-- ✅ EK: Eğer main.js renderButton kullanıyorsa buraya basabilir (tasarımı bozmadan aynı bölgede) -->
+    <div id="googleBtnWrap" style="margin-top:10px;"></div>
+
+    <button class="auth-btn apple disabled" id="appleLoginBtn" type="button">Apple Girişi Hazırlanıyor...</button>
     <div class="coming-soon"></div>
 
     <!-- /pages linkleri -->
@@ -372,13 +388,103 @@
       <label for="termsCheck">Onaylıyorum.</label>
     </div>
 
-    <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+    <button class="auth-btn" id="termsAcceptBtn" type="button">Onayla ve Gir</button>
     <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 </div>
 
 <!-- küçük toast -->
 <div class="toast" id="toast"></div>
+
+<!-- ✅ GSI / FedCM AbortError KALKANı (main.js kaç kez dokunsa da kırılmasın) -->
+<script>
+  (function(){
+    // Tekil durum
+    if(!window.__CAYNANA_GSI__) window.__CAYNANA_GSI__ = {
+      patched:false,
+      initCalled:false,
+      promptCalled:false
+    };
+
+    function patchGSI(){
+      try{
+        if(window.__CAYNANA_GSI__.patched) return;
+        if(!window.google || !google.accounts || !google.accounts.id) return;
+
+        const id = google.accounts.id;
+
+        // initialize guard (2. kez çağrılırsa yut)
+        const _init = id.initialize.bind(id);
+        id.initialize = function(opts){
+          if(window.__CAYNANA_GSI__.initCalled){
+            // ikinci initialize -> AbortError tetiklememek için yut
+            return;
+          }
+          window.__CAYNANA_GSI__.initCalled = true;
+          return _init(opts);
+        };
+
+        // prompt guard (spam olursa AbortError)
+        const _prompt = id.prompt ? id.prompt.bind(id) : null;
+        if(_prompt){
+          id.prompt = function(cb){
+            if(window.__CAYNANA_GSI__.promptCalled){
+              return;
+            }
+            window.__CAYNANA_GSI__.promptCalled = true;
+            return _prompt(cb);
+          };
+        }
+
+        window.__CAYNANA_GSI__.patched = true;
+      }catch(e){
+        // sessiz
+      }
+    }
+
+    // GSI async geldiği için birkaç kez dene
+    let tries = 0;
+    const t = setInterval(()=>{
+      patchGSI();
+      tries++;
+      if(window.__CAYNANA_GSI__.patched || tries > 60) clearInterval(t);
+    }, 100);
+
+    // Profil sayfasından dönünce bfcache olayı tetikleyebilir -> prompt tekrar spam olmasın diye sıfırlama yapma
+    window.addEventListener("pageshow", (e) => {
+      // burada reset yok; amaç spam'i engellemek
+    });
+
+    // Butona basınca: main.js zaten handle ediyor olabilir.
+    // Yine de “fallback” olarak GSI renderButton kullanıyorsan diye sadece güvenli yardımcı koyuyoruz:
+    window.__tryRenderGoogleButton = function(){
+      try{
+        if(!window.google?.accounts?.id) return false;
+        const wrap = document.getElementById("googleBtnWrap");
+        if(!wrap) return false;
+        // main.js render ediyorsa dokunma
+        if(wrap.dataset.rendered === "1") return true;
+
+        // Eğer global bir client id varsa (main.js koyuyor olabilir) render edebilir:
+        const cid = window.GOOGLE_CLIENT_ID || window.googleClientId || "";
+        if(!cid) return false;
+
+        google.accounts.id.initialize({
+          client_id: cid,
+          callback: window.handleGoogleCredential || function(){},
+          auto_select: false,
+          cancel_on_tap_outside: false,
+          use_fedcm_for_prompt: true
+        });
+
+        wrap.innerHTML = "";
+        google.accounts.id.renderButton(wrap, { theme:"outline", size:"large", shape:"pill", text:"continue_with" });
+        wrap.dataset.rendered = "1";
+        return true;
+      }catch(e){ return false; }
+    };
+  })();
+</script>
 
 <script type="module" src="js/main.js"></script>
 
