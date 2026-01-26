@@ -13,12 +13,20 @@
 //    Sebep: GSI init/prompt iki kez tetiklenebiliyor (özellikle bfcache / tekrar mount / çift click).
 //    Çözüm: main.js içinde “tek sefer initAuth + tek sefer handleLogin” kilidi eklendi. (Eksiltme yok)
 
+// 🔹 TÜM IMPORTLAR EN ÜSTTE
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
 import { initNotif } from "./notif.js";
 import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
 import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
 import { ChatStore } from "./chat_store.js";
+
+// 🔹 IMPORTLARDAN SONRA NORMAL KOD GELİR
+function firstName(full = "") {
+  const s = String(full || "").trim();
+  if (!s) return "";
+  return s.split(/\s+/)[0];
+}
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
