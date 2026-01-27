@@ -492,30 +492,10 @@ textarea{
 .menu-action:hover{ background: rgba(255,255,255,.05); border-left-color: rgba(255,179,0,.16); }
 .menu-action:active{ transform: scale(.985); background: rgba(255,255,255,.06); }
 
-/* Emoji div'i gerçek ikon chip’e çevir */
-.menu-action .ico{
-  width:30px;
-  height:30px;
-  border-radius:10px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  margin-right:12px;
-
-  /* Emoji’yi görünmez yap (çocuk havası gitsin) */
-  font-size:0;
-}
-
-/* Chip içi minimal glyph */
-.menu-action .ico::before{
-  content: var(--glyph, "·");
-  color: rgba(255,255,255,.85);
-  font-weight:900;
-  font-size:14px;
-  letter-spacing:.5px;
+/* --- İKONLARI KALDIRMA KISMI --- */
+/* İstenildiği gibi butonlardaki ikonları gizledik */
+.menu-action .ico {
+  display: none !important;
 }
 
 /* Metin blok */
@@ -568,36 +548,6 @@ textarea{
 .menu-action[data-action="chat"]::before{ content:"ASİSTAN"; color: rgba(255,255,255,.35); }
 .menu-action[data-action="fal"]::before{ content:"ASTRO AI"; color: rgba(190,242,100,.45); }
 .menu-action[data-action="about"]::before{ content:"KURUMSAL"; color: rgba(255,255,255,.35); }
-
-/* --- Minimal ikon setleri (monokrom) --- */
-.menu-action{ --glyph:"·"; }
-.menu-action[data-action="chat"]{ --glyph:"◦"; }
-.menu-action[data-action="dedikodu"]{ --glyph:"≋"; }
-.menu-action[data-action="shopping"]{ --glyph:"▦"; }
-.menu-action[data-action="translate"]{ --glyph:"⇄"; }
-.menu-action[data-action="diet"]{ --glyph:"∿"; }
-.menu-action[data-action="health"]{ --glyph:"＋"; }
-.menu-action[data-action="special"]{ --glyph:"✦"; }
-.menu-action[data-action="reminder"]{ --glyph:"⏱"; }
-
-.menu-action[data-action="fal"]{ --glyph:"◌"; }
-.menu-action[data-action="tarot"]{ --glyph:"▤"; }
-.menu-action[data-action="horoscope"]{ --glyph:"◐"; }
-.menu-action[data-action="dream"]{ --glyph:"◑"; }
-
-.menu-action[data-action="about"]{ --glyph:"i"; }
-.menu-action[data-action="faq"]{ --glyph:"?"; }
-.menu-action[data-action="privacy"]{ --glyph:"⌁"; }
-.menu-action[data-action="contact"]{ --glyph:"✉"; }
-.menu-action[data-action="terms"]{ --glyph:"≡"; }
-
-/* ASTRO AI’e çok hafif vurgu (minimal renk) */
-.menu-action[data-action="fal"] .ico::before,
-.menu-action[data-action="tarot"] .ico::before,
-.menu-action[data-action="horoscope"] .ico::before,
-.menu-action[data-action="dream"] .ico::before{
-  color: rgba(190,242,100,.75);
-}
 
 /* =========================
    MENU FOOTER ACTIONS
@@ -715,6 +665,7 @@ button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
 }
+
 /* GRUP BAŞLIKLARI RENKLERİ */
 .menu-action[data-action="chat"]::before{
   color: rgba(255,179,0,.55) !important; /* ASİSTAN = turuncu */
@@ -724,49 +675,11 @@ button:focus, a:focus, textarea:focus{
   color: rgba(255,82,82,.55) !important; /* KURUMSAL = kırmızı */
 }
 
-/* İstersen chip içindeki minimal ikon rengi de grup rengine yakın olsun */
-.menu-action[data-action="chat"] .ico::before{
-  color: rgba(255,179,0,.80) !important;
-}
-.menu-action[data-action="about"] .ico::before{
-  color: rgba(255,82,82,.80) !important;
-}
-/* ===============================
-   MENU – GRUPLARA GÖRE IKON RENKLERİ (FINAL)
-   =============================== */
-
-/* ASTRO AI – zaten vardı ama garantiye alıyoruz */
-.menu-action[data-action="fal"] .ico::before,
-.menu-action[data-action="tarot"] .ico::before,
-.menu-action[data-action="horoscope"] .ico::before,
-.menu-action[data-action="dream"] .ico::before{
-  color: rgba(190,242,100,.85) !important; /* pistachio */
-}
-
-/* ASİSTAN – turuncu */
-.menu-action[data-action="chat"] .ico::before,
-.menu-action[data-action="dedikodu"] .ico::before,
-.menu-action[data-action="shopping"] .ico::before,
-.menu-action[data-action="translate"] .ico::before,
-.menu-action[data-action="diet"] .ico::before,
-.menu-action[data-action="health"] .ico::before,
-.menu-action[data-action="special"] .ico::before,
-.menu-action[data-action="reminder"] .ico::before{
-  color: rgba(255,179,0,.85) !important; /* turuncu */
-}
-
-/* KURUMSAL – kırmızı */
-.menu-action[data-action="about"] .ico::before,
-.menu-action[data-action="faq"] .ico::before,
-.menu-action[data-action="privacy"] .ico::before,
-.menu-action[data-action="contact"] .ico::before,
-.menu-action[data-action="terms"] .ico::before{
-  color: rgba(255,82,82,.85) !important; /* kırmızı */
-}
-/* Menüde HTML'in "Asistan" başlığını gizle (biz zaten grup başlığı basıyoruz) */
+/* Menüde HTML'in "Asistan" başlığını gizle */
 .menu-sidebar .section-title:nth-of-type(2){ display:none !important; }
 /* "Son Sohbetler" kalsın, bir sonraki section-title gizlensin */
 .menu-sidebar .section-title + .history-list + .section-title{ display:none !important; }
+
 /* =========================
    PREMIUM LOGIN OVERLAY
    ========================= */
@@ -823,6 +736,7 @@ button:focus, a:focus, textarea:focus{
   background:#111;
   border:1px solid #2a2a2a;
 }
+
 /* --- LOGIN PREMIUM LOOK --- */
 .login-premium{
   max-width: 360px;
@@ -899,20 +813,6 @@ button:focus, a:focus, textarea:focus{
   margin-bottom: 8px;
 }
 .login-seesaw{
-  width: 220px;
-  height: 70px;
-  filter: drop-shadow(0 10px 18px rgba(0,0,0,.45));
-}
-.login-seesaw-bar{
-  transform-origin: 110px 30px; /* pivot */
-  animation: seesawSwing 2.6s ease-in-out infinite;
-}
-@keyframes seesawSwing{
-  0%   { transform: rotate(-7deg); }
-  50%  { transform: rotate(7deg); }
-  100% { transform: rotate(-7deg); }
-}/* Daha premium tahtaravalli */
-.login-seesaw{
   width: 240px;
   height: 80px;
   filter: drop-shadow(0 14px 22px rgba(0,0,0,.55));
@@ -923,8 +823,8 @@ button:focus, a:focus, textarea:focus{
   animation: seesawSwing 2.2s cubic-bezier(.42,0,.26,1) infinite;
 }
 @keyframes seesawSwing{
-  0%   { transform: rotate(-6deg); }
-  50%  { transform: rotate(6deg); }
+  0%    { transform: rotate(-6deg); }
+  50%   { transform: rotate(6deg); }
   100% { transform: rotate(-6deg); }
 }
 
@@ -969,4 +869,3 @@ button:focus, a:focus, textarea:focus{
   cursor: pointer;
 }
 .x-btn:hover{ border-color: rgba(255,179,0,.35); }
-
