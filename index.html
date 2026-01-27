@@ -162,6 +162,15 @@
     .menu-action small{ display:none !important; }
     /* Kurumsal içindeki profil tekrarını gizle */
     #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
+    /* ✅ MENU İKONLARI GERİ (emoji/ikonları görünür yap) */
+.menu-action .ico{
+  font-size:18px !important;
+  line-height:1 !important;
+  color:inherit !important;
+}
+.menu-action .ico::before{
+  content:none !important; /* glyph sistemi varsa kapat */
+}
   </style>
 </head>
 
