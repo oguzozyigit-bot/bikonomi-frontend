@@ -715,16 +715,18 @@
     const start = currentMealStartIndex(); // backend isterse kullanır
 
     try{
-      const res = await fetch(`${BASE_DOMAIN}${DIET_API}`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          date: today,
-          start_from_index: start,
-          avoid_menu_ids: recentIdsArr.slice(-10)
-        })
-      });
+      const base = (BASE_DOMAIN || "").replace(/\/+$/, "");
+
+const res = await fetch(`${base}${DIET_API}`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    user_id: userId,
+    date: today,
+    start_from_index: start,
+    avoid_menu_ids: recentIdsArr.slice(-10)
+  })
+});
 
       const data = await res.json();
 
