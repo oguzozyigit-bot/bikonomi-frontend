@@ -34,8 +34,7 @@
     padding:16px 16px 14px; border-bottom:1px solid var(--border);
     background:rgba(20,20,20,.95);
     display:flex; align-items:center; gap:12px;
-    z-index: 10;
-    position: relative;
+    z-index: 10; position: relative;
   }
   .back-btn{
     width:38px; height:38px; border-radius:12px; border:1px solid #333;
@@ -54,6 +53,7 @@
     flex-shrink: 0;
   }
 
+  /* --- SAMİMİYET GÖSTERGESİ (Hero) --- */
   .hero{
     padding:14px;
     border-radius:18px;
@@ -62,10 +62,7 @@
       radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), rgba(0,0,0,0) 60%),
       radial-gradient(900px 400px at 100% 0%, rgba(34,197,94,.10), rgba(0,0,0,0) 60%),
       linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,0));
-    position:relative;
-    overflow:hidden;
-    flex-shrink: 0;
-    z-index: 1;
+    position:relative; overflow:hidden; flex-shrink: 0; z-index: 1;
   }
   .hero-top, .hero-sub, .bar, .hero-foot, .hero-chip { position: relative; z-index: 3; }
   .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -197,10 +194,8 @@
 
     <div class="hero" id="hero">
       <svg class="spark" viewBox="0 0 600 220" preserveAspectRatio="none" aria-hidden="true">
-        <path d="M0,170 C120,120 160,40 260,70 C340,95 360,170 430,160 C520,146 540,85 600,95 L600,220 L0,220 Z"
-              fill="rgba(255,179,0,.08)"></path>
-        <path d="M0,185 C120,150 190,60 290,92 C360,115 380,185 455,175 C535,164 548,120 600,125 L600,220 L0,220 Z"
-              fill="rgba(34,197,94,.08)"></path>
+        <path d="M0,170 C120,120 160,40 260,70 C340,95 360,170 430,160 C520,146 540,85 600,95 L600,220 L0,220 Z" fill="rgba(255,179,0,.08)"></path>
+        <path d="M0,185 C120,150 190,60 290,92 C360,115 380,185 455,175 C535,164 548,120 600,125 L600,220 L0,220 Z" fill="rgba(34,197,94,.08)"></path>
       </svg>
 
       <div class="hero-top">
@@ -250,12 +245,10 @@
         <div class="form-group" style="margin-top:10px;">
           <label>Profil Fotoğrafı</label>
           <div style="display:flex; align-items:center; gap:12px;">
-            <img id="avatarImg" src="" alt="avatar"
-                 style="width:54px;height:54px;border-radius:999px;border:1px solid #333;object-fit:cover;display:none;">
+            <img id="avatarImg" src="" alt="avatar" style="width:54px;height:54px;border-radius:999px;border:1px solid #333;object-fit:cover;display:none;">
             <div class="mini" id="avatarHint">Yapay Zekânın Geleneksel Aklı...(Görsel google’dan gelir)</div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -291,7 +284,6 @@
         </div>
       </div>
 
-      <!-- ✅ BOY/KİLO EKLENDİ -->
       <div class="row">
         <div class="form-group">
           <label>Boy (cm)</label>
@@ -340,7 +332,6 @@
 
     <div class="card conditional" id="periodFields">
       <div class="section-title">Regl Takibi</div>
-
       <div class="form-group" style="margin-top:10px;">
         <label>Takip açık mı?</label>
         <select id="periodEnabled">
@@ -348,12 +339,10 @@
           <option value="true">Açık</option>
         </select>
       </div>
-
       <div class="form-group">
         <label>Son adet başlangıç tarihi</label>
         <input type="date" id="lastPeriodStart">
       </div>
-
       <div class="row">
         <div class="form-group">
           <label>Ortalama döngü (gün)</label>
@@ -364,18 +353,15 @@
           <input type="number" id="periodLength" value="5" min="3" max="8">
         </div>
       </div>
-
       <div class="mini">Not: Bu takip sadece hatırlatma içindir.</div>
     </div>
 
     <div class="card conditional" id="marriedFields">
       <div class="section-title">Özel Günler</div>
-
       <div class="form-group">
         <label>Eşinin Adı</label>
         <input type="text" id="formSpouse" placeholder="Yenge/Enişte adı">
       </div>
-
       <div class="form-group">
         <label>Eşinin Doğum Günü (Gün / Ay)</label>
         <div class="date-row">
@@ -389,7 +375,6 @@
           </select>
         </div>
       </div>
-
       <div class="form-group">
         <label>Evlilik Günü (Gün / Ay)</label>
         <div class="date-row">
@@ -403,7 +388,6 @@
           </select>
         </div>
       </div>
-
       <div class="form-group">
         <label>Nişan Günü (Gün / Ay)</label>
         <div class="date-row">
@@ -417,7 +401,6 @@
           </select>
         </div>
       </div>
-
       <div class="form-group">
         <label>İlk Tanışma Günü (Gün / Ay)</label>
         <div class="date-row">
@@ -431,13 +414,11 @@
           </select>
         </div>
       </div>
-
       <div class="mini">Geçersiz gün/ay seçilirse kaydetmez.</div>
     </div>
 
     <div class="card">
       <div class="section-title">Çocuklar</div>
-
       <div class="form-group">
         <label>Çocuk Sayısı</label>
         <select id="formChildCount" onchange="toggleChildFields()">
@@ -449,7 +430,6 @@
           <option value="5">5</option>
         </select>
       </div>
-
       <div class="conditional" id="childFields">
         <div class="children-wrap" id="childrenContainer"></div>
         <div class="mini" style="margin-top:8px;">Çocuğunun adını/doğum gününü girersen günü gelince hatırlatırım.</div>
@@ -499,7 +479,7 @@
 
   function norm(v){ return String(v || "").trim(); }
 
-  // ---- ID generator (2 harf + 8 rakam, ardışık yok) ----
+  // ---- ID generator ----
   function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
   function pickLetter(except){
     const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -728,10 +708,12 @@
     }
   }
 
-  // ---- SAMİMİYET HESAPLAMA LOGIC ----
+  // -------------------- SAMİMİYET HESAPLAMA LOGIC --------------------
   function readMetaDraft(){
     const gender = document.getElementById('formGender')?.value || "";
     const bd = getBirthDate().value || "";
+    
+    // ✅ Yeni Boy/Kilo okuma
     const height_cm = (document.getElementById('formHeightCm')?.value || "").trim();
     const weight_kg = (document.getElementById('formWeightKg')?.value || "").trim();
 
@@ -745,6 +727,7 @@
       team: document.getElementById('formTeam')?.value || "",
       birth_date: bd,
 
+      // ✅ Meta'ya eklendi
       height_cm,
       weight_kg,
 
@@ -768,9 +751,12 @@
     const kids = [];
     for(let i=1;i<=maxKids;i++){
       const name = (document.getElementById(`child_name_${i}`)?.value || "").trim();
+      
+      // ✅ Çocuk tarihi okuma (Ay + Gün -> DD.MM formatına çevirip kaydetme hazırlığı)
       const d = document.getElementById(`child_day_${i}`)?.value || "";
       const m = document.getElementById(`child_month_${i}`)?.value || "";
       const dm = (d && m) ? `${d}.${m}` : "";
+      
       if(name || dm) kids.push({ name, bday_dm: dm });
     }
     meta.children = kids;
@@ -819,7 +805,7 @@
     add(!!String(meta.region||"").trim(), 12);
     add(!!String(meta.birth_city||"").trim(), 12);
 
-    // ✅ boy/kilo opsiyonel bonus (diyet için lazım ama profil geneli opsiyonel)
+    // ✅ Boy/Kilo puanı
     add(!!String(meta.height_cm||"").trim(), 4);
     add(!!String(meta.weight_kg||"").trim(), 4);
 
@@ -916,10 +902,6 @@
     toast(ok ? "ID kopyalandı" : "Kopyalanamadı");
   };
 
-  window.toggleMarriedFields = function
-    // =========================
-  // UI TOGGLES (Eksik kalanlar)
-  // =========================
   window.toggleMarriedFields = function(){
     const val = document.getElementById('formStatus')?.value || "";
     document.getElementById('marriedFields')?.classList.toggle('show', val === 'Evli');
@@ -932,6 +914,7 @@
     renderProgress();
   };
 
+  // ✅ Gelişmiş Çocuk Alanı (Ay seçince günlerin gelmesi)
   window.toggleChildFields = function(){
     const val = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
     const div = document.getElementById('childFields');
@@ -944,25 +927,20 @@
       renderProgress();
       return;
     }
-
     div.classList.add('show');
 
     const count = Math.min(val, 5);
     container.innerHTML = "";
-
     for(let i=1;i<=count;i++){
       const box = document.createElement('div');
       box.className = "child-card";
 
-      // ✅ çocuk doğum: AY -> GÜN (Şubat 30 olmaz)
       box.innerHTML = `
         <div class="mini">Çocuk ${i}</div>
-
         <div class="form-group" style="margin:0;">
           <label>Ad</label>
           <input type="text" id="child_name_${i}" placeholder="Örn: Ali">
         </div>
-
         <div class="form-group" style="margin:0;">
           <label>Doğum Günü (Ay / Gün)</label>
           <div class="date-row">
@@ -977,22 +955,21 @@
           </div>
         </div>
       `;
-
       container.appendChild(box);
 
-      // ay seçilince günleri ayarla (leap year: 2024 referans)
+      // Ay seçimi değişince günleri doldur
       const mEl = box.querySelector(`#child_month_${i}`);
       const dEl = box.querySelector(`#child_day_${i}`);
 
       const refreshKidDays = () => {
         const mm = mEl?.value || "";
         if(!dEl) return;
-
         if(!mm){
           dEl.innerHTML = `<option value="">Gün</option>`;
           dEl.disabled = true;
           return;
         }
+        // 2024 (Artık yıl) baz alarak max gün hesapla
         const max = new Date(2024, parseInt(mm,10), 0).getDate();
         const prev = dEl.value || "";
         dEl.disabled = false;
@@ -1009,33 +986,15 @@
       mEl?.addEventListener("change", ()=>{ refreshKidDays(); renderProgress(); });
       dEl?.addEventListener("change", renderProgress);
 
-      // input change -> progress
       box.querySelectorAll("input,select").forEach(el=>{
         el.addEventListener("input", renderProgress);
         el.addEventListener("change", renderProgress);
       });
     }
-
     renderProgress();
   };
 
-  // =========================
-  // NAV / COPY
-  // =========================
-  window.goBack = function(){
-    if(window.history.length > 1) window.history.back();
-    else window.location.href = "../index.html";
-  };
-
-  window.copyID = async function(){
-    const t = document.getElementById('formID')?.innerText || "";
-    const ok = await safeCopy(t);
-    toast(ok ? "ID kopyalandı" : "Kopyalanamadı");
-  };
-
-  // =========================
-  // FILL FORM (server/local meta)
-  // =========================
+  // -------------------- Fill form from meta --------------------
   function fillFormFields(meta){
     if(!meta || typeof meta !== "object") return;
 
@@ -1057,6 +1016,10 @@
 
     if(meta.birth_date) setBirthDate(meta.birth_date);
 
+    // ✅ Boy/Kilo doldurma
+    if(meta.height_cm) document.getElementById('formHeightCm').value = meta.height_cm;
+    if(meta.weight_kg) document.getElementById('formWeightKg').value = meta.weight_kg;
+
     if(meta.spouse_name) document.getElementById('formSpouse').value = meta.spouse_name;
     setDM("spouseBDay","spouseBMonth", meta.spouse_bday_dm);
     setDM("wDay","wMonth", meta.wedding_dm);
@@ -1073,16 +1036,18 @@
         const nameEl = document.getElementById(`child_name_${i}`);
         if(nameEl && k?.name) nameEl.value = k.name;
 
-        // ✅ çocuk dm eski format "DD.MM" ise bunu yeni ay->gün select’e set edelim
+        // ✅ Çocuk doğum tarihi "DD.MM" formatından parse edilip select'lere basılıyor
         if(k?.bday_dm){
           const p = String(k.bday_dm).split(".");
           if(p.length===2){
-            const dd = p[0], mm = p[1];
+            const dd = p[0];
+            const mm = p[1];
             const mEl = document.getElementById(`child_month_${i}`);
             const dEl = document.getElementById(`child_day_${i}`);
+            
             if(mEl){
               mEl.value = mm;
-              // günleri refresh etmek için change tetikle
+              // Günleri oluşturmak için change event tetikle
               mEl.dispatchEvent(new Event("change"));
             }
             if(dEl) dEl.value = dd;
@@ -1103,13 +1068,9 @@
     if(meta.period_length_days){
       document.getElementById('periodLength').value = meta.period_length_days;
     }
-
-    renderProgress();
   }
 
-  // =========================
-  // SAVE PROFILE (tam)
-  // =========================
+  // -------------------- Save profile --------------------
   window.saveProfile = async function(){
     const user = getUser();
 
@@ -1119,7 +1080,6 @@
       return;
     }
 
-    // özel gün validasyonu
     const pairs = [
       { label:"Eşinin doğum günü", d: document.getElementById("spouseBDay")?.value, m: document.getElementById("spouseBMonth")?.value },
       { label:"Evlilik günü", d: document.getElementById("wDay")?.value, m: document.getElementById("wMonth")?.value },
@@ -1144,17 +1104,18 @@
     const eng = getDM("eDay","eMonth");
     const met = getDM("mDay","mMonth");
 
-    // çocuklar (yeni ay->gün formatından DD.MM üret)
+    // ✅ Çocuk validasyonu (Ay/Gün)
     const childCount = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
     const kids = [];
     const maxKids = Math.min(childCount, 5);
     for(let i=1;i<=maxKids;i++){
       const name = (document.getElementById(`child_name_${i}`)?.value || "").trim();
-      const mm = document.getElementById(`child_month_${i}`)?.value || "";
       const dd = document.getElementById(`child_day_${i}`)?.value || "";
+      const mm = document.getElementById(`child_month_${i}`)?.value || "";
 
-      const any = !!(mm || dd);
-      const full = !!(mm && dd);
+      const any = !!(dd || mm);
+      const full = !!(dd && mm);
+
       if(any && !full){
         toast(`Çocuk ${i}: Ay/Gün ikilisini ya tam seç, ya boş bırak.`);
         return;
@@ -1163,7 +1124,6 @@
         toast(`Çocuk ${i}: geçersiz tarih.`);
         return;
       }
-
       const dm = (dd && mm) ? `${dd}.${mm}` : "";
       if(name || dm) kids.push({ name, bday_dm: dm });
     }
@@ -1179,6 +1139,10 @@
       return;
     }
 
+    // ✅ Yeni Boy/Kilo okuma
+    const height_cm = (document.getElementById('formHeightCm')?.value || "").trim();
+    const weight_kg = (document.getElementById('formWeightKg')?.value || "").trim();
+
     const meta = {
       hitap: document.getElementById('formHitap')?.value || "",
       bot_name: document.getElementById('formBotName')?.value || "",
@@ -1188,6 +1152,10 @@
       birth_city: document.getElementById('formBirthCity')?.value || "",
       team: document.getElementById('formTeam')?.value || "",
       birth_date: bd.value,
+
+      // ✅ Boy/Kilo kayıt
+      height_cm,
+      weight_kg,
 
       spouse_name: document.getElementById('formSpouse')?.value || "",
       spouse_bday_dm: spouseB.value,
@@ -1206,7 +1174,6 @@
       reminder_opt_in: true
     };
 
-    // +5 tek sefer
     try{
       const eligible = isFullProfile(meta);
       const bonusState = JSON.parse(localStorage.getItem(PROFILE_BONUS_KEY) || "{}");
@@ -1226,7 +1193,6 @@
       }
     }catch(e){}
 
-    // local kaydet
     try{
       localStorage.setItem(PROFILE_KEY, JSON.stringify(meta));
     }catch(e){
@@ -1236,7 +1202,6 @@
 
     safeUpdateUser({ profile_saved: true });
 
-    // server sync
     try{
       if(BASE_DOMAIN){
         const stableUserId = user.user_id || user.email || user.id;
@@ -1254,17 +1219,13 @@
     setTimeout(()=> window.location.href = "../index.html", 450);
   };
 
-  // =========================
-  // INIT
-  // =========================
+  // -------------------- Init --------------------
   async function init(){
     const user = getUser();
 
-    // ID / email
     document.getElementById('formID').innerText = user.id || user.user_id || "—";
     document.getElementById('emailDisplay').innerText = `Email: ${user.email || "—"}`;
 
-    // fullname + avatar normalize
     const full = (user.fullname || user.name || user.display_name || "").trim();
     document.getElementById("formFullname").value = full || "—";
 
@@ -1277,33 +1238,26 @@
       img.style.display = "none";
     }
 
-    // dropdownlar
     fillCitySelects();
-
-    // doğum tarihi flow
     fillYearOptions('yearSelect', 1950);
     refreshBirthFlow();
     document.getElementById("yearSelect")?.addEventListener("change", refreshBirthFlow);
     document.getElementById("monthSelect")?.addEventListener("change", refreshBirthFlow);
     document.getElementById("daySelect")?.addEventListener("change", refreshBirthFlow);
 
-    // evli günleri
     ["spouseBDay","wDay","eDay","mDay"].forEach(id => fillDayOptions(id, 31));
 
-    // input change -> progress
     document.querySelectorAll("input,select").forEach(el=>{
       el.addEventListener("input", renderProgress);
       el.addEventListener("change", renderProgress);
     });
 
-    // local meta
     let localMeta = {};
     try { localMeta = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}"); } catch {}
     if(localMeta && Object.keys(localMeta).length){
       fillFormFields(localMeta);
     }
 
-    // server meta (en güncel)
     try{
       if(BASE_DOMAIN){
         const stableUserId = user.user_id || user.email || user.id;
@@ -1319,8 +1273,10 @@
       console.log("Profil senkron hatası:", e);
     }
 
-    // ilk render
     renderProgress();
   }
 
   init();
+</script>
+</body>
+</html>
