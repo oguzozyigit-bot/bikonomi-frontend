@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Diyet</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=1" />
+
+  <style>
+    :root{
+      --bg:#0e0e0e;
+      --text:#ececec;
+      --soft:rgba(255,255,255,.62);
+      --card:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.10);
+      --gold:#ffb300;
+      --pist:#bef264;
+      --ok:#22c55e;
+      --danger:#ff5252;
+    }
+
+    /* sayfa container */
+    .diet-frame{
+      width:100%;
+      height:100%;
+      max-width:480px;
+      background:var(--bg);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      margin:0 auto;
+    }
+
+    .diet-topbar{
+      flex:0 0 65px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 12px;
+      background:rgba(20,20,20,.98);
+      border-bottom:1px solid var(--border);
+    }
+    .diet-back{
+      width:38px; height:38px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      color:#fff;
+      font-size:18px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+    .diet-title{
+      display:flex; flex-direction:column; align-items:center;
+      flex:1;
+    }
+    .diet-title .h{
+      font-weight:950;
+      letter-spacing:.2px;
+      font-size:15px;
+      color:#fff;
+    }
+    .diet-title .s{
+      font-size:11px;
+      color:rgba(255,255,255,.55);
+      margin-top:2px;
+      text-align:center;
+      padding:0 8px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:260px;
+    }
+    .diet-top-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      justify-content:flex-end;
+      width:86px;
+    }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      font-size:11px;
+      font-weight:900;
+      color:rgba(255,255,255,.82);
+      white-space:nowrap;
+    }
+    .chip.ok{ border-color: rgba(34,197,94,.35); color:#22c55e; background:rgba(34,197,94,.08); }
+    .chip.warn{ border-color: rgba(255,179,0,.35); color:#ffb300; background:rgba(255,179,0,.08); }
+    .chip.bad{ border-color: rgba(255,82,82,.35); color:#ff5252; background:rgba(255,82,82,.08); }
+
+    .diet-content{
+      flex:1;
+      overflow:auto;
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.10);
+      padding:14px;
+      background:
+        radial-gradient(900px 420px at 0% 0%, rgba(255,179,0,.12), transparent 55%),
+        radial-gradient(900px 420px at 100% 0%, rgba(190,242,100,.10), transparent 55%),
+        rgba(18,18,18,.85);
+      box-shadow:0 22px 60px rgba(0,0,0,.45);
+    }
+    .hero-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .hero-left .ttl{
+      font-weight:950;
+      color:#fff;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .hero-left .sub{
+      margin-top:4px;
+      font-size:12px;
+      color:rgba(255,255,255,.62);
+      line-height:1.35;
+    }
+    .hero-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:6px;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      border:none;
+      cursor:pointer;
+      padding:12px 12px;
+      border-radius:16px;
+      font-weight:950;
+      font-size:13px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12);
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn:active{ transform: translateY(1px); filter: brightness(.98); }
+    .btn.primary{
+      background: linear-gradient(180deg, rgba(255,179,0,.95), rgba(255,179,0,.78));
+      color:#111;
+    }
+    .btn.ghost{
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.82);
+    }
+    .btn.full{ width:100%; }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .meal{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding:12px;
+    }
+    .meal-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .meal-head .mttl{
+      font-weight:950;
+      letter-spacing:.6px;
+      text-transform:uppercase;
+      font-size:11px;
+      color:rgba(255,255,255,.72);
+    }
+    .meal-body{
+      font-size:13px;
+      line-height:1.45;
+      color:rgba(255,255,255,.86);
+      white-space:pre-wrap;
+    }
+
+    .hint{
+      font-size:12px;
+      color:rgba(255,255,255,.60);
+      line-height:1.35;
+      margin-top:6px;
+    }
+
+    .print-area{ display:none; }
+
+    /* PRINT/PDF */
+    @media print{
+      body, html{ background:#fff !important; }
+      .diet-topbar, .actions, .diet-back, .diet-top-actions, .footer-container{ display:none !important; }
+      .diet-content{ padding:0 !important; }
+      .hero, .card{ box-shadow:none !important; border:none !important; }
+      .print-area{ display:block !important; }
+      .screen-area{ display:none !important; }
+    }
+
+    /* PDF görsel layout */
+    .print-sheet{
+      padding:18px;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      color:#111;
+    }
+    .print-title{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+    .print-title .left{
+      display:flex; flex-direction:column;
+    }
+    .print-title .left .big{
+      font-size:18px; font-weight:900;
+    }
+    .print-title .left .small{
+      font-size:12px; opacity:.75; margin-top:3px;
+    }
+    .print-badges{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+      font-size:11px; font-weight:800;
+    }
+    .pb{
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(0,0,0,.12);
+      background:rgba(0,0,0,.04);
+    }
+    .pb.ok{ border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.10); }
+    .pb.warn{ border-color: rgba(255,179,0,.35); background: rgba(255,179,0,.12); }
+    .pb.bad{ border-color: rgba(255,82,82,.35); background: rgba(255,82,82,.10); }
+
+    .print-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .print-box{
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:14px;
+      padding:12px;
+      background:#fff;
+    }
+    .print-box .h{
+      font-size:11px; font-weight:900; letter-spacing:.7px; text-transform:uppercase;
+      margin-bottom:6px;
+      opacity:.8;
+    }
+    .print-box .b{
+      font-size:13px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .print-foot{
+      margin-top:14px;
+      font-size:11px;
+      opacity:.7;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="diet-frame">
+    <div class="diet-topbar">
+      <button class="diet-back" id="backBtn" title="Geri">←</button>
+
+      <div class="diet-title">
+        <div class="h">Diyet</div>
+        <div class="s" id="dayLine">—</div>
+      </div>
+
+      <div class="diet-top-actions">
+        <div class="chip" id="bmiChip">—</div>
+      </div>
+    </div>
+
+    <div class="diet-content">
+      <!-- SCREEN AREA -->
+      <div class="screen-area">
+        <div class="hero">
+          <div class="hero-top">
+            <div class="hero-left">
+              <div class="ttl" id="heroTitle">Bugünün Diyet Menüsü</div>
+              <div class="sub" id="heroSub">Plan hazırlanıyor…</div>
+            </div>
+            <div class="hero-right">
+              <div class="chip" id="statusChip">—</div>
+              <div class="chip" id="dateChip">—</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="shareBtn">📤 WhatsApp’tan paylaş</button>
+            <button class="btn ghost" id="pdfBtn">🧾 PDF indir</button>
+            <button class="btn ghost" id="profileBtn">👤 Profiline git</button>
+          </div>
+
+          <div class="hint" id="hintLine"></div>
+        </div>
+
+        <div class="card">
+          <div class="grid" id="mealsGrid">
+            <!-- meals -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PRINT AREA (PDF) -->
+      <div class="print-area">
+        <div class="print-sheet">
+          <div class="print-title">
+            <div class="left">
+              <div class="big">Diyet Menüsü</div>
+              <div class="small" id="printDayLine">—</div>
+            </div>
+            <div class="print-badges">
+              <div class="pb" id="printBmi">—</div>
+              <div class="pb" id="printStatus">—</div>
+              <div class="pb" id="printDate">—</div>
+            </div>
+          </div>
+
+          <div class="print-grid" id="printGrid"></div>
+
+          <div class="print-foot">@CaynanaAI By Ozyigit’s 2026</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
+
+  const DIET_ENDPOINT = "/api/diet/today";
+
+  const $ = (id) => document.getElementById(id);
+
+  function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch(e){ return fb; } }
+  function norm(s){ return String(s||"").trim(); }
+
+  function trDayName(d = new Date()){
+    const days = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+    return days[d.getDay()];
+  }
+
+  function todayStr(){
+    const d = new Date();
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yy = d.getFullYear();
+    return `${dd}.${mm}.${yy}`;
+  }
+
+  function setChip(el, text, kind=""){
+    if(!el) return;
+    el.classList.remove("ok","warn","bad");
+    if(kind) el.classList.add(kind);
+    el.textContent = text;
+  }
+
+  function buildShareText(data){
+    const day = $("dayLine")?.textContent || "";
+    const bmi = data?.bmi != null ? String(data.bmi) : "—";
+    const st = data?.status || "—";
+
+    const plan = data?.plan || {};
+    const lines = [
+      `🍽️ Diyet Menüsü (${day})`,
+      `VKİ: ${bmi} | Durum: ${st}`,
+      "",
+      `Kahvaltı: ${plan.kahvalti || "-"}`,
+      `Ara Öğün: ${plan.ara || "-"}`,
+      `Öğle: ${plan.ogle || "-"}`,
+      `Akşam: ${plan.aksam || "-"}`,
+      "",
+      "@CaynanaAI"
+    ];
+    return lines.join("\n");
+  }
+
+  function renderMeals(plan){
+    const grid = $("mealsGrid");
+    if(!grid) return;
+    grid.innerHTML = "";
+
+    const items = [
+      { key:"kahvalti", title:"Kahvaltı", icon:"🥣" },
+      { key:"ara", title:"Ara Öğün", icon:"🍎" },
+      { key:"ogle", title:"Öğle", icon:"🍽️" },
+      { key:"aksam", title:"Akşam", icon:"🌙" },
+    ];
+
+    items.forEach(it=>{
+      const div = document.createElement("div");
+      div.className = "meal";
+      div.innerHTML = `
+        <div class="meal-head">
+          <div class="mttl">${it.icon} ${it.title}</div>
+        </div>
+        <div class="meal-body">${(plan?.[it.key] || "—").trim()}</div>
+      `;
+      grid.appendChild(div);
+    });
+  }
+
+  function renderPrint(plan, meta){
+    const printGrid = $("printGrid");
+    if(!printGrid) return;
+    printGrid.innerHTML = "";
+
+    const items = [
+      { key:"kahvalti", title:"Kahvaltı" },
+      { key:"ara", title:"Ara Öğün" },
+      { key:"ogle", title:"Öğle" },
+      { key:"aksam", title:"Akşam" },
+    ];
+
+    items.forEach(it=>{
+      const b = document.createElement("div");
+      b.className = "print-box";
+      b.innerHTML = `
+        <div class="h">${it.title}</div>
+        <div class="b">${(plan?.[it.key] || "—").trim()}</div>
+      `;
+      printGrid.appendChild(b);
+    });
+
+    // badges
+    const bmi = meta?.bmi != null ? `VKİ: ${meta.bmi}` : "VKİ: —";
+    const st = meta?.status ? `Durum: ${meta.status}` : "Durum: —";
+    const dt = meta?.date ? `Tarih: ${meta.date}` : `Tarih: ${todayStr()}`;
+
+    $("printBmi").textContent = bmi;
+    $("printStatus").textContent = st;
+    $("printDate").textContent = dt;
+
+    // renk sınıfı
+    const statusKind = (meta?.status || "").toLowerCase();
+    const kind = statusKind.includes("normal") ? "ok" : (statusKind.includes("kilolu") ? "warn" : (statusKind.includes("obez") ? "bad" : ""));
+    ["printBmi","printStatus","printDate"].forEach(id=>{
+      const el = $(id);
+      if(el){
+        el.classList.remove("ok","warn","bad");
+        if(kind) el.classList.add(kind);
+      }
+    });
+
+    $("printDayLine").textContent = $("dayLine")?.textContent || "";
+  }
+
+  async function fetchDiet(){
+    const user = safeJson(localStorage.getItem(STORAGE_KEY), {});
+    const userId = norm(user?.id || user?.user_id || user?.email || "");
+    if(!userId){
+      $("heroSub").textContent = "Evladım önce giriş yap.";
+      $("hintLine").textContent = "";
+      return;
+    }
+
+    // header day
+    const now = new Date();
+    const dayName = trDayName(now);
+    const dayLine = `${dayName} • ${todayStr()}`;
+    $("dayLine").textContent = dayLine;
+
+    try{
+      const res = await fetch(`${BASE_DOMAIN}${DIET_ENDPOINT}`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ user_id: userId })
+      });
+
+      const data = await res.json().catch(()=> ({}));
+
+      // tarih
+      setChip($("dateChip"), data?.date ? data.date : todayStr(), "");
+      $("heroTitle").textContent = "Bugünün Diyet Menüsü";
+
+      if(!data?.ok){
+        // profil eksikse yönlendir
+        $("heroSub").textContent = data?.message || "Evladım, diyet için önce profilini doldur.";
+        $("hintLine").textContent = "Boy, kilo, cinsiyet ve doğum tarihi dolu olmalı.";
+        setChip($("statusChip"), "Profil eksik", "warn");
+        setChip($("bmiChip"), "VKİ: —", "warn");
+        renderMeals({ kahvalti:"—", ara:"—", ogle:"—", aksam:"—" });
+        renderPrint({ kahvalti:"—", ara:"—", ogle:"—", aksam:"—" }, { date: data?.date || todayStr(), bmi: null, status:"Profil eksik" });
+        return;
+      }
+
+      const bmi = data?.bmi;
+      const status = data?.status || "";
+
+      const kind =
+        (status || "").toLowerCase().includes("normal") ? "ok" :
+        (status || "").toLowerCase().includes("kilolu") ? "warn" :
+        (status || "").toLowerCase().includes("obez") ? "bad" : "";
+
+      setChip($("statusChip"), `Durum: ${status}`, kind);
+      setChip($("bmiChip"), (bmi != null ? `VKİ: ${bmi}` : "VKİ: —"), kind);
+
+      $("heroSub").textContent = "Evladım, bugün bunu uygula. Yarın 00:00’dan sonra yenisi gelir.";
+      $("hintLine").textContent = "İpucu: Su içmeyi unutma. Şekerli içecek yok, hadi bakalım.";
+
+      const plan = data?.plan || {};
+      renderMeals(plan);
+      renderPrint(plan, data);
+
+      // share handler uses latest data
+      window.__DIET_LAST__ = data;
+
+    }catch(e){
+      $("heroSub").textContent = "Bağlantı gitti gibi… Diyet menüsü çekilemedi.";
+      $("hintLine").textContent = "Birazdan tekrar dene evladım.";
+    }
+  }
+
+  // Buttons
+  $("backBtn").addEventListener("click", ()=>{
+    if(history.length > 1) history.back();
+    else location.href = "/";
+  });
+
+  $("profileBtn").addEventListener("click", ()=>{
+    location.href = "/pages/profil.html";
+  });
+
+  $("shareBtn").addEventListener("click", async ()=>{
+    const data = window.__DIET_LAST__ || {};
+    const text = buildShareText(data);
+    const url = "https://wa.me/?text=" + encodeURIComponent(text);
+    window.open(url, "_blank");
+  });
+
+  $("pdfBtn").addEventListener("click", ()=>{
+    // print-to-PDF (en stabil)
+    window.print();
+  });
+
+  fetchDiet();
+</script>
+</body>
+</html>
