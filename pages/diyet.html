@@ -17,10 +17,11 @@
       --diet-soft: rgba(255,255,255,.62);
     }
 
-    /* Hamburger Fix (Z-Index Sigortası) */
-    .topbar, .diet-topbar { position: relative; z-index: 3000; }
-    #hambBtn { position: relative; z-index: 3001; pointer-events: auto !important; }
-    .menu-overlay { z-index: 9999 !important; }
+    /* Hamburger Fix (Z-Index + Tıklama Sigortası) */
+    .topbar{ position: relative; z-index: 3000; }
+    #hambBtn{ position: relative; z-index: 3001; pointer-events: auto !important; }
+    .menu-overlay{ z-index: 9999 !important; }
+    .menu-overlay.open{ pointer-events:auto !important; }
 
     /* Chat alanı yerine diyet alanı */
     .diet-area{
@@ -126,14 +127,14 @@
       .screen-area{ display:none !important; }
     }
     .print-sheet{ padding:18px; color:#111; font-family:sans-serif; }
-    .print-title{ display:flex; justify-content:space-between; margin-bottom:12px; }
+    .print-title{ display:flex; justify-content:space-between; margin-bottom:12px; gap:12px; }
     .print-title .big{ font-size:18px; font-weight:900; }
-    .print-badges{ display:flex; gap:8px; }
+    .print-badges{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
     .pb{ padding:6px 10px; border-radius:999px; border:1px solid #ccc; font-size:11px; font-weight:800; }
     .print-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
     .print-box{ border:1px solid #ccc; border-radius:14px; padding:12px; }
-    .print-box .h{ font-weight:900; font-size:11px; text-transform:uppercase; margin-bottom:6px; }
-    .print-box .b{ font-size:13px; }
+    .print-box .h{ font-weight:900; font-size:11px; text-transform:uppercase; margin-bottom:6px; letter-spacing:.6px; }
+    .print-box .b{ font-size:13px; white-space:pre-wrap; line-height:1.45; }
   </style>
 </head>
 
@@ -141,6 +142,7 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
+  <!-- ÜST BAR: index ile aynı -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -183,6 +185,7 @@
     </div>
   </div>
 
+  <!-- MENU (Diyet için hafif menü) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="goHomeBtn"><span>←</span> ANA SOHBETE DÖN</button>
@@ -212,10 +215,10 @@
       <div class="menu-block kurumsal" style="margin-top:20px;">
         <div class="block-head" style="color:#ff5252;font-weight:900;font-size:11px;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.1);">Kurumsal</div>
         <div class="menu-grid" style="display:grid;gap:10px;">
-          <div class="menu-action" onclick="location.href='/pages/hakkimizda.html'" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;">
+          <div class="menu-action" id="menuAbout" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;">
             <div class="ico" style="font-size:18px;">ℹ️</div><div><div style="font-weight:700;color:#ddd;font-size:13px;">Hakkımızda</div></div>
           </div>
-          <div class="menu-action" onclick="location.href='/pages/iletisim.html'" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;">
+          <div class="menu-action" id="menuContact" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);cursor:pointer;">
             <div class="ico" style="font-size:18px;">✉️</div><div><div style="font-weight:700;color:#ddd;font-size:13px;">İletişim</div></div>
           </div>
         </div>
@@ -227,12 +230,13 @@
     </div>
   </div>
 
+  <!-- DIYET BODY -->
   <div class="diet-area" id="dietArea">
     <div class="screen-area">
       <div class="diet-hero">
         <div class="diet-hero-top">
           <div class="diet-hero-left">
-            <div class="ttl" id="heroTitle">Bugünün Diyet Menüsü</div>
+            <div class="ttl" id="heroTitle">Diyet Menüsü</div>
             <div class="sub" id="heroSub">Plan hazırlanıyor…</div>
           </div>
           <div class="diet-hero-right">
@@ -242,10 +246,16 @@
           </div>
         </div>
 
-        <div class="diet-actions">
+        <div class="diet-actions" id="actionsRow">
+          <!-- ok olunca görünür -->
           <button class="diet-btn whatsapp" id="shareBtn">📤 WhatsApp’tan paylaş</button>
           <button class="diet-btn ghost" id="pdfBtn">🧾 PDF indir</button>
-          <button class="diet-btn ghost" id="profileBtn">👤 Profiline git</button>
+
+          <!-- profil eksik olunca görünür -->
+          <button class="diet-btn ghost" id="profileBtn">👤 Profil Güncelle</button>
+
+          <!-- her zaman -->
+          <button class="diet-btn ghost" id="homeBtn">← Ana Sohbet</button>
         </div>
 
         <div class="diet-hint" id="hintLine"></div>
@@ -259,7 +269,7 @@
     <div class="print-area">
       <div class="print-sheet">
         <div class="print-title">
-          <div class="left">
+          <div>
             <div class="big">Diyet Menüsü</div>
             <div class="small" id="printDayLine">—</div>
           </div>
@@ -275,6 +285,7 @@
     </div>
   </div>
 
+  <!-- FOOTER: index ile aynı -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -296,54 +307,95 @@
   function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
   function norm(s){ return String(s || "").trim(); }
 
-  // ... (Diyet fonksiyonları aynı kalacak) ...
-  // Kısaltma: Sadece gerekli JS'ler eklendi
+  function setChip(el, text, kind=""){
+    if(!el) return;
+    el.classList.remove("ok","warn","bad");
+    if(kind) el.classList.add(kind);
+    el.textContent = text;
+  }
 
-  // ✅ Menu/Hamburger Tıklama Garantisi
-  document.addEventListener("DOMContentLoaded", () => {
-    const hamb = document.getElementById("hambBtn");
-    const overlay = document.getElementById("menuOverlay");
+  function statusKind(status=""){
+    const s = String(status||"").toLowerCase();
+    if(s.includes("normal")) return "ok";
+    if(s.includes("kilolu")) return "warn";
+    if(s.includes("obez")) return "bad";
+    if(s.includes("zayıf") || s.includes("zayif")) return "warn";
+    return "";
+  }
 
-    if (hamb && overlay) {
-      hamb.addEventListener("click", () => overlay.classList.add("open"));
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) overlay.classList.remove("open");
-      });
+  // ✅ TR zamanı + 06:00 rollover: gün adı & tarih
+  function getTrNowParts(){
+    const parts = new Intl.DateTimeFormat("tr-TR", {
+      timeZone: "Europe/Istanbul",
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false
+    }).formatToParts(new Date());
+    const map = {};
+    for(const p of parts) map[p.type] = p.value;
+    return map; // {year,month,day,hour,minute,second}
+  }
+
+  function trDayNameFromDate(d){
+    const days = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
+    return days[d.getDay()];
+  }
+
+  function getDietDayTr(){
+    const p = getTrNowParts();
+    const dt = new Date(`${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}`);
+    // 06:00’dan önceyse bir önceki gün
+    if(parseInt(p.hour,10) < 6){
+      dt.setDate(dt.getDate() - 1);
     }
+    return dt;
+  }
 
-    // Profil Foto Eşleme
-    try{
-      const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
-      const pic = (u.picture || u.avatar || u.avatar_url || u.photo_url || "").trim();
-      const full = (u.fullname || u.name || u.display_name || "").trim();
-      
-      const ico = $("profileShortcutIco");
-      if(ico){
-        if(pic) ico.innerHTML = `<img src="${pic}" alt="avatar" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-        else ico.innerHTML = "👤";
-      }
-      const nm = $("profileShortcutName");
-      if(nm) nm.textContent = full || "—";
-    }catch(e){}
+  function formatDDMMYYYY(d){
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yy = d.getFullYear();
+    return `${dd}.${mm}.${yy}`;
+  }
 
-    // Sayfa Linkleri
-    $("goHomeBtn")?.addEventListener("click", ()=> location.href = "/");
-    $("menuGoChat")?.addEventListener("click", ()=> location.href = "/");
-    $("menuGoDiet")?.addEventListener("click", ()=> location.href = "/pages/diyet.html");
-    $("profileShortcutBtn")?.addEventListener("click", ()=> location.href = "/pages/profil.html");
-    $("profileBtn")?.addEventListener("click", ()=> location.href = "/pages/profil.html");
-  });
+  function updateDayLine(){
+    const dd = getDietDayTr();
+    const line = `${trDayNameFromDate(dd)} • ${formatDDMMYYYY(dd)}`;
+    // header line yok, heroSub zaten var; chip olarak date basıyoruz
+    return line;
+  }
 
-  // (Diet Fetch ve render fonksiyonları buraya eklenebilir, önceki script ile aynı)
-  // ...
-</script>
+  function buildShareText(data){
+  // Gün satırı: "Salı • 27.01.2026" gibi
+  const dayLine = (typeof updateDayLine === "function")
+    ? updateDayLine()
+    : `${(typeof trDayName === "function" ? trDayName() : "")} • ${(typeof todayStr === "function" ? todayStr() : "")}`.trim();
 
-<script type="module">
-  import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
-  const $ = (id) => document.getElementById(id);
-  // ... (Diyet fetchDiet, renderMeals vb. fonksiyonlar buraya gelecek - kod çok uzamasın diye sadece yapı)
-  // Sen önceki çalışan script bloğunu buraya yapıştırabilirsin.
-</script>
+  const bmi = data?.bmi != null ? String(data.bmi) : "—";
+  const st  = data?.status || "—";
+  const plan = data?.plan || {};
 
-</body>
-</html>
+  // Backend’in döndürdüğü anahtarlar: kahvalti, ara_ogun, ogle, aksam, su
+  // Eski uyumluluk için: ara / araOgün vb. fallback
+  const kahvalti = (plan.kahvalti ?? plan.kahvaltı ?? plan.breakfast ?? "").toString().trim() || "—";
+  const araOgun  = (plan.ara_ogun ?? plan.ara ?? plan.snack ?? "").toString().trim() || "—";
+  const ogle     = (plan.ogle ?? plan.öğle ?? plan.lunch ?? "").toString().trim() || "—";
+  const aksam    = (plan.aksam ?? plan.akşam ?? plan.dinner ?? "").toString().trim() || "—";
+  const su       = (plan.su ?? plan.water ?? "").toString().trim() || ""; // boş olabilir
+
+  const lines = [
+    `🍽️ Diyet Menüsü (${dayLine})`,
+    `VKİ: ${bmi} | Durum: ${st}`,
+    "",
+    `🥣 Kahvaltı: ${kahvalti}`,
+    `🍎 Ara Öğün: ${araOgun}`,
+    `🍽️ Öğle: ${ogle}`,
+    `🌙 Akşam: ${aksam}`,
+  ];
+
+  if (su) lines.push(`💧 Su: ${su}`);
+  lines.push("", "@CaynanaAI");
+
+  return lines.join("\n");
+}
+```0
