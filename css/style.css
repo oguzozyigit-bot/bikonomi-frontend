@@ -638,3 +638,99 @@ button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
 }
+/* =========================
+   FINAL FIX (tek sefer)
+   ========================= */
+
+/* 1) ÜST BAR: FREE zil yanında, S.P alt satırda, sıkışma yok */
+.right-controls{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  gap:6px !important;
+}
+
+.notif-row{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+
+#notifBtn{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+
+/* FREE chip (zil yanında) */
+.plan-chip{
+  display:inline-flex !important;
+  align-items:center !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  letter-spacing:.7px !important;
+  padding:5px 10px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  background: rgba(255,255,255,.04) !important;
+  color: rgba(255,255,255,.75) !important;
+}
+
+/* SAMİMİYET yazısı yerine S.P (kısalt) */
+.yp-label{ font-size:0 !important; }
+.yp-label::after{
+  content:"S.P" !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  letter-spacing:.6px !important;
+  color: rgba(255,255,255,.75) !important;
+}
+
+/* Chip daha kompakt (telefon sıkışmasın) */
+.yp-chip{ padding:4px 8px !important; gap:6px !important; }
+.yp-meter{ width:34px !important; }
+.yp-num{ width:20px !important; }
+
+/* Tahtaravalli Caynana yazısına çok yaklaşmasın */
+.logo-area{ gap:10px !important; }
+.seesaw-svg{ width:34px !important; height:17px !important; margin-right:2px !important; }
+
+/* 2) ÜST BAR: ana sayfa profil ikonu KAPALI (profil sadece sol menüden) */
+#profileBtn{ display:none !important; }
+
+/* 3) MENÜ: turuncu profil ikonu geri (Profil Düzenle kartı) */
+.profile-shortcut-ico{
+  background:#ffb300 !important;
+  border-color:#ffb300 !important;
+  color:#111 !important;
+}
+
+/* 4) Sohbet başlığının yanındaki kibar çöp kutusu geri gelsin */
+.history-del{ display:flex !important; }
+.del-chat{ display:none !important; } /* eski tip kırmızı çöp varsa gizle */
+
+/* 5) Sohbet yokken “Yeni sohbet / çöp” görünmesin:
+   - geçmiş listede başlık boş/sohbet ise sakla (JS daha iyi ama burada da toparlar) */
+.history-row[data-id="new"],
+.history-row[data-title="Sohbet"],
+.history-row[data-title="Yeni sohbet"]{ display:none !important; }
+
+/* 6) CHAT: sohbet ALTTAN başlasın + dock yukarı kaymasın */
+.mobile-frame{ min-height:0 !important; }
+.chat-area{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-end !important; /* alttan dolar */
+  padding-bottom:95px !important;      /* dock + footer için boşluk */
+}
+
+/* Chat boşken çıkan yazı dock’u yukarı itmesin */
+.chat-area:empty::before{
+  display:none !important;
+}
+
+/* 7) Dock & footer hep altta sabit kalsın (flex taşma fix) */
+.input-dock{ flex:0 0 auto !important; }
+.footer-container{ flex:0 0 auto !important; }
