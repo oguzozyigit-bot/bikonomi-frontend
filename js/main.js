@@ -709,4 +709,4 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ✅ bfcache / geri dönüşlerde: UI barlarını güncelle (eksiltme yok, sadece toparlar)
 window.addEventListener("pageshow", () => {
   try{ refreshPremiumBars(); }catch(e){}
-});       BU KODDA EKSİLTME YAPMADIN DEĞİŞMİ SADECE PRPOFİL ,İKONU
+});
