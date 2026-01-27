@@ -8,214 +8,50 @@
   <link rel="stylesheet" href="/css/style.css?v=1">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <!-- ✅ PREMIUM OVERRIDES (style.css bozulmadan üstüne ek) -->
   <style>
-    /* --- MENU PREMIUM SKIN --- */
-    .menu-sidebar{
-      background:
-        radial-gradient(1200px 400px at 20% -10%, rgba(190,242,100,.12), transparent 55%),
-        radial-gradient(900px 420px at 85% 0%, rgba(255,179,0,.10), transparent 50%),
-        rgba(12,12,12,.98);
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 30px 90px rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
+    /* =========================
+       TOPBAR: daralt + FREE zil yanına + S.P
+       ========================= */
+    .topbar{
+      align-items:flex-start !important;
+      padding-top:10px !important;
+      padding-bottom:10px !important;
+      gap:10px !important;
+    }
+    .brand-wrapper{ min-width:0 !important; }
+    .brand-name{ white-space:nowrap !important; }
+    .slogan{
+      white-space:nowrap !important;
+      overflow:hidden !important;
+      text-overflow:ellipsis !important;
+      text-align:center !important;
+      margin:0 auto !important;
     }
 
-    .new-chat-btn{
-      position:relative;
-      border-radius:16px;
-      /* çok parlamasın */
-      box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
-      filter: saturate(.92) brightness(.98);
-      transform: translateZ(0);
-    }
-    .new-chat-btn:active{ transform: translateY(1px); }
-
-    /* Profil kısayol (Yeni sohbet altında turuncu, 3D) */
-    .profile-shortcut-wrap{
-      margin:10px 0 10px;
-      padding:0 2px;
-    }
-    .profile-shortcut-btn{
-      display:flex; align-items:center; gap:10px;
-      padding:12px 12px;
-      border-radius:16px;
-      cursor:pointer;
-      user-select:none;
-      background: linear-gradient(180deg, rgba(255,179,0,.22), rgba(0,0,0,0));
-      border: 1px solid rgba(255,179,0,.45);
-      box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
-
-    /* avatar turuncu + foto gelirse üstüne bas */
-    .profile-shortcut-ico{
-      width:34px; height:34px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      background:#ffb300;
-      border:1px solid #ffb300;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-      font-size:18px;
-      color:#111;
-      overflow:hidden;
-    }
-    .profile-shortcut-ico img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
-    .profile-shortcut-title{ font-weight:950; color:#ffb300; line-height:1.1; }
-    .profile-shortcut-sub{
-      font-size:12px;
-      color: rgba(255,255,255,.70);
-      margin-top:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 240px;
+    /* logo bir tık büyüsün */
+    .seesaw-svg{
+      transform: scale(1.18);
+      transform-origin:left center;
     }
 
-    /* Bloklar */
-    .menu-block{
-      background: rgba(20,20,20,.55);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:12px;
-      margin:10px 0;
-      box-shadow: 0 14px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
-    }
-    .block-head{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:2px 2px 10px;
-      border-bottom:1px solid rgba(255,255,255,.10);
-      margin-bottom:10px;
-      letter-spacing:.8px;
-      text-transform:uppercase;
-      font-weight:900;
-      font-size:11px;
-      opacity:.95;
-    }
-    .block-head small{ text-transform:none; letter-spacing:0; font-weight:700; opacity:.65; }
-
-    /* Blok başlık renkleri */
-    .menu-block.asistan .block-head{ color:#bef264; }
-    .menu-block.astro .block-head{ color:#a78bfa; }
-    .menu-block.kurumsal .block-head{ color:#60a5fa; }
-
-    /* Grid */
-    .menu-grid{
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:10px;
-    }
-
-    /* Menü butonları (3D) */
-    .menu-action{
-      display:flex; align-items:center; gap:12px;
-      border-radius:16px;
-      padding:12px 12px;
-      cursor:pointer;
-      user-select:none;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 14px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .menu-action:active{ transform: translateY(1px); filter: brightness(.98); }
-
-    /* İkon kapsülü modern */
-    .menu-action .ico{
-      width:38px; height:38px;
-      border-radius:14px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px;
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-      position:relative;
-      overflow:hidden;
-    }
-
-    /* Menüde ikinci satırları kaldır */
-    .menu-action small{ display:none !important; }
-
-    /* Kurumsal altındaki profil düzenlemeyi kaldır (tek yer: turuncu kısayol) */
-    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
-
-    /* İkon üstü + / nokta / rozet gibi overlay'leri kaldır (ikonu öldürmeden) */
-    .menu-action .ico::before,
-    .menu-action .ico::after{
-      content:none !important;
-      display:none !important;
-    }
-    .menu-action .ico .badge,
-    .menu-action .ico .dot,
-    .menu-action .ico .plus,
-    .menu-action .ico .mini-badge{
-      display:none !important;
-    }
-
-    /* History satırı */
-    .history-row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .history-del{
-      width:34px; height:34px;
-      border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
-      cursor:pointer;
-      color: rgba(255,255,255,.65);
-    }
-    .history-del:active{ transform: translateY(1px); }
-    .history-del .ico-trash{ opacity:.9; }
-
-    /* Chat boşken görünmesin */
-    .chat-empty::before{
-      content:"Yeni sohbet başlat ya da bir mesaj yaz evladım 🙂";
-      display:block;
-      color: rgba(255,255,255,.55);
-      font-weight:800;
-      padding: 16px;
-      text-align:center;
-    }
-
-    /* Google renderButton alanı */
-    #googleBtnWrap{
-      width:100%;
-      display:flex;
-      justify-content:center;
-    }
-    #googleBtnWrap > div{
-      width:100% !important;
-      display:flex !important;
-      justify-content:center !important;
-    }
-
-    /* ---------------- TOPBAR FIX ---------------- */
+    /* sağ blok */
     .right-controls{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
-      min-width: 150px;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:8px !important;
+      min-width:150px !important;
     }
     .notif-row{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:8px;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:8px !important;
     }
 
     /* FREE chip */
     .plan-chip{
-      margin-left:8px;
+      margin-left:6px;
       font-size:10px;
       font-weight:900;
       letter-spacing:.7px;
@@ -227,6 +63,7 @@
       line-height:1;
       user-select:none;
       text-transform:uppercase;
+      white-space:nowrap;
     }
     #notifBtn{
       display:flex;
@@ -244,60 +81,73 @@
       color: rgba(255,255,255,.75) !important;
     }
 
-    /* Logo büyüsün */
-    .seesaw-svg{
-      transform: scale(1.22);
-      transform-origin:left center;
-    }
+    /* ✅ Ana sayfadaki profil ikonunu kaldır (kullanıcı istedi) */
+    #profileBtn{ display:none !important; }
 
-    /* ---------------- CHAT: zemin/çerçeve YOK + alttan başla ---------------- */
+    /* =========================
+       CHAT: alttan başla + şerit (turuncu/yeşil) + zemin/çerçeve yok
+       ========================= */
     .chat-area{
       padding: 14px 10px 140px !important;
       display:flex !important;
       flex-direction:column !important;
-      justify-content:flex-end !important; /* alttan başlar */
+      justify-content:flex-end !important;
       min-height:100% !important;
     }
+
     .bubble{
       background: transparent !important;
       border: none !important;
-      outline: none !important;
       box-shadow: none !important;
       border-radius: 0 !important;
-      padding: 6px 0 !important;
+      padding: 8px 0 !important;
       max-width: 96% !important;
+      position: relative;
     }
-    .bubble::before{ content:none !important; display:none !important; }
+
     .bubble.bot{
       margin-left: 0 !important;
       margin-right: auto !important;
       text-align:left !important;
-      padding-left: 6px !important;
+      padding-left: 14px !important;
     }
     .bubble.user{
       margin-left: auto !important;
       margin-right: 0 !important;
       text-align:right !important;
-      padding-right: 6px !important;
+      padding-right: 14px !important;
     }
 
-    /* ---------------- INPUT: hep altta, geniş, kare çerçeve yok ---------------- */
-    #msgInput{
-      outline:none !important;
-      box-shadow:none !important;
-      width:100% !important;
+    /* yan şerit */
+    .bubble.bot::before,
+    .bubble.user::before{
+      content:"";
+      position:absolute;
+      top:4px; bottom:4px;
+      width:4px;
+      border-radius:999px;
+      opacity:.92;
     }
-    #msgInput:focus{
-      outline:none !important;
-      box-shadow:none !important;
+    .bubble.bot::before{
+      left:0;
+      background: rgba(255,179,0,.85);
+      box-shadow: 0 0 16px rgba(255,179,0,.18);
     }
-    .dock-inner{
-      width:100% !important;
-      padding-left:10px !important;
-      padding-right:10px !important;
+    .bubble.user::before{
+      right:0;
+      background: rgba(190,242,100,.85);
+      box-shadow: 0 0 16px rgba(190,242,100,.14);
     }
 
-    /* dock ve footer sabit, tek ton */
+    /* thinking/loading */
+    .bubble.bot.loading{
+      opacity:.9;
+      letter-spacing:2px;
+    }
+
+    /* =========================
+       INPUT + FOOTER: hep altta sabit, tek ton
+       ========================= */
     .input-dock{
       position: fixed !important;
       left:50% !important;
@@ -308,6 +158,22 @@
       z-index: 20 !important;
       background: #0e0e0e !important;
     }
+    .dock-inner{
+      width:100% !important;
+      padding-left:10px !important;
+      padding-right:10px !important;
+    }
+
+    #msgInput{
+      outline:none !important;
+      box-shadow:none !important;
+      width:100% !important;
+    }
+    #msgInput:focus{
+      outline:none !important;
+      box-shadow:none !important;
+    }
+
     .footer-container{
       position: fixed !important;
       left:50% !important;
@@ -319,21 +185,60 @@
       background: #0e0e0e !important;
     }
 
-    /* Menü açılınca sayfa zıplamasın */
+    /* =========================
+       MENU: ikincil satırlar yok + kurumsal profil yok
+       (ikonlara dokunma! style.css’den geliyor)
+       ========================= */
+    .menu-action small{ display:none !important; }
+    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
+
+    /* Yeni sohbet parlamasın (pastel) */
+    .new-chat-btn{
+      filter: saturate(.90) brightness(.98) !important;
+      box-shadow: 0 10px 24px rgba(0,0,0,.35) !important;
+    }
+
+    /* Menü açılınca zıplama engeli */
     body.menu-lock{
       position: fixed;
       width:100%;
       left:0; right:0;
     }
 
-    /* Login kart telefon boyutu (daraltma yok) + logo biraz büyük */
+    /* Login kart telefon boyutu + logo biraz büyük */
     .login-card{ width: min(92vw, 420px); }
     .login-slogan{
       white-space:nowrap;
       text-align:center;
       width:100%;
     }
-    .login-seesaw{ transform: scale(1.12); transform-origin:center; }
+    .login-seesaw{ transform: scale(1.10); transform-origin:center; }
+
+    /* google renderButton */
+    #googleBtnWrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+    }
+    #googleBtnWrap > div{
+      width:100% !important;
+      display:flex !important;
+      justify-content:center !important;
+    }
+
+    /* Profil kısayol avatar turuncu */
+    .profile-shortcut-ico{
+      background:#ffb300 !important;
+      border-color:#ffb300 !important;
+      color:#111 !important;
+      overflow:hidden;
+    }
+    .profile-shortcut-ico img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
   </style>
 </head>
 
@@ -377,7 +282,7 @@
           <div class="yp-num" id="ypNum">19%</div>
         </div>
 
-        <!-- PROFİL BUTONUNA DOKUNMADIM -->
+        <!-- Profil ikonu kaldırıldı (CSS ile) -->
         <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
@@ -390,6 +295,7 @@
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
+      <!-- Profil sadece buradan -->
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
@@ -533,20 +439,18 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- Daktilo hızı -->
 <script>
   window.CAYNANA_TYPE_SPEED = 28;
 </script>
 
 <script type="module" src="js/main.js"></script>
 
-<!-- ✅ Profil kısayol avatar + isim + samimiyet 19 başlangıç + menu scroll lock -->
 <script>
   (function(){
     const STORAGE_KEY = "caynana_user_v1";
     function safeJson(s, fb){ try{return JSON.parse(s||"")}catch(e){return fb} }
 
-    // Samimiyet başlangıç 19 (sadece boşsa)
+    // Samimiyet başlangıç 19 (boşsa)
     try{
       const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
       if(u && (u.yp_percent === undefined || u.yp_percent === null || u.yp_percent === "")){
@@ -571,7 +475,7 @@
       }catch(e){}
     }
 
-    // Menü açılınca zıplama engeli (scroll lock)
+    // Menü zıplamasın
     let lastY = 0;
     function lock(){
       lastY = window.scrollY || 0;
