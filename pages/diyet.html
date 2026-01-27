@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Diyet Planım</title>
   <link rel="icon" href="data:," />
-  <!-- Sohbet sayfasıyla aynı css -->
   <link rel="stylesheet" href="/css/style.css?v=1" />
 
   <style>
@@ -13,15 +12,12 @@
       --gold:#ffb300;
       --pistachio:#bef264;
       --red:#ff5252;
-      --glass: rgba(255,255,255,.10);
-      --card: rgba(25,25,25,.55);
     }
 
-    /* ✅ Menü overlay kapalıyken tıklamaları engellemesin (cinsiyet seçilemiyor fix) */
+    /* Menü overlay kapalıyken tıklamayı yemesin (select fix) */
     .menu-overlay { display:none; pointer-events:none; }
     .menu-overlay.open { display:flex; pointer-events:auto; }
 
-    /* Sayfa içi alan */
     .diet-wrap{
       padding: 16px;
       padding-bottom: 100px;
@@ -32,7 +28,6 @@
       height:100%;
     }
 
-    /* Kartlar */
     .card{
       background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.95));
       border: 1px solid rgba(255,255,255,.10);
@@ -41,11 +36,10 @@
       box-shadow: 0 18px 45px rgba(0,0,0,.55);
     }
 
-    /* Profil formu */
     #profileSetup{ display:none; }
-    .setup-head{
-      display:flex; align-items:center; gap:12px; margin-bottom:10px;
-    }
+    #dietDashboard{ display:none; }
+
+    .setup-head{ display:flex; align-items:center; gap:12px; margin-bottom:10px; }
     .setup-ico{
       width:44px; height:44px; border-radius:16px;
       display:flex; align-items:center; justify-content:center;
@@ -53,16 +47,8 @@
       border:1px solid rgba(255,179,0,.30);
       font-size:22px;
     }
-    .setup-title{
-      font-weight:900; letter-spacing:.2px; color:#fff; margin:0;
-      font-size:16px;
-    }
-    .setup-desc{
-      margin:8px 0 14px;
-      color: rgba(255,255,255,.70);
-      font-size: 13px;
-      line-height: 1.35;
-    }
+    .setup-title{ font-weight:900; color:#fff; font-size:16px; margin:0; }
+    .setup-desc{ margin:8px 0 14px; color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; }
 
     .form-row{ display:flex; gap:10px; }
     .form-group{ flex:1; display:flex; flex-direction:column; gap:6px; }
@@ -84,11 +70,7 @@
       width:100%;
     }
     .diet-input:focus, .diet-select:focus{ border-color: rgba(255,179,0,.75); }
-
-    .diet-input:disabled, .diet-select:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-    }
+    .diet-input:disabled, .diet-select:disabled{ opacity:.6; cursor:not-allowed; }
 
     .btn-primary{
       width:100%;
@@ -102,7 +84,6 @@
       color:#111;
       box-shadow: 0 12px 26px rgba(255,179,0,.18);
     }
-    .btn-primary:active{ transform: scale(.99); }
 
     .btn-yes{
       width:100%;
@@ -117,12 +98,7 @@
       box-shadow: 0 0 18px rgba(190,242,100,.28);
     }
 
-    /* Dashboard */
-    #dietDashboard{ display:none; }
-    .bmi-hero{
-      display:flex; justify-content:space-between; align-items:center;
-      gap:16px;
-    }
+    .bmi-hero{ display:flex; justify-content:space-between; align-items:center; gap:16px; }
     .bmi-left h2{
       margin:0 0 6px;
       font-size: 12px;
@@ -164,7 +140,6 @@
     }
     .bmi-talk b{ color: #fff; }
 
-    /* Menü listesi */
     .meal-list{ display:flex; flex-direction:column; gap:12px; margin-top:10px; }
     .meal-card{
       background: rgba(25,25,25,.55);
@@ -211,7 +186,6 @@
     .meal-meta .cal::before{ content:"🔥"; font-size: 10px; }
     .meal-meta .time::before{ content:"🕒"; font-size: 10px; }
 
-    /* Toast */
     .diet-notif{
       position: fixed;
       top: 80px; left: 50%;
@@ -232,10 +206,9 @@
 </head>
 
 <body>
-
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ✅ SOHBET SAYFASI İLE AYNI TOPBAR -->
+  <!-- TOPBAR (sohbet ile aynı) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -284,7 +257,7 @@
     </div>
   </div>
 
-  <!-- ✅ SOHBET SAYFASI İLE AYNI HAMBURGER MENÜ -->
+  <!-- HAMBURGER (sohbet ile aynı) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -325,10 +298,9 @@
     </div>
   </div>
 
-  <!-- ✅ DİYET SAYFASI İÇERİK -->
+  <!-- İÇERİK -->
   <div class="diet-wrap">
 
-    <!-- Profil tamam değilse -->
     <div id="profileSetup" class="card">
       <div class="setup-head">
         <div class="setup-ico">📏</div>
@@ -373,7 +345,6 @@
       <button class="btn-primary" id="btnCalc">VÜCUT ENDEKSİMİ HESAPLA</button>
     </div>
 
-    <!-- Dashboard -->
     <div id="dietDashboard" class="card">
       <div class="bmi-hero">
         <div class="bmi-left">
@@ -402,7 +373,6 @@
 
   <div class="diet-notif" id="dietNotif">🔔 Bugün diyet menün geldi, incele evladım!</div>
 
-  <!-- ✅ SOHBET SAYFASI İLE AYNI FOOTER -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -417,15 +387,13 @@
 
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
-
   const DIET_API = "/api/diet/today";
-  const PROFILE_API = "/api/profile/me";
 
   function $(id){ return document.getElementById(id); }
   function safeJson(s){ try{return JSON.parse(s||"{}");}catch{return {};} }
   function todayStr(){ return new Date().toISOString().split("T")[0]; }
+  function baseUrl(){ return (BASE_DOMAIN || "").replace(/\/+$/, ""); }
 
-  // STORAGE_KEY yoksa sohbetin kullandığı key ile de dene
   function getUserLocal(){
     const a = safeJson(localStorage.getItem(STORAGE_KEY));
     if (a && Object.keys(a).length) return a;
@@ -434,30 +402,6 @@
   function setUserLocal(obj){
     localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
     localStorage.setItem("caynana_user_v1", JSON.stringify(obj));
-  }
-
-  async function fetchProfile(userId){
-    try{
-      const res = await fetch(`${BASE_DOMAIN}${PROFILE_API}?user_id=${encodeURIComponent(userId)}`, {
-        method:"GET",
-        headers:{ "Accept":"application/json" }
-      });
-      if(!res.ok) return null;
-      const data = await res.json();
-      return data?.ok ? (data.profile || null) : null;
-    }catch{ return null; }
-  }
-
-  async function saveProfileToBackend(userId, profile){
-    try{
-      const res = await fetch(`${BASE_DOMAIN}${PROFILE_API}`, {
-        method:"PUT",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ user_id:userId, ...profile })
-      });
-      const data = await res.json().catch(()=>({}));
-      return !!data?.ok;
-    }catch{ return false; }
   }
 
   function show(elId){
@@ -474,11 +418,9 @@
   }
 
   function lockFieldsIfExists(p){
-    // boy/kilo her zaman açık
     $("inpHeight").disabled = false;
     $("inpWeight").disabled = false;
 
-    // doğum tarihi & cinsiyet profil varsa kilit
     const hasDob = !!p?.birth_date;
     const hasGender = !!p?.gender;
 
@@ -520,70 +462,49 @@
     return bmi;
   }
 
+  function extractCalories(text) {
+    const m = String(text || "").match(/\((\s*\d+\s*(?:-\s*\d+)?\s*kcal)\s*\)/i);
+    return m ? m[1].replace(/\s+/g, " ").trim() : "";
+  }
+  function cleanText(text) {
+    return String(text || "").replace(/\(\s*\d+\s*(?:-\s*\d+)?\s*kcal\s*\)/ig, "").trim();
+  }
   function currentMealStartIndex(){
     const h = new Date().getHours();
-    if(h >= 6 && h < 10) return 0;   // kahvaltı
-    if(h >= 10 && h < 12) return 1;  // ara
-    if(h >= 12 && h < 16) return 2;  // öğle
-    if(h >= 16 && h < 18) return 3;  // ara (ikindi)
-    if(h >= 18 && h < 22) return 4;  // akşam
-    return 5;                         // su
+    if (h >= 6 && h < 10) return 0;
+    if (h >= 10 && h < 12) return 1;
+    if (h >= 12 && h < 16) return 2;
+    if (h >= 16 && h < 18) return 3;
+    if (h >= 18 && h < 22) return 4;
+    return 5;
   }
 
   function renderMeals(plan){
     const list = $("mealList");
     list.innerHTML = "";
 
-    // Önerilen yeni format destek: plan.meals = [{key,title,icon,time,items,calories}]
-    const meals = Array.isArray(plan?.meals) ? plan.meals : null;
-
-    if(meals){
-      const startKeyOrder = ["kahvalti","ara","ogle","ara2","aksam","su"];
-      const start = currentMealStartIndex();
-
-      // key normalize: ara2 yoksa ara gibi davranabilir
-      const normalized = meals.map(m => ({
-        ...m,
-        key: (m.key==="ara_ogun" ? "ara" : m.key)
-      }));
-
-      // sırayı saatine göre istemiyorsan (şimdilik) indexe göre slice
-      // ama meals zaten backend’den sırayla gelirse bu yeter:
-      const sliced = normalized.slice(start);
-
-      sliced.forEach(m=>{
-        const html = `
-          <div class="meal-card">
-            <div class="meal-icon">${m.icon || "🍽️"}</div>
-            <div style="flex:1">
-              <div class="meal-name">${m.title || "-"}</div>
-              <div class="meal-desc">${m.items || "—"}</div>
-              <div class="meal-meta">
-                ${m.time ? `<span class="time">${m.time}</span>` : ``}
-                ${(m.calories!==undefined && m.calories!==null) ? `<span class="cal">${m.calories} kcal</span>` : ``}
-              </div>
-            </div>
-          </div>
-        `;
-        list.insertAdjacentHTML("beforeend", html);
-      });
-      return;
-    }
-
-    // Eski format fallback (senin mevcut API)
     const start = currentMealStartIndex();
+
     const items = [
       { k:"kahvalti", t:"Kahvaltı", i:"🍳", cal:"350-400 kcal", time:"08:30" },
-      { k:"ara", t:"Ara Öğün", i:"🍏", cal:"100-150 kcal", time:"11:00" },
-      { k:"ogle", t:"Öğle Yemeği", i:"🥗", cal:"450-500 kcal", time:"13:30" },
-      { k:"ara", t:"Ara Öğün", i:"🍏", cal:"100-150 kcal", time:"16:30" },
-      { k:"aksam", t:"Akşam Yemeği", i:"🌙", cal:"300-350 kcal", time:"19:30" },
-      { k:"su", t:"Su", i:"💧", cal:"0 kcal", time:"Gün boyu" }
+      { k:"ara",      t:"Ara Öğün", i:"🍏", cal:"100-150 kcal", time:"11:00" },
+      { k:"ogle",     t:"Öğle",     i:"🥗", cal:"450-500 kcal", time:"13:30" },
+      { k:"ara2",     t:"Ara Öğün", i:"🍏", cal:"100-150 kcal", time:"16:30" },
+      { k:"aksam",    t:"Akşam",    i:"🌙", cal:"300-350 kcal", time:"19:30" },
+      { k:"su",       t:"Su",       i:"💧", cal:"0 kcal",       time:"Gün boyu" }
     ];
 
     items.slice(start).forEach(item=>{
-      let val = plan[item.k] || plan[item.k + "_ogun"] || "—";
-      if(val === "—" && item.k === "ara") val = plan["ara_ogun"] || "—";
+      let val = "—";
+
+      if (item.k === "ara" || item.k === "ara2") {
+        val = plan?.ara_ogun || plan?.ara || "—";
+      } else {
+        val = plan?.[item.k] || plan?.[item.k + "_ogun"] || "—";
+      }
+
+      const cal = extractCalories(val);
+      val = cleanText(val);
 
       const html = `
         <div class="meal-card">
@@ -593,7 +514,7 @@
             <div class="meal-desc">${val}</div>
             <div class="meal-meta">
               <span class="time">${item.time}</span>
-              <span class="cal">${item.cal}</span>
+              <span class="cal">${cal ? cal : item.cal}</span>
             </div>
           </div>
         </div>
@@ -608,6 +529,32 @@
     setTimeout(()=> n.style.display="none", 5000);
   }
 
+  async function postDiet(payload){
+    const res = await fetch(`${baseUrl()}${DIET_API}`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+
+  async function runAutoDietFetch(){
+    try{
+      const userLocal = getUserLocal();
+      const userId = userLocal.id || userLocal.user_id || "guest";
+      const today = todayStr();
+
+      const data = await postDiet({ user_id: userId, date: today });
+
+      if(data?.ok){
+        data.date = today;
+        localStorage.setItem("caynana_last_diet", JSON.stringify(data));
+        renderMeals(data.plan);
+        showNotif();
+      }
+    }catch{}
+  }
+
   function scheduleDailyRefresh(){
     const now = new Date();
     const target = new Date();
@@ -615,26 +562,19 @@
     if(now > target) target.setDate(target.getDate()+1);
 
     const ms = target - now;
-    setTimeout(()=>{
+    setTimeout(async ()=>{
       localStorage.removeItem("caynana_last_diet");
-      location.reload();
+      await runAutoDietFetch();
+      scheduleDailyRefresh();
     }, ms);
   }
 
   async function init(){
     const userLocal = getUserLocal();
-    const userId = userLocal.id || userLocal.user_id || "guest";
+    fillForm(userLocal);
+    lockFieldsIfExists(userLocal);
 
-    // Profil backend’den varsa çek
-    const pDb = await fetchProfile(userId);
-    const merged = { ...userLocal, ...(pDb || {}) };
-    setUserLocal(merged);
-
-    // Formu doldur + kilitle
-    fillForm(merged);
-    lockFieldsIfExists(merged);
-
-    const isComplete = merged.height_cm && merged.weight_kg && merged.birth_date && merged.gender;
+    const isComplete = userLocal.height_cm && userLocal.weight_kg && userLocal.birth_date && userLocal.gender;
 
     if(!isComplete){
       show("profileSetup");
@@ -642,11 +582,9 @@
       return;
     }
 
-    // Dashboard
     show("dietDashboard");
-    calculateAndShowBMI(merged);
+    calculateAndShowBMI(userLocal);
 
-    // Bugünün diyeti varsa göster
     const today = todayStr();
     const lastDiet = safeJson(localStorage.getItem("caynana_last_diet"));
     if(lastDiet && lastDiet.ok && lastDiet.date === today){
@@ -656,99 +594,76 @@
     scheduleDailyRefresh();
   }
 
-  // ✅ Vücut endeksimi hesapla (profil kaydet + dob/gender sadece yoksa kaydet)
+  // Vücut endeksimi hesapla: profili kaydet + menüyü çek
   $("btnCalc").onclick = async () => {
     const h = $("inpHeight").value;
     const w = $("inpWeight").value;
-
     if(!h || !w) return alert("Boy ve kiloyu gir evladım.");
 
     const userLocal = getUserLocal();
     const userId = userLocal.id || userLocal.user_id || "guest";
 
-    const profile = { ...userLocal };
+    const payload = { user_id: userId, height_cm: Number(h), weight_kg: Number(w) };
 
-    profile.height_cm = Number(h);
-    profile.weight_kg = Number(w);
-
-    // doğum tarihi / cinsiyet profil yoksa buradan al
-    if(!profile.birth_date){
+    // dob/gender sadece yoksa al
+    if(!userLocal.birth_date){
       const d = $("inpDob").value;
-      if(!d) return alert("Doğum tarihini de seç evladım.");
-      profile.birth_date = d;
+      if(!d) return alert("Doğum tarihini seç evladım.");
+      payload.birth_date = d;
     }
-    if(!profile.gender){
+    if(!userLocal.gender){
       const g = $("inpGender").value;
       if(!g) return alert("Cinsiyet seç evladım.");
-      profile.gender = g;
+      payload.gender = g;
     }
 
-    // local + backend
-    setUserLocal(profile);
-    await saveProfileToBackend(userId, {
-      height_cm: profile.height_cm,
-      weight_kg: profile.weight_kg,
-      birth_date: profile.birth_date,
-      gender: profile.gender
-    });
+    // local güncelle
+    const updated = { ...userLocal, ...payload };
+    setUserLocal(updated);
 
-    // dashboard’a geç
-    show("dietDashboard");
-    calculateAndShowBMI(profile);
-    showNotif();
-  };
-
-  // ✅ Günlük menüyü getir (o anki öğünden başlayarak render)
-  $("btnGenerate").onclick = async () => {
-    const btn = $("btnGenerate");
-    btn.disabled = true;
-    const oldText = btn.textContent;
-    btn.textContent = "Hazırlanıyor...";
-
-    const userLocal = getUserLocal();
-    const userId = userLocal.id || userLocal.user_id || "guest";
-    const today = todayStr();
-
-    const recentMenuIds = safeJson(localStorage.getItem("caynana_recent_menu_ids"));
-    const recentIdsArr = Array.isArray(recentMenuIds?.ids) ? recentMenuIds.ids : [];
-
-    const start = currentMealStartIndex(); // backend isterse kullanır
-
+    // backend: diet endpoint (hem kaydeder hem menü döner)
     try{
-      const base = (BASE_DOMAIN || "").replace(/\/+$/, "");
-
-const res = await fetch(`${base}${DIET_API}`, {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    user_id: userId,
-    date: today,
-    start_from_index: start,
-    avoid_menu_ids: recentIdsArr.slice(-10)
-  })
-});
-
-      const data = await res.json();
-
-      if(data.ok){
-        data.date = today;
+      const data = await postDiet({ ...payload, date: todayStr() });
+      if(data?.ok){
+        data.date = todayStr();
         localStorage.setItem("caynana_last_diet", JSON.stringify(data));
-
-        if(data.menu_id){
-          const next = [...recentIdsArr, data.menu_id].slice(-20);
-          localStorage.setItem("caynana_recent_menu_ids", JSON.stringify({ ids: next }));
-        }
-
+        show("dietDashboard");
+        calculateAndShowBMI(updated);
         renderMeals(data.plan);
         showNotif();
       }else{
-        alert("Menü çıkmadı evladım: " + (data.message || "Bilinmiyor"));
+        alert(data?.message || "Hata oluştu.");
+      }
+    }catch{
+      alert("Bağlantı hatası evladım.");
+    }
+  };
+
+  // Günlük menü getir
+  $("btnGenerate").onclick = async () => {
+    const btn = $("btnGenerate");
+    const old = btn.textContent;
+    btn.textContent = "Hazırlanıyor...";
+    btn.disabled = true;
+
+    const userLocal = getUserLocal();
+    const userId = userLocal.id || userLocal.user_id || "guest";
+
+    try{
+      const data = await postDiet({ user_id: userId, date: todayStr() });
+      if(data?.ok){
+        data.date = todayStr();
+        localStorage.setItem("caynana_last_diet", JSON.stringify(data));
+        renderMeals(data.plan);
+        showNotif();
+      }else{
+        alert("Menü çıkmadı evladım: " + (data?.message || "Bilinmiyor"));
       }
     }catch{
       alert("Bağlantı hatası evladım.");
     }finally{
       btn.disabled = false;
-      btn.textContent = oldText;
+      btn.textContent = old;
     }
   };
 
@@ -756,7 +671,6 @@ const res = await fetch(`${base}${DIET_API}`, {
 </script>
 
 <script>
-  // Menü Aç/Kapa (yedek)
   document.addEventListener("DOMContentLoaded", () => {
     const hamb = document.getElementById("hambBtn");
     const overlay = document.getElementById("menuOverlay");
@@ -766,7 +680,6 @@ const res = await fetch(`${base}${DIET_API}`, {
       overlay.addEventListener("click", (e) => { if(e.target === overlay) overlay.classList.remove("open"); });
     }
 
-    // Profil shortcut avatar/name
     try {
       const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
       const pic = u.picture || u.avatar || u.avatar_url;
