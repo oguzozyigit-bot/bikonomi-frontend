@@ -1,13 +1,27 @@
-// js/main.js (FINAL - FIXED)
-// ✅ Google Login Fix: Syntax hataları giderildi, backtickler eklendi.
-// ✅ GSI Kalkanı: AbortError önleyici mantık korundu.
+// js/main.js (FINAL - Single Bind, Pages, Terms Gate, Delete Account via backend token)
+// + ChatStore sohbet listesi + kalıcı hafıza (son 10) + menüden geçiş/silme
+// ✅ FIX: ChatStore.load() yoktu → UI render fonksiyonu eklendi (eksiltme yok)
+// ✅ FIX: Çift kayıt (user/assistant iki kez ekleniyordu) → storeAddOnce guard (eksiltme yok)
+//
+// ✅ FINAL: 3 BLOK MENU (Asistan / Astro AI / Kurumsal)
+// ✅ FINAL: Profil erişimi (üst ikon + menü + yeni sohbet altı turuncu kısayol)
+// ✅ FINAL: Yeni sohbet başlığı = ilk user mesajı (max 10 karakter)
+// ✅ FINAL: History silme ikonu kibar SVG + aynı satır
+// ✅ FINAL: Yeni sohbet oluşmadan chat alanı görünmez
+//
+// ✅ FIX (YENİ): FedCM AbortError / Google giriş bazen “profil dönüşü” sonrası bozuluyor
+//    Sebep: GSI init/prompt iki kez tetiklenebiliyor (özellikle bfcache / tekrar mount / çift click).
+//    Çözüm: main.js içinde “tek sefer initAuth + tek sefer handleLogin” kilidi eklendi. (Eksiltme yok)
 
+// 🔹 TÜM IMPORTLAR EN ÜSTTE
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
 import { initNotif } from "./notif.js";
 import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
 import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
 import { ChatStore } from "./chat_store.js";
+
+// 🔹 IMPORTLARDAN SONRA NORMAL KOD GELİR
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -17,7 +31,6 @@ const API_TOKEN_KEY = "caynana_api_token";
 function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
 function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
 
-// ✅ DÜZELTİLDİ: Backtick eklendi
 function termsKey(email=""){
   return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`;
 }
@@ -30,16 +43,16 @@ function clearApiToken(){ localStorage.removeItem(API_TOKEN_KEY); }
 // ✅ GSI / AUTH KİLİTLERİ (AbortError önleme)
 // --------------------
 function getBootState(){
-  if(!window.CAYNANA_BOOT) window.CAYNANA_BOOT = {
+  if(!window.__CAYNANA_BOOT__) window.__CAYNANA_BOOT__ = {
     gsiReady: false,
     authInited: false,
     loginInFlight: false,
     lastLoginAt: 0
   };
-  return window.CAYNANA_BOOT;
+  return window.__CAYNANA_BOOT__;
 }
 
-// --- backend token al ---
+// --- backend token al (Google token -> backend token) ---
 async function ensureBackendSessionToken(){
   const existing = getApiToken();
   if(existing) return existing;
@@ -47,7 +60,6 @@ async function ensureBackendSessionToken(){
   const googleIdToken = (localStorage.getItem("google_id_token") || "").trim();
   if(!googleIdToken) throw new Error("google_id_token missing");
 
-  // ✅ DÜZELTİLDİ: Backtick eklendi
   const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
     method: "POST",
     headers: { "Content-Type":"application/json" },
@@ -59,21 +71,20 @@ async function ensureBackendSessionToken(){
   });
 
   const txt = await r.text().catch(()=> "");
-  // ✅ DÜZELTİLDİ: Backtick eklendi
   if(!r.ok) throw new Error(`auth/google failed: ${r.status} ${txt}`);
 
   let data = {};
   try { data = JSON.parse(txt || "{}"); } catch(e) {}
 
-  const token = 
-    (data.token || 
-     data.access_token || 
-     data.api_token || 
-     data.jwt || 
-     data.session_token || 
-     data.auth_token || 
-     data.bearer || 
-     data.accessToken || 
+  const token =
+    (data.token ||
+     data.access_token ||
+     data.api_token ||
+     data.jwt ||
+     data.session_token ||
+     data.auth_token ||
+     data.bearer ||
+     data.accessToken ||
      "").trim();
 
   if(!token) throw new Error("auth/google token not found in response");
@@ -97,7 +108,6 @@ window.showTermsOverlay = () => {
   t.style.display = "flex";
 };
 
-// ✅ DÜZELTİLDİ: Backtick eklendi
 window.showGoogleButtonFallback = (reason = "unknown") => {
   const hint = $("loginHint");
   if (hint) hint.textContent = `Google girişi açılamadı (${reason}). Sayfayı yenileyip tekrar dene.`;
@@ -115,8 +125,6 @@ function refreshPremiumBars() {
 
   const yp = Number((u?.yp_percent ?? 50));
   const p = Math.max(5, Math.min(100, yp));
-  
-  // ✅ DÜZELTİLDİ: Backtick eklendi
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
 
@@ -150,16 +158,13 @@ function ensureChatVisible(){
   chatEl.classList.remove("chat-empty");
 }
 
-function isNearBottom(el, slack = 80){
-  try{
-    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
-  }catch(e){
-    return true;
-  }
-}
-
 function trashSvg(){
-  return `<svg class="ico-trash" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 3h6l1 2h4v2H4V5h4l1-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 7l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>`;
+  return `
+  <svg class="ico-trash" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+    <path d="M9 3h6l1 2h4v2H4V5h4l1-2z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M6 7l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 11v6M14 11v6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+  </svg>`;
 }
 
 function makeChatTitleFromFirstMsg(text=""){
@@ -196,18 +201,14 @@ function ensureTitleOnFirstUserMessage(userText){
     const curTitle = String(cur?.title || "").trim();
     if(curTitle) return;
 
-    const title = makeChatTitleFromFirstMsg(userText);  
+    const title = makeChatTitleFromFirstMsg(userText);
     trySetChatTitle(title);
-
   }catch(e){}
 }
 
+// ✅ PROFIL NAV
 function goProfile(){
   location.href = "/pages/profil.html";
-}
-
-function goDiet(){
-  location.href = "/pages/diyet.html";
 }
 
 // --------------------
@@ -215,43 +216,48 @@ function goDiet(){
 // --------------------
 const MENU_ITEMS = [
   // ASISTAN
-  { key: "chat",       label: "Sohbet",       sub: "Dertleş",      ico: "💬", group:"asistan" },
-  { key: "dedikodu",   label: "Dedikodu",     sub: "Özel oda",     ico: "🕵️", group:"asistan" },
-  { key: "shopping",   label: "Alışveriş",    sub: "Tasarruf et",  ico: "🛍️", group:"asistan" },
-  { key: "translate",  label: "Tercüman",     sub: "Çeviri",       ico: "🌍", group:"asistan" },
-  { key: "diet",       label: "Diyet",        sub: "Plan",         ico: "🥗", group:"asistan" },
-  { key: "health",     label: "Sağlık",       sub: "Danış",        ico: "❤️", group:"asistan" },
+  { key: "chat",       label: "Sohbet",      sub: "Dertleş",      ico: "💬", group:"asistan" },
+  { key: "dedikodu",   label: "Dedikodu",    sub: "Özel oda",     ico: "🕵️", group:"asistan" },
+  { key: "shopping",   label: "Alışveriş",   sub: "Tasarruf et",  ico: "🛍️", group:"asistan" },
+  { key: "translate",  label: "Tercüman",    sub: "Çeviri",       ico: "🌍", group:"asistan" },
+  { key: "diet",       label: "Diyet",       sub: "Plan",         ico: "🥗", group:"asistan" },
+  { key: "health",     label: "Sağlık",      sub: "Danış",        ico: "❤️", group:"asistan" },
 
   // ASTRO
-  { key: "fal",        label: "Kahve Falı",   sub: "Günde 1",      ico: "☕", group:"astro" },
-  { key: "tarot",      label: "Tarot",        sub: "Kart seç",     ico: "🃏", group:"astro" },
-  { key: "horoscope",  label: "Burç",         sub: "Günlük",       ico: "♈", group:"astro" },
-  { key: "dream",      label: "Rüya",         sub: "Yorumla",      ico: "🌙", group:"astro" },
+  { key: "fal",        label: "Kahve Falı",  sub: "Günde 1",      ico: "☕", group:"astro" },
+  { key: "tarot",      label: "Tarot",       sub: "Kart seç",     ico: "🃏", group:"astro" },
+  { key: "horoscope",  label: "Burç",        sub: "Günlük",       ico: "♈", group:"astro" },
+  { key: "dream",      label: "Rüya",        sub: "Yorumla",      ico: "🌙", group:"astro" },
 
   // KURUMSAL
   { key: "profile",    label: "Profil Düzenle", sub: "Bilgilerini güncelle", ico: "👤", group:"kurumsal", tone:"orange" },
-  { key: "hakkimizda", label: "Hakkımızda",   sub: "Biz kimiz?",   ico: "ℹ️", group:"kurumsal" },
-  { key: "sss",        label: "SSS",          sub: "Sorular",      ico: "❓", group:"kurumsal" },
-  { key: "gizlilik",   label: "Gizlilik",     sub: "Güven",        ico: "🔒", group:"kurumsal" },
-  { key: "iletisim",   label: "İletişim",     sub: "Bize yaz",     ico: "✉️", group:"kurumsal" },
-  { key: "sozlesme",   label: "Sözleşme",     sub: "Kurallar",     ico: "📄", group:"kurumsal" },
-  { key: "uyelik",     label: "Üyelik",       sub: "Detaylar",     ico: "🪪", group:"kurumsal" },
+  { key: "hakkimizda", label: "Hakkımızda",  sub: "Biz kimiz?",   ico: "ℹ️", group:"kurumsal" },
+  { key: "sss",        label: "SSS",         sub: "Sorular",      ico: "❓", group:"kurumsal" },
+  { key: "gizlilik",   label: "Gizlilik",    sub: "Güven",        ico: "🔒", group:"kurumsal" },
+  { key: "iletisim",   label: "İletişim",    sub: "Bize yaz",     ico: "✉️", group:"kurumsal" },
+  { key: "sozlesme",   label: "Sözleşme",    sub: "Kurallar",     ico: "📄", group:"kurumsal" },
+  { key: "uyelik",     label: "Üyelik",      sub: "Detaylar",     ico: "🪪", group:"kurumsal" },
 ];
 
-// ✅ DÜZELTİLDİ: Backtick eklendi
 function menuItemHtml(m){
-  return `<div class="menu-action ${m.group ? `grp-${m.group}` : ""} ${m.tone ? `tone-${m.tone}` : ""}" data-action="${m.key}">
-    <div class="ico">${m.ico}</div>
-    <div><div>${m.label}</div><small>${m.sub}</small></div>
-  </div>`;
+  return `
+    <div class="menu-action ${m.group ? `grp-${m.group}` : ""} ${m.tone ? `tone-${m.tone}` : ""}" data-action="${m.key}">
+      <div class="ico">${m.ico}</div>
+      <div><div>${m.label}</div><small>${m.sub}</small></div>
+    </div>
+  `;
 }
 
 function populateMenuGrid() {
+  // 3 grid
   const gA = $("menuAsistan");
   const gB = $("menuAstro");
   const gC = $("menuKurumsal");
+
+  // fallback: eski id varsa
   const legacy = $("mainMenu");
 
+  // zaten doluysa tekrar basma
   if ((gA && gA.children.length) || (gB && gB.children.length) || (gC && gC.children.length) || (legacy && legacy.children.length)) return;
 
   const asistanItems = MENU_ITEMS.filter(x => x.group === "asistan");
@@ -262,6 +268,7 @@ function populateMenuGrid() {
   if(gB) gB.innerHTML = astroItems.map(menuItemHtml).join("");
   if(gC) gC.innerHTML = kurumsalItems.map(menuItemHtml).join("");
 
+  // legacy varsa hepsini bas (geriye uyum)
   if(legacy && (!gA && !gB && !gC)){
     legacy.innerHTML = MENU_ITEMS.map(menuItemHtml).join("");
   }
@@ -292,7 +299,6 @@ async function handleMenuAction(action) {
   }
 
   if (action === "profile") { goProfile(); return; }
-  if (action === "diet") { goDiet(); return; }
 
   if (action === "fal") { openFalPanel(); return; }
   if (action === "tarot") { location.href = "pages/tarot.html"; return; }
@@ -302,10 +308,10 @@ async function handleMenuAction(action) {
   if (action === "dedikodu") { currentMode = "dedikodu"; return; }
   if (action === "shopping") { currentMode = "shopping"; return; }
   if (action === "translate") { currentMode = "trans"; return; }
+  if (action === "diet") { currentMode = "diet"; return; }
   if (action === "health") { currentMode = "health"; return; }
   if (action === "chat") { currentMode = "chat"; return; }
 
-  // ✅ DÜZELTİLDİ: Backtick eklendi
   location.href = `pages/${action}.html`;
 }
 
@@ -341,8 +347,6 @@ function renderChatFromStore(){
   const chatEl = $("chat");
   if(!chatEl) return;
 
-  const follow = isNearBottom(chatEl);
-
   chatEl.innerHTML = "";
   let h = [];
   try { h = ChatStore.history() || []; } catch(e){ h = []; }
@@ -352,14 +356,13 @@ function renderChatFromStore(){
     const content = String(m?.content || "");
     if(!content) return;
 
-    const bubble = document.createElement("div");  
-    // ✅ DÜZELTİLDİ: Backtick eklendi
-    bubble.className = `bubble ${role === "user" ? "user" : "bot"}`;  
-    bubble.textContent = content;  
+    const bubble = document.createElement("div");
+    bubble.className = `bubble ${role === "user" ? "user" : "bot"}`;
+    bubble.textContent = content;
     chatEl.appendChild(bubble);
   });
 
-  if(follow) chatEl.scrollTop = chatEl.scrollHeight;
+  chatEl.scrollTop = chatEl.scrollHeight;
   syncFromStore();
   setChatVisibilityFromStore();
 }
@@ -429,7 +432,7 @@ function bindFalUI(){
 }
 
 // --------------------
-// DELETE ACCOUNT
+// DELETE ACCOUNT (FINAL)
 // --------------------
 async function deleteAccount(){
   const u0 = getUser();
@@ -442,46 +445,44 @@ async function deleteAccount(){
   try{
     let apiToken = await ensureBackendSessionToken();
 
-    const callSet = async (token) => {  
-      // ✅ DÜZELTİLDİ: Backtick eklendi
-      return fetch(`${BASE_DOMAIN}/api/profile/set`, {  
-        method: "POST",  
-        headers: {  
-          "Content-Type":"application/json",  
-          "Authorization": `Bearer ${token}`  
-        },  
-        body: JSON.stringify({  
-          user_id: uid,  
-          meta: { email, deleted_at: new Date().toISOString() },  
-          token, access_token: token  
-        })  
-      });  
-    };  
+    const callSet = async (token) => {
+      return fetch(`${BASE_DOMAIN}/api/profile/set`, {
+        method: "POST",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          user_id: uid,
+          meta: { email, deleted_at: new Date().toISOString() },
+          token, access_token: token
+        })
+      });
+    };
 
-    let r = await callSet(apiToken);  
-    let txt = await r.text().catch(()=> "");  
+    let r = await callSet(apiToken);
+    let txt = await r.text().catch(()=> "");
 
-    if(!r.ok && r.status === 401){  
-      clearApiToken();  
-      apiToken = await ensureBackendSessionToken();  
-      r = await callSet(apiToken);  
-      txt = await r.text().catch(()=> "");  
-    }  
+    if(!r.ok && r.status === 401){
+      clearApiToken();
+      apiToken = await ensureBackendSessionToken();
+      r = await callSet(apiToken);
+      txt = await r.text().catch(()=> "");
+    }
 
-    if(!r.ok){  
-      console.error("deleteAccount failed:", r.status, txt);  
-      alert(`Hesap silinemedi. (${r.status})`);  
-      return;  
-    }  
+    if(!r.ok){
+      console.error("deleteAccount failed:", r.status, txt);
+      alert(`Hesap silinemedi. (${r.status})`);
+      return;
+    }
 
-    localStorage.removeItem(termsKey(email));  
-    localStorage.removeItem(STORAGE_KEY);  
-    localStorage.removeItem("google_id_token");  
-    clearApiToken();  
+    localStorage.removeItem(termsKey(email));
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("google_id_token");
+    clearApiToken();
 
-    alert("Hesabın silindi.");  
+    alert("Hesabın silindi.");
     window.location.href = "/";
-
   }catch(e){
     console.error("deleteAccount exception:", e);
     alert("Hesap silinemedi. Lütfen tekrar dene.");
@@ -492,25 +493,28 @@ async function deleteAccount(){
 // AUTH UI
 // --------------------
 function bindAuthUI(){
+  // ✅ FIX: Çift tık / çift bind / bfcache sonrası spam login olmasın
   $("googleLoginBtn") && ($("googleLoginBtn").onclick = async () => {
     const st = getBootState();
     const now = Date.now();
 
-    if(st.loginInFlight) return;  
-    if(now - (st.lastLoginAt || 0) < 900) return;  
+    // 900ms içinde tekrar tıklamayı yut
+    if(st.loginInFlight) return;
+    if(now - (st.lastLoginAt || 0) < 900) return;
 
-    st.loginInFlight = true;  
-    st.lastLoginAt = now;  
+    st.loginInFlight = true;
+    st.lastLoginAt = now;
 
-    try{  
-      await handleLogin("google");  
-    }finally{  
-      setTimeout(()=>{ st.loginInFlight = false; }, 1200);  
+    try{
+      await handleLogin("google");
+    }finally{
+      // küçük gecikme: GSI popup açılırken ikinci click'i engeller
+      setTimeout(()=>{ st.loginInFlight = false; }, 1200);
     }
   });
 
   $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
-    alert("Apple girişi hazırlanıyor. Google ile giriş yapabilirsiniz.\nÜyelik ücretsizdir.");
+    alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel 🙂");
   });
 
   $("termsAcceptBtn") && ($("termsAcceptBtn").onclick = async () => {
@@ -542,13 +546,13 @@ function bindNotifUI(){
 }
 
 // --------------------
-// HISTORY LIST
+// HISTORY LIST (Hamburger menü)
 // --------------------
 function renderHistoryList(){
   const listEl = $("historyList");
   if(!listEl) return;
 
-  const items = ChatStore.list(); 
+  const items = ChatStore.list(); // son 10
   listEl.innerHTML = "";
 
   items.forEach(c => {
@@ -556,29 +560,28 @@ function renderHistoryList(){
     row.className = "history-row";
     row.setAttribute("data-id", c.id);
 
-    let title = (c.title || "Sohbet").toString();  
-    title = title.trim().slice(0, 15) || "Sohbet";  
+    let title = (c.title || "Sohbet").toString();
+    title = title.trim().slice(0, 15) || "Sohbet";
 
-    // ✅ DÜZELTİLDİ: Backtick eklendi
-    row.innerHTML = `  
-      <div class="history-title">${title}</div>  
-      <button class="history-del" aria-label="Sil" title="Sil">  
-        ${trashSvg()}  
-      </button>  
-    `;  
+    row.innerHTML = `
+      <div class="history-title">${title}</div>
+      <button class="history-del" aria-label="Sil" title="Sil">
+        ${trashSvg()}
+      </button>
+    `;
 
-    row.addEventListener("click", () => {  
-      ChatStore.currentId = c.id;  
-      renderChatFromStore();  
-      closeMenu();  
-    });  
+    row.addEventListener("click", () => {
+      ChatStore.currentId = c.id;
+      renderChatFromStore();
+      closeMenu();
+    });
 
-    row.querySelector(".history-del")?.addEventListener("click", (e) => {  
-      e.stopPropagation();  
-      ChatStore.deleteChat(c.id);  
-      renderHistoryList();  
-      renderChatFromStore();  
-    });  
+    row.querySelector(".history-del")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      ChatStore.deleteChat(c.id);
+      renderHistoryList();
+      renderChatFromStore();
+    });
 
     listEl.appendChild(row);
   });
@@ -609,11 +612,15 @@ function bindMenuUI(){
     closeMenu();
   });
 
+  // ✅ 3 grid delegation
   bindMenuDelegationTo($("menuAsistan"));
   bindMenuDelegationTo($("menuAstro"));
   bindMenuDelegationTo($("menuKurumsal"));
+
+  // ✅ legacy grid delegation (eski html kalırsa)
   bindMenuDelegationTo($("mainMenu"));
 
+  // ✅ Yeni sohbet altında turuncu profil kısayolu (index.html’de var)
   $("profileShortcutBtn") && ($("profileShortcutBtn").onclick = () => {
     closeMenu();
     goProfile();
@@ -636,7 +643,7 @@ function bindComposer(){
 }
 
 // --------------------
-// BOOT
+// BOOT (TEK YER)
 // --------------------
 document.addEventListener("DOMContentLoaded", async () => {
   document.body.classList.add("premium-ui");
@@ -648,35 +655,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindFalUI();
   bindAuthUI();
 
+  // ✅ üst profil ikon
   $("profileBtn") && ($("profileBtn").onclick = () => goProfile());
 
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
+  // ✅ GSI (tek sefer initAuth) - AbortError önleme
   try{
     await waitForGsi();
     $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
 
-    const st = getBootState();  
-    if(!st.authInited){  
-      st.authInited = true;  
-      initAuth();  
+    const st = getBootState();
+    if(!st.authInited){
+      st.authInited = true;
+      initAuth();
     }
-
   }catch(e){
     window.showGoogleButtonFallback?.("GSI yüklenemedi");
   }
 
+  // session
   const u = getUser();
   const logged = !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
 
   if (logged) {
     $("loginOverlay")?.classList.remove("active");
-    if($("loginOverlay")) $("loginOverlay").style.display = "none";
+    $("loginOverlay") && ($("loginOverlay").style.display = "none");
     if (!u.terms_accepted_at) window.showTermsOverlay?.();
   } else {
-    // ✅ DÜZELTİLDİ: Sözdizimi hatası giderildi (String kapatıldı ve blok düzeltildi)
     $("loginOverlay")?.classList.add("active");
-    if($("loginOverlay")) $("loginOverlay").style.display = "flex";
+    $("loginOverlay") && ($("loginOverlay").style.display = "flex");
   }
 
   $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
@@ -698,6 +706,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setChatVisibilityFromStore();
 });
 
+// ✅ bfcache / geri dönüşlerde: UI barlarını güncelle (eksiltme yok, sadece toparlar)
 window.addEventListener("pageshow", () => {
   try{ refreshPremiumBars(); }catch(e){}
 });
