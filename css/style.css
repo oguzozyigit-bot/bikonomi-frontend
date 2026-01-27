@@ -844,3 +844,17 @@ button:focus, a:focus, textarea:focus{
 
 /* 3) Menü blok alt yazıları gizli */
 .block-head small{ display:none !important; }
+/* WhatsApp özel buton */
+.diet-btn.whatsapp{
+  background: linear-gradient(180deg, #25D366, #1EBE5D);
+  color:#0b2a16;
+  border:none;
+  box-shadow:
+    0 16px 28px rgba(37,211,102,.35),
+    inset 0 1px 0 rgba(255,255,255,.35);
+}
+
+.diet-btn.whatsapp:active{
+  transform: translateY(1px);
+  filter: brightness(.95);
+}
