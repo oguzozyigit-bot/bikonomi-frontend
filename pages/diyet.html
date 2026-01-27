@@ -231,6 +231,34 @@
       white-space:pre-wrap;
     }
     .print-foot{ margin-top:14px; font-size:11px; opacity:.7; }
+
+    /* =========================
+       PROFIL KISAYOLU (KÜÇÜK İKON & 3D TURUNCU) - index.html ile AYNI
+       ========================= */
+    .profile-shortcut-wrap{ margin: 12px 0 16px; padding: 0 4px; }
+    .profile-shortcut-btn{
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 16px; cursor: pointer; user-select: none;
+      background: linear-gradient(135deg, rgba(40, 25, 5, 0.95), rgba(15, 10, 5, 0.98));
+      border: 1px solid rgba(255, 179, 0, 0.35);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+      transition: all 0.15s ease;
+    }
+    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(0.95); }
+    #profileShortcutIco{
+      width: 36px !important; height: 36px !important; flex: 0 0 36px !important;
+      border-radius: 50% !important; overflow: hidden !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      background: #ffb300 !important; border: 2px solid rgba(255, 179, 0, 0.6) !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+      color: #111 !important; font-size: 18px !important;
+    }
+    #profileShortcutIco img{ width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+    .profile-shortcut-text{ flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; }
+    .profile-shortcut-title{ font-size: 13px; font-weight: 800; color: #ffb300; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+    .profile-shortcut-sub{ font-size: 13px; font-weight: 600; color: #e0e0e0; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+    #profileShortcutIco::after{ content: none !important; }
+
   </style>
 </head>
 
@@ -238,7 +266,6 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (index ile aynı yapı) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -287,15 +314,14 @@
     </div>
   </div>
 
-  <!-- MENU (basit, sayfa dışına kaymaz) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="goHomeBtn"><span>←</span> ANA SOHBETE DÖN</button>
 
-      <div class="profile-shortcut-wrap" style="margin:10px 0 12px;">
+      <div class="profile-shortcut-wrap">
         <div class="profile-shortcut-btn" id="profileShortcutBtn">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div class="profile-shortcut-text" style="min-width:0;">
+          <div class="profile-shortcut-text">
             <div class="profile-shortcut-title">Profil Düzenle</div>
             <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
           </div>
@@ -338,10 +364,8 @@
     </div>
   </div>
 
-  <!-- ORTA ALAN (Diyet) -->
   <div class="diet-area" id="dietArea">
 
-    <!-- SCREEN -->
     <div class="screen-area">
 
       <div class="diet-hero">
@@ -372,7 +396,6 @@
 
     </div>
 
-    <!-- PRINT -->
     <div class="print-area">
       <div class="print-sheet">
         <div class="print-title">
@@ -394,7 +417,6 @@
 
   </div>
 
-  <!-- ALT BAR (index ile aynı) -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -675,16 +697,23 @@
   $("profileShortcutBtn")?.addEventListener("click", ()=> location.href = "/pages/profil.html");
   $("profileBtn")?.addEventListener("click", ()=> location.href = "/pages/profil.html");
 
-  // Profil kısayolunda isim+avatar
+  // ✅ Profil kısayolunda isim+avatar (YENİ KOD)
   (function paintProfileShortcut(){
     try{
       const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
       const pic = (u.picture || u.avatar || u.avatar_url || u.photo_url || "").trim();
       const full = (u.fullname || u.name || u.display_name || "").trim();
       const ico = $("profileShortcutIco");
+      
+      // ✅ Avatarı img olarak bas
       if(ico){
-        ico.innerHTML = pic ? `<img src="${pic}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">` : "👤";
+        if(pic) {
+          ico.innerHTML = `<img src="${pic}" alt="avatar" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+        } else {
+          ico.innerHTML = "👤";
+        }
       }
+      
       const nm = $("profileShortcutName");
       if(nm) nm.textContent = full || "—";
     }catch(e){}
