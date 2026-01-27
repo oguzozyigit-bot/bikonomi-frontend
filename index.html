@@ -169,6 +169,107 @@
     /* LOGIN LINKLERI */
     #loginOverlay .trust-links-clean a { color: rgba(255,255,255,.55) !important; text-decoration: none !important; }
     #loginHint { display: none !important; }
+    /* =========================
+   PREMIUM LOGIN UI FIX
+   ========================= */
+#loginOverlay .login-card{
+  max-width:420px !important;
+  padding:28px 26px 26px !important;
+  border-radius:26px !important;
+  background:
+    radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+    radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
+    #0e0e0e !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
+}
+
+/* Başlık */
+#loginOverlay .brand-name{
+  font-weight:900 !important;
+  letter-spacing:.4px !important;
+}
+
+/* Alt slogan */
+#loginOverlay .login-slogan{
+  opacity:.75 !important;
+  margin-bottom:18px !important;
+}
+
+/* =========================
+   GOOGLE BUTTON (PRO)
+   ========================= */
+#googleLoginBtn{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+
+  width:100% !important;
+  height:52px !important;
+
+  background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
+  color:#111 !important;
+
+  border-radius:16px !important;
+  font-weight:800 !important;
+  font-size:15px !important;
+
+  border:none !important;
+  box-shadow:
+    0 12px 30px rgba(0,0,0,.45),
+    inset 0 1px 0 rgba(255,255,255,.8) !important;
+
+  transition:transform .12s ease, filter .12s ease !important;
+}
+
+#googleLoginBtn::before{
+  content:"";
+  width:20px;
+  height:20px;
+  background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
+  display:inline-block;
+}
+
+#googleLoginBtn:active{
+  transform:translateY(1px);
+  filter:brightness(.96);
+}
+
+/* =========================
+   APPLE BUTTON (DISABLED)
+   ========================= */
+#appleLoginBtn{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:10px !important;
+
+  width:100% !important;
+  height:50px !important;
+
+  background:rgba(255,255,255,.06) !important;
+  color:rgba(255,255,255,.55) !important;
+
+  border-radius:16px !important;
+  font-weight:700 !important;
+  font-size:14px !important;
+
+  border:1px solid rgba(255,255,255,.12) !important;
+}
+
+#appleLoginBtn::before{
+  content:"";
+  font-size:18px;
+  line-height:1;
+}
+
+/* Alt linkler */
+#loginOverlay .trust-links-clean{
+  margin-top:18px !important;
+  font-size:12px !important;
+  opacity:.65 !important;
+}
   </style>
 </head>
 
