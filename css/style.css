@@ -762,3 +762,49 @@ button:focus, a:focus, textarea:focus{
 
 /* 4) (Opsiyonel ama iyi) Sohbet boşken de dock yerinden oynamasın */
 .chat-area:empty{ padding-bottom: 58px !important; }
+/* =========================
+   MASTER OVERRIDE (FINAL)
+   - Eksiltme yok, sadece en sona override
+   ========================= */
+
+/* CHAT SCROLL kesin düzelsin */
+.chat-area{
+  min-height:0 !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  touch-action: pan-y !important;
+
+  /* chat içerik üstten aksın, scroll doğal çalışsın */
+  justify-content:flex-start !important;
+
+  /* dock altında kalmasın */
+  padding-bottom: 85px !important;
+}
+
+/* boşken de scroll kilit olmasın */
+.chat-area:empty{
+  min-height:0 !important;
+}
+
+/* Menü block başlıkları daha belirgin */
+.menu-block.asistan .block-head{ color:#ffb300 !important; }
+.menu-block.astro .block-head{ color:#bef264 !important; }
+.menu-block.kurumsal .block-head{ color:#ff5252 !important; }
+.block-head small{ display:none !important; }
+
+/* Kibar çöp kovası görünür */
+.history-del{ display:flex !important; }
+
+/* Profil + rozeti kapalı (index’te de kapalı ama garanti) */
+#profileShortcutIco::after{ content:none !important; display:none !important; }
+
+/* Login tahtaravalli animasyonu (kibar hareket) */
+.login-seesaw-bar{
+  transform-origin:110px 30px;
+  animation: loginRock 1.2s ease-in-out infinite;
+}
+@keyframes loginRock{
+  0%,100%{ transform:rotate(-4deg); }
+  50%{ transform:rotate(4deg); }
+}
