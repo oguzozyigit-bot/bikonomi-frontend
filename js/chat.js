@@ -292,7 +292,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     try { ChatStore.add?.("assistant", out); } catch {}
 
     // ✅ Backend'den profil/memory geri dönüyorsa memory_profile'a yaz (zorunlu değil)
-    // (Şimdilik sadece hitap/name gibi güvenli alanları günceller)
     try {
       const mp = getMemoryProfile() || {};
       const nextPatch = {};
@@ -320,8 +319,16 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 }
 
 // --------------------
-// UI HELPERS
+// UI HELPERS (SCROLL FIX)
 // --------------------
+function isNearBottom(el, slack = 80){
+  try{
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
+  }catch(e){
+    return true;
+  }
+}
+
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
@@ -333,11 +340,20 @@ export function typeWriter(text, elId = "chat") {
   const s = String(text || "");
   let i = 0;
 
+  // ✅ kullanıcı alttaysa takip et
+  let follow = isNearBottom(div);
+
+  // kullanıcı scroll ederse follow güncelle
+  const onScroll = () => { follow = isNearBottom(div); };
+  div.addEventListener("scroll", onScroll, { passive:true });
+
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      div.scrollTop = div.scrollHeight;
+      if (follow) div.scrollTop = div.scrollHeight; // ✅ artık zorlamıyor
       setTimeout(type, 28);
+    } else {
+      div.removeEventListener("scroll", onScroll);
     }
   })();
 }
@@ -346,9 +362,12 @@ export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
+  const follow = isNearBottom(div);
+
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
-  div.scrollTop = div.scrollHeight;
+
+  if (follow) div.scrollTop = div.scrollHeight; // ✅ alttaysa kaydır
 }
