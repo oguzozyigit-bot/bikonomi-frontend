@@ -1,11 +1,11 @@
 // =========================================================
 // FILE: /js/auth.js
-// VERSION: vFINAL+1 (Fix: Custom Google button actually opens Google sign-in)
-// WHAT CHANGED:
-// 1) initAuth() artık #googleBtnWrap içine GSI butonunu 1 kez render eder (hidden).
-// 2) handleLogin("google") artık prompt() yerine hidden GSI butonunu click’ler.
-//    (prompt One Tap bazen “not displayed” olur; buton click daha stabil.)
-// 3) Yine de click bulunamazsa fallback olarak prompt() bırakıldı.
+// VERSION: vFINAL+2 (Stable Google Login + Hidden Button Click + No Syntax Errors)
+// NOTES:
+// - Custom 3D buton -> hidden GSI renderButton click (en stabil yol)
+// - Fallback: prompt()
+// - logout() içindeki try/catch düzeltildi (syntax hatası yok)
+// - use_fedcm_for_prompt: false (daha stabil; istersen sonra true yaparız)
 // =========================================================
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
@@ -156,7 +156,6 @@ async function handleGoogleResponse(res){
 
     const email = String(payload.email).toLowerCase().trim();
     const savedTermsAt = localStorage.getItem(termsKey(email)) || null;
-
     const stableId = getOrCreateStableId();
 
     const user = {
@@ -206,7 +205,6 @@ function renderHiddenGoogleButtonOnce(){
   const wrap = document.getElementById("googleBtnWrap");
   if(!wrap) return;
 
-  // wrap görünmesin ama DOM’da dursun
   wrap.style.position = "absolute";
   wrap.style.left = "-9999px";
   wrap.style.top = "0";
@@ -235,20 +233,10 @@ function clickHiddenGoogleButton(){
   const wrap = document.getElementById("googleBtnWrap");
   if(!wrap) return false;
 
-  // renderButton genelde div[role=button] üretir
   const btn = wrap.querySelector('div[role="button"]');
   if(btn && typeof btn.click === "function"){
     btn.click();
     return true;
-  }
-
-  // Bazı durumlarda iframe çıkabilir (click her zaman çalışmayabilir)
-  const iframe = wrap.querySelector("iframe");
-  if(iframe){
-    try{
-      iframe.contentWindow?.focus?.();
-      // iframe click çoğu tarayıcıda çalışmayabilir; false dönelim
-    }catch(e){}
   }
   return false;
 }
@@ -258,6 +246,7 @@ export function initAuth() {
   if(st.inited) return;
 
   if (!window.google?.accounts?.id) return;
+
   if(!GOOGLE_CLIENT_ID){
     console.error("GOOGLE_CLIENT_ID missing in config.js");
     return;
@@ -269,11 +258,13 @@ export function initAuth() {
     client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleResponse,
     auto_select: false,
-    use_fedcm_for_prompt: true,
+
+    // ✅ Daha stabil (FedCM bazen token'ı boğabiliyor)
+    use_fedcm_for_prompt: false,
+
     cancel_on_tap_outside: false
   });
 
-  // ✅ Tek sefer hidden butonu üret
   renderHiddenGoogleButtonOnce();
 }
 
@@ -299,12 +290,11 @@ export function handleLogin(provider) {
   st.lastPromptAt = now;
 
   try{
-    // ✅ Öncelik: Hidden renderButton click -> popup login
     renderHiddenGoogleButtonOnce();
     const clicked = clickHiddenGoogleButton();
 
     if(!clicked){
-      // Fallback: One Tap prompt (bazı cihazlarda görünmeyebilir)
+      // Fallback: One Tap prompt
       try{ window.google.accounts.id.cancel?.(); }catch(e){}
       window.google.accounts.id.prompt((n)=>{
         try{
@@ -337,11 +327,17 @@ export async function acceptTerms() {
 }
 
 export function logout() {
-  if(confirm("Gidiyor musun evladım?")){
-    try{ window.google?.accounts?.id?.disableAutoSelect?.(); }catch(e){}
+  if (confirm("Gidiyor musun evladım?")) {
+    try {
+      window.google?.accounts?.id?.disableAutoSelect?.();
+    } catch (e) {
+      console.warn("disableAutoSelect failed", e);
+    }
+
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
     localStorage.removeItem(API_TOKEN_KEY);
+
     window.location.reload();
   }
 }
