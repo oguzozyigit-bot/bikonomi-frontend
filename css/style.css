@@ -1,7 +1,4 @@
-/* FILE: /css/style.css
-   FULL RESET + APP SHELL (TOPBAR + HAMBURGER + CHAT + DOCK + FOOTER + OVERLAYS)
-   Bu dosya: senin projedeki mevcut class/id’lerle uyumlu, tek başına siteyi ayağa kaldırır.
-*/
+/* FILE: /css/style.css  (FULL - RECOVERY) */
 
 :root{
   --bg-outer:#000;
@@ -15,18 +12,16 @@
   --glass:rgba(20,20,20,.98);
   --border:rgba(255,255,255,.12);
 
-  /* frame width */
-  --frameW:min(480px, calc(100vw - 18px));
+  --frame-max:480px;
 }
 
-/* ---------- RESET ---------- */
 *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html,body{
   margin:0; padding:0;
   width:100%;
   height:100dvh;
   background:var(--bg-outer);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   color:var(--text);
   overflow:hidden;
   display:flex;
@@ -35,12 +30,11 @@ html,body{
 }
 ::-webkit-scrollbar{ display:none; }
 
-/* ---------- MOBILE FRAME ---------- */
 .mobile-frame{
   width:100%;
   height:100%;
-  max-width:480px;
-  background:var(--bg);
+  max-width: var(--frame-max);
+  background: var(--bg);
   position:relative;
   display:flex;
   flex-direction:column;
@@ -48,7 +42,7 @@ html,body{
   box-shadow:0 0 50px rgba(255,255,255,0.05);
   min-height:0;
 }
-@media(min-width:500px){
+@media (min-width:500px){
   .mobile-frame{
     height:95dvh;
     border-radius:24px;
@@ -56,11 +50,11 @@ html,body{
   }
 }
 
-/* ---------- TOPBAR ---------- */
+/* TOPBAR */
 .topbar{
   flex:0 0 65px;
-  background:var(--glass);
-  border-bottom:1px solid var(--border);
+  background: var(--glass);
+  border-bottom: 1px solid var(--border);
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -68,7 +62,7 @@ html,body{
   z-index:3000;
 }
 .left-controls{ width:80px; display:flex; align-items:center; }
-.right-controls{ display:flex; gap:8px; justify-content:flex-end; width:auto; }
+.right-controls{ display:flex; gap:8px; justify-content:flex-end; align-items:center; }
 
 .hamb-btn{
   background:none;
@@ -77,116 +71,61 @@ html,body{
   color:#aaa;
   font-size:26px;
   padding:5px;
+  line-height:1;
 }
 
 .brand-wrapper{
   display:flex;
   flex-direction:column;
   align-items:center;
+  justify-content:center;
   flex:1;
-  transition:transform .4s;
   min-width:0;
 }
-.logo-area{ display:flex; align-items:center; gap:10px; }
-.brand-name{ font-weight:800; font-size:15px; color:#fff; }
-.slogan{ font-size:9px; color:#888; font-weight:500; }
+.logo-area{ display:flex; align-items:center; gap:10px; min-width:0; }
+.brand-name{ font-weight:900; font-size:15px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
+.slogan{ font-size:9px; color:#888; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
 
 .seesaw-svg{ width:36px; height:18px; overflow:visible; }
-.seesaw-bar{
-  transform-origin:20px 8px;
-  transition:transform .5s cubic-bezier(.17,.88,.32,1.27);
-}
+.seesaw-bar{ transform-origin:20px 8px; transition:transform .5s cubic-bezier(.17,.88,.32,1.27); }
 .brand-wrapper.usering .seesaw-bar{ transform:rotate(-15deg); }
 .brand-wrapper.botting .seesaw-bar{ transform:rotate(15deg); }
 .brand-wrapper.thinking .seesaw-bar{ animation:rock 1s infinite ease-in-out; }
-.brand-wrapper.thinking #orangeBall{
-  animation:breath .8s infinite alternate;
-  transform-box:fill-box;
-  transform-origin:center;
-}
 @keyframes rock{ 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
-@keyframes breath{ from{transform:scale(1)} to{transform:scale(1.5)} }
 
-/* ---------- NOTIF + PLAN + S.P ---------- */
+/* NOTIF + PLAN + SP */
 .notif-row{ display:flex; align-items:center; gap:6px; position:relative; }
 .notif-topline{ display:flex; align-items:center; gap:8px; }
 
 .icon-btn-top{
-  background:none;
-  border:none;
-  cursor:pointer;
-  padding:6px;
-  display:flex;
-  align-items:center;
-  position:relative;
+  background:none; border:none; cursor:pointer;
+  padding:6px; display:flex; align-items:center;
+  position:relative; border-radius:14px;
 }
-.icon-btn-top svg{ width:22px; height:22px; stroke:#aaa; fill:none; stroke-width:2; }
-.badge{
-  position:absolute;
-  top:4px; right:4px;
-  width:6px; height:6px;
-  background:#ff5252;
-  border-radius:50%;
-  display:none;
-}
+.icon-btn-top svg{ width:22px; height:22px; stroke:#aaa; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+.badge{ position:absolute; top:4px; right:4px; width:6px; height:6px; background:var(--red); border-radius:50%; display:none; }
 
 .plan-chip{
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.7px;
-  padding:5px 10px;
-  border-radius:999px;
+  font-size:10px; font-weight:900; letter-spacing:.7px;
+  padding:5px 10px; border-radius:999px;
   border:1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.04);
   color: rgba(255,255,255,.75);
-  text-transform:uppercase;
-  white-space:nowrap;
-  user-select:none;
+  text-transform:uppercase; white-space:nowrap; user-select:none;
 }
 
 .yp-chip{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 8px;
-  border:1px solid #333;
-  background:#151515;
-  border-radius:99px;
+  display:flex; align-items:center; gap:6px;
+  padding:4px 8px; border:1px solid #333;
+  background:#151515; border-radius:999px;
 }
-.yp-label{ font-size:8px; color:#777; font-weight:800; }
+.yp-label{ font-size:8px; color:#777; font-weight:900; }
 .yp-meter{ width:40px; height:4px; border-radius:2px; background:#222; overflow:hidden; }
-.yp-fill{ height:100%; width:50%; background:linear-gradient(90deg,#ff5252,#ffb300,#bef264); transition:width .5s; }
-.yp-num{ font-size:9px; color:#ccc; font-weight:700; width:26px; text-align:right; }
+.yp-fill{ height:100%; width:50%; background:linear-gradient(90deg,var(--red),var(--gold),var(--pistachio)); transition:width .5s; }
+.yp-num{ font-size:9px; color:#ccc; font-weight:900; width:26px; text-align:right; }
 
-/* Notification dropdown */
-.notification-dropdown{
-  position:absolute;
-  top:65px; right:10px;
-  width:280px;
-  background:#1c1c1c;
-  border:1px solid #333;
-  border-radius:12px;
-  z-index:4000;
-  display:none;
-  flex-direction:column;
-  overflow:hidden;
-}
-.notification-dropdown.show{ display:flex; animation:slideDown .2s ease; }
-@keyframes slideDown{ from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
-.notif-header{
-  padding:10px 12px;
-  font-size:12px;
-  font-weight:800;
-  color:#fff;
-  border-bottom:1px solid #2a2a2a;
-  background:#181818;
-}
-.notif-list{ max-height:320px; overflow-y:auto; }
-.notif-item{ padding:10px 12px; border-bottom:1px solid #2a2a2a; display:flex; gap:8px; }
-.notif-title{ font-size:12px; color:#fff; font-weight:600; }
-.notif-desc{ font-size:11px; color:#aaa; }
-
-/* ---------- CHAT AREA ---------- */
+/* CHAT */
 .chat-area{
   flex:1 1 auto;
   min-height:0;
@@ -206,14 +145,12 @@ html,body{
   display:block;
   text-align:center;
 }
-
 .bubble{
   max-width:85%;
   padding:10px 14px;
   border-radius:14px;
   font-size:14px;
   line-height:1.4;
-  animation:pop .2s ease;
   position:relative;
   word-wrap:break-word;
 }
@@ -232,19 +169,8 @@ html,body{
   border-top-right-radius:10px;
   text-align:right;
 }
-.bubble.bot.loading::before{
-  content:"";
-  position:absolute;
-  left:-3px; top:0;
-  height:100%; width:3px;
-  background:var(--gold);
-  animation:loadBar 1s infinite;
-  border-radius:999px;
-}
-@keyframes pop{ from{transform:scale(.95);opacity:.5} to{transform:scale(1);opacity:1} }
-@keyframes loadBar{ 0%,100%{opacity:.3} 50%{opacity:1} }
 
-/* ---------- INPUT DOCK ---------- */
+/* DOCK */
 .input-dock{
   flex:0 0 auto;
   padding:0 10px 8px;
@@ -264,20 +190,9 @@ html,body{
   border:1px solid #333;
   border-radius:25px;
   padding:6px;
-  box-shadow:0 5px 25px rgba(0,0,0,.3);
 }
-.icon-btn{
-  width:38px; height:38px;
-  border-radius:50%;
-  border:none;
-  background:transparent;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  flex-shrink:0;
-}
-.icon-btn svg{ width:20px; height:20px; stroke:#aaa; stroke-width:2; fill:none; }
+.icon-btn{ width:38px; height:38px; border-radius:50%; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.icon-btn svg{ width:20px; height:20px; stroke:#aaa; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
 
 #msgInput, textarea{
   flex:1 1 auto;
@@ -295,248 +210,19 @@ html,body{
   overflow:hidden;
   max-height:120px;
 }
-.send-btn{
-  width:38px; height:38px;
-  border-radius:50%;
-  background:var(--pistachio);
-  color:#000;
-  border:none;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  flex-shrink:0;
-}
+
+.send-btn{ width:38px; height:38px; border-radius:50%; background:var(--pistachio); color:#000; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
 .send-btn svg{ width:20px; height:20px; fill:none; stroke:#000; stroke-width:2; }
 
-/* ---------- MENU OVERLAY ---------- */
-.menu-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.8);
-  z-index:5000;
-  opacity:0;
-  pointer-events:none;
-  transition:.3s;
-  display:flex;
-}
+/* MENU */
+.menu-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:5000; opacity:0; pointer-events:none; transition:.3s; display:flex; }
 .menu-overlay.open{ opacity:1; pointer-events:auto; z-index:9999; }
-
-.menu-sidebar{
-  width:280px;
-  height:100%;
-  background:#111;
-  padding:20px;
-  transform:translateX(-100%);
-  transition:.3s;
-  display:flex;
-  flex-direction:column;
-  border-right:1px solid #333;
-  overflow-y:auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
+.menu-sidebar{ width:280px; height:100%; background:#111; padding:20px; transform:translateX(-100%); transition:.3s; display:flex; flex-direction:column; border-right:1px solid #333; overflow-y:auto; }
 .menu-overlay.open .menu-sidebar{ transform:translateX(0); }
 
-.new-chat-btn{
-  width:100%;
-  background:var(--pistachio);
-  color:#000;
-  border:none;
-  padding:12px;
-  border-radius:12px;
-  font-weight:900;
-  cursor:pointer;
-  margin-bottom:14px;
-  font-size:13px;
-  display:flex;
-  justify-content:center;
-  gap:6px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  box-shadow: 0 10px 18px rgba(0,0,0,.35);
-}
+.new-chat-btn{ width:100%; background:var(--pistachio); color:#000; border:none; padding:12px; border-radius:12px; font-weight:900; cursor:pointer; margin-bottom:14px; font-size:13px; display:flex; justify-content:center; gap:6px; }
 
-/* Profil kartı */
-.profile-shortcut-wrap{ margin: 10px 0 14px; }
-.profile-shortcut-btn{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 12px;
-  border-radius:16px;
-  cursor:pointer;
-  user-select:none;
-  background: linear-gradient(180deg, rgba(255,179,0,.20), rgba(0,0,0,0));
-  border: 1px solid rgba(255,179,0,.45);
-  box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
-  transition: transform .12s ease, filter .12s ease;
-}
-.profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
-.profile-shortcut-title{ font-weight:950; color:#ffb300; line-height:1.1; }
-.profile-shortcut-sub{ font-size:12px; color:rgba(255,255,255,.70); margin-top:2px; }
-
-.profile-shortcut-ico{
-  width:34px; height:34px;
-  border-radius:12px;
-  overflow:hidden;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#ffb300;
-  border:1px solid rgba(255,179,0,.55);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
-  color:#111;
-  position:relative;
-  flex:0 0 34px;
-}
-.profile-shortcut-ico img{ width:100%; height:100%; object-fit:cover; display:block; }
-.profile-shortcut-ico::after{
-  content:"+";
-  position:absolute;
-  right:-6px; top:-6px;
-  width:18px; height:18px;
-  border-radius:999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  font-size:12px;
-  background: var(--pistachio);
-  color:#111;
-  border:2px solid rgba(12,12,12,.98);
-  box-shadow: 0 6px 12px rgba(0,0,0,.35);
-}
-
-.section-title{
-  font-size:10px;
-  color:#666;
-  margin-bottom:8px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  font-weight:800;
-  margin-top:10px;
-  border-bottom:1px solid #222;
-  padding-bottom:5px;
-}
-
-/* history list */
-.history-list{ display:flex; flex-direction:column; gap:6px; }
-.history-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:10px 10px;
-  background:#1a1a1a;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.08);
-  cursor:pointer;
-}
-.history-title{
-  font-size:13px;
-  color:#ddd;
-  font-weight:700;
-  max-width:180px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.history-del{
-  width:34px;
-  height:34px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.70);
-}
-
-.menu-block{
-  background: rgba(20,20,20,.55);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius:18px;
-  padding:12px;
-  margin:10px 0;
-  box-shadow: 0 14px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
-}
-.block-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:2px 2px 10px;
-  border-bottom:1px solid rgba(255,255,255,.10);
-  margin-bottom:10px;
-  letter-spacing:.8px;
-  text-transform:uppercase;
-  font-weight:900;
-  font-size:11px;
-  opacity:.95;
-}
-.menu-block.asistan .block-head{ color:#ffb300; }
-.menu-block.astro .block-head{ color:#bef264; }
-.menu-block.kurumsal .block-head{ color:#ff5252; }
-
-.menu-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:10px;
-}
-.menu-action{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  border-radius:16px;
-  padding:12px 12px;
-  cursor:pointer;
-  user-select:none;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 14px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
-  transition: transform .12s ease, filter .12s ease;
-}
-.menu-action:active{ transform: translateY(1px); filter: brightness(.98); }
-
-.menu-action .ico{
-  width:38px; height:38px;
-  border-radius:14px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-  border:1px solid rgba(255,255,255,.10);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
-  background: rgba(255,255,255,.04);
-}
-.menu-action .ico::before{ content:none !important; }
-.menu-action > div{ display:flex; flex-direction:column; gap:2px; }
-.menu-action > div > div{ font-size:14px; font-weight:800; color:#e8e8e8; }
-
-.menu-footer-actions{
-  margin-top:auto;
-  padding-top:14px;
-  border-top:1px solid #222;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.action-link{
-  font-size:12px;
-  color:#ccc;
-  padding:12px;
-  cursor:pointer;
-  display:block;
-  background:#1a1a1a;
-  border-radius:12px;
-  text-align:center;
-  font-weight:700;
-}
-.delete-acc{ color:#ff5252; background:transparent; border:1px solid #333; }
-
-/* ---------- FOOTER (default) ---------- */
+/* FOOTER */
 .footer-container{
   text-align:center;
   padding:10px 0;
@@ -545,178 +231,13 @@ html,body{
   background:linear-gradient(to top, rgba(0,0,0,.55), transparent);
   flex:0 0 auto;
 }
-.footer-links{
-  display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-bottom:5px;
-  flex-wrap:wrap;
-  padding:0 12px;
-}
+.footer-links{ display:flex; justify-content:center; gap:12px; margin-bottom:5px; flex-wrap:wrap; padding:0 12px; }
 .footer-links a{ color:#555; font-size:10px; text-decoration:none; white-space:nowrap; }
-.footer-brand{
-  font-size:9px;
-  color:#444;
-  font-weight:600;
-  letter-spacing:.2px;
-}
+.footer-brand{ font-size:9px; color:#444; font-weight:700; letter-spacing:.2px; }
 
-/* ---------- FOCUS: globali sade tut, textarea focus kutusu yok ---------- */
-#msgInput:focus, textarea#msgInput:focus{
-  outline:none !important;
-  box-shadow:none !important;
-}
-button:focus, a:focus{
-  outline:2px solid rgba(255,179,0,.18);
-  outline-offset:2px;
-}
-
-/* ---------- TOAST ---------- */
-.toast{
-  position:fixed;
-  left:50%;
-  transform:translateX(-50%);
-  bottom:170px;
-  z-index:9999;
-  background: rgba(0,0,0,.85);
-  border:1px solid rgba(255,255,255,.12);
-  padding: 10px 12px;
-  border-radius: 14px;
-  font-weight: 900;
-  font-size: 12px;
-  opacity:0;
-  pointer-events:none;
-  transition: opacity .2s ease;
-  max-width: 92vw;
-  text-align:center;
-  white-space: pre-line;
-}
-.toast.show{ opacity:1; }
-
-/* ---------- OVERLAYS (login/terms/page) ---------- */
-.full-overlay{
-  position: fixed;
-  inset:0;
-  width:100vw;
-  height:100vh;
-  background: rgba(0,0,0,.92);
-  z-index: 9000;
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
+/* OVERLAY */
+.full-overlay{ position: fixed; inset:0; width:100vw; height:100vh; background: rgba(0,0,0,.92); z-index: 9000; display:none; align-items:center; justify-content:center; }
 .full-overlay.active{ display:flex; }
-/* FILE: /css/style.css  (ADD/REPLACE these blocks) */
 
-/* ✅ MOBİL TOPBAR: logo/slogan sıkışmasın, sağ blok dar ve 2 satır olsun */
-.right-controls{
-  width: 130px !important;
-  display:flex !important;
-  align-items:flex-end !important;
-  justify-content:flex-end !important;
-}
-.notif-row{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-end !important;
-  gap:6px !important;
-}
-
-/* 1. satır: zil + FREE */
-.notif-topline{
-  display:flex !important;
-  align-items:center !important;
-  gap:8px !important;
-}
-
-/* 2. satır: S.P + grafik + % */
-.yp-chip{
-  display:flex !important;
-  align-items:center !important;
-  gap:6px !important;
-  padding:4px 8px !important;
-  border:1px solid #333 !important;
-  background:#151515 !important;
-  border-radius:999px !important;
-}
-
-/* SAMİMİYET yerine S.P görünsün */
-.yp-label{
-  font-size:0 !important;
-}
-.yp-label::after{
-  content:"S.P" !important;
-  font-size:9px !important;
-  font-weight:900 !important;
-  color:rgba(255,255,255,.75) !important;
-  letter-spacing:.4px !important;
-}
-
-/* ✅ Bildirim badge: sayı göster */
-.badge{
-  position:absolute !important;
-  top: 2px !important;
-  right: 2px !important;
-  min-width: 16px !important;
-  height: 16px !important;
-  padding: 0 4px !important;
-  border-radius: 999px !important;
-  background: var(--red) !important;
-  color: #fff !important;
-  font-size: 10px !important;
-  font-weight: 900 !important;
-  display:none;              /* JS açacak */
-  align-items:center;
-  justify-content:center;
-  line-height: 16px;
-}
-
-/* ✅ Bildirim sallanma (5 sn) */
-@keyframes bellWiggle {
-  0%{ transform: rotate(0deg); }
-  10%{ transform: rotate(-12deg); }
-  20%{ transform: rotate(10deg); }
-  30%{ transform: rotate(-10deg); }
-  40%{ transform: rotate(8deg); }
-  50%{ transform: rotate(-6deg); }
-  60%{ transform: rotate(4deg); }
-  70%{ transform: rotate(-3deg); }
-  80%{ transform: rotate(2deg); }
-  90%{ transform: rotate(-1deg); }
-  100%{ transform: rotate(0deg); }
-}
-.icon-btn-top.wiggle svg{
-  animation: bellWiggle .9s ease-in-out infinite;
-}
-
-/* ✅ Tahtaravalli yazarken sallansın (thinking sınıfı zaten var) */
-.brand-wrapper.thinking .seesaw-bar{ animation: rock 1s infinite ease-in-out; }
-/* FILE: /css/style.css  (EN ALTINA EKLE) */
-
-/* CHAT SAYFASI: input + altbar + footer çakışmasını bitir */
-.page-chat .input-dock{
-  position: fixed !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: min(480px, calc(100vw - 18px)) !important;
-  bottom: 148px !important; /* 70 (footer üstü) + ~78 (assistant bar) */
-  z-index: 2600 !important;
-}
-
-.page-chat .chat-area{
-  padding-bottom: 260px !important; /* input + altbar + footer */
-}
-
-/* textarea ikonların üstüne binmesin */
-.page-chat #msgInput{
-  min-width: 0 !important;
-  white-space: normal !important;
-  overflow: hidden !important;
-  max-height: 120px !important;
-}
-/* FILE: /css/style.css  (EN ALTINA EKLE) */
-
-/* Chat içeriği altta başlasın */
-.page-chat #chat{
-  justify-content: flex-end !important;
-}
+/* FOCUS (textarea kare yok) */
+#msgInput:focus{ outline:none !important; box-shadow:none !important; }
