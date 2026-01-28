@@ -1,3 +1,4 @@
+<!-- FILE: /pages/chat.html  (REPLACE ALL) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -10,69 +11,22 @@
   <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <style>
-    /* =========================================================
-       FIX: Alt yığın çakışmalarını bitir (PC + Mobil)
-       - Footer: fixed + mobile-frame’e hizalı
-       - Assistant-bar: footer üstünde
-       - Input-dock: assistant-bar üstünde
-       - Chat: bu üçü kadar alttan pay bırakır
-       ========================================================= */
+    /* chat taşmasın: alt bar + footer + input */
+    .chat-area{ padding-bottom: 190px !important; }
 
-    :root{
-      --frameW: min(480px, 100vw);
-      --footerH: 64px;        /* link + brand yaklaşık */
-      --assistH: 78px;        /* assistant bar yüksekliği */
-      --dockH: 86px;          /* input dock yaklaşık */
+    /* input daha modern: textarea sağa taşmasın */
+    #msgInput{
+      min-width: 0 !important;
+      white-space: normal !important;      /* satır kır */
+      overflow: hidden !important;         /* auto-grow için */
     }
 
-    /* Footer’ı frame’e sabitle */
-    .footer-container{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: 0 !important;
-      z-index: 2400 !important;
-    }
-
-    /* Assistant bar footer üstünde (layout-common.css'i override) */
-    .assistant-bar{
-      bottom: var(--footerH) !important;
-      z-index: 2500 !important;
-    }
-
-    /* Input dock: assistant bar üstünde fixed */
-    .input-dock{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-
-      bottom: calc(var(--footerH) + var(--assistH)) !important;
-      z-index: 2600 !important;
-
-      background: transparent !important; /* style.css zaten dock-inner çiziyor */
-      padding: 0 10px 8px !important;
-      pointer-events: auto !important;
-    }
-
-    /* Chat alanı: alttan yeterli pay */
-    .chat-area{
-      padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) !important;
-    }
-
-    /* + butonu (senin istediğin) */
-    #camBtn{
-      background: rgba(255,179,0,.12) !important;
-      border: 1px solid rgba(255,179,0,.25) !important;
-    }
-
-    /* Dosya önizleme: input dock üstünde */
+    /* Dosya önizleme */
     .file-preview{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 14px);
+      bottom: 165px;
       z-index: 4000;
       display: none;
       background: rgba(20,20,20,.95);
@@ -100,11 +54,34 @@
       cursor: pointer;
       flex: 0 0 auto;
     }
+
+    /* Minimal alt bar ikonları */
+    .assistant-item .ico-wrap{
+      width: 42px !important;
+      height: 42px !important;
+      border-radius: 16px !important;
+    }
+    .assistant-item svg{
+      width: 20px !important;
+      height: 20px !important;
+      stroke: currentColor !important;
+      fill: none !important;
+      stroke-width: 2 !important;
+      stroke-linecap: round !important;
+      stroke-linejoin: round !important;
+      opacity: .95 !important;
+    }
+    .assistant-item .lbl{
+      font-size: 9px !important;
+      max-width: 66px !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: nowrap !important;
+    }
   </style>
 </head>
 
 <body>
-
 <div class="mobile-frame" id="mobileFrame">
 
   <!-- TOPBAR -->
@@ -151,13 +128,6 @@
           <div class="notif-header">Bildirimler</div>
           <div class="notif-list" id="notifList"></div>
         </div>
-
-        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </button>
       </div>
     </div>
   </div>
@@ -206,10 +176,9 @@
   <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- INPUT (FIXED) -->
+  <!-- INPUT -->
   <div class="input-dock">
     <div class="dock-inner">
-
       <button class="icon-btn" id="camBtn" aria-label="Dosya / Fotoğraf">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14"></path>
@@ -236,25 +205,48 @@
           <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
         </svg>
       </button>
-
     </div>
   </div>
 
-  <!-- ALT KOLAY MENÜ -->
+  <!-- ALT BAR (minimal svg icon) -->
   <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="/pages/translate.html"><div class="ico-wrap">🛍️</div><div class="lbl">Alışveriş</div></div>
-    <div class="assistant-item" data-go="/pages/profil.html"><div class="ico-wrap">🌍</div><div class="lbl">Tercüman</div></div>
-    <div class="assistant-item" data-go="/pages/gossip.html"><div class="ico-wrap">🗣️</div><div class="lbl">Dedikodu</div></div>
-    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
-    <div class="assistant-item" data-go="/pages/tarot.html"><div class="ico-wrap">🃏</div><div class="lbl">Tarot</div></div>
-    <div class="assistant-item" data-go="/pages/dream.html"><div class="ico-wrap">👁️</div><div class="lbl">Rüya</div></div>
-    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
+    <div class="assistant-item" data-go="/pages/chat.html">
+      <div class="ico-wrap">
+        <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path><path d="M8 9h8"></path><path d="M8 13h6"></path></svg>
+      </div>
+      <div class="lbl">Sohbet</div>
+    </div>
+
+    <div class="assistant-item" data-go="/pages/diyet.html">
+      <div class="ico-wrap">
+        <svg viewBox="0 0 24 24"><path d="M4 11h16"></path><path d="M6 7h12"></path><path d="M7 15h10"></path><path d="M8 19h8"></path></svg>
+      </div>
+      <div class="lbl">Diyet</div>
+    </div>
+
+    <div class="assistant-item" data-go="/pages/health.html">
+      <div class="ico-wrap">
+        <svg viewBox="0 0 24 24"><path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6.5-8 11-8 11z"></path><path d="M8 11h3l1-2 2 5 1-3h3"></path></svg>
+      </div>
+      <div class="lbl">Sağlık</div>
+    </div>
+
+    <div class="assistant-item" data-go="/pages/astro.html">
+      <div class="ico-wrap">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M7 12h10"></path></svg>
+      </div>
+      <div class="lbl">Astro</div>
+    </div>
+
+    <div class="assistant-item" data-go="/pages/fal.html">
+      <div class="ico-wrap">
+        <svg viewBox="0 0 24 24"><path d="M20 3H4v10a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V10h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path><path d="M4 19h16"></path></svg>
+      </div>
+      <div class="lbl">Fal</div>
+    </div>
   </div>
 
-  <!-- FOOTER (FIXED) -->
+  <!-- FOOTER -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -276,6 +268,18 @@
 
 <script type="module" src="/js/main.js"></script>
 <script src="/js/layout-common.js?v=1"></script>
+
+<script>
+  // textarea auto-grow yukarı (minimal, tek yer)
+  document.addEventListener("DOMContentLoaded", () => {
+    const ta = document.getElementById("msgInput");
+    if(!ta) return;
+    ta.addEventListener("input", () => {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
+    });
+  });
+</script>
 
 </body>
 </html>
