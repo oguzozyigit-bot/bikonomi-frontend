@@ -1,651 +1,251 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Caynana AI v6.2</title>
-  <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Caynana AI v5.6.1</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css?v=1">
+  <link rel="stylesheet" href="/css/layout-common.css?v=1">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* =========================================================
-       FILE: /index.html
-       VERSION: v6.2.1 (FULL FIX - Layout + Menu + Google Overlay)
-       ========================================================= */
+    :root {
+      --gold: #ffb300;
+      --pistachio: #bef264;
+      --red: #ff5252;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
-    /* =========================================================
-       GLOBAL & RESET
-       ========================================================= */
-    :root{
-      --gold:#ffb300;
-      --pistachio:#bef264;
-      --bg-dark:#000;
-      --panel-bg:#111;
-      --border: rgba(255,255,255,.10);
-      --muted: rgba(255,255,255,.72);
+    /* ✅ OVERLAY SİSTEMİ */
+    .full-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #000 !important;
+      z-index: 9000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.3s ease !important;
+    }
+    .full-overlay.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+    #loginOverlay { z-index: 9900 !important; background: rgba(0,0,0,0.92) !important; }
+    #termsOverlay { z-index: 9950 !important; }
+    #pageOverlay  { z-index: 9800 !important; }
 
-      /* Layout heights */
-      --topbar-h: 64px;
-      --inputdock-h: 86px;     /* JS ölçüp güncelleyecek */
-      --assistantbar-h: 78px;  /* quick access */
-      --footerlinks-h: 36px;   /* hakkımızda/sss/gizlilik/iletişim */
-      --footerbrand-h: 26px;   /* @CaynanaAI ... */
-      --bottom-stack: calc(var(--assistantbar-h) + var(--footerlinks-h) + var(--footerbrand-h));
+    /* ✅ MENU (YAN PANEL) */
+    .menu-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      z-index: 5000; opacity: 0; pointer-events: none; transition: .3s;
+      display: flex;
     }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      background:var(--bg-dark);
-      color:#eee;
-      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-      overflow:hidden;
+    .menu-sidebar {
+      width: 280px; height: 100%; background: #111;
+      transform: translateX(-100%); transition: .3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex; flex-direction: column;
+      border-right: 1px solid #333;
+      padding: 20px; overflow-y: auto;
     }
+    .menu-overlay.open .menu-sidebar { transform: translateX(0); }
 
-    /* =========================================================
-       APP LAYOUT (FIX)
-       ========================================================= */
-    .mobile-frame{
-      position: fixed;                 /* ✅ FIX */
-      inset: 0;                        /* ✅ FIX */
-      width: 100vw;
-      height: calc(var(--vh, 1vh) * 100); /* ✅ FIX: mobil adres bar */
-      overflow: hidden;
-      background:#000;
-    }
+    /* TOPBAR */
+    #profileBtn { display: none !important; }
 
-    /* =========================================================
-       TOPBAR (FIX)
-       ========================================================= */
-    .topbar{
-      position: fixed;                 /* ✅ FIX */
-      left:0; right:0; top:0;
-      height:var(--topbar-h);
-      z-index:4000;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 10px 12px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      background: rgba(0,0,0,.55);
-      backdrop-filter: blur(10px);
+    .right-controls {
+      display: flex !important; flex-direction: column !important;
+      align-items: flex-end !important; gap: 6px !important; width: auto !important;
     }
+    .notif-row {
+      display: flex !important; flex-direction: column !important;
+      align-items: flex-end !important; gap: 6px !important; position: relative !important;
+    }
+    .notif-topline { display: flex !important; align-items: center !important; gap: 10px !important; }
+    #notifBtn { display: flex !important; align-items: center !important; padding: 6px !important; }
 
-    .left-controls{ display:flex; align-items:center; gap:10px; }
-    .hamb-btn{
-      width:42px; height:42px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      font-size:18px;
-      cursor:pointer;
-    }
-    .hamb-btn:active{ transform: translateY(1px); filter: brightness(.95); }
-
-    .brand-wrapper{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:2px;
-      min-width: 0;
-      flex: 1;
-    }
-    .logo-area{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      min-width:0;
-    }
-    .brand-name{
-      font-weight:900;
-      letter-spacing:.2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 160px;
-    }
-    .slogan{
-      font-size:11px;
-      color: rgba(255,255,255,.65);
-      font-weight:700;
-      text-align:center;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 240px;
+    .plan-chip {
+      font-size: 10px !important; font-weight: 900 !important; letter-spacing: .7px !important;
+      padding: 5px 10px !important; border-radius: 999px !important;
+      border: 1px solid rgba(255,255,255,.10) !important; background: rgba(255,255,255,.04) !important;
+      color: rgba(255,255,255,.75) !important; line-height: 1 !important; user-select: none !important;
+      text-transform: uppercase !important; white-space: nowrap !important;
     }
 
-    /* Tahtaravalli animasyonu */
-    .seesaw-svg{ width:42px; height:20px; }
-    .seesaw-bar{ transform-origin: 20px 8px; animation: seesaw 2.1s ease-in-out infinite; }
-    @keyframes seesaw{
-      0%{ transform: rotate(-5deg); }
-      50%{ transform: rotate(5deg); }
-      100%{ transform: rotate(-5deg); }
+    .yp-chip .yp-label { font-size: 0 !important; }
+    .yp-chip .yp-label::after {
+      content: "S.P" !important; font-size: 10px !important; font-weight: 900 !important;
+      letter-spacing: .6px !important; color: rgba(255,255,255,.75) !important;
     }
 
-    .right-controls{
-      display:flex;
-      align-items:flex-end;
-      gap:8px;
-      min-width: 120px;
-      justify-content:flex-end;
-    }
+    .logo-area { gap: 10px !important; }
+    .seesaw-svg { width: 36px !important; height: 18px !important; }
 
-    .notif-row{
-      display:flex;
-      flex-direction:column;
-      align-items:flex-end;
-      gap:6px;
-      position:relative;
+    /* CHAT & INPUT (v5.6 tabanı: sohbet stabil) */
+    .chat-area {
+      display: flex !important; flex-direction: column !important;
+      justify-content: flex-end !important;
+      padding-bottom: 190px !important; /* ✅ input + alt bar + footer payı */
+      min-height: 0 !important;
     }
-    .notif-topline{ display:flex; align-items:center; gap:10px; }
-    .icon-btn-top{
-      width:42px; height:42px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-    }
-    .icon-btn-top svg{ width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.9; }
-    .badge{
-      position:absolute;
-      right: 62px;
-      top: 10px;
-      width: 8px; height: 8px;
-      border-radius: 99px;
-      background: var(--gold);
-      display:none;
-    }
+    .chat-area:empty::before { display: none !important; }
+    #msgInput:focus, textarea:focus { outline: none !important; box-shadow: none !important; }
 
-    .plan-chip{
-      font-size:10px;
-      font-weight:900;
-      padding:6px 10px;
-      border-radius:99px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.78);
-      letter-spacing:.3px;
-    }
-
-    /* S.P + grafik + sayı */
-    .yp-chip{
-      width: 120px;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      align-items:flex-end;
-    }
-    .yp-label{
-      font-size:10px;
-      font-weight:900;
-      color: rgba(255,255,255,.75);
-      letter-spacing:.2px;
-    }
-    .yp-meter{
-      width: 120px;
-      height: 8px;
-      border-radius: 99px;
-      background: rgba(255,255,255,.08);
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .yp-fill{
-      height:100%;
-      width: 19%;
-      background: linear-gradient(90deg, var(--pistachio), var(--gold));
-    }
-    .yp-num{
-      font-size:10px;
-      font-weight:900;
-      color: rgba(255,255,255,.78);
-      letter-spacing:.2px;
-    }
-
-    /* =========================================================
-       MENU OVERLAY (SIDEBAR)
-       ========================================================= */
-    .menu-overlay{
-      position:fixed;
-      inset:0;
-      background: rgba(0,0,0,.80);
-      z-index:5000;
-      opacity:0;
-      pointer-events:none;
-      transition:.25s;
-      display:flex;
-    }
-    .menu-overlay.open{ opacity:1; pointer-events:auto; }
-    .menu-sidebar{
-      width:280px;
-      height:100%;
-      background:#111;
-      transform: translateX(-100%);
-      transition:.28s cubic-bezier(.2,.8,.2,1);
-      display:flex;
-      flex-direction:column;
-      border-right:1px solid #333;
-      padding:20px;
-      overflow-y:auto;
-    }
-    .menu-overlay.open .menu-sidebar{ transform: translateX(0); }
-
-    .profile-shortcut-wrap{ margin:10px 0 14px; }
-    .profile-shortcut-btn{
-      display:flex; align-items:center; gap:12px;
-      padding:12px 14px;
-      border-radius:18px;
-      cursor:pointer; user-select:none;
-      background: linear-gradient(135deg, rgba(40,25,5,.95), rgba(15,10,5,.98));
-      border:1px solid rgba(255,179,0,.35);
-      box-shadow: 0 8px 20px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+    /* ✅ PROFIL KISAYOLU (3D TURUNCU) */
+    .profile-shortcut-wrap { margin: 10px 0 14px; }
+    .profile-shortcut-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 18px; cursor: pointer; user-select: none;
+      background: linear-gradient(135deg, rgba(40, 25, 5, 0.95), rgba(15, 10, 5, 0.98));
+      border: 1px solid rgba(255, 179, 0, 0.35);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
       transition: all .15s ease;
     }
-    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.95); }
-    #profileShortcutIco{
-      width:36px; height:36px; flex:0 0 36px;
-      border-radius:50%;
-      overflow:hidden;
-      display:flex; align-items:center; justify-content:center;
-      background: var(--gold);
-      border: 2px solid rgba(255,179,0,.6);
-      color:#111;
-      font-size:18px;
-    }
-    #profileShortcutIco img{ width:100%; height:100%; object-fit:cover; }
-    .profile-shortcut-title{ font-weight:800; color: var(--gold); font-size:13px; text-transform:uppercase; }
-    .profile-shortcut-sub{ font-size:13px; font-weight:600; color: rgba(255,255,255,.9); }
+    .profile-shortcut-btn:active { transform: translateY(1px); filter: brightness(.95); }
 
-    /* =========================================================
-       CHAT AREA
-       ========================================================= */
-    .chat-area{
-      position:absolute;
-      left:0; right:0;
-      top: var(--topbar-h);
-      bottom: calc(var(--bottom-stack) + var(--inputdock-h));
-      overflow-y:auto;
-      -webkit-overflow-scrolling:touch;
+    #profileShortcutIco {
+      width: 36px !important; height: 36px !important; flex: 0 0 36px !important;
+      border-radius: 50% !important; overflow: hidden !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      background: #ffb300 !important; border: 2px solid rgba(255, 179, 0, 0.6) !important;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
+      color: #111 !important; font-size: 18px !important; position: relative !important;
+    }
+    #profileShortcutIco img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+    #profileShortcutIco::after { display: none !important; content: none !important; }
 
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      padding: 14px 12px;
-      min-height:0;
+    .profile-shortcut-text {
+      flex: 1; min-width: 0 !important; display: flex; flex-direction: column; justify-content: center;
     }
-    .chat-area:empty::before{ display:none; }
+    .profile-shortcut-title {
+      font-weight: 800 !important; color: #ffb300 !important; font-size: 13px !important;
+      text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;
+    }
+    .profile-shortcut-sub {
+      font-size: 13px !important; font-weight: 600; color: rgba(255,255,255,.9) !important;
+      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
+    }
 
-    /* =========================================================
-       INPUT DOCK
-       ========================================================= */
-    .input-dock{
-      position:fixed;
-      left:0; right:0;
-      bottom: var(--bottom-stack);
-      z-index: 3200;
-      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
-      background: linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,.45));
-      border-top: 1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(10px);
+    /* PREMIUM LOGIN UI FIX */
+    #loginOverlay .login-card{
+      max-width:420px !important;
+      padding:28px 26px 26px !important;
+      border-radius:26px !important;
+      background:
+        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
+        #0e0e0e !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+      box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
     }
-    .dock-inner{
-      display:flex;
-      align-items:flex-end;
-      gap:10px;
-      max-width: 920px;
-      margin: 0 auto;
-    }
-    .icon-btn, .send-btn{
-      width:44px; height:44px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      cursor:pointer;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .icon-btn:active, .send-btn:active{ transform: translateY(1px); filter: brightness(.95); }
-    .icon-btn svg, .send-btn svg{
-      width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95;
-    }
-    #msgInput{
-      flex:1;
-      min-height:44px;
-      max-height:120px;
-      resize:none;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      color:#fff;
-      padding: 12px 12px;
-      font-size:14px;
-      line-height:18px;
-      outline:none;
-    }
-    #msgInput::placeholder{ color: rgba(255,255,255,.45); }
-    #msgInput:focus{ outline:none; box-shadow:none; }
+    #loginOverlay .brand-name{ font-weight:900 !important; letter-spacing:.4px !important; }
+    #loginOverlay .login-slogan{ opacity:.75 !important; margin-bottom:18px !important; }
 
-    /* =========================================================
-       FOOTER (logged in)
-       ========================================================= */
-    .footer-brand-fixed{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      height: var(--footerbrand-h);
-      z-index: 2800;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: 11px;
-      font-weight: 800;
-      color: rgba(255,255,255,.55);
-      border-top: 1px solid rgba(255,255,255,.06);
-      background: rgba(0,0,0,.92);
-      padding-bottom: env(safe-area-inset-bottom);
+    /* GOOGLE BUTTON (PRO) */
+    #googleLoginBtn{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:10px !important;
+      width:100% !important;
+      height:52px !important;
+      background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
+      color:#111 !important;
+      border-radius:16px !important;
+      font-weight:800 !important;
+      font-size:15px !important;
+      border:none !important;
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.8) !important;
+      transition:transform .12s ease, filter .12s ease !important;
     }
-    .footer-links-fixed{
-      position:fixed;
-      left:0; right:0;
-      bottom: var(--footerbrand-h);
-      height: var(--footerlinks-h);
-      z-index: 2850;
+    #googleLoginBtn::before{
+      content:"";
+      width:20px;
+      height:20px;
+      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
+      display:inline-block;
+    }
+    #googleLoginBtn:active{ transform:translateY(1px); filter:brightness(.96); }
+
+    /* APPLE BUTTON (DISABLED) */
+    #appleLoginBtn{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:10px !important;
+      width:100% !important;
+      height:50px !important;
+      background:rgba(255,255,255,.06) !important;
+      color:rgba(255,255,255,.55) !important;
+      border-radius:16px !important;
+      font-weight:700 !important;
+      font-size:14px !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+    }
+    #appleLoginBtn::before{ content:""; font-size:18px; line-height:1; }
+
+    #loginOverlay .trust-links-clean{
+      margin-top:18px !important;
+      font-size:12px !important;
+      opacity:.65 !important;
+    }
+
+    /* ✅ ALT KAYAN ASİSTAN BAR (v5.6 taban + senin istediğin) */
+    .assistant-bar{
+      position: fixed;
+      left: 0; right: 0;
+      bottom: 78px;                 /* input’un üstüne denk gelmesin (mevcut düzeninle uyumlu) */
+      height: 74px;
       display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 18px;
-      font-size: 12px;
-      font-weight: 800;
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
-      padding: 0 12px;
+      gap:12px;
+      padding: 10px 14px;
       overflow-x:auto;
       -webkit-overflow-scrolling: touch;
-      scrollbar-width:none;
-    }
-    .footer-links-fixed::-webkit-scrollbar{ display:none; }
-    .footer-links-fixed a{
-      color: rgba(255,255,255,.70);
-      text-decoration:none;
-      white-space:nowrap;
-    }
-    .footer-links-fixed a:active{ opacity:.85; }
-
-    /* =========================================================
-       QUICK ACCESS (logged in)
-       ========================================================= */
-    .assistant-bar{
-      position:fixed;
-      left:0; right:0;
-      bottom: calc(var(--footerbrand-h) + var(--footerlinks-h));
-      height: var(--assistantbar-h);
+      background: linear-gradient(to top, rgba(0,0,0,0.88), rgba(0,0,0,0.60));
+      border-top: 1px solid rgba(255,255,255,0.06);
       z-index: 2900;
-
-      display:flex;
-      align-items:center;
-      gap: 12px;
-      padding: 10px 14px;
-
-      overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
-
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
+      scrollbar-width: none;
     }
     .assistant-bar::-webkit-scrollbar{ display:none; }
 
-    .nav-item{
+    .assistant-item{
       flex: 0 0 auto;
       min-width: 76px;
       display:flex;
-      flex-direction:column;
+      flex-direction: column;
       align-items:center;
       justify-content:center;
       gap: 6px;
       padding: 10px 12px;
       border-radius: 16px;
-
-      color: rgba(255,255,255,.70);
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.03);
-      cursor:pointer;
-      user-select:none;
-
-      transition: transform .15s ease, background .15s ease, border-color .15s ease, color .15s ease;
-    }
-    .nav-item:hover, .nav-item:active{
-      transform: translateY(-2px);
-      background: rgba(255,255,255,.06);
-      border-color: rgba(255,255,255,.14);
-      color:#fff;
-    }
-    .nav-icon{
-      width: 22px; height: 22px;
-      fill:none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: .95;
-    }
-    .nav-label{
-      font-size: 10px;
-      font-weight: 900;
-      letter-spacing: .2px;
-      text-transform: uppercase;
-      opacity: .92;
-      white-space:nowrap;
-    }
-    .nav-item.active{
-      color: var(--gold);
-      border-color: rgba(255,179,0,.35);
-      background: rgba(255,179,0,.07);
-    }
-
-    /* =========================================================
-       OVERLAYS
-       ========================================================= */
-    .full-overlay{
-      position:fixed;
-      inset:0;
-      width:100vw; height:100vh;
-      background:#000;
-      z-index:9000;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .28s ease;
-    }
-    .full-overlay.active{ opacity:1; pointer-events:auto; }
-
-    #loginOverlay{ z-index:9900; background: rgba(0,0,0,.95); }
-    #termsOverlay{ z-index:9950; background: rgba(0,0,0,.97); }
-
-    .login-card{
-      width:min(420px, 92vw);
-      background: rgba(17,17,17,.85);
       border: 1px solid rgba(255,255,255,.10);
-      border-radius: 22px;
-      padding: 22px 18px 16px;
-      box-shadow: 0 18px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
-      position:relative;
-      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.80);
+      user-select:none;
+      cursor:pointer;
+      transition: transform .15s ease, filter .15s ease, background .15s ease;
     }
+    .assistant-item:active{ transform: translateY(1px); filter: brightness(.96); }
+    .assistant-item .ico{ font-size: 18px; line-height: 1; }
+    .assistant-item .lbl{ font-size: 10px; font-weight: 900; letter-spacing:.2px; text-transform: uppercase; opacity: .9; white-space: nowrap; }
 
-    .login-header{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 8px;
-      margin-bottom: 14px;
-      text-align:center;
-    }
-
-    .login-seesaw{
-      width: 64px;
-      height: 34px;
-      margin-bottom: 4px;
-    }
-    .login-seesaw .seesaw-bar{ transform-origin: 20px 8px; animation: seesaw 2.1s ease-in-out infinite; }
-
-    .login-title{
-      font-size: 24px;
-      font-weight: 950;
-      letter-spacing: .2px;
-    }
-    .login-subtitle{
-      font-size: 12px;
-      font-weight: 800;
-      color: rgba(255,255,255,.72);
-    }
-    .login-free{
-      margin-top: 10px;
-      font-size: 13px;
-      font-weight: 900;
-      color: rgba(255,255,255,.78);
-    }
-
-    .btn-3d{
-      width: 100%;
-      border: none;
-      border-radius: 16px;
-      padding: 14px 14px;
-      font-weight: 950;
-      letter-spacing: .2px;
-      cursor: pointer;
-      transition: transform .12s ease, filter .12s ease;
-      box-shadow: 0 10px 24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .btn-3d:active{ transform: translateY(1px); filter: brightness(.96); }
-
-    /* ✅ Google kurumsal mavi */
-    .btn-google{
-      background: #4285F4;
-      color:#fff;
-      border: 1px solid rgba(255,255,255,.14);
-    }
-
-    .btn-apple{
-      background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.06));
-      color:#fff;
-      border: 1px solid rgba(255,255,255,.12);
-    }
-
-    .login-footer-links{
-      margin-top: 14px;
-      display:flex;
-      justify-content:center;
-      gap: 18px;
-      font-size: 12px;
-      font-weight: 900;
-      flex-wrap: wrap;
-    }
-    .login-footer-links a{
-      color: rgba(255,255,255,.65);
-      text-decoration:none;
-      white-space: nowrap;
-    }
-    .login-footer-brand{
-      margin-top: 10px;
-      text-align:center;
-      font-size: 11px;
-      font-weight: 900;
-      color: rgba(255,255,255,.45);
-    }
-
-    /* =========================================================
-       Logged-in gating
-       ========================================================= */
-    body:not(.is-logged) .topbar,
-    body:not(.is-logged) .menu-overlay,
-    body:not(.is-logged) .chat-area,
-    body:not(.is-logged) .input-dock,
-    body:not(.is-logged) .assistant-bar,
-    body:not(.is-logged) .footer-links-fixed,
-    body:not(.is-logged) .footer-brand-fixed{
-      display:none !important;
-    }
-
-    .notification-dropdown{ display:none; }
-
-    .toast{
-      position:fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: calc(var(--bottom-stack) + var(--inputdock-h) + 10px);
-      z-index: 9999;
-      background: rgba(0,0,0,.85);
-      border:1px solid rgba(255,255,255,.12);
-      padding: 10px 12px;
-      border-radius: 14px;
-      font-weight: 900;
-      font-size: 12px;
-      opacity:0;
-      pointer-events:none;
-      transition: opacity .2s ease;
-      max-width: 92vw;
-      text-align:center;
-      white-space: pre-line;
-    }
-    .toast.show{ opacity:1; }
-
-    /* =========================================================
-       GOOGLE OVERLAY (FINAL)
-       ========================================================= */
-    .google-login-wrap{
-      position: relative;
-      width: 100%;
-    }
-    #googleBtnWrap{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 10;
-      opacity: 0.02; /* görünmez ama tıklanabilir */
-      cursor: pointer;
-      pointer-events: auto;
-      overflow: hidden;
-    }
-    #googleBtnWrap iframe{
-      width: 100% !important;
-      height: 100% !important;
-      cursor: pointer !important;
-    }
-    #googleLoginBtn{
-      position: relative;
-      z-index: 1;
-      pointer-events: none; /* ✅ click kesinlikle Google iframe'e gitsin */
-    }
-    .btn-google{
-      background: linear-gradient(135deg, #4285F4, #2b6fe8) !important;
-      color: #ffffff !important;
-    }
-
+    /* Login değilken alt bar gizli kalsın */
+    body:not(.is-logged) .assistant-bar{ display:none !important; }
   </style>
 </head>
 
 <body>
-<div class="mobile-frame" id="mobileFrame">
 
+<div class="mobile-frame" id="mobileFrame">
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -653,7 +253,7 @@
 
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
           <g class="seesaw-bar" id="seesawBar">
             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
             <circle cx="3" cy="5" r="3" fill="#bef264" />
@@ -661,7 +261,7 @@
           </g>
           <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
         </svg>
-        <div class="brand-name">CaynanaAI</div>
+        <div class="brand-name">Caynana AI</div>
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
@@ -670,10 +270,7 @@
       <div class="notif-row">
         <div class="notif-topline">
           <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
@@ -685,10 +282,14 @@
         </div>
 
         <div class="yp-chip">
-          <div class="yp-label">S.P</div>
+          <div class="yp-label">SAMİMİYET</div>
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-          <div class="yp-num" id="ypNum">19</div>
+          <div class="yp-num" id="ypNum">19%</div>
         </div>
+
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
       </div>
     </div>
   </div>
@@ -728,543 +329,138 @@
       <div class="menu-footer-actions">
         <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
         <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
     </div>
   </div>
-  
+
   <div class="chat-area" id="chat"></div>
 
   <div class="input-dock">
     <div class="dock-inner">
       <button class="icon-btn" id="camBtn" aria-label="Kamera">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-          <circle cx="12" cy="13" r="4"></circle>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
       </button>
-
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-
       <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-          <line x1="12" y1="19" x2="12" y2="23"></line>
-          <line x1="8" y1="23" x2="16" y2="23"></line>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
       </button>
-
       <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M22 2L11 13"></path>
-          <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
       </button>
     </div>
   </div>
 
+  <!-- ✅ ALT KAYAN ASİSTAN BAR -->
   <div class="assistant-bar" id="assistantBar">
-    <div class="nav-item" data-path="/" data-href="/" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
-        <path d="M8 9h8"></path>
-        <path d="M8 13h6"></path>
-      </svg>
-      <div class="nav-label">Sohbet</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/alisveris.html" data-href="/pages/alisveris.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M6 6h15l-1.5 9h-12z"></path>
-        <path d="M6 6l-2-3H1"></path>
-        <circle cx="9" cy="20" r="1.6"></circle>
-        <circle cx="18" cy="20" r="1.6"></circle>
-      </svg>
-      <div class="nav-label">Alışveriş</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/tercuman.html" data-href="/pages/tercuman.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 5h7"></path>
-        <path d="M7.5 5c0 6-3.5 9-3.5 9"></path>
-        <path d="M10 14l-2.5-2.5"></path>
-        <path d="M14 19l4-10h2l4 10"></path>
-        <path d="M16 15h6"></path>
-      </svg>
-      <div class="nav-label">Tercüman</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/dedikodu.html" data-href="/pages/dedikodu.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 20l-7 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-6z"></path>
-        <path d="M8 9h8"></path>
-        <path d="M8 12h5"></path>
-      </svg>
-      <div class="nav-label">Dedikodu</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/fal.html" data-href="/pages/fal.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M20 3H4v10a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V10h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path>
-        <path d="M4 19h16"></path>
-      </svg>
-      <div class="nav-label">Fal</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/tarot.html" data-href="/pages/tarot.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="6" y="3" width="12" height="18" rx="2"></rect>
-        <path d="M9 8h6"></path>
-        <path d="M9 12h6"></path>
-        <path d="M9 16h4"></path>
-      </svg>
-      <div class="nav-label">Tarot</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/astro.html" data-href="/pages/astro.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"></circle>
-        <path d="M7 12h10"></path>
-      </svg>
-      <div class="nav-label">Burç</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/ruya.html" data-href="/pages/ruya.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"></path>
-        <circle cx="12" cy="12" r="2.5"></circle>
-      </svg>
-      <div class="nav-label">Rüya</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/diyet.html" data-href="/pages/diyet.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="9"></circle>
-        <path d="M12 3v9l4 4"></path>
-      </svg>
-      <div class="nav-label">Diyet</div>
-    </div>
-
-    <div class="nav-item" data-path="/pages/saglik.html" data-href="/pages/saglik.html" role="button" tabindex="0">
-      <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 21s-8-4.5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6.5-8 11-8 11z"></path>
-        <path d="M8 11h3l1-2 2 5 1-3h3"></path>
-      </svg>
-      <div class="nav-label">Sağlık</div>
-    </div>
+    <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico">♈</div><div class="lbl">Astro</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico">☕</div><div class="lbl">Fal</div></div>
+    <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico">🛍️</div><div class="lbl">Alışveriş</div></div>
+    <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
   </div>
 
-  <div class="footer-links-fixed" id="footerLinksFixed">
-    <a data-link="about"   href="/pages/about.html">Hakkımızda</a>
-    <a data-link="faq"     href="/pages/faq.html">SSS</a>
-    <a data-link="privacy" href="/pages/privacy.html">Gizlilik</a>
-    <a data-link="contact" href="/pages/contact.html">İletişim</a>
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
   </div>
-
-  <div class="footer-brand-fixed">@CaynanaAI By Ozyigit's 2026</div>
 </div>
 
-<!-- ========================= LOGIN OVERLAY ========================= -->
+<div class="full-overlay" id="pageOverlay">
+  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
+      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
+    </div>
+    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
+  </div>
+</div>
+
+<!-- ✅ PREMIUM LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
-  <div class="login-card">
-    <div class="login-header">
-      <svg class="login-seesaw" viewBox="0 0 40 20" aria-hidden="true">
-        <g class="seesaw-bar">
-          <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-          <circle cx="3" cy="5" r="3" fill="#bef264" />
-          <circle cx="37" cy="5" r="3" fill="#ffb300" />
+  <div class="login-card login-premium">
+    <div class="login-seesaw-wrap" aria-hidden="true">
+      <svg class="login-seesaw" viewBox="0 0 220 70">
+        <g class="login-seesaw-bar">
+          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="20" r="10" fill="#bef264"/>
+          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
         </g>
-        <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
       </svg>
-
-      <div class="login-title">CaynanaAI</div>
-      <div class="login-subtitle">Yapay Zekânın Geleneksel Aklı</div>
-      <div class="login-free">Üyelik Ücretsizdir.</div>
     </div>
 
-    <!-- ✅ GOOGLE OVERLAY (Tıklanabilir Google iframe) -->
-    <div class="google-login-wrap" id="googleLoginWrap">
-      <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
-        Google Hesabın İle Giriş Yap
-      </button>
-      <div id="googleBtnWrap" aria-hidden="true"></div>
+    <div class="brand-name" style="font-size:24px; margin:6px 0 4px;">Caynana.AI</div>
+    <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
+    <div class="login-sub"><b>Ücretsiz üyelik</b> için lütfen giriş yapın.</div>
+
+    <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
+    <div id="googleBtnWrap" style="margin-top:10px;"></div>
+
+    <button class="auth-btn apple" id="appleLoginBtn" type="button">Apple ile Devam Et</button>
+
+    <div class="trust-links trust-links-clean">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
     </div>
 
-    <button class="btn-3d btn-apple" id="appleLoginBtn" type="button">
-      Apple Hesabın İle Giriş Yap
-    </button>
-
-    <div class="login-footer-links">
-      <a href="/pages/about.html">Hakkımızda</a>
-      <a href="/pages/faq.html">SSS</a>
-      <a href="/pages/privacy.html">Gizlilik</a>
-      <a href="/pages/contact.html">İletişim</a>
-    </div>
-    <div class="login-footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 </div>
 
-<!-- ========================= TERMS OVERLAY ========================= -->
 <div class="full-overlay" id="termsOverlay">
-  <div class="login-card">
-    <div class="brand-name" style="text-align:center; font-size:18px; font-weight:950;">Sözleşme</div>
-
-    <button id="closeTermsBtn"
-      style="position:absolute; top:12px; right:12px; width:40px; height:40px; border-radius:14px;
-             background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.10); color:#fff; font-size:20px; cursor:pointer;">×</button>
-
-    <iframe id="termsFrame" src="/pages/sozlesme.html"
-      style="width:100%; height:320px; border:1px solid rgba(255,255,255,.12); margin:14px 0; background:#fff; border-radius:14px;"></iframe>
-
-    <div style="display:flex; gap:10px; align-items:center; margin-bottom:14px;">
-      <input type="checkbox" id="termsCheck" style="width:18px; height:18px;">
-      <label for="termsCheck" style="font-size:12px; font-weight:900; color:rgba(255,255,255,.85);">Onaylıyorum</label>
+  <div class="login-card login-premium">
+    <div class="terms-head">
+      <div class="brand-name">Sözleşme</div>
+      <button id="closeTermsBtn" class="x-btn" aria-label="Kapat">×</button>
     </div>
-
-    <button id="termsAcceptBtn"
-      style="width:100%; padding:14px; background:var(--gold); border:none; border-radius:16px; font-weight:950; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,.45);">
-      Giriş Yap
-    </button>
+    <div class="terms-frame-wrap">
+      <iframe id="termsFrame" src="/pages/sozlesme.html" title="Kullanıcı Sözleşmesi"></iframe>
+    </div>
+    <div class="agreement-box">
+      <input type="checkbox" id="termsCheck">
+      <label for="termsCheck">Onaylıyorum.</label>
+    </div>
+    <button class="auth-btn" id="termsAcceptBtn" type="button">Onayla ve Gir</button>
+    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>window.CAYNANA_TYPE_SPEED = 28;</script>
+
+<!-- ✅ Tek otorite: main.js -->
 <script type="module" src="js/main.js"></script>
 
+<!-- ✅ Sadece “UI” işleri: Apple alert + alt bar yönlendirme (chat’e dokunmaz) -->
 <script>
-/* =========================================================
-   FILE: /index.html
-   VERSION: v6.2.1 (JS - Menu Populate + Auth Footer Links + Layout helpers)
-   NOTE: Google login artık GSI iframe overlay ile açılır.
-   ========================================================= */
+  document.addEventListener("DOMContentLoaded", () => {
+    const apple = document.getElementById("appleLoginBtn");
+    if (apple) apple.onclick = () => alert("Apple biraz nazlı evladım. Kısa süre sonra açılacak. Şimdilik Google’la gel.");
 
-document.addEventListener("DOMContentLoaded", () => {
-  // vh fix (mobil adres bar)
-  function setVH(){
-    document.documentElement.style.setProperty("--vh", `${window.innerHeight * 0.01}px`);
-  }
-  setVH();
-  window.addEventListener("resize", setVH);
-
-  const loginOverlay   = document.getElementById("loginOverlay");
-  const termsOverlay   = document.getElementById("termsOverlay");
-  const closeTermsBtn  = document.getElementById("closeTermsBtn");
-  const termsCheck     = document.getElementById("termsCheck");
-  const termsAcceptBtn = document.getElementById("termsAcceptBtn");
-
-  const appleLoginBtn  = document.getElementById("appleLoginBtn");
-  const logoutBtn      = document.getElementById("logoutBtn");
-  const hambBtn        = document.getElementById("hambBtn");
-  const menuOverlay    = document.getElementById("menuOverlay");
-  const assistantBar   = document.getElementById("assistantBar");
-
-  const googleBtnWrap  = document.getElementById("googleBtnWrap");
-
-  // --------------------------------
-  // Toast
-  // --------------------------------
-  function showToast(msg){
-    const t = document.getElementById("toast");
-    if(!t) return;
-    t.textContent = msg;
-    t.classList.add("show");
-    clearTimeout(window.__toastTimer);
-    window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
-  }
-
-  // --------------------------------
-  // Layout helper
-  // --------------------------------
-  function measureInputDock(){
-    const inputDock = document.querySelector(".input-dock");
-    if(!inputDock) return;
-    const h = Math.ceil(inputDock.getBoundingClientRect().height);
-    if(h > 0) document.documentElement.style.setProperty("--inputdock-h", h + "px");
-  }
-
-  // --------------------------------
-  // Footer links routing
-  // --------------------------------
-  function isLogged(){ return document.body.classList.contains("is-logged"); }
-
-  function updateFooterLinksByAuth(){
-    const loggedOut = { about: "/pages/about.html", faq: "/pages/faq.html", privacy: "/pages/privacy.html", contact: "/pages/contact.html" };
-    const loggedIn  = { about: "/pages/hakkimizda.html", faq: "/pages/sss.html", privacy: "/pages/gizlilik.html", contact: "/pages/iletisim.html" };
-    const m = isLogged() ? loggedIn : loggedOut;
-    document.querySelectorAll("[data-link]").forEach(a=>{
-      const key = a.getAttribute("data-link");
-      if(m[key]) a.setAttribute("href", m[key]);
-    });
-  }
-
-  // --------------------------------
-  // Quick access active
-  // --------------------------------
-  function markActiveQuickAccess(){
-    const path = location.pathname || "/";
-    const items = document.querySelectorAll("#assistantBar .nav-item");
-    items.forEach(it=>{
-      const p = it.getAttribute("data-path");
-      const isActive =
-        (p === "/" && (path === "/" || path.endsWith("/index.html"))) ||
-        (p && p !== "/" && path.endsWith(p));
-      it.classList.toggle("active", !!isActive);
-    });
-  }
-
-  // --------------------------------
-  // Enter app / terms
-  // --------------------------------
-  function enterApp(){
-    termsOverlay?.classList.remove("active");
-    loginOverlay?.classList.remove("active");
-    document.body.classList.add("is-logged");
-    updateFooterLinksByAuth();
-    markActiveQuickAccess();
-    measureInputDock();
-  }
-
-  function openTerms(){
-    loginOverlay?.classList.remove("active");
-    termsOverlay?.classList.add("active");
-    if(termsCheck) termsCheck.checked = false;
-    if(termsAcceptBtn){
-      termsAcceptBtn.disabled = true;
-      termsAcceptBtn.style.opacity = "0.65";
-      termsAcceptBtn.style.cursor = "not-allowed";
-    }
-  }
-
-  function bootFromStorage(){
-    const userRaw = localStorage.getItem("caynana_user_v1");
-    const termsAccepted = localStorage.getItem("caynana_terms_accepted_v1") === "1";
-    if(userRaw && termsAccepted){ enterApp(); return true; }
-    if(userRaw && !termsAccepted){ openTerms(); return true; }
-    updateFooterLinksByAuth();
-    return false;
-  }
-
-  // --------------------------------
-  // Menu populate (fallback)
-  // --------------------------------
-  function populateMenuIfEmpty(){
-    const gA = document.getElementById("menuAsistan");
-    const gB = document.getElementById("menuAstro");
-    const gC = document.getElementById("menuKurumsal");
-    if(!gA || !gB || !gC) return;
-
-    if(gA.children.length || gB.children.length || gC.children.length) return;
-
-    const mk = (label, action, ico="•") => `
-      <div class="menu-action" data-action="${action}">
-        <div class="ico">${ico}</div>
-        <div><div>${label}</div></div>
-      </div>`;
-
-    gA.innerHTML = [
-      mk("Sohbet","chat","💬"),
-      mk("Dedikodu","dedikodu","🕵️"),
-      mk("Alışveriş","shopping","🛍️"),
-      mk("Tercüman","translate","🌍"),
-      mk("Diyet","diet","🥗"),
-      mk("Sağlık","health","❤️"),
-    ].join("");
-
-    gB.innerHTML = [
-      mk("Kahve Falı","fal","☕"),
-      mk("Tarot","tarot","🃏"),
-      mk("Burç","horoscope","♈"),
-      mk("Rüya","dream","🌙"),
-    ].join("");
-
-    gC.innerHTML = [
-      mk("Profil Düzenle","profile","👤"),
-      mk("Hakkımızda","hakkimizda","ℹ️"),
-      mk("SSS","sss","❓"),
-      mk("Gizlilik","gizlilik","🔒"),
-      mk("İletişim","iletisim","✉️"),
-      mk("Sözleşme","sozlesme","📄"),
-      mk("Üyelik","uyelik","🪪"),
-    ].join("");
-  }
-
-  // --------------------------------
-  // Menu open/close + delegation
-  // --------------------------------
-  if(hambBtn && menuOverlay){
-    hambBtn.onclick = () => {
-      populateMenuIfEmpty();
-      menuOverlay.classList.add("open");
-    };
-    menuOverlay.onclick = (e) => {
-      if(e.target === menuOverlay) menuOverlay.classList.remove("open");
-    };
-
-    menuOverlay.addEventListener("click", (e)=>{
-      const it = e.target.closest(".menu-action");
-      if(!it) return;
-      const act = it.getAttribute("data-action");
-
-      const map = {
-        chat: "/",
-        shopping: "/pages/alisveris.html",
-        translate: "/pages/tercuman.html",
-        dedikodu: "/pages/dedikodu.html",
-        fal: "/pages/fal.html",
-        tarot: "/pages/tarot.html",
-        horoscope: "/pages/astro.html",
-        dream: "/pages/ruya.html",
-        diet: "/pages/diyet.html",
-        health: "/pages/saglik.html",
-        profile: "/pages/profil.html",
-        hakkimizda: "/pages/hakkimizda.html",
-        sss: "/pages/sss.html",
-        gizlilik: "/pages/gizlilik.html",
-        iletisim: "/pages/iletisim.html",
-        sozlesme: "/pages/sozlesme.html",
-        uyelik: "/pages/uyelik.html",
-      };
-
-      const url = map[act];
-      if(url) location.href = url;
-    });
-  }
-
-  // --------------------------------
-  // Quick access click
-  // --------------------------------
-  if(assistantBar){
-    assistantBar.addEventListener("click", (e)=>{
-      const item = e.target.closest(".nav-item");
-      if(item && item.getAttribute("data-href")) location.href = item.getAttribute("data-href");
-    });
-  }
-
-  // --------------------------------
-  // Terms events
-  // --------------------------------
-  if(termsCheck && termsAcceptBtn){
-    termsCheck.addEventListener("change", ()=>{
-      const ok = !!termsCheck.checked;
-      termsAcceptBtn.disabled = !ok;
-      termsAcceptBtn.style.opacity = ok ? "1" : "0.65";
-      termsAcceptBtn.style.cursor = ok ? "pointer" : "not-allowed";
-    });
-  }
-
-  if(termsAcceptBtn){
-    termsAcceptBtn.addEventListener("click", ()=>{
-      if(termsCheck && !termsCheck.checked) return;
-      localStorage.setItem("caynana_terms_accepted_v1", "1");
-      enterApp();
-    });
-  }
-
-  if(closeTermsBtn){
-    closeTermsBtn.addEventListener("click", ()=>{
-      termsOverlay?.classList.remove("active");
-      loginOverlay?.classList.add("active");
-    });
-  }
-
-  // --------------------------------
-  // Apple
-  // --------------------------------
-  if(appleLoginBtn){
-    appleLoginBtn.addEventListener("click", ()=>{
-      showToast("Apple biraz nazlı evladım. Kısa süre sonra açılacak. Şimdilik Google ile giriş yap.");
-    });
-  }
-
-  // --------------------------------
-  // Logout
-  // --------------------------------
-  if(logoutBtn){
-    logoutBtn.addEventListener("click", ()=>{
-      localStorage.removeItem("caynana_user_v1");
-      document.body.classList.remove("is-logged");
-      updateFooterLinksByAuth();
-      loginOverlay?.classList.add("active");
-      termsOverlay?.classList.remove("active");
-      menuOverlay?.classList.remove("open");
-      setTimeout(()=>location.reload(), 250);
-    });
-  }
-
-  // --------------------------------
-  // Google GSI (Overlay)
-  // --------------------------------
-  function parseJwt(token){
-    try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""));
-      return JSON.parse(jsonPayload);
-    } catch(e) { return {}; }
-  }
-
-  function handleCredentialResponse(response) {
-    if(!response.credential) { showToast("Google hatası."); return; }
-    try{
-      const p = parseJwt(response.credential);
-      const user = { fullname: p.name || "—", email: p.email || "", picture: p.picture || "" };
-      localStorage.setItem("caynana_user_v1", JSON.stringify(user));
-
-      const termsAccepted = localStorage.getItem("caynana_terms_accepted_v1") === "1";
-      if(!termsAccepted) openTerms();
-      else enterApp();
-    }catch(err){
-      console.error(err);
-      showToast("Giriş hatası.");
-    }
-  }
-
-  const checkGoogle = setInterval(()=>{
-    if(window.google && window.google.accounts && window.google.accounts.id){
-      clearInterval(checkGoogle);
-
-      const cid = (window.CAYNANA_GOOGLE_CLIENT_ID || "").trim();
-      if(!cid){
-        console.warn("window.CAYNANA_GOOGLE_CLIENT_ID missing (main.js should set it)");
-        showToast("Google yapılandırması eksik (Client ID).");
-        return;
-      }
-
-      window.google.accounts.id.initialize({
-        client_id: cid,
-        callback: handleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: false
+    // Alt kayar asistan bar: sadece yönlendirme
+    const bar = document.getElementById("assistantBar");
+    if (bar) {
+      bar.addEventListener("click", (e) => {
+        const it = e.target.closest(".assistant-item");
+        if (!it) return;
+        const go = it.getAttribute("data-go");
+        if (go) location.href = go;
       });
-
-      if(googleBtnWrap){
-        // ✅ width'i wrapper'dan al
-        const wrapW = Math.round(document.getElementById("googleLoginWrap")?.getBoundingClientRect().width || 360);
-        window.google.accounts.id.renderButton(googleBtnWrap, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          width: wrapW,
-          text: "signin_with",
-          logo_alignment: "left"
-        });
-      }
     }
-  }, 100);
-
-  // --------------------------------
-  // Start
-  // --------------------------------
-  bootFromStorage();
-  populateMenuIfEmpty();
-  measureInputDock();
-  window.addEventListener("resize", measureInputDock);
-  markActiveQuickAccess();
-});
+  });
 </script>
 
+<script src="/js/layout-common.js?v=1"></script>
 </body>
 </html>
-```0
