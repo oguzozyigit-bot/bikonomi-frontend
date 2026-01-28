@@ -1,4 +1,12 @@
-// js/auth.js (FINAL)
+// =========================================================
+// FILE: /js/auth.js
+// VERSION: vFINAL+1 (Fix: Custom Google button actually opens Google sign-in)
+// WHAT CHANGED:
+// 1) initAuth() artık #googleBtnWrap içine GSI butonunu 1 kez render eder (hidden).
+// 2) handleLogin("google") artık prompt() yerine hidden GSI butonunu click’ler.
+//    (prompt One Tap bazen “not displayed” olur; buton click daha stabil.)
+// 3) Yine de click bulunamazsa fallback olarak prompt() bırakıldı.
+// =========================================================
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
 
@@ -10,7 +18,8 @@ function getAuthState(){
   if(!window.__CAYNANA_AUTH__) window.__CAYNANA_AUTH__ = {
     inited: false,
     promptInFlight: false,
-    lastPromptAt: 0
+    lastPromptAt: 0,
+    btnRendered: false
   };
   return window.__CAYNANA_AUTH__;
 }
@@ -185,6 +194,65 @@ async function handleGoogleResponse(res){
   }
 }
 
+/**
+ * ✅ Hidden GSI button render
+ * - index.html içinde #googleBtnWrap varsa içine Google butonunu render ediyoruz (gizli).
+ * - Custom 3D butona basınca bu hidden butonu click'leyerek popup sign-in açıyoruz.
+ */
+function renderHiddenGoogleButtonOnce(){
+  const st = getAuthState();
+  if(st.btnRendered) return;
+
+  const wrap = document.getElementById("googleBtnWrap");
+  if(!wrap) return;
+
+  // wrap görünmesin ama DOM’da dursun
+  wrap.style.position = "absolute";
+  wrap.style.left = "-9999px";
+  wrap.style.top = "0";
+  wrap.style.width = "1px";
+  wrap.style.height = "1px";
+  wrap.style.overflow = "hidden";
+  wrap.style.opacity = "0";
+  wrap.style.pointerEvents = "none";
+
+  try{
+    window.google.accounts.id.renderButton(wrap, {
+      type: "standard",
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "pill",
+      width: 1
+    });
+    st.btnRendered = true;
+  }catch(e){
+    console.warn("renderButton failed:", e);
+  }
+}
+
+function clickHiddenGoogleButton(){
+  const wrap = document.getElementById("googleBtnWrap");
+  if(!wrap) return false;
+
+  // renderButton genelde div[role=button] üretir
+  const btn = wrap.querySelector('div[role="button"]');
+  if(btn && typeof btn.click === "function"){
+    btn.click();
+    return true;
+  }
+
+  // Bazı durumlarda iframe çıkabilir (click her zaman çalışmayabilir)
+  const iframe = wrap.querySelector("iframe");
+  if(iframe){
+    try{
+      iframe.contentWindow?.focus?.();
+      // iframe click çoğu tarayıcıda çalışmayabilir; false dönelim
+    }catch(e){}
+  }
+  return false;
+}
+
 export function initAuth() {
   const st = getAuthState();
   if(st.inited) return;
@@ -204,6 +272,9 @@ export function initAuth() {
     use_fedcm_for_prompt: true,
     cancel_on_tap_outside: false
   });
+
+  // ✅ Tek sefer hidden butonu üret
+  renderHiddenGoogleButtonOnce();
 }
 
 export function handleLogin(provider) {
@@ -222,24 +293,31 @@ export function handleLogin(provider) {
   const st = getAuthState();
   const now = Date.now();
   if(st.promptInFlight) return;
-  if(now - (st.lastPromptAt || 0) < 1200) return;
+  if(now - (st.lastPromptAt || 0) < 900) return;
 
   st.promptInFlight = true;
   st.lastPromptAt = now;
 
   try{
-    try{ window.google.accounts.id.cancel?.(); }catch(e){}
+    // ✅ Öncelik: Hidden renderButton click -> popup login
+    renderHiddenGoogleButtonOnce();
+    const clicked = clickHiddenGoogleButton();
 
-    window.google.accounts.id.prompt((n)=>{
-      try{
-        if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
-          window.showGoogleButtonFallback?.("prompt not displayed");
-        }
-      }catch(e){}
-      setTimeout(()=>{ st.promptInFlight = false; }, 600);
-    });
+    if(!clicked){
+      // Fallback: One Tap prompt (bazı cihazlarda görünmeyebilir)
+      try{ window.google.accounts.id.cancel?.(); }catch(e){}
+      window.google.accounts.id.prompt((n)=>{
+        try{
+          if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
+            window.showGoogleButtonFallback?.("prompt not displayed");
+          }
+        }catch(e){}
+      });
+    }
+
+    setTimeout(()=>{ st.promptInFlight = false; }, 650);
   }catch(e){
-    console.error("google prompt error:", e);
+    console.error("google login error:", e);
     window.showGoogleButtonFallback?.("prompt error");
     st.promptInFlight = false;
   }
@@ -267,3 +345,4 @@ export function logout() {
     window.location.reload();
   }
 }
+```0
