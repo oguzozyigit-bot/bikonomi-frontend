@@ -340,6 +340,27 @@ export function typeWriter(text, elId = "chat") {
   const s = String(text || "");
   let i = 0;
 
+  (function type(){
+    if(i < s.length){
+      bubble.textContent += s.charAt(i++);
+      div.scrollTop = div.scrollHeight; // ⬅️ HER ZAMAN ALTA
+      setTimeout(type, 28);
+    }
+  })();
+}
+
+export function addUserBubble(text){
+  const div = document.getElementById("chat");
+  if(!div) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble user";
+  bubble.textContent = String(text||"");
+  div.appendChild(bubble);
+
+  div.scrollTop = div.scrollHeight; // ⬅️ HER ZAMAN ALTA
+}
+
   // ✅ kullanıcı alttaysa takip et
   let follow = isNearBottom(div);
 
