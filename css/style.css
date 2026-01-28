@@ -691,3 +691,26 @@ button:focus, a:focus{
 
 /* ✅ Tahtaravalli yazarken sallansın (thinking sınıfı zaten var) */
 .brand-wrapper.thinking .seesaw-bar{ animation: rock 1s infinite ease-in-out; }
+/* FILE: /css/style.css  (EN ALTINA EKLE) */
+
+/* CHAT SAYFASI: input + altbar + footer çakışmasını bitir */
+.page-chat .input-dock{
+  position: fixed !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: min(480px, calc(100vw - 18px)) !important;
+  bottom: 148px !important; /* 70 (footer üstü) + ~78 (assistant bar) */
+  z-index: 2600 !important;
+}
+
+.page-chat .chat-area{
+  padding-bottom: 260px !important; /* input + altbar + footer */
+}
+
+/* textarea ikonların üstüne binmesin */
+.page-chat #msgInput{
+  min-width: 0 !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+  max-height: 120px !important;
+}
