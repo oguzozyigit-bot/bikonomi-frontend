@@ -1,162 +1,150 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caynana AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Caynana AI</title>
 
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=1">
-  <link rel="stylesheet" href="/css/layout-common.css?v=1">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/css/style.css?v=1">
+<link rel="stylesheet" href="/css/layout-common.css?v=1">
 
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- GOOGLE GSI -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 
-  <style>
-    :root{ --gold:#ffb300; --pistachio:#bef264; }
+<!-- CONFIG → GLOBAL -->
+<script type="module">
+  import { GOOGLE_CLIENT_ID } from "/js/config.js";
+  window.GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
+</script>
 
-    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
+<style>
+:root{
+  --gold:#ffb300;
+  --pistachio:#bef264;
+}
 
-    .chat-area{ padding-bottom:160px !important; }
-    .assistant-bar{ bottom:78px !important; }
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
 
-    /* ===== OVERLAY ===== */
-    .full-overlay{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
-      background:rgba(0,0,0,.92);
-      z-index:9900;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .25s ease;
-    }
-    .full-overlay.active{ opacity:1; pointer-events:auto; }
+.full-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.92);
+  z-index:9900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+}
+.full-overlay.active{ opacity:1; pointer-events:auto; }
 
-    /* ===== LOGIN ===== */
-    .login-card{
-      width:min(420px,92vw);
-      padding:28px 26px 22px;
-      border-radius:26px;
-      background:
-        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
-        #0e0e0e;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 40px 120px rgba(0,0,0,.75);
-      position:relative;
-    }
+.login-card{
+  width:min(420px,92vw);
+  padding:28px 26px 22px;
+  border-radius:26px;
+  background:
+    radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+    radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
+    #0e0e0e;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 40px 120px rgba(0,0,0,.75);
+  text-align:center;
+}
 
-    /* ===== GOOGLE BUTTON FIX ===== */
-    .google-area{
-      position:relative;
-      width:100%;
-      margin-top:16px;
-    }
+/* GOOGLE FIX */
+.google-area{
+  position:relative;
+  width:100%;
+  margin-top:18px;
+}
+#googleLoginBtn{
+  width:100%;
+  height:52px;
+  border-radius:16px;
+  border:none;
+  font-weight:900;
+  font-size:15px;
+  background:linear-gradient(180deg,#ffffff,#f1f1f1);
+  color:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  box-shadow:0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.8);
+  position:relative;
+  z-index:1;
+}
+#googleLoginBtn::before{
+  content:"";
+  width:20px; height:20px;
+  background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
+}
+#googleBtnWrap{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:52px;
+  z-index:9999;
+  opacity:0.01;
+  cursor:pointer;
+}
+#googleBtnWrap iframe{
+  width:100%!important;
+  height:100%!important;
+  cursor:pointer!important;
+}
 
-    #googleLoginBtn{
-      width:100%;
-      height:52px;
-      border-radius:16px;
-      border:none;
-      font-weight:900;
-      font-size:15px;
-      background:linear-gradient(180deg,#ffffff,#f1f1f1);
-      color:#111;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      box-shadow:0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.8);
-      position:relative;
-      z-index:1;
-    }
-    #googleLoginBtn::before{
-      content:"";
-      width:20px; height:20px;
-      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
-      display:inline-block;
-    }
+#appleLoginBtn{
+  width:100%;
+  height:50px;
+  margin-top:10px;
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.55);
+  border:1px solid rgba(255,255,255,.12);
+  font-weight:800;
+}
+#appleLoginBtn::before{ content:" "; }
 
-    /* 🔴 ASIL TIKLANAN KATMAN */
-    #googleBtnWrap{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:52px;
-      z-index:9999;
-      opacity:0.01;
-      pointer-events:auto;
-      cursor:pointer;
-    }
-    #googleBtnWrap iframe{
-      width:100% !important;
-      height:100% !important;
-      pointer-events:auto !important;
-      cursor:pointer !important;
-    }
+.login-footer-links{
+  margin-top:16px;
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  font-size:12px;
+  opacity:.65;
+}
+.login-footer-links a{ color:rgba(255,255,255,.65); text-decoration:none; }
 
-    #appleLoginBtn{
-      width:100%;
-      height:50px;
-      margin-top:10px;
-      border-radius:16px;
-      background:rgba(255,255,255,.06);
-      color:rgba(255,255,255,.55);
-      border:1px solid rgba(255,255,255,.12);
-      font-weight:800;
-    }
-    #appleLoginBtn::before{ content:""; margin-right:6px; }
-
-    .trust-links-clean{
-      margin-top:16px;
-      display:flex;
-      gap:14px;
-      justify-content:center;
-      font-size:12px;
-      opacity:.65;
-      flex-wrap:wrap;
-    }
-    .trust-links-clean a{ color:rgba(255,255,255,.55); text-decoration:none; }
-
-    .login-footer{
-      margin-top:12px;
-      text-align:center;
-      font-size:11px;
-      font-weight:900;
-      opacity:.6;
-    }
-  </style>
+.login-footer{
+  margin-top:12px;
+  font-size:11px;
+  font-weight:900;
+  opacity:.55;
+}
+</style>
 </head>
 
 <body>
 
-<div class="mobile-frame">
-
-  <!-- TOPBAR / MENU / CHAT / INPUT / ALT BAR / FOOTER -->
-  <!-- (layout-common + main.js zaten bunları yönetiyor, eksiltmedim) -->
-
-</div>
+<div class="mobile-frame"><!-- APP BODY layout-common.js doldurur --></div>
 
 <!-- LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card">
 
-    <div style="text-align:center;">
-      <svg viewBox="0 0 220 70" style="width:70px;height:34px;">
-        <line x1="20" y1="30" x2="200" y2="30" stroke="#ccc" stroke-width="6"/>
-        <circle cx="30" cy="20" r="10" fill="#bef264"/>
-        <circle cx="190" cy="20" r="10" fill="#ffb300"/>
-      </svg>
-      <div style="font-size:24px;font-weight:1000;">Caynana.AI</div>
-      <div style="opacity:.75;font-weight:800;font-size:12px;">Yapay Zekânın Geleneksel Aklı</div>
-      <div style="margin-top:6px;font-weight:900;">Ücretsiz üyelik için giriş yap</div>
-    </div>
+    <svg viewBox="0 0 220 70" style="width:70px;height:34px;">
+      <line x1="20" y1="30" x2="200" y2="30" stroke="#ccc" stroke-width="6"/>
+      <circle cx="30" cy="20" r="10" fill="#bef264"/>
+      <circle cx="190" cy="20" r="10" fill="#ffb300"/>
+    </svg>
 
-    <!-- GOOGLE -->
+    <div style="font-size:24px;font-weight:1000;">Caynana.AI</div>
+    <div style="opacity:.75;font-weight:800;font-size:12px;">Yapay Zekânın Geleneksel Aklı</div>
+    <div style="margin-top:6px;font-weight:900;">Ücretsiz üyelik için giriş yap</div>
+
     <div class="google-area">
       <button id="googleLoginBtn" type="button">Google ile Devam Et</button>
       <div id="googleBtnWrap"></div>
@@ -164,7 +152,7 @@
 
     <button id="appleLoginBtn" type="button">Apple ile Devam Et</button>
 
-    <div class="trust-links-clean">
+    <div class="login-footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
       <a href="/pages/sss.html">SSS</a>
       <a href="/pages/gizlilik.html">Gizlilik</a>
@@ -181,7 +169,11 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-  const GOOGLE_CLIENT_ID = "BURAYA_KENDI_GOOGLE_CLIENT_ID_YAZ";
+  const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID;
+  if(!GOOGLE_CLIENT_ID){
+    console.error("GOOGLE_CLIENT_ID YOK!");
+    return;
+  }
 
   function parseJwt(token){
     try{
@@ -200,6 +192,7 @@ document.addEventListener("DOMContentLoaded", () => {
       picture:p.picture||""
     }));
     document.getElementById("loginOverlay").classList.remove("active");
+    document.body.classList.add("is-logged");
   }
 
   const wait = setInterval(()=>{
@@ -208,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
       google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: onGoogle,
+        auto_select:false,
         cancel_on_tap_outside:false
       });
       google.accounts.id.renderButton(
