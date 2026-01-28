@@ -6,129 +6,32 @@
   <title>Caynana AI</title>
 
   <link rel="icon" href="data:,">
+
+  <!-- Senin ana stilin -->
   <link rel="stylesheet" href="/css/style.css?v=2">
-  <!-- Alt bar frame dışına taşmasın diye senin ortak stilin -->
+
+  <!-- Alt kayan barı mobile-frame içine hizalayan stilin -->
   <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <!-- Google GSI -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+  <!-- Üstte main.js zaten window bridge yapıyor ama index açılışında lazım olabiliyor -->
+  <script type="module">
+    import { GOOGLE_CLIENT_ID } from "/js/config.js";
+    window.CAYNANA_GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
+  </script>
+
   <style>
-    /* Chat alanı: altta input + assistant-bar + footer için güvenli pay */
-    .chat-area{ padding-bottom: 170px !important; }
+    /* CHAT taşmasın: input-dock + assistant-bar + footer için pay */
+    .chat-area{ padding-bottom: 190px !important; }
 
-    /* Login overlay görünümü (senin premium) */
-    .full-overlay{
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      background: rgba(0,0,0,0.92) !important;
-      z-index: 9900 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transition: opacity 0.3s ease !important;
-    }
-    .full-overlay.active{ opacity: 1 !important; pointer-events: auto !important; }
+    /* Alt bar: layout-common.css zaten fixed + center yapıyor.
+       Input olan sayfada biraz yukarı al */
+    .assistant-bar{ bottom: 70px !important; }
 
-    #loginOverlay .login-card{
-      max-width:420px !important;
-      padding:28px 26px 26px !important;
-      border-radius:26px !important;
-      background:
-        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
-        #0e0e0e !important;
-      border:1px solid rgba(255,255,255,.12) !important;
-      box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
-      text-align:center;
-      position: relative;
-    }
-
-    /* Google overlay butonu: tıklanır katman */
-    .google-login-wrap{ position: relative; width: 100%; margin-top: 14px; }
-    #googleLoginBtn{
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      gap:10px !important;
-      width:100% !important;
-      height:52px !important;
-      background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
-      color:#111 !important;
-      border-radius:16px !important;
-      font-weight:900 !important;
-      font-size:15px !important;
-      border:none !important;
-      box-shadow:
-        0 12px 30px rgba(0,0,0,.45),
-        inset 0 1px 0 rgba(255,255,255,.8) !important;
-      position: relative;
-      z-index: 1;
-    }
-    #googleLoginBtn::before{
-      content:"";
-      width:20px;
-      height:20px;
-      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
-      display:inline-block;
-    }
-    #googleBtnWrap{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 52px;
-      z-index: 50;
-      opacity: 0.01;
-      cursor: pointer;
-    }
-    #googleBtnWrap iframe{
-      width:100% !important;
-      height:100% !important;
-      cursor:pointer !important;
-      pointer-events:auto !important;
-    }
-
-    #appleLoginBtn{
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      gap:10px !important;
-      width:100% !important;
-      height:50px !important;
-      background:rgba(255,255,255,.06) !important;
-      color:rgba(255,255,255,.70) !important;
-      border-radius:16px !important;
-      font-weight:900 !important;
-      font-size:14px !important;
-      border:1px solid rgba(255,255,255,.12) !important;
-      margin-top:10px !important;
-    }
-    #appleLoginBtn .applemark{ font-size:18px; line-height:1; }
-
-    .trust-links-clean{
-      margin-top:18px !important;
-      font-size:12px !important;
-      opacity:.65 !important;
-      display:flex !important;
-      gap:14px !important;
-      justify-content:center !important;
-      flex-wrap:wrap !important;
-    }
-    .trust-links-clean a{ color: rgba(255,255,255,.55) !important; text-decoration:none !important; }
-
-    .login-footer{
-      margin-top:12px;
-      font-size:11px;
-      font-weight:900;
-      opacity:.6;
-    }
-
-    /* Footer yazısı zorunlu */
-    .footer-brand{ color:#444 !important; }
+    /* Login overlay katmanları (style.css içinde de var ama garanti) */
+    .full-overlay{ display:flex; }
   </style>
 </head>
 
@@ -136,7 +39,7 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- TOPBAR (senin v5.6) -->
+  <!-- ✅ TOPBAR (style.css) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -144,7 +47,7 @@
 
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
+        <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
           <g class="seesaw-bar" id="seesawBar">
             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
             <circle cx="3" cy="5" r="3" fill="#bef264" />
@@ -159,26 +62,31 @@
 
     <div class="right-controls">
       <div class="notif-row">
-        <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <div class="badge" id="notifBadge"></div>
-          </button>
-          <div id="planChip" class="plan-chip">FREE</div>
-        </div>
+        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <div class="badge" id="notifBadge"></div>
+        </button>
 
-        <!-- S.P + grafik -->
+        <div id="planChip" class="plan-chip">FREE</div>
+
+        <!-- ✅ S.P chip -->
         <div class="yp-chip">
           <div class="yp-label">SAMİMİYET</div>
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
           <div class="yp-num" id="ypNum">19%</div>
         </div>
 
+        <!-- dropdown (notif.js kullanıyorsa) -->
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+
         <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
-          <svg viewBox="0 0 24 24">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
           </svg>
@@ -187,11 +95,13 @@
     </div>
   </div>
 
-  <!-- HAMBURGER -->
+  <!-- ✅ HAMBURGER MENU -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
+
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
+      <!-- profil shortcut -->
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
@@ -202,35 +112,56 @@
         </div>
       </div>
 
+      <!-- history -->
       <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
 
-      <!-- ✅ Fallback: boş kalmasın -->
+      <!-- menu blocks (main.js doldurur; boş kalmasın diye fallback linkler de var) -->
       <div class="menu-block asistan">
         <div class="block-head">Asistan</div>
         <div class="menu-grid" id="menuAsistan">
-          <div class="menu-action" onclick="location.href='/pages/diyet.html'"><div class="ico">🥗</div><div><div>Diyet</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/saglik.html'"><div class="ico">❤️</div><div><div>Sağlık</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/fal.html'"><div class="ico">☕</div><div><div>Fal</div></div></div>
+          <div class="menu-action" onclick="location.href='/pages/diyet.html'">
+            <div class="ico">🥗</div><div><div>Diyet</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/saglik.html'">
+            <div class="ico">❤️</div><div><div>Sağlık</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/tercuman.html'">
+            <div class="ico">🌍</div><div><div>Tercüman</div></div>
+          </div>
         </div>
       </div>
 
       <div class="menu-block astro">
         <div class="block-head">Astro AI</div>
         <div class="menu-grid" id="menuAstro">
-          <div class="menu-action" onclick="location.href='/pages/astro.html'"><div class="ico">♈</div><div><div>Burç</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/tarot.html'"><div class="ico">🃏</div><div><div>Tarot</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/ruya.html'"><div class="ico">👁️</div><div><div>Rüya</div></div></div>
+          <div class="menu-action" onclick="location.href='/pages/astro.html'">
+            <div class="ico">♈</div><div><div>Burç</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/tarot.html'">
+            <div class="ico">🃏</div><div><div>Tarot</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/ruya.html'">
+            <div class="ico">👁️</div><div><div>Rüya</div></div>
+          </div>
         </div>
       </div>
 
       <div class="menu-block kurumsal">
         <div class="block-head">Kurumsal</div>
         <div class="menu-grid" id="menuKurumsal">
-          <div class="menu-action" onclick="location.href='/pages/hakkimizda.html'"><div class="ico">ℹ️</div><div><div>Hakkımızda</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/sss.html'"><div class="ico">❓</div><div><div>SSS</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/gizlilik.html'"><div class="ico">🔒</div><div><div>Gizlilik</div></div></div>
-          <div class="menu-action" onclick="location.href='/pages/iletisim.html'"><div class="ico">☎️</div><div><div>İletişim</div></div></div>
+          <div class="menu-action" onclick="location.href='/pages/hakkimizda.html'">
+            <div class="ico">ℹ️</div><div><div>Hakkımızda</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/sss.html'">
+            <div class="ico">❓</div><div><div>SSS</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/gizlilik.html'">
+            <div class="ico">🔒</div><div><div>Gizlilik</div></div>
+          </div>
+          <div class="menu-action" onclick="location.href='/pages/iletisim.html'">
+            <div class="ico">☎️</div><div><div>İletişim</div></div>
+          </div>
         </div>
       </div>
 
@@ -239,40 +170,52 @@
         <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
         <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
+
     </div>
   </div>
 
-  <!-- CHAT -->
+  <!-- ✅ CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- INPUT -->
+  <!-- ✅ INPUT -->
   <div class="input-dock">
     <div class="dock-inner">
       <button class="icon-btn" id="camBtn" aria-label="Kamera">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
       </button>
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
       <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
       </button>
       <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+        </svg>
       </button>
     </div>
   </div>
 
-  <!-- ✅ ALT KOLAY MENÜ (layout-common.css ile hizalı) -->
+  <!-- ✅ ALT KOLAY MENÜ (layout-common.css stilleriyle uyumlu) -->
   <div class="assistant-bar" id="assistantBar">
     <div class="assistant-item" data-go="/"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
     <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
     <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
     <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Astro</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
     <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico-wrap">🛍️</div><div class="lbl">Alışveriş</div></div>
     <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico-wrap">🌍</div><div class="lbl">Tercüman</div></div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- ✅ FOOTER -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -282,13 +225,25 @@
     </div>
     <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
   </div>
+
 </div>
 
-<!-- LOGIN -->
+<!-- ✅ PAGE OVERLAY (main.js bazı kurumsal sayfaları burada açıyordu) -->
+<div class="full-overlay" id="pageOverlay">
+  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
+      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
+    </div>
+    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
+  </div>
+</div>
+
+<!-- ✅ LOGIN OVERLAY (auth.js initAuth() burayı kullanır) -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card login-premium">
     <div class="login-seesaw-wrap" aria-hidden="true">
-      <svg class="login-seesaw" viewBox="0 0 220 70" style="width:70px;height:34px;">
+      <svg class="login-seesaw" viewBox="0 0 220 70">
         <g class="login-seesaw-bar">
           <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
           <circle cx="30" cy="20" r="10" fill="#bef264"/>
@@ -302,7 +257,6 @@
     <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
     <div class="login-sub"><b>Ücretsiz üyelik</b> için lütfen giriş yapın.</div>
 
-    <!-- ✅ Google: auth.js renderButton buraya basar -->
     <div class="google-login-wrap" id="googleLoginWrap">
       <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
       <div id="googleBtnWrap"></div>
@@ -321,7 +275,8 @@
   </div>
 </div>
 
-<div class="full-overlay" id="termsOverlay" style="display:none;">
+<!-- ✅ TERMS OVERLAY (auth.acceptTerms/main.js kullanıyor) -->
+<div class="full-overlay" id="termsOverlay">
   <div class="login-card login-premium">
     <div class="terms-head">
       <div class="brand-name">Sözleşme</div>
@@ -341,17 +296,22 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ✅ ANA SİSTEM: main.js -->
+<!-- ✅ MAIN.JS (senin gerçek uygulama motorun) -->
 <script type="module" src="/js/main.js"></script>
 
-<!-- ✅ Layout ortak -->
+<!-- ✅ Layout-common (hamburger + alt bar click) -->
 <script src="/js/layout-common.js?v=1"></script>
 
 <script>
-  // Apple click sadece mesaj (auth.js de zaten yapıyor ama garanti)
+  // Logout yedek (main.js zaten logout() bağlayacak ama garanti)
   document.addEventListener("DOMContentLoaded", () => {
-    const a = document.getElementById("appleLoginBtn");
-    if(a) a.onclick = () => alert("Apple girişi yakında! Şimdilik Google'la gel.");
+    const lb = document.getElementById("logoutBtn");
+    if(lb){
+      lb.addEventListener("click", () => {
+        // main.js/auth.js yakalarsa zaten çalışır; yakalamazsa fallback:
+        try { localStorage.removeItem("caynana_user_v1"); } catch(e){}
+      });
+    }
   });
 </script>
 
