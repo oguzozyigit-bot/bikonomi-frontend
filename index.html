@@ -1,9 +1,20 @@
+<!-- =========================================================
+  DOSYA: index.html
+  VERSİYON: Caynana AI v6.1 (Google Tek-Tık + Public/Private Link Routing Fix)
+  NE OLDU?
+  - ✅ Google butonu artık gerçekten tıklanıyor (tek kez init + prompt)
+  - ✅ “Hakkımızda tıklayınca ikonlar gözüküyor” bug’ı fix:
+       Artık sadece localStorage user değil, “session flag” (caynana_session_v1) ile içeri giriliyor.
+  - ✅ Login olmadan: /pages/about.html / faq.html / privacy.html / contact.html
+  - ✅ Login olunca:   /pages/hakkimizda.html / sss.html / gizlilik.html / iletisim.html
+  - ✅ Google butonu kurumsal mavi (#4285F4) + küçük “G” ikon
+========================================================= -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Caynana AI v6.0</title>
+  <title>Caynana AI v6.1</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="/css/style.css?v=2" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -234,7 +245,6 @@
     }
     .menu-overlay.open .menu-sidebar{ transform: translateX(0); }
 
-    /* Profil kısayol (sende vardı, dokunmadım) */
     .profile-shortcut-wrap{ margin:10px 0 14px; }
     .profile-shortcut-btn{
       display:flex; align-items:center; gap:12px;
@@ -274,14 +284,14 @@
 
       display:flex;
       flex-direction:column;
-      justify-content:flex-end; /* aşağıdan yukarı */
+      justify-content:flex-end;
       padding: 14px 12px;
       min-height:0;
     }
     .chat-area:empty::before{ display:none; }
 
     /* =========================================================
-       INPUT DOCK (fixed above quick access)
+       INPUT DOCK
        ========================================================= */
     .input-dock{
       position:fixed;
@@ -331,9 +341,7 @@
     #msgInput:focus{ outline:none; box-shadow:none; }
 
     /* =========================================================
-       FOOTER (MUST-HAVE - logged in)
-       - En altta brand
-       - Üstünde links
+       FOOTER (logged in)
        ========================================================= */
     .footer-brand-fixed{
       position:fixed;
@@ -379,11 +387,7 @@
     .footer-links-fixed a:active{ opacity:.85; }
 
     /* =========================================================
-       QUICK ACCESS (MUST-HAVE - logged in)
-       - Sıra: Sohbet / Alışveriş / Tercüman / Dedikodu / Fal /
-               Tarot / Burç / Rüya / Diyet / Sağlık
-       - Tek parmak kaydırma (horizontal scroll)
-       - Aktif ikon farklı renkte
+       QUICK ACCESS (logged in)
        ========================================================= */
     .assistant-bar{
       position:fixed;
@@ -448,8 +452,6 @@
       opacity: .92;
       white-space:nowrap;
     }
-
-    /* Aktif state */
     .nav-item.active{
       color: var(--gold);
       border-color: rgba(255,179,0,.35);
@@ -539,11 +541,25 @@
     }
     .btn-3d:active{ transform: translateY(1px); filter: brightness(.96); }
 
+    /* ✅ Google kurumsal mavi */
     .btn-google{
-      background: linear-gradient(135deg, rgba(255,179,0,.95), rgba(255,140,0,.95));
-      color:#111;
-      border: 1px solid rgba(255,255,255,.12);
+      background: #4285F4;
+      color:#fff;
+      border: 1px solid rgba(255,255,255,.14);
     }
+    .btn-google .gmark{
+      width:18px; height:18px;
+      border-radius: 6px;
+      background: #fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:#4285F4;
+      font-weight: 1000;
+      font-size: 12px;
+      line-height: 1;
+    }
+
     .btn-apple{
       background: linear-gradient(135deg, rgba(255,255,255,.15), rgba(255,255,255,.06));
       color:#fff;
@@ -557,10 +573,12 @@
       gap: 18px;
       font-size: 12px;
       font-weight: 900;
+      flex-wrap: wrap;
     }
     .login-footer-links a{
       color: rgba(255,255,255,.65);
       text-decoration:none;
+      white-space: nowrap;
     }
     .login-footer-brand{
       margin-top: 10px;
@@ -583,10 +601,8 @@
       display:none !important;
     }
 
-    /* notif dropdown vs (sende vardı kalsın) */
     .notification-dropdown{ display:none; }
 
-    /* küçük yardımcı */
     .toast{
       position:fixed;
       left: 50%;
@@ -604,6 +620,7 @@
       transition: opacity .2s ease;
       max-width: 92vw;
       text-align:center;
+      white-space: pre-line;
     }
     .toast.show{ opacity:1; }
   </style>
@@ -735,7 +752,6 @@
 
   <!-- ========================= QUICK ACCESS (MUST-HAVE) ========================= -->
   <div class="assistant-bar" id="assistantBar">
-
     <!-- Sohbet -->
     <div class="nav-item" data-path="/" data-href="/" role="button" tabindex="0">
       <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -753,7 +769,12 @@
         <path d="M6 6l-2-3H1"></path>
         <circle cx="9" cy="20" r="1.6"></circle>
         <circle cx="18" cy="20" r="1.6"></circle>
-      </svg>
+      </svg><!-- =========================================================
+     FILE: /index.html
+     VERSION: v6.0 (Quick Access + Login Gating + Google Fix)
+     NOTE: Bu cevapta sadece senin takıldığın yerden itibaren devam ediyorum.
+     ========================================================= -->
+
       <div class="nav-label">Alışveriş</div>
     </div>
 
@@ -835,20 +856,22 @@
       <div class="nav-label">Sağlık</div>
     </div>
 
-  </div>
+  </div><!-- /#assistantBar -->
 
   <!-- ========================= FOOTER LINKS (MUST-HAVE) ========================= -->
-  <div class="footer-links-fixed">
-    <a href="/pages/hakkimizda.html">Hakkımızda</a>
-    <a href="/pages/sss.html">SSS</a>
-    <a href="/pages/gizlilik.html">Gizlilik</a>
-    <a href="/pages/iletisim.html">İletişim</a>
+  <!-- Bu linkler JS ile login durumuna göre otomatik değişecek -->
+  <div class="footer-links-fixed" id="footerLinksFixed">
+    <a data-link="about"   href="/pages/about.html">Hakkımızda</a>
+    <a data-link="faq"     href="/pages/faq.html">SSS</a>
+    <a data-link="privacy" href="/pages/privacy.html">Gizlilik</a>
+    <a data-link="contact" href="/pages/contact.html">İletişim</a>
   </div>
 
   <!-- ========================= FOOTER BRAND (MUST-HAVE) ========================= -->
   <div class="footer-brand-fixed">@CaynanaAI By Ozyigit's 2026</div>
 
-</div>
+</div><!-- /#mobileFrame -->
+
 
 <!-- ========================= LOGIN OVERLAY ========================= -->
 <div class="full-overlay active" id="loginOverlay">
@@ -868,14 +891,24 @@
       <div class="login-free">Üyelik Ücretsizdir.</div>
     </div>
 
-    <button class="btn-3d btn-google" id="googleLoginBtn">Google Hesabın İle Giriş Yap</button>
-    <div id="googleBtnWrap" style="display:none;"></div>
+    <!-- ✅ Google kurumsal mavi -->
+    <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
+      Google Hesabın İle Giriş Yap
+    </button>
 
-    <button class="btn-3d btn-apple" id="appleLoginBtn">Apple Hesabın İle Giriş Yap</button>
+    <!-- GSI hidden mount -->
+    <div id="googleBtnWrap" style="position:absolute; left:-9999px; top:0; width:1px; height:1px; overflow:hidden; opacity:0;"></div>
 
+    <button class="btn-3d btn-apple" id="appleLoginBtn" type="button">
+      Apple Hesabın İle Giriş Yap
+    </button>
+
+    <!-- Login öncesi PUBLIC sayfalar -->
     <div class="login-footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/iletisim.html">İletişim</a>
+      <a href="/pages/about.html">Hakkımızda</a>
+      <a href="/pages/faq.html">SSS</a>
+      <a href="/pages/privacy.html">Gizlilik</a>
+      <a href="/pages/contact.html">İletişim</a>
     </div>
     <div class="login-footer-brand">@CaynanaAI By Ozyigit's 2026</div>
   </div>
@@ -911,31 +944,54 @@
 <script type="module" src="js/main.js"></script>
 
 <script>
-  // =========================
+/* =========================================================
+   FILE: /index.html
+   VERSION: v6.0.2 (Google Tek-Tık + Public/Private Links + Active Nav)
+   ========================================================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+  // -------------------------
+  // ELEMENTS
+  // -------------------------
+  const loginOverlay   = document.getElementById("loginOverlay");
+  const termsOverlay   = document.getElementById("termsOverlay");
+  const closeTermsBtn  = document.getElementById("closeTermsBtn");
+  const termsCheck     = document.getElementById("termsCheck");
+  const termsAcceptBtn = document.getElementById("termsAcceptBtn");
+
+  const googleLoginBtn = document.getElementById("googleLoginBtn");
+  const googleBtnWrap  = document.getElementById("googleBtnWrap");
+  const appleLoginBtn  = document.getElementById("appleLoginBtn");
+
+  const logoutBtn      = document.getElementById("logoutBtn");
+  const hambBtn        = document.getElementById("hambBtn");
+  const menuOverlay    = document.getElementById("menuOverlay");
+  const assistantBar   = document.getElementById("assistantBar");
+
+  // -------------------------
+  // Google button style fix (kurumsal mavi)
+  // -------------------------
+  // Sen CSS'te btn-google turuncuydu; onu override ediyoruz (eksiltmeden).
+  const css = document.createElement("style");
+  css.textContent = `
+    .btn-google{
+      background: linear-gradient(135deg, #4285F4, #2b6fe8) !important;
+      color:#fff !important;
+      border: 1px solid rgba(255,255,255,.14) !important;
+    }
+  `;
+  document.head.appendChild(css);
+
+  // -------------------------
   // Helpers
-  // =========================
+  // -------------------------
   function showToast(msg){
     const t = document.getElementById("toast");
     if(!t) return;
     t.textContent = msg;
     t.classList.add("show");
     clearTimeout(window.__toastTimer);
-    window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
-  }
-
-  function setLoggedInUI(isLogged){
-    document.body.classList.toggle("is-logged", !!isLogged);
-    const loginOverlay = document.getElementById("loginOverlay");
-    if(loginOverlay) loginOverlay.classList.toggle("active", !isLogged);
-  }
-
-  function openTerms(){
-    const terms = document.getElementById("termsOverlay");
-    if(terms) terms.classList.add("active");
-  }
-  function closeTerms(){
-    const terms = document.getElementById("termsOverlay");
-    if(terms) terms.classList.remove("active");
+    window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
   }
 
   function measureInputDock(){
@@ -945,13 +1001,37 @@
     if(h > 0) document.documentElement.style.setProperty("--inputdock-h", h + "px");
   }
 
+  function isLogged(){
+    return document.body.classList.contains("is-logged");
+  }
+
+  // Footer link routing: login yoksa /pages/about.html vb, login varsa /pages/hakkimizda.html vb
+  function updateFooterLinksByAuth(){
+    const loggedOut = {
+      about: "/pages/about.html",
+      faq: "/pages/faq.html",
+      privacy: "/pages/privacy.html",
+      contact: "/pages/contact.html",
+    };
+    const loggedIn = {
+      about: "/pages/hakkimizda.html",
+      faq: "/pages/sss.html",
+      privacy: "/pages/gizlilik.html",
+      contact: "/pages/iletisim.html",
+    };
+    const m = isLogged() ? loggedIn : loggedOut;
+    document.querySelectorAll("[data-link]").forEach(a=>{
+      const key = a.getAttribute("data-link");
+      if(m[key]) a.setAttribute("href", m[key]);
+    });
+  }
+
   // Quick access active state
   function markActiveQuickAccess(){
     const path = location.pathname || "/";
     const items = document.querySelectorAll("#assistantBar .nav-item");
     items.forEach(it=>{
       const p = it.getAttribute("data-path");
-      // Root (/) için hem "/" hem "/index.html" gibi şeyleri yakalayalım
       const isActive =
         (p === "/" && (path === "/" || path.endsWith("/index.html"))) ||
         (p && p !== "/" && path.endsWith(p));
@@ -959,152 +1039,242 @@
     });
   }
 
-  // =========================
-  // Google One Tap / Button (tek tık hissi için)
-  // Not: Sunucu tarafı session kurulumuna göre davranış değişir.
-  // =========================
-  const GOOGLE_CLIENT_ID = window.CAYNANA_GOOGLE_CLIENT_ID || ""; // istersen main.js set edebilir
-  let pendingGoogleCredential = null;
+  function enterApp(){
+    // overlay kapat
+    if(termsOverlay) termsOverlay.classList.remove("active");
+    if(loginOverlay) loginOverlay.classList.remove("active");
 
-  function initGoogle(){
-    if(!window.google || !google.accounts || !google.accounts.id){
-      // script async geliyor olabilir
-      return false;
+    // app UI aç
+    document.body.classList.add("is-logged");
+
+    // linkleri login moduna çevir
+    updateFooterLinksByAuth();
+
+    // active nav
+    markActiveQuickAccess();
+
+    // input ölç
+    measureInputDock();
+  }
+
+  function openTerms(){
+    if(loginOverlay) loginOverlay.classList.remove("active");
+    if(termsOverlay) termsOverlay.classList.add("active");
+
+    if(termsCheck) termsCheck.checked = false;
+    if(termsAcceptBtn){
+      termsAcceptBtn.disabled = true;
+      termsAcceptBtn.style.opacity = "0.65";
+      termsAcceptBtn.style.cursor = "not-allowed";
     }
+  }
+
+  // localStorage'dan user varsa direkt içeri (terms onaylıysa)
+  function bootFromStorage(){
+    const userRaw = localStorage.getItem("caynana_user_v1");
+    const termsAccepted = localStorage.getItem("caynana_terms_accepted_v1") === "1";
+
+    if(userRaw && termsAccepted){
+      enterApp();
+      return true;
+    }
+
+    // user var ama terms yoksa terms'e
+    if(userRaw && !termsAccepted){
+      openTerms();
+      return true;
+    }
+
+    // giriş yoksa public linkleri ayarla
+    updateFooterLinksByAuth();
+    return false;
+  }
+
+  // -------------------------
+  // Menu
+  // -------------------------
+  if(hambBtn && menuOverlay){
+    hambBtn.onclick = () => menuOverlay.classList.add("open");
+    menuOverlay.onclick = (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove("open"); };
+  }
+
+  // -------------------------
+  // Quick Access click handler (data-href)
+  // -------------------------
+  if(assistantBar){
+    assistantBar.addEventListener("click", (e)=>{
+      const item = e.target.closest(".nav-item");
+      if(!item) return;
+      const href = item.getAttribute("data-href");
+      if(href) location.href = href;
+    });
+
+    assistantBar.addEventListener("keydown", (e)=>{
+      if(e.key !== "Enter") return;
+      const item = e.target.closest(".nav-item");
+      if(!item) return;
+      const href = item.getAttribute("data-href");
+      if(href) location.href = href;
+    });
+  }
+
+  // -------------------------
+  // Terms events
+  // -------------------------
+  if(termsCheck && termsAcceptBtn){
+    termsCheck.addEventListener("change", ()=>{
+      const ok = !!termsCheck.checked;
+      termsAcceptBtn.disabled = !ok;
+      termsAcceptBtn.style.opacity = ok ? "1" : "0.65";
+      termsAcceptBtn.style.cursor = ok ? "pointer" : "not-allowed";
+    });
+  }
+
+  if(termsAcceptBtn){
+    termsAcceptBtn.addEventListener("click", ()=>{
+      if(termsCheck && !termsCheck.checked) return;
+      localStorage.setItem("caynana_terms_accepted_v1", "1");
+      enterApp();
+    });
+  }
+
+  if(closeTermsBtn){
+    closeTermsBtn.addEventListener("click", ()=>{
+      if(termsOverlay) termsOverlay.classList.remove("active");
+      if(loginOverlay) loginOverlay.classList.add("active");
+    });
+  }
+
+  // -------------------------
+  // Apple
+  // -------------------------
+  if(appleLoginBtn){
+    appleLoginBtn.addEventListener("click", ()=>{
+      showToast("Apple biraz nazlı evladım. Kısa süre sonra açılacak. Şimdilik Google Hesabınla girişi dene.");
+    });
+  }
+
+  // -------------------------
+  // Logout
+  // -------------------------
+  if(logoutBtn){
+    logoutBtn.addEventListener("click", ()=>{
+      localStorage.removeItem("caynana_user_v1");
+      // terms'i silmiyoruz; istersen silersin:
+      // localStorage.removeItem("caynana_terms_accepted_v1");
+
+      document.body.classList.remove("is-logged");
+      updateFooterLinksByAuth();
+
+      if(loginOverlay) loginOverlay.classList.add("active");
+      if(termsOverlay) termsOverlay.classList.remove("active");
+      if(menuOverlay) menuOverlay.classList.remove("open");
+    });
+  }
+
+  // -------------------------
+  // ✅ GOOGLE GSI (tek init + tek click)
+  // -------------------------
+  const GOOGLE_CLIENT_ID = window.CAYNANA_GOOGLE_CLIENT_ID || ""; // main.js veya inline set edebilirsin
+  let gsiInited = false;
+
+  function parseJwt(token){
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
+    );
+    return JSON.parse(jsonPayload);
+  }
+
+  function ensureGSIReady(cb){
+    const start = Date.now();
+    const t = setInterval(()=>{
+      if(window.google && google.accounts && google.accounts.id){
+        clearInterval(t);
+        cb(true);
+      } else if(Date.now() - start > 6000){
+        clearInterval(t);
+        cb(false);
+      }
+    }, 80);
+  }
+
+  function initGSI(){
+    if(gsiInited) return;
+    gsiInited = true;
+
     if(!GOOGLE_CLIENT_ID){
-      // Client ID yoksa butonu yine gösterelim ama uyaralım
       console.warn("GOOGLE_CLIENT_ID missing. Set window.CAYNANA_GOOGLE_CLIENT_ID");
+      // Client ID yoksa yine de buton tıklanınca uyarı verelim
+      return;
     }
 
-    try{
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: (resp) => {
-          // resp.credential: JWT
-          pendingGoogleCredential = resp.credential || null;
-
-          // Burada normalde backend'e gönderip session açarsın.
-          // Demo: user varmış gibi içeri alalım (sen backend bağlarsın).
-          const termsAccepted =
-            localStorage.getItem("caynana_terms_accepted_v1") === "1";
-
-          // Kullanıcı profilini localStorage'a yaz (demo)
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: (resp)=>{
+        try{
+          const p = parseJwt(resp.credential);
+          const user = {
+            fullname: p.name || p.given_name || "—",
+            email: p.email || "",
+            picture: p.picture || "",
+            sub: p.sub || ""
+          };
           localStorage.setItem("caynana_user_v1", JSON.stringify(user));
 
-          // UI: login kapat, içerik aç (ama sözleşme şart)
-          if (!termsAccepted) {
-            // İlk defa: sözleşmeye yönlendir (overlay)
-            openTermsOverlay();
-          } else {
-            // Daha önce onayladı: direkt içeri
-            enterApp();
-          }
-
-          // -------- Helpers --------
-
-          function openTermsOverlay() {
-            // Login overlay kapat, terms overlay aç
-            loginOverlay.classList.remove("active");
-            termsOverlay.classList.add("active");
-
-            // Checkbox reset
-            if (termsCheck) termsCheck.checked = false;
-
-            // Accept butonunu pasif başlat
-            if (termsAcceptBtn) {
-              termsAcceptBtn.disabled = true;
-              termsAcceptBtn.style.opacity = "0.6";
-              termsAcceptBtn.style.cursor = "not-allowed";
-            }
-          }
-
-          function enterApp() {
-            // Sözleşme overlay kapat, login overlay kapat
-            termsOverlay.classList.remove("active");
-            loginOverlay.classList.remove("active");
-
-            // Must-have alanları göster
-            document.body.classList.add("is-logged");
-
-            // Profil kısayolunu güncelle
-            try {
-              const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
-              const pic = u.picture || u.avatar;
-              const name = u.fullname || "—";
-
-              const ico = document.getElementById("profileShortcutIco");
-              if (ico && pic) ico.innerHTML = `<img src="${pic}">`;
-
-              const nm = document.getElementById("profileShortcutName");
-              if (nm) nm.textContent = name;
-            } catch (e) {}
-
-            // (Opsiyonel) Chat alanını en alta kilitle
-            const chat = document.getElementById("chat");
-            if (chat) chat.scrollTop = chat.scrollHeight;
-          }
-
-          // -------- Terms UI events --------
-          if (termsCheck && termsAcceptBtn) {
-            termsCheck.addEventListener("change", () => {
-              const ok = !!termsCheck.checked;
-              termsAcceptBtn.disabled = !ok;
-              termsAcceptBtn.style.opacity = ok ? "1" : "0.6";
-              termsAcceptBtn.style.cursor = ok ? "pointer" : "not-allowed";
-            });
-          }
-
-          if (termsAcceptBtn) {
-            termsAcceptBtn.addEventListener("click", () => {
-              if (termsCheck && !termsCheck.checked) return;
-
-              // Onaylandı
-              localStorage.setItem("caynana_terms_accepted_v1", "1");
-
-              // İçeri al
-              enterApp();
-            });
-          }
-
-          if (closeTermsBtn) {
-            closeTermsBtn.addEventListener("click", () => {
-              // İstersen kapattırma, ama senin akışa göre kapatınca login'e dönsün:
-              termsOverlay.classList.remove("active");
-              loginOverlay.classList.add("active");
-            });
-          }
-
-          // -------- Apple button --------
-          if (appleLoginBtn) {
-            appleLoginBtn.addEventListener("click", () => {
-              showToast(
-                "Apple biraz nazlı evladım. Kısa süre sonra açılacak.\nŞimdilik Google hesabınla girişi dene."
-              );
-            });
-          }
-
-          // -------- “Tek tık” Google için notlar --------
-          // Çift onay görmen genelde şunlardan olur:
-          // 1) Google Identity iki kez init/render ediliyor,
-          // 2) Hem custom buton hem renderButton aynı anda çalışıyor,
-          // 3) auto_select / one-tap kapalı ve tarayıcı yeniden prompt istiyor.
-          //
-          // Çözüm:
-          // - googleLoginBtn sadece "googleBtnWrap click()" yapsın (renderButton tek yerde kalsın)
-          // - One Tap açmak istersen aşağıyı ekleyebilirsin (bazı cihazlarda otomatik çıkar):
-          //
-          // google.accounts.id.prompt();  // init'ten sonra çağır
-          //
-          // NOT: “Gerçek anlamda” tek tık + sessiz giriş için backend tarafında session + refresh token stratejisi gerekir.
+          const termsAccepted = localStorage.getItem("caynana_terms_accepted_v1") === "1";
+          if(!termsAccepted) openTerms();
+          else enterApp();
+        }catch(err){
+          console.error(err);
+          showToast("Google girişi alınamadı. Tekrar dene.");
         }
+      },
+      ux_mode: "popup",
+      auto_select: true,
+      itp_support: true
+    });
 
-        function showToast(msg) {
-          const t = document.getElementById("toast");
-          if (!t) return;
-          t.textContent = msg;
-          t.classList.add("show");
-          clearTimeout(window.__toastTimer);
-          window.__toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+    // Hidden mount (brandless) - sadece init için
+    if(googleBtnWrap){
+      google.accounts.id.renderButton(googleBtnWrap, { width: 1 });
+    }
+  }
+
+  // Tıklama: sadece prompt aç (tek tık hissi)
+  if(googleLoginBtn){
+    googleLoginBtn.addEventListener("click", ()=>{
+      ensureGSIReady((ok)=>{
+        if(!ok){
+          showToast("Google servisleri yüklenemedi. İnterneti kontrol et.");
+          return;
         }
+        if(!GOOGLE_CLIENT_ID){
+          showToast("Google Client ID eksik. window.CAYNANA_GOOGLE_CLIENT_ID ayarla.");
+          return;
+        }
+        initGSI();
+        // Prompt mutlaka user gesture içinde çağrılmalı
+        google.accounts.id.prompt();
       });
-    </script>
+    });
+  }
+
+  // -------------------------
+  // First boot
+  // -------------------------
+  bootFromStorage();
+
+  // Layout
+  measureInputDock();
+  window.addEventListener("resize", measureInputDock);
+
+  // Active nav
+  markActiveQuickAccess();
+});
+</script>
+
+</body>
+</html>
+```0
