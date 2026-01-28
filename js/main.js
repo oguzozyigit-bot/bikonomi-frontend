@@ -1,28 +1,13 @@
 // FILE: /js/main.js
-// VERSION: vFINAL+2 (REBUILD - tek dosya, eksiksiz; menu + history + chat + login gate + logout)
-// NOTE: Senin main.js kaybolmuş; bu dosya sıfırdan, senin verdiğin modüllerle uyumlu olarak yeniden yazıldı.
-// UYUMLU MODÜLLER: config.js, auth.js, notif.js, chat.js, chat_store.js, menu_history_ui.js (+ opsiyonel fal.js)
-// AMAÇ: Hamburger menü dolu, chat çalışır, S.P görünür, logout çalışır, Türkçe bozulmaz, giriş akışı auth.js üzerinden.
+// VERSION: vFINAL+2b (FIXED sendMessage + FIXED history render + seesaw states)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
-import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
+import { initAuth, logout, acceptTerms } from "./auth.js";
 import { initNotif } from "./notif.js";
-import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
+import { fetchTextResponse, addUserBubble, typeWriter, addBotBubble } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
 import { initMenuHistoryUI } from "./menu_history_ui.js";
 
-// fal.js yoksa import patlamasın diye opsiyonel bağla
-let openFalPanel = null, closeFalPanel = null, handleFalPhoto = null;
-(async () => {
-  try {
-    const m = await import("./fal.js");
-    openFalPanel = m.openFalPanel;
-    closeFalPanel = m.closeFalPanel;
-    handleFalPhoto = m.handleFalPhoto;
-  } catch {}
-})();
-
-// CONFIG BRIDGE (index.html dahil)
 window.CAYNANA_GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
 window.CAYNANA_API_BASE = BASE_DOMAIN;
 window.CAYNANA_STORAGE_KEY = STORAGE_KEY;
@@ -39,8 +24,14 @@ function isLoggedUser(u){
   return !!(u?.isSessionActive && (u?.id || u?.user_id) && u?.provider && u?.provider !== "guest");
 }
 
-function show(el){ if(el){ el.style.display = "flex"; el.classList.add("active"); } }
-function hide(el){ if(el){ el.classList.remove("active"); el.style.display = "none"; } }
+/* ✅ seesaw state (user/bot/idle) */
+window.setSeesawState = function(state){
+  const bw = $("brandWrapper");
+  if(!bw) return;
+  bw.classList.remove("usering","botting","thinking");
+  if(state === "user") bw.classList.add("usering");
+  if(state === "bot") bw.classList.add("botting","thinking");
+};
 
 function refreshPremiumBars() {
   const u = getUser();
@@ -86,7 +77,6 @@ function bindLogoutAndDelete(){
   const logoutBtn = $("logoutBtn");
   if(logoutBtn){
     logoutBtn.addEventListener("click", ()=> {
-      // auth.js içindeki confirmli logout kullan
       try { logout(); } catch { location.reload(); }
     });
   }
@@ -106,16 +96,13 @@ function gateAuthAndTerms(){
   const u = getUser();
   const logged = isLoggedUser(u);
 
-  // login yoksa: loginOverlay açık kalsın, initAuth çalışsın
   if(!logged){
     if(loginOverlay){ loginOverlay.classList.add("active"); loginOverlay.style.display = "flex"; }
     if(termsOverlay){ termsOverlay.classList.remove("active"); termsOverlay.style.display = "none"; }
-    // Google butonu render (auth.js)
     try { initAuth(); } catch {}
     return false;
   }
 
-  // login var: sözleşme kontrol
   const email = String(u?.email || "").toLowerCase().trim();
   const accepted = email ? !!localStorage.getItem(termsKey(email)) : !!u?.terms_accepted_at;
 
@@ -125,7 +112,6 @@ function gateAuthAndTerms(){
     return false;
   }
 
-  // her şey tamam
   if(loginOverlay){ loginOverlay.classList.remove("active"); loginOverlay.style.display = "none"; }
   if(termsOverlay){ termsOverlay.classList.remove("active"); termsOverlay.style.display = "none"; }
   return true;
@@ -141,7 +127,6 @@ function bindTermsOverlay(){
 
   if(closeBtn){
     closeBtn.addEventListener("click", ()=> {
-      // sözleşmeyi kapatanı logout yapalım (senin kural: onay olmadan giriş yok)
       try { logout(); } catch { location.reload(); }
     });
   }
@@ -159,7 +144,6 @@ function bindTermsOverlay(){
       if(!check.checked) return;
       const ok = await acceptTerms();
       if(ok){
-        // sözleşme onaylandı → app’a devam
         termsOverlay.classList.remove("active");
         termsOverlay.style.display = "none";
         refreshPremiumBars();
@@ -168,51 +152,53 @@ function bindTermsOverlay(){
   }
 }
 
-function bindChatUI(){
-  const input = $("msgInput");
-  const sendBtn = $("sendBtn");
+function renderHistoryToChat(){
   const chatEl = $("chat");
+  if(!chatEl) return;
 
-  if(!input || !sendBtn || !chatEl) return;
-
-  // mevcut history'yi ekrana bas
   try{
     ChatStore.init();
     const hist = ChatStore.history();
     if(Array.isArray(hist) && hist.length){
-      chatEl.innerHTML = ""; // boş placeholder varsa temizle
+      chatEl.innerHTML = "";
       hist.forEach(m=>{
         if(m.role === "user") addUserBubble(m.content);
-        else if(m.role === "assistant") typeWriter(m.content);
+        else if(m.role === "assistant") addBotBubble(m.content); // ✅ typeWriter DEĞİL
       });
+      chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch{}
+}
+
+function bindChatUI(){
+  const input = $("msgInput");
+  const sendBtn = $("sendBtn");
+  const chatEl = $("chat");
+  if(!input || !sendBtn || !chatEl) return;
+
+  renderHistoryToChat();
 
   async function sendMessage(){
-window.setSeesawState?.("user"); // kullanıcı yazdı
-
-addUserBubble(text);
-
-window.setSeesawState?.("bot");  // bot cevap yazıyor
-
-const res = await fetchTextResponse(text, "chat");
-
-window.setSeesawState?.("idle"); // bitti
     const text = String(input.value || "").trim();
     if(!text) return;
+
+    window.setSeesawState?.("user");
 
     input.value = "";
     input.style.height = "auto";
 
     addUserBubble(text);
+    window.setSeesawState?.("bot");
 
     const res = await fetchTextResponse(text, "chat");
+
+    window.setSeesawState?.("idle");
+
     if(res?.text){
       typeWriter(res.text);
     }
   }
 
-  // enter gönder, shift+enter satır
   input.addEventListener("keydown", (e)=>{
     if(e.key === "Enter" && !e.shiftKey){
       e.preventDefault();
@@ -222,13 +208,12 @@ window.setSeesawState?.("idle"); // bitti
 
   sendBtn.addEventListener("click", sendMessage);
 
-  // textarea auto-grow
   input.addEventListener("input", ()=>{
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
   });
 
-  // + (camBtn) dosya seçsin (chat.html’de fileInput varsa)
+  // + (camBtn) dosya
   const camBtn = $("camBtn");
   const fileInput = $("fileInput");
   const filePreview = $("filePreview");
@@ -247,8 +232,6 @@ window.setSeesawState?.("idle"); // bitti
       }
       if(fileName) fileName.textContent = f.name;
       if(filePreview) filePreview.classList.add("show");
-      // Fal paneli varsa foto işi oraya devredilebilir
-      // şimdilik sadece preview
     });
   }
   if(fileClear){
@@ -258,7 +241,7 @@ window.setSeesawState?.("idle"); // bitti
     });
   }
 
-  // mic (şimdilik: tarayıcı speech varsa)
+  // mic (webkit)
   const micBtn = $("micBtn");
   if(micBtn && "webkitSpeechRecognition" in window){
     const Rec = window.webkitSpeechRecognition;
@@ -286,75 +269,26 @@ function bindNewChatButton(){
 
   btn.addEventListener("click", ()=>{
     ChatStore.newChat();
-    // chat alanını temizle
     const chatEl = $("chat");
     if(chatEl) chatEl.innerHTML = "";
-    // history list’i yenile
     try { initMenuHistoryUI(); } catch {}
   });
 }
 
-document.addEventListener("DOMContentLoaded", async () => {
-  // temel UI
+document.addEventListener("DOMContentLoaded", () => {
   bindHamburger();
   bindBottomBar();
   bindLogoutAndDelete();
   bindTermsOverlay();
 
-  // Menü + geçmiş listesi (ChatStore üzerinden)
   try { initMenuHistoryUI(); } catch {}
-
-  // auth gate
   const ok = gateAuthAndTerms();
   refreshPremiumBars();
 
-  // bildirim
   try { initNotif(); } catch {}
 
-  // chat ancak login+terms onaylıysa
   if(ok){
     bindChatUI();
     bindNewChatButton();
   }
-});
-/* =========================
-   UI DAVRANIŞ EKLERİ
-   ========================= */
-
-window.setBadgeCount = function(n){
-  const b = document.getElementById("notifBadge");
-  if(!b) return;
-  const v = Number(n||0);
-  if(v<=0){
-    b.style.display="none";
-    b.textContent="";
-    return;
-  }
-  b.style.display="flex";
-  b.textContent=String(v);
-};
-
-function startNotifWiggleLoop(){
-  const btn = document.getElementById("notifBtn");
-  if(!btn) return;
-
-  setInterval(()=>{
-    const b = document.getElementById("notifBadge");
-    if(!b || b.style.display==="none") return;
-
-    btn.classList.add("wiggle");
-    setTimeout(()=>btn.classList.remove("wiggle"), 5000);
-  }, 30000);
-}
-
-window.setSeesawState = function(state){
-  const bw = document.getElementById("brandWrapper");
-  if(!bw) return;
-  bw.classList.remove("usering","botting","thinking");
-  if(state==="user") bw.classList.add("usering");
-  if(state==="bot") bw.classList.add("botting","thinking");
-};
-
-document.addEventListener("DOMContentLoaded", ()=>{
-  startNotifWiggleLoop();
 });
