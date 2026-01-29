@@ -8,44 +8,49 @@ function esc(s=""){
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
-
 function short15(s=""){
   const t = String(s).trim();
   if(!t) return "";
   return t.length > 15 ? t.slice(0,15) : t;
 }
-
 function confirmDelete(){
   return confirm("Sohbetiniz kalıcı olarak silenecek. Eminmisin evladım?");
 }
 
-/* ✅ Profil okuma (Regl + Takım) */
 function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
 function getUser(){ return safeJson(localStorage.getItem("caynana_user_v1"), {}); }
 function norm(s){ return String(s||"").trim().toLowerCase(); }
+
+function getGender(u){
+  return u.gender || u.formGender || u.inpGender || u.cinsiyet || u.sex || "";
+}
 function isFemaleGender(g){
   const x = norm(g);
   return x === "kadın" || x === "kadin" || x === "female" || x === "woman";
 }
-function getGender(u){
-  return u.gender || u.formGender || u.inpGender || u.cinsiyet || u.sex || "";
-}
-function getTeamName(u){
-  return String(u.team || u.formTeam || u.takim || u.form_team || u.team_name || "").trim();
+function getTeam(u){
+  return String(u.team || u.formTeam || u.takim || u.team_name || "").trim();
 }
 
-/* ✅ Menüde var mı? (href ile kontrol) */
+function closeMenuOverlay(){
+  const overlay = $("menuOverlay");
+  if(overlay) overlay.classList.remove("open");
+}
+function goChat(){
+  closeMenuOverlay();
+  location.href = "/pages/chat.html";
+}
+
 function menuHasHref(container, href){
   if(!container) return false;
+  const normHref = href.replace(/^\//, "");
   const nodes = container.querySelectorAll(".menu-action");
   for(const n of nodes){
-    const on = n.getAttribute("onclick") || "";
-    if(on.includes(`'${href}'`) || on.includes(`"${href}"`) || on.includes(href)) return true;
+    const on = (n.getAttribute("onclick") || "");
+    if(on.includes(href) || on.includes(normHref)) return true;
   }
   return false;
 }
-
-/* ✅ Menüye eleman ekle */
 function appendMenuAction(container, icon, title, href){
   if(!container) return;
   const div = document.createElement("div");
@@ -55,29 +60,15 @@ function appendMenuAction(container, icon, title, href){
   container.appendChild(div);
 }
 
-/* ✅ Menü overlay kapat */
-function closeMenuOverlay(){
-  const overlay = $("menuOverlay");
-  if(overlay) overlay.classList.remove("open");
-}
-
-/* ✅ Chat sayfasına geç */
-function goChat(){
-  closeMenuOverlay();
-  // her koşulda chat sayfasına götür
-  location.href = "/pages/chat.html";
-}
-
-/* ✅ Boşsa bas, doluysa eksikleri ekle */
 function ensureAsistanMenus(){
   const asistan = $("menuAsistan");
   if(!asistan) return;
 
   const u = getUser();
   const female = isFemaleGender(getGender(u));
-  const team = getTeamName(u);
+  const team = getTeam(u);
 
-  // Eğer tamamen boşsa temel menüyü yaz
+  // boşsa temel kur
   if(asistan.children.length === 0){
     asistan.innerHTML = `
       <div class="menu-action" onclick="location.href='/pages/chat.html'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
@@ -89,15 +80,13 @@ function ensureAsistanMenus(){
     `;
   }
 
-  // Dolu olsa bile: eksikleri ekle
+  // eksikleri ekle
   if(!menuHasHref(asistan, "/pages/translate.html")){
     appendMenuAction(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
   }
-
   if(female && !menuHasHref(asistan, "/pages/regl.html")){
     appendMenuAction(asistan, "🌸", "Regl Takip", "/pages/regl.html");
   }
-
   if(team && !menuHasHref(asistan, "/pages/clup.html")){
     appendMenuAction(asistan, "⚽", team, "/pages/clup.html");
   }
@@ -127,7 +116,6 @@ function renderFallbackMenus(){
   }
 }
 
-/* ✅ History list: tıklayınca chat.html’ye gitsin */
 function renderHistory(){
   const listEl = $("historyList");
   if(!listEl) return;
@@ -156,49 +144,46 @@ function renderHistory(){
       row.style.borderColor = "rgba(190,242,100,.45)";
     }
 
-    // ✅ tıkla: currentId seç + chat’e git
+    // ✅ tıkla: setCurrent + chat’e git
     row.addEventListener("click", (e)=>{
       const act = e.target?.getAttribute?.("data-act");
       if(act) return;
-      ChatStore.currentId = c.id;
+      ChatStore.setCurrent(c.id);
       goChat();
     });
 
-    // edit
     row.querySelector('[data-act="edit"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       const curTitle = c.title || "";
       const newTitle = prompt("Sohbet başlığını yaz (Enter ile kaydet):", curTitle);
       if(newTitle === null) return;
-
       const cleaned = String(newTitle).trim();
       if(!cleaned) return;
 
-      // ChatStore.renameChat varsa kullan
-      if(typeof ChatStore.renameChat === "function"){
-        ChatStore.renameChat(c.id, cleaned);
-      } else {
-        // eski key fallback
-        try{
-          const idx = JSON.parse(localStorage.getItem("caynana_chat_index") || "[]");
-          const i = idx.findIndex(x=>x.id===c.id);
-          if(i>=0){
-            idx[i].title = cleaned;
-            idx[i].updated_at = new Date().toISOString();
-            localStorage.setItem("caynana_chat_index", JSON.stringify(idx));
-          }
-        }catch{}
-      }
-
+      ChatStore.renameChat?.(c.id, cleaned);
       renderHistory();
     });
 
-    // delete
     row.querySelector('[data-act="del"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
+
+      const wasCurrent = (ChatStore.currentId === c.id);
       ChatStore.deleteChat(c.id);
+
+      // ✅ chat sayfasındaysan ekrandan da gitsin
+      if((location.pathname || "").endsWith("/pages/chat.html")){
+        location.reload();
+        return;
+      }
+
+      // değilse menüyü güncelle
       renderHistory();
+
+      // current silindiyse chat’e atmak mantıklı
+      if(wasCurrent){
+        goChat();
+      }
     });
 
     listEl.appendChild(row);
@@ -209,16 +194,13 @@ export function initMenuHistoryUI(){
   try { ChatStore.init(); } catch {}
 
   renderFallbackMenus();
-  ensureAsistanMenus();   // ✅ kadın/team dahil burada garanti
-
+  ensureAsistanMenus();
   renderHistory();
 
-  // ✅ Yeni sohbet butonu: yeni chat aç + chat’e git
   const newBtn = $("newChatBtn");
   if(newBtn){
     newBtn.addEventListener("click", ()=>{
       ChatStore.newChat();
-      try { ChatStore.clearCurrent(); } catch {}
       goChat();
     });
   }
