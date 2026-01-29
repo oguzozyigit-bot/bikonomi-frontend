@@ -1,145 +1,367 @@
+<!-- FILE: /pages/iletisim.html
+     LOGIN SONRASI ŞABLON (ÜST BAR + HAMBURGER + KOLAY MENÜ + FOOTER SABİT)
+     ✅ İçerik: senin /pages/contact.html metni aynen alındı (değişmedi)
+     ✅ Üst/alt bar: login sonrası standart (chat.html ile aynı)
+     ✅ Scrollbar gizli (scroll çalışır)
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>İletişim</title>
-<style>
-  /* --- TEMEL AYARLAR --- */
-  :root { 
-    --bg: #0e0e0e; 
-    --text: #ececec; 
-    --gold: #ffb300; 
-    --pistachio: #bef264; 
-    --card-bg: #1a1a1a; 
-  }
-  
-  body { 
-    margin: 0; padding: 0; 
-    background: #000; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    color: var(--text); 
-    display: flex; justify-content: center; 
-    height: 100vh; overflow: hidden; 
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>İletişim</title>
 
-  .mobile-frame { 
-    width: 100%; max-width: 480px; height: 100%; 
-    background: var(--bg); 
-    display: flex; flex-direction: column; 
-    position: relative; 
-  }
-  @media (min-width: 500px) { 
-    .mobile-frame { 
-      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
-      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
-    } 
-  }
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
 
-  /* --- HEADER --- */
-  .header { 
-    padding: 15px 20px; 
-    border-bottom: 1px solid #222; 
-    background: rgba(20,20,20,0.95); 
-    backdrop-filter: blur(10px);
-    z-index: 10;
-    display: flex; align-items: center; gap: 15px;
-  }
-  .back-btn {
-    background: none; border: none; color: var(--gold); 
-    font-size: 24px; cursor: pointer; padding: 0; margin-top: -2px;
-  }
-  .header-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+  <style>
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --dockGap: 10px;
 
-  /* --- İÇERİK ALANI --- */
-  .content-area { 
-    flex: 1; overflow-y: auto; padding: 30px 20px; 
-    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 30px;
-  }
+      --gold:#ffb300;
+      --pistachio:#bef264;
+      --card: rgba(25,25,25,.55);
+      --border: rgba(255,255,255,.10);
+    }
 
-  /* İkon */
-  .contact-icon {
-    font-size: 40px; margin-bottom: 10px;
-    animation: float 3s ease-in-out infinite;
-  }
-  @keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+    /* Orta alan scroll */
+    .page-scroll{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockGap));
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width:none;
+      padding: 16px 14px;
+    }
+    .page-scroll::-webkit-scrollbar{ display:none; }
 
-  .intro-text { font-size: 15px; color: #ccc; line-height: 1.6; max-width: 90%; }
-  
-  /* Kart */
-  .contact-card {
-    width: 100%; background: #161616; border: 1px solid #333; border-radius: 20px;
-    padding: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  }
+    .page-card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.55);
+    }
 
-  .company-name { font-size: 13px; color: #666; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-  
-  .email-box {
-    background: #000; border: 1px dashed var(--gold); border-radius: 12px;
-    padding: 15px 20px; width: 100%;
-  }
-  .email-link { 
-    color: var(--gold); font-size: 16px; font-weight: 700; text-decoration: none; 
-    font-family: monospace; letter-spacing: 0.5px;
-  }
+    .page-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .page-title{
+      font-size: 16px;
+      font-weight: 1000;
+      color:#fff;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .back-mini{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+    }
+    .back-mini:active{ transform: translateY(1px); filter: brightness(.95); }
 
-  .action-btn {
-    background: var(--pistachio); color: #000; border: none; 
-    padding: 14px 30px; border-radius: 30px; font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-block;
-    box-shadow: 0 5px 15px rgba(190, 242, 100, 0.2);
-  }
-  .action-btn:active { transform: scale(0.96); }
+    .sub{
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255,255,255,.72);
+      font-weight: 650;
+      margin: 0 0 14px;
+    }
 
-  /* Footer İmza */
-  .footer-sign { 
-    margin-top: auto; text-align: center; padding: 20px; 
-    border-top: 1px solid #222; color: #888; font-size: 11px; width: 100%;
-  }
-  .footer-sign span { color: var(--gold); font-weight: 600; }
+    /* Kurumsal kutular */
+    .info-grid{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .info-box{
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 18px;
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    .label{
+      font-size: 11px;
+      font-weight: 950;
+      color: rgba(255,255,255,.55);
+      letter-spacing: .8px;
+      text-transform: uppercase;
+    }
 
-</style>
+    .value-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+    }
+    .value{
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--gold);
+      word-break: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      text-decoration:none;
+    }
+    .mini{
+      font-size: 12px;
+      color: rgba(255,255,255,.60);
+      font-weight: 650;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    /* Butonlar */
+    .btn-row{
+      display:flex;
+      gap:10px;
+      margin-top: 6px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      flex: 1 1 180px;
+      height: 46px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.85);
+      font-weight: 950;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      text-decoration:none;
+      box-shadow: 0 12px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.10);
+    }
+    .btn:active{ transform: translateY(1px); filter: brightness(.97); }
+
+    .btn-primary{
+      background: var(--pistachio);
+      color:#111;
+      border: none;
+    }
+
+    .ico{
+      width: 18px; height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .95;
+    }
+
+    /* Alt bar + footer frame */
+    .assistant-bar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: var(--footerH);
+      height: var(--assistH);
+      z-index: 2500;
+      pointer-events:none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+
+    .footer-container{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: 0;
+      z-index: 2400;
+    }
+  </style>
 </head>
+
 <body>
+<div class="mobile-frame" id="mobileFrame">
 
-<div class="mobile-frame">
-  <div class="header">
-    <button class="back-btn" onclick="history.back()">←</button>
-    <div class="header-title">İletişim</div>
-  </div>
-
-  <div class="content-area">
-    
-    <div>
-      <div class="contact-icon">📩</div>
-      <div class="intro-text">
-        Caynana her zaman seni dinler.<br>
-        Bir derdin, önerin veya teknik bir sorunun varsa bize ulaşmaktan çekinme.
-      </div>
+  <!-- ✅ TOPBAR (login sonrası standart) -->
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <div class="contact-card">
-      <div class="company-name">ITALKY TEKNOLOJİ A.Ş.</div>
-      
-      <div class="email-box">
-        <a href="mailto:support@caynana.ai" class="email-link">support@caynana.ai</a>
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ HAMBURGER MENU (login sonrası) -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
       </div>
 
-      <p style="font-size:12px; color:#888;">
-        Resmi iletişim kanalımız bu e-posta adresidir.
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ ORTA İÇERİK -->
+  <div class="page-scroll">
+    <div class="page-card">
+
+      <div class="page-head">
+        <h1 class="page-title">İletişim</h1>
+        <button class="back-mini" type="button" onclick="history.back()" aria-label="Geri">←</button>
+      </div>
+
+      <p class="sub">
+        Teknik bir sorun, öneri veya iş birliği talebin varsa resmi kanallarımız üzerinden bizimle iletişime geçebilirsin.
       </p>
 
-      <a href="mailto:support@caynana.ai" class="action-btn">Bize E-Posta Gönder</a>
-    </div>
+      <div class="info-grid">
 
-    <div class="footer-sign">
-      @CaynanaAI By Ozyigit's<br>
-      <span>2026 v8.2</span>
-    </div>
+        <div class="info-box">
+          <div class="label">Resmi Destek E-Postası</div>
+          <div class="value-row">
+            <a class="value" href="mailto:support@caynana.ai">support@caynana.ai</a>
+          </div>
+          <p class="mini">Bu adres üzerinden gelen talepler kayıt altına alınır ve sırasıyla yanıtlanır.</p>
 
+          <div class="btn-row">
+            <a class="btn btn-primary" href="mailto:support@caynana.ai">
+              <svg class="ico" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"></path><path d="M4 7l8 6 8-6"></path></svg>
+              E-Posta Gönder
+            </a>
+            <button class="btn" type="button" id="copyMailBtn">
+              <svg class="ico" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"></rect><rect x="2" y="2" width="13" height="13" rx="2"></rect></svg>
+              Kopyala
+            </button>
+          </div>
+        </div>
+
+        <div class="info-box">
+          <div class="label">Şirket</div>
+          <div class="value-row">
+            <div style="font-weight:950; color:rgba(255,255,255,.85);">ITALKY TEKNOLOJİ A.Ş.</div>
+          </div>
+          <p class="mini">Kurumsal iletişim ve yasal talepler bu başlık altında değerlendirilir.</p>
+        </div>
+
+      </div>
+
+      <p class="mini" style="margin-top:14px;">
+        Not: Caynana AI tıbbi/finansal/hukuki resmi danışmanlık hizmeti vermez. Yanıtlar öneri niteliğindedir.
+      </p>
+    </div>
   </div>
+
+  <!-- ✅ ALT KOLAY MENÜ -->
+  <div class="assistant-bar" id="assistantBar"></div>
+
+  <!-- ✅ FOOTER (login sonrası) -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
 </div>
+
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
+
+<script>
+  // mail kopyala (kurumsal küçük kolaylık)
+  document.addEventListener("DOMContentLoaded", () => {
+    const btn = document.getElementById("copyMailBtn");
+    if(!btn) return;
+    btn.addEventListener("click", async () => {
+      const mail = "support@caynana.ai";
+      try{
+        await navigator.clipboard.writeText(mail);
+        btn.textContent = "Kopyalandı";
+        setTimeout(()=> btn.textContent = "Kopyala", 1200);
+      }catch{
+        alert("Kopyalanamadı: " + mail);
+      }
+    });
+  });
+</script>
 
 </body>
 </html>
