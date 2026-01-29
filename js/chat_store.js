@@ -1,60 +1,63 @@
 // FILE: /js/chat_store.js
-// FINAL+ (USER-SCOPED INDEX + NO "Yeni sohbet" + TITLE 15 CHARS + RENAME + CONFIRM DELETE SUPPORT)
+// FINAL++ (CURRENT CHAT PERSIST + UI EVENT + NO OVERRIDE)
+// ✅ Seçilen sohbet kalıcı (menüden tıkla → chat açılınca doğru sohbet gelir)
+// ✅ init() artık currentId'yi ezmez
+// ✅ UI event: caynana:chats-updated (menü anında güncellenir)
 
-const INDEX_KEY_PREFIX = "caynana_chat_index::";
 const CHAT_PREFIX = "caynana_chat_";
 
-// Kullanıcı bazlı index anahtarı
-function getUserKey() {
-  try {
-    const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
-    const uid =
-      String(u.user_id || u.id || u.email || "").trim().toLowerCase() || "guest";
-    return uid;
-  } catch {
-    return "guest";
-  }
+function safeJson(s, fb){ try { return JSON.parse(s || ""); } catch { return fb; } }
+
+function getUserKey(){
+  const u = safeJson(localStorage.getItem("caynana_user_v1"), {});
+  const uid = String(u.user_id || u.id || u.email || "").trim().toLowerCase();
+  return uid || "guest";
 }
-function INDEX_KEY() {
-  return INDEX_KEY_PREFIX + getUserKey();
-}
+function INDEX_KEY(){ return `caynana_chat_index::${getUserKey()}`; }
+function CURRENT_KEY(){ return `caynana_chat_current::${getUserKey()}`; }
 
 function uid(){
   return "c_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 }
 function now(){ return new Date().toISOString(); }
 
+function emitUpdated(){
+  try { window.dispatchEvent(new CustomEvent("caynana:chats-updated")); } catch {}
+}
+
 function loadIndex(){
-  try { return JSON.parse(localStorage.getItem(INDEX_KEY()) || "[]"); }
-  catch { return []; }
+  return safeJson(localStorage.getItem(INDEX_KEY()), []);
 }
 function saveIndex(list){
   localStorage.setItem(INDEX_KEY(), JSON.stringify(list));
+  emitUpdated();
 }
 function loadChat(id){
-  try { return JSON.parse(localStorage.getItem(CHAT_PREFIX + id) || "[]"); }
-  catch { return []; }
+  return safeJson(localStorage.getItem(CHAT_PREFIX + id), []);
 }
 function saveChat(id, history){
   localStorage.setItem(CHAT_PREFIX + id, JSON.stringify(history));
+  emitUpdated();
 }
 
 function cleanText(s=""){
   return String(s||"").replace(/\s+/g," ").trim();
 }
-
-/* ✅ Başlık: ilk user mesajından, 15 karakter (senin şartın) */
 function makeTitleFromText(text){
   const t = cleanText(text);
-  if(!t) return ""; // ✅ boş -> başlık yok
+  if(!t) return "";
   const sliced = t.slice(0, 15);
   return sliced.length < t.length ? (sliced + "…") : sliced;
 }
 
-/* ✅ chat’in gerçekten “boş” olup olmadığını anlamak için */
-function hasAnyUserMessage(chatId){
-  const h = loadChat(chatId) || [];
-  return h.some(m => String(m.role||"") === "user" && cleanText(m.content||""));
+function readCurrent(){
+  const v = String(localStorage.getItem(CURRENT_KEY()) || "").trim();
+  return v || null;
+}
+function writeCurrent(id){
+  if(!id) return;
+  localStorage.setItem(CURRENT_KEY(), String(id));
+  emitUpdated();
 }
 
 export const ChatStore = {
@@ -63,51 +66,56 @@ export const ChatStore = {
   init(){
     const index = loadIndex().filter(c => !c.deleted_at);
 
-    // ✅ hiç chat yoksa yeni chat aç ama title verme
+    // index yoksa yeni aç
     if(index.length === 0){
       this.newChat();
       return;
     }
 
-    // son güncellenene geç
+    // 1) önce stored current varsa onu kullan
+    const stored = readCurrent();
+    if(stored && index.some(c => c.id === stored && !c.deleted_at)){
+      this.currentId = stored;
+      return;
+    }
+
+    // 2) yoksa en günceli seç
     const sorted = index.sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at));
     this.currentId = sorted[0].id;
-  },
-
-  list(){
-    // ✅ “Yeni sohbet” gibi boş başlıkları listeye koyma
-    return loadIndex()
-      .filter(c => !c.deleted_at)
-      .filter(c => !!cleanText(c.title || "") && hasAnyUserMessage(c.id))
-      .sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at))
-      .slice(0,10);
+    writeCurrent(this.currentId);
   },
 
   setCurrent(id){
     if(!id) return;
     const index = loadIndex().filter(c => !c.deleted_at);
-    const exists = index.some(c => c.id === id);
-    if(exists) this.currentId = id;
+    if(index.some(c => c.id === id)){
+      this.currentId = id;
+      writeCurrent(id);
+    }
   },
 
-  // Şu anki sohbetin Server ID'sini getir (Varsa)
-  getCurrentServerId() {
+  list(){
+    return loadIndex()
+      .filter(c => !c.deleted_at)
+      .filter(c => !!cleanText(c.title || "")) // boş başlık gösterme
+      .sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at))
+      .slice(0,10);
+  },
+
+  getCurrentServerId(){
     if(!this.currentId) return null;
     const index = loadIndex();
     const chat = index.find(c => c.id === this.currentId);
     return chat ? (chat.server_id || null) : null;
   },
 
-  // Server ID'yi kaydet
-  setServerId(serverId) {
+  setServerId(serverId){
     if(!this.currentId || !serverId) return;
     const index = loadIndex();
     const i = index.findIndex(c => c.id === this.currentId);
-    if(i >= 0) {
-      if(index[i].server_id !== serverId) {
-        index[i].server_id = serverId;
-        saveIndex(index);
-      }
+    if(i >= 0 && index[i].server_id !== serverId){
+      index[i].server_id = serverId;
+      saveIndex(index);
     }
   },
 
@@ -118,7 +126,7 @@ export const ChatStore = {
     index.unshift({
       id,
       server_id: null,
-      title: "",              // ✅ “Yeni sohbet” YOK
+      title: "",            // ✅ “Yeni sohbet” yok
       created_at: now(),
       updated_at: now(),
       deleted_at: null
@@ -127,16 +135,14 @@ export const ChatStore = {
     saveIndex(index.slice(0,10));
     saveChat(id, []);
     this.currentId = id;
+    writeCurrent(id);
   },
 
-  // ✅ Başlık düzenleme (kalem)
   renameChat(id, newTitle){
     const t = cleanText(newTitle);
-    if(!id) return false;
-    if(!t) return false;
+    if(!id || !t) return false;
 
     const clipped = t.slice(0, 15) + (t.length > 15 ? "…" : "");
-
     const index = loadIndex();
     const i = index.findIndex(c => c.id === id);
     if(i < 0) return false;
@@ -146,7 +152,6 @@ export const ChatStore = {
     return true;
   },
 
-  // ✅ Silme (çöp) — confirm UI main/menu tarafında
   deleteChat(id){
     const index = loadIndex().map(c=>{
       if(c.id === id) return { ...c, deleted_at: now() };
@@ -160,6 +165,7 @@ export const ChatStore = {
         .sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at));
       if(alive.length){
         this.currentId = alive[0].id;
+        writeCurrent(this.currentId);
       }else{
         this.newChat();
       }
@@ -177,12 +183,10 @@ export const ChatStore = {
     if(i < 0) return;
 
     const cur = index[i];
-
-    // ✅ Başlık zaten varsa dokunma
     if(cleanText(cur.title || "")) return;
 
     const title = makeTitleFromText(text);
-    if(!title) return; // boşsa yazma
+    if(!title) return;
 
     index[i] = { ...cur, title, updated_at: now() };
     saveIndex(index.slice(0,10));
@@ -205,6 +209,7 @@ export const ChatStore = {
       return c;
     });
     saveIndex(index.slice(0,10));
+    writeCurrent(this.currentId);
   },
 
   clearCurrent(){
@@ -212,7 +217,6 @@ export const ChatStore = {
     saveChat(this.currentId, []);
   },
 
-  // API’ye gidecek history
   getLastForApi(limit = 30){
     if(!this.currentId) this.init();
     const h = loadChat(this.currentId) || [];
@@ -220,17 +224,5 @@ export const ChatStore = {
       role: m.role,
       content: String(m.content || "")
     }));
-  },
-
-  debug(){
-    if(!this.currentId) this.init();
-    const index = loadIndex();
-    const h = loadChat(this.currentId);
-    return {
-      currentId: this.currentId,
-      chats: index.filter(c=>!c.deleted_at).length,
-      currentLen: (h||[]).length,
-      last: (h||[]).slice(-3)
-    };
   }
 };
