@@ -1,13 +1,15 @@
-/* FILE: /css/layout-common.css  (REPLACE ALL)
-   PURPOSE: Bottom quick menu (icon-only, minimal) + active highlight + frame-safe fixed layout
+/* FILE: /css/layout-common.css
+   REPLACE ALL — ultra minimal bottom bar:
+   - Daha az yer kaplar (daha kısa)
+   - Varsayılan: SADECE ikon
+   - Sadece AKTİF olanda mini yazı görünür
 */
 :root{
   --frameW: min(480px, calc(100vw - 18px));
-  --footerH: 64px;
-  --assistH: 78px;
+  --footerH: 56px; /* footer daha sıkı */
 }
 
-/* Alt kayan bar */
+/* Alt kayan bar (daha ince) */
 .assistant-bar{
   position: fixed;
   left: 50%;
@@ -18,58 +20,54 @@
 
   display:flex;
   align-items:center;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px;
+  padding: 8px 10px;
 
   overflow-x:auto;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
 
-  background: linear-gradient(to top,
-    rgba(10,10,10,.96),
-    rgba(10,10,10,.72) 55%,
-    rgba(10,10,10,0)
-  );
-  border-top-left-radius: 22px;
-  border-top-right-radius: 22px;
+  background: rgba(0,0,0,.72);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
 }
 .assistant-bar::-webkit-scrollbar{ display:none; }
 
-/* Tek item (minimal) */
+/* Item (kompakt, ikon ağırlıklı) */
 .assistant-item{
   flex: 0 0 auto;
-  width: 64px;
-  padding: 10px 8px 8px;
-  border-radius: 18px;
+  width: 52px;
+  padding: 8px 6px 6px;
+  border-radius: 16px;
 
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 12px 26px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
 
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap: 6px;
+  gap: 4px;
 
-  color: rgba(255,255,255,.78);
+  color: rgba(255,255,255,.70);
   user-select:none;
   cursor:pointer;
 }
 
-/* ikon yuvası */
 .assistant-item .ico-wrap{
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 14px;
   display:flex;
   align-items:center;
   justify-content:center;
 
-  background: rgba(255,255,255,.04);
-  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
 }
 
-/* SVG ikon */
+/* SVG ikonlar */
 .assistant-item .ico-wrap svg{
   width: 18px;
   height: 18px;
@@ -81,29 +79,28 @@
   opacity: .95;
 }
 
-/* label */
+/* Varsayılan: yazı gizli */
 .assistant-item .lbl{
-  font-size: 10px;
+  display:none;
+  font-size: 9px;
   font-weight: 900;
   letter-spacing: .2px;
-  color: inherit;
-  white-space: nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  max-width: 100%;
+  white-space:nowrap;
 }
 
-/* aktif */
+/* Aktifte: renk + yazı görünür */
 .assistant-item.active{
   color: #ffb300;
-  background: rgba(255,179,0,.12);
-  border-color: rgba(255,179,0,.35);
-  box-shadow: 0 0 22px rgba(255,179,0,.18);
-}
-.assistant-item.active .ico-wrap{
-  border-color: rgba(255,179,0,.40);
+  border-color: rgba(255,179,0,.30);
   background: rgba(255,179,0,.10);
 }
+.assistant-item.active .ico-wrap{
+  background: rgba(255,179,0,.08);
+  border-color: rgba(255,179,0,.25);
+}
+.assistant-item.active .lbl{
+  display:block;
+}
 
-/* küçük hover/press */
+/* Tıklama hissi */
 .assistant-item:active{ transform: translateY(-1px); }
