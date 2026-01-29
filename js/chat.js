@@ -1,5 +1,9 @@
 // FILE: /js/chat.js
-// FINAL+ (LOCAL NAME MEMORY + ALWAYS-BOTTOM CHAT)
+// FINAL+ (LOCAL NAME MEMORY + ALWAYS-BOTTOM CHAT + KAYNANA AUTO TOPIC OPENER)
+// ✅ Mevcut kodun HİÇBİR şeyini eksiltmedim.
+// ✅ Üstüne: profil verilerinden “kaynana konu açıcı” ekledim (insan gibi).
+// ✅ Sohbet tıkanınca (2 kısa cevap üst üste) kaynana otomatik soru atar.
+// ✅ Profil verileri system_hint’e zengin şekilde gider (eş/çocuk/şehir/memleket/kilo/takım vs).
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -142,6 +146,88 @@ export function addUserBubble(text) {
   div.scrollTop = div.scrollHeight;
 }
 
+/* =========================================================
+   ✅ KAYNANA "KONU AÇICI" (PROFİL BAKAR, İNSAN GİBİ)
+   ========================================================= */
+function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function buildProfileContextForKaynana(profile={}, memP={}) {
+  const born =
+    String(profile.dogumYeri || profile.birth_city || profile.birthPlace || memP.dogumYeri || memP.birth_city || memP.birthPlace || "").trim();
+
+  const live =
+    String(profile.city || profile.yasadigiSehir || profile.living_city || memP.city || memP.yasadigiSehir || memP.living_city || "").trim();
+
+  const team =
+    String(profile.team || memP.team || "").trim();
+
+  const spouse =
+    String(profile.spouse || memP.spouse || "").trim();
+
+  const kidsRaw =
+    String(profile.childNames || memP.childNames || "").trim();
+  const kids =
+    kidsRaw ? kidsRaw.split(/[,/]+/).map(x => x.trim()).filter(Boolean).slice(0, 6) : [];
+
+  const kg =
+    Number(profile.weight_kg || profile.weightKg || memP.weight_kg || memP.weightKg || 0) || 0;
+
+  const cm =
+    Number(profile.height_cm || profile.heightCm || memP.height_cm || memP.heightCm || 0) || 0;
+
+  return { born, live, team, spouse, kids, kg, cm };
+}
+
+function kaynanaOpener(ctx, hitap="evladım") {
+  const pool = [];
+
+  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase()) {
+    pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
+  }
+  if (ctx.live && !ctx.born) {
+    pool.push(`${hitap}, ${ctx.live} nasıl gidiyor? Oralar hâlâ aynı mı?`);
+  }
+  if (ctx.spouse) {
+    pool.push(`${hitap}, eşin ${ctx.spouse} nasıl? İhmal etmiyorsundur inşallah.`);
+  }
+  if (ctx.kids.length) {
+    const names = ctx.kids.join(", ");
+    pool.push(`Torunlarım ${names} nasıl ${hitap}? Bir haber ver de içim rahat etsin.`);
+  }
+  if (ctx.team) {
+    pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
+    pool.push(`${ctx.team} maçına bakayım mı ${hitap}, yüzünü güldürmüş mü?`);
+  }
+  if (ctx.kg) {
+    pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı? Ben karışmıyorum diyorum ama… karışıyorum işte.`);
+  }
+  if (ctx.cm && ctx.kg) {
+    pool.push(`${hitap}, boy ${ctx.cm} cm, kilo ${ctx.kg}… düzen şart. Sonra “demedim” deme.`);
+  }
+
+  // veri yoksa bile “insan gibi” kanca
+  pool.push(`Ee ${hitap}, bugün moral nasıl? Bir anlat bakalım.`);
+
+  return _pick(pool);
+}
+
+function isConversationStuck(userMessage="") {
+  const t = String(userMessage||"").trim().toLowerCase();
+  if(!t) return true;
+  const short = t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t);
+  return short;
+}
+
+function getKaynanaState(userId) {
+  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
+  try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch { return {}; }
+}
+function setKaynanaState(userId, st) {
+  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
+  localStorage.setItem(k, JSON.stringify(st || {}));
+}
+/* ========================================================= */
+
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
@@ -189,6 +275,12 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true, code: "NO_USER_ID" };
   }
 
+  // ✅ kaynana state (tıkandı mı?)
+  const st = getKaynanaState(userId);
+  st.lastUserAt = Date.now();
+  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
+  setKaynanaState(userId, st);
+
   const memP = (() => { try { return getMemoryProfile() || {}; } catch { return {}; } })();
 
   const displayName =
@@ -211,10 +303,20 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     childNames: profile.childNames || null,
     team: profile.team || null,
     city: profile.city || null,
-    isProfileCompleted: !!profile.isProfileCompleted
+    isProfileCompleted: !!profile.isProfileCompleted,
+
+    // (opsiyonel) bu alanlar sende varsa otomatik alınır
+    height_cm: profile.height_cm || null,
+    weight_kg: profile.weight_kg || null,
+    dogumYeri: profile.dogumYeri || null,
+    yasadigiSehir: profile.yasadigiSehir || null,
+    birth_date: profile.birth_date || null
   };
 
   const mergedProfile = mergeProfiles(formProfile, memP);
+
+  // ✅ Profil bağlamı (kaynana konu açıcı için)
+  const ctx = buildProfileContextForKaynana(profile, memP);
 
   // store user
   try { ChatStore.add?.("user", message); } catch {}
@@ -236,6 +338,9 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
   const serverChatId = (ChatStore.getCurrentServerId?.() || null);
 
+  const hitapForKaynana = String(mergedProfile.hitap || displayName || "evladım").trim() || "evladım";
+  const kidsList = (ctx.kids && ctx.kids.length) ? ctx.kids.join(", ") : "";
+
   const payload = {
     text: message,
     message: message,
@@ -244,7 +349,25 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     mode,
     profile: mergedProfile,
     user_meta: mergedProfile,
-    system_hint: displayName ? `Kullanıcıya "${displayName}" diye hitap et.` : `Profil doluysa profili öncelikle kullan.`,
+
+    // ✅ kaynana sistem notu: profil bilgilerini konuşmada kullan
+    system_hint: `
+Sen sevecen ama iğneleyici Türk kaynanasısın. Kullanıcıya "${hitapForKaynana}" diye hitap et.
+Profil bilgileri (unutma ve sohbeti açmak için kullan):
+- Memleket: ${ctx.born || "?"}
+- Yaşadığı şehir: ${ctx.live || "?"}
+- Boy/Kilo: ${ctx.cm ? ctx.cm + " cm" : "?"} / ${ctx.kg ? ctx.kg + " kg" : "?"}
+- Eş: ${ctx.spouse || "?"}
+- Çocuklar: ${kidsList || "?"}
+- Takım: ${ctx.team || "?"}
+
+Kurallar:
+- Memleket farklı şehirde yaşıyorsa “memleket özlemi” muhabbeti aç.
+- Kilo/boy varsa nazlı dalga geç ama hakaret etme.
+- Eş/çocuk isimleri varsa bazen isimleriyle sor.
+- Takım varsa web:auto ile son maç sonucuna bak; yenildiyse hafif dalga geç, kazandıysa öv.
+`.trim(),
+
     web: "auto",
     enable_web_search: true,
     history: historyForApi
@@ -275,6 +398,16 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     const out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
 
     try { ChatStore.add?.("assistant", out); } catch {}
+
+    // ✅ sohbet tıkanınca kaynana kendi konu açsın
+    const st2 = getKaynanaState(userId);
+    if (Number(st2.stuckCount || 0) >= 2) {
+      const opener = kaynanaOpener(ctx, hitapForKaynana);
+      st2.stuckCount = 0;
+      setKaynanaState(userId, st2);
+
+      return { text: `${out}\n\n${opener}` };
+    }
 
     return { text: out };
   };
