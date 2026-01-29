@@ -1,8 +1,7 @@
 // FILE: /js/chat.js
 // FINAL++ (AUTO SCROLL GARANTİ + ÇİFT MESAJ YOK + AUTOFOLLOW AKILLI)
-// ✅ UI scroll: 3 frame forceBottom (mobil/PC kaçırmaz)
-// ✅ kullanıcı yukarı çıktıysa zorlamaz, ama kullanıcı mesaj gönderince tekrar follow açılır
-// ✅ double reply: buradan çıkmaz (main.js render tekrar basmıyor)
+// ✅ FIX: ChatStore'a hemen yazma engellendi (Double Render Fix).
+// ✅ FIX: Scroll artık 3 frame boyunca zorlanıyor (DOM render gecikmesini yutar).
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -103,12 +102,12 @@ async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 /* =========================================================
    ✅ AUTOFOLLOW CORE (kaçırmayan scroll)
    ========================================================= */
-function _isNearBottom(el, slack = 380) { // ✅ büyük eşik: sabit bar/padding yüzünden kaçırmasın
+function _isNearBottom(el, slack = 380) {
   try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
   catch { return true; }
 }
 
-// 3 frame bottom (mobil/pc kaçırmaz)
+// ✅ 3 frame bottom (mobil/pc kaçırmaz, dom render'ı bekler)
 function _forceBottom(el){
   if(!el) return;
   let n = 0;
@@ -139,7 +138,6 @@ export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
 
-  // follow: başlangıçta alttaysa true
   let follow = _isNearBottom(div);
   const onScroll = () => { follow = _isNearBottom(div); };
   div.addEventListener("scroll", onScroll, { passive:true });
@@ -168,15 +166,13 @@ export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
-  const follow = _isNearBottom(div);
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  // user mesaj attıysa altta tut
-  if(follow) _forceBottom(div);
-  else _forceBottom(div); // ✅ kullanıcı mesaj attığında yine de alta çek (senin beklentin bu)
+  // ✅ Kullanıcı mesaj attığında HER ZAMAN en alta indir.
+  _forceBottom(div);
 }
 
 /* =========================================================
@@ -239,6 +235,19 @@ function getKaynanaState(userId) {
 function setKaynanaState(userId, st) {
   const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
   localStorage.setItem(k, JSON.stringify(st || {}));
+}
+
+/* =========================================================
+   ✅ FIX: STORE YAZIMINI GECİKTİR (Çift Mesajı Önler)
+   ========================================================= */
+function scheduleAssistantStoreWrite(outText){
+  try{
+    const s = String(outText || "");
+    const delay = Math.max(600, Math.min(4500, s.length * 12));
+    setTimeout(()=>{
+      try { ChatStore.add?.("assistant", s); } catch {}
+    }, delay);
+  }catch{}
 }
 
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
@@ -329,7 +338,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   })();
 
   const serverChatId = (ChatStore.getCurrentServerId?.() || null);
-
   const hitapForKaynana = String(mergedProfile.hitap || displayName || "evladım").trim() || "evladım";
 
   const payload = {
@@ -379,8 +387,8 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
       out = `${out}\n\n${opener}`;
     }
 
-    // ✅ assistant store yaz (tek kayıt)
-    try { ChatStore.add?.("assistant", out); } catch {}
+    // ✅ FIX: Gecikmeli yazım (çift render/scroll çakışması önler)
+    scheduleAssistantStoreWrite(out);
 
     return { text: out };
   };
