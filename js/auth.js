@@ -1,9 +1,9 @@
 // =========================================================
 // FILE: /js/auth.js
-// VERSION: vFINAL+3 (Overlay Google Button + Fix "ID yok")
-// WHY:
-// - Programatik click yerine overlay kullanıyoruz (iframe güvenliği)
-// - initAuth() sadece 1 kere initialize eder + #googleBtnWrap içine renderButton basar
+// VERSION: vFINAL+3b (NO BREAK + LOGOUT FIX -> ALWAYS /index.html)
+// ✅ İLAVE: logout artık /pages/chat.html’de kalmaz; HER ZAMAN /index.html’e gider.
+// ✅ İLAVE: logout sırasında google auto-select kapatılır (hemen tekrar login yapmasın).
+// ✅ EKSİLTME YOK: senin mevcut akışın aynı.
 // =========================================================
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
@@ -177,6 +177,7 @@ async function handleGoogleResponse(res){
       clearApiToken();
     }
 
+    // index sayfası: sözleşme kontrolü + chat'e yönlendirme zaten orada
     window.location.href = "/index.html";
   }catch(e){
     console.error("handleGoogleResponse error:", e);
@@ -194,7 +195,6 @@ function renderGoogleOverlayButton(){
     return;
   }
 
-  // Wrap already overlay via CSS. Just render the real button inside it:
   try{
     window.google.accounts.id.renderButton(wrap, {
       type: "standard",
@@ -227,15 +227,13 @@ export function initAuth() {
     client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleResponse,
     auto_select: false,
-    use_fedcm_for_prompt: false, // ✅ daha stabil
+    use_fedcm_for_prompt: false,
     cancel_on_tap_outside: false
   });
 
   renderGoogleOverlayButton();
 }
 
-// Bu fonksiyon artık popup açmaz; sadece GSI hazır mı diye kontrol eder.
-// Popup’ı overlaydeki gerçek Google butonu açacak.
 export function handleLogin(provider) {
   if(provider !== "google"){
     alert("Apple girişi yakında evladım.");
@@ -248,9 +246,6 @@ export function handleLogin(provider) {
   }
 
   initAuth();
-
-  // Kullanıcı tıklamayı zaten overlay'deki gerçek butona yapıyor.
-  // Burada ekstra prompt/click yok.
 }
 
 export async function acceptTerms() {
@@ -268,16 +263,17 @@ export async function acceptTerms() {
 
 export function logout() {
   if (confirm("Gidiyor musun evladım?")) {
-    try {
-      window.google?.accounts?.id?.disableAutoSelect?.();
-    } catch (e) {
+    // ✅ auto-select kapat (yoksa bazen anında tekrar oturum açtırıyor)
+    try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (e) {
       console.warn("disableAutoSelect failed", e);
     }
 
+    // temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
     localStorage.removeItem(API_TOKEN_KEY);
 
-    window.location.reload();
+    // ✅ HER ZAMAN giriş sayfası
+    window.location.replace("/index.html");
   }
 }
