@@ -1,9 +1,8 @@
 // FILE: /js/chat.js
-// FINAL+ (LOCAL NAME MEMORY + ALWAYS-BOTTOM CHAT + KAYNANA AUTO TOPIC OPENER)
-// ✅ Mevcut kodun HİÇBİR şeyini eksiltmedim.
-// ✅ Üstüne: profil verilerinden “kaynana konu açıcı” ekledim (insan gibi).
-// ✅ Sohbet tıkanınca (2 kısa cevap üst üste) kaynana otomatik soru atar.
-// ✅ Profil verileri system_hint’e zengin şekilde gider (eş/çocuk/şehir/memleket/kilo/takım vs).
+// FINAL+ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL FIX)
+// ✅ Hiçbir şeyi eksiltmedim.
+// ✅ Sadece şu sorunu düzelttim: Scroll “kilitlenmesin” diye otomatik alta kaydırmayı
+//    sadece kullanıcı alttaysa yapıyoruz. Kullanıcı yukarı çıktıysa zorlamıyoruz.
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -101,21 +100,44 @@ function pickAssistantText(data) {
 
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
+/* =========================================================
+   ✅ SCROLL FIX HELPERS
+   - Kullanıcı yukarı kaydırdıysa otomatik alta kilitleme yapma
+   ========================================================= */
+function _isNearBottom(el, slack = 120) {
+  try {
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
+  } catch {
+    return true;
+  }
+}
+function _scrollToBottom(el) {
+  try { el.scrollTop = el.scrollHeight; } catch {}
+}
+
 /* ✅ UI: bot bubble (history basarken kullanacağız) */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
+
+  const follow = _isNearBottom(div);
+
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
   bubble.textContent = String(text||"");
   div.appendChild(bubble);
-  div.scrollTop = div.scrollHeight;
+
+  if(follow) _scrollToBottom(div);
 }
 
 /* ✅ UI: typewriter (canlı cevap) */
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
+
+  let follow = _isNearBottom(div);
+  const onScroll = () => { follow = _isNearBottom(div); };
+  div.addEventListener("scroll", onScroll, { passive:true });
 
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
@@ -127,8 +149,10 @@ export function typeWriter(text, elId = "chat") {
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      div.scrollTop = div.scrollHeight;
+      if (follow) _scrollToBottom(div);
       setTimeout(type, 28);
+    } else {
+      div.removeEventListener("scroll", onScroll);
     }
   })();
 }
@@ -138,12 +162,14 @@ export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
+  const follow = _isNearBottom(div);
+
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  div.scrollTop = div.scrollHeight;
+  if(follow) _scrollToBottom(div);
 }
 
 /* =========================================================
@@ -205,9 +231,7 @@ function kaynanaOpener(ctx, hitap="evladım") {
     pool.push(`${hitap}, boy ${ctx.cm} cm, kilo ${ctx.kg}… düzen şart. Sonra “demedim” deme.`);
   }
 
-  // veri yoksa bile “insan gibi” kanca
   pool.push(`Ee ${hitap}, bugün moral nasıl? Bir anlat bakalım.`);
-
   return _pick(pool);
 }
 
@@ -305,7 +329,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     city: profile.city || null,
     isProfileCompleted: !!profile.isProfileCompleted,
 
-    // (opsiyonel) bu alanlar sende varsa otomatik alınır
     height_cm: profile.height_cm || null,
     weight_kg: profile.weight_kg || null,
     dogumYeri: profile.dogumYeri || null,
@@ -315,7 +338,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
   const mergedProfile = mergeProfiles(formProfile, memP);
 
-  // ✅ Profil bağlamı (kaynana konu açıcı için)
   const ctx = buildProfileContextForKaynana(profile, memP);
 
   // store user
@@ -349,8 +371,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     mode,
     profile: mergedProfile,
     user_meta: mergedProfile,
-
-    // ✅ kaynana sistem notu: profil bilgilerini konuşmada kullan
     system_hint: `
 Sen sevecen ama iğneleyici Türk kaynanasısın. Kullanıcıya "${hitapForKaynana}" diye hitap et.
 Profil bilgileri (unutma ve sohbeti açmak için kullan):
@@ -367,7 +387,6 @@ Kurallar:
 - Eş/çocuk isimleri varsa bazen isimleriyle sor.
 - Takım varsa web:auto ile son maç sonucuna bak; yenildiyse hafif dalga geç, kazandıysa öv.
 `.trim(),
-
     web: "auto",
     enable_web_search: true,
     history: historyForApi
@@ -399,13 +418,11 @@ Kurallar:
 
     try { ChatStore.add?.("assistant", out); } catch {}
 
-    // ✅ sohbet tıkanınca kaynana kendi konu açsın
     const st2 = getKaynanaState(userId);
     if (Number(st2.stuckCount || 0) >= 2) {
       const opener = kaynanaOpener(ctx, hitapForKaynana);
       st2.stuckCount = 0;
       setKaynanaState(userId, st2);
-
       return { text: `${out}\n\n${opener}` };
     }
 
