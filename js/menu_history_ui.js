@@ -21,47 +21,17 @@ function confirmDelete(){
 
 /* ✅ Profil okuma (Regl + Takım) */
 function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
-function getUser(){
-  return safeJson(localStorage.getItem("caynana_user_v1"), {});
-}
+function getUser(){ return safeJson(localStorage.getItem("caynana_user_v1"), {}); }
 function norm(s){ return String(s||"").trim().toLowerCase(); }
 function isFemaleGender(g){
   const x = norm(g);
   return x === "kadın" || x === "kadin" || x === "female" || x === "woman";
 }
 function getGender(u){
-  // farklı key’leri kapsa
   return u.gender || u.formGender || u.inpGender || u.cinsiyet || u.sex || "";
 }
 function getTeamName(u){
-  // farklı key’leri kapsa
   return String(u.team || u.formTeam || u.takim || u.form_team || u.team_name || "").trim();
-}
-
-/* ✅ Chat index key uyumluluğu (eski + yeni) */
-function getUserKey(){
-  const u = getUser();
-  return norm(u.user_id || u.id || u.email) || "guest";
-}
-function getIndexKeys(){
-  const ukey = getUserKey();
-  return ["caynana_chat_index", `caynana_chat_index::${ukey}`];
-}
-function patchTitleEverywhere(chatId, newTitle){
-  const keys = getIndexKeys();
-  const ts = new Date().toISOString();
-
-  keys.forEach((k)=>{
-    try{
-      const idx = JSON.parse(localStorage.getItem(k) || "[]");
-      const i = idx.findIndex(x=>x.id===chatId);
-      if(i>=0){
-        idx[i].title = newTitle;
-        idx[i].updated_at = ts;
-        localStorage.setItem(k, JSON.stringify(idx));
-      }
-    }catch{}
-  });
 }
 
 /* ✅ Menüde var mı? (href ile kontrol) */
@@ -85,6 +55,19 @@ function appendMenuAction(container, icon, title, href){
   container.appendChild(div);
 }
 
+/* ✅ Menü overlay kapat */
+function closeMenuOverlay(){
+  const overlay = $("menuOverlay");
+  if(overlay) overlay.classList.remove("open");
+}
+
+/* ✅ Chat sayfasına geç */
+function goChat(){
+  closeMenuOverlay();
+  // her koşulda chat sayfasına götür
+  location.href = "/pages/chat.html";
+}
+
 /* ✅ Boşsa bas, doluysa eksikleri ekle */
 function ensureAsistanMenus(){
   const asistan = $("menuAsistan");
@@ -106,17 +89,15 @@ function ensureAsistanMenus(){
     `;
   }
 
-  // ✅ Dolu olsa bile: Alışveriş yoksa ekle
+  // Dolu olsa bile: eksikleri ekle
   if(!menuHasHref(asistan, "/pages/translate.html")){
     appendMenuAction(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
   }
 
-  // ✅ Kadın ise: Regl Takip ekle
   if(female && !menuHasHref(asistan, "/pages/regl.html")){
     appendMenuAction(asistan, "🌸", "Regl Takip", "/pages/regl.html");
   }
 
-  // ✅ Takım varsa: takım adıyla ekle
   if(team && !menuHasHref(asistan, "/pages/clup.html")){
     appendMenuAction(asistan, "⚽", team, "/pages/clup.html");
   }
@@ -146,11 +127,12 @@ function renderFallbackMenus(){
   }
 }
 
+/* ✅ History list: tıklayınca chat.html’ye gitsin */
 function renderHistory(){
   const listEl = $("historyList");
   if(!listEl) return;
 
-  const items = ChatStore.list(); // son 10
+  const items = ChatStore.list();
   listEl.innerHTML = "";
   if(!items.length) return;
 
@@ -174,29 +156,44 @@ function renderHistory(){
       row.style.borderColor = "rgba(190,242,100,.45)";
     }
 
+    // ✅ tıkla: currentId seç + chat’e git
     row.addEventListener("click", (e)=>{
       const act = e.target?.getAttribute?.("data-act");
       if(act) return;
       ChatStore.currentId = c.id;
-      renderHistory();
+      goChat();
     });
 
+    // edit
     row.querySelector('[data-act="edit"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       const curTitle = c.title || "";
       const newTitle = prompt("Sohbet başlığını yaz (Enter ile kaydet):", curTitle);
       if(newTitle === null) return;
+
       const cleaned = String(newTitle).trim();
       if(!cleaned) return;
 
+      // ChatStore.renameChat varsa kullan
       if(typeof ChatStore.renameChat === "function"){
         ChatStore.renameChat(c.id, cleaned);
       } else {
-        patchTitleEverywhere(c.id, cleaned);
+        // eski key fallback
+        try{
+          const idx = JSON.parse(localStorage.getItem("caynana_chat_index") || "[]");
+          const i = idx.findIndex(x=>x.id===c.id);
+          if(i>=0){
+            idx[i].title = cleaned;
+            idx[i].updated_at = new Date().toISOString();
+            localStorage.setItem("caynana_chat_index", JSON.stringify(idx));
+          }
+        }catch{}
       }
+
       renderHistory();
     });
 
+    // delete
     row.querySelector('[data-act="del"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
@@ -211,19 +208,18 @@ function renderHistory(){
 export function initMenuHistoryUI(){
   try { ChatStore.init(); } catch {}
 
-  // önce astro/kurumsal fallback
   renderFallbackMenus();
-  // sonra asistanı “boş olsa da dolu olsa da” garanti et
-  ensureAsistanMenus();
+  ensureAsistanMenus();   // ✅ kadın/team dahil burada garanti
 
   renderHistory();
 
+  // ✅ Yeni sohbet butonu: yeni chat aç + chat’e git
   const newBtn = $("newChatBtn");
   if(newBtn){
     newBtn.addEventListener("click", ()=>{
       ChatStore.newChat();
-      renderHistory();
       try { ChatStore.clearCurrent(); } catch {}
+      goChat();
     });
   }
 }
