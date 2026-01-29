@@ -17,37 +17,41 @@ function confirmDelete(){
   return confirm("Sohbetiniz kalıcı olarak silenecek. Eminmisin evladım?");
 }
 
+/* ✅ PROFİL OKUMA (en toleranslı hali) */
 function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
-function getUser(){ return safeJson(localStorage.getItem("caynana_user_v1"), {}); }
+function getUser(){
+  // bazı yerlerde STORAGE_KEY farklı kullanılabiliyor: ikisini de dene
+  const a = safeJson(localStorage.getItem("caynana_user_v1"), {});
+  if(Object.keys(a||{}).length) return a;
+  return safeJson(localStorage.getItem("caynana_user"), {});
+}
 function norm(s){ return String(s||"").trim().toLowerCase(); }
 
+function pickFirst(obj, keys){
+  for(const k of keys){
+    const v = obj?.[k];
+    if(v !== undefined && v !== null && String(v).trim() !== "") return v;
+  }
+  return "";
+}
 function getGender(u){
-  return u.gender || u.formGender || u.inpGender || u.cinsiyet || u.sex || "";
+  return pickFirst(u, ["gender","formGender","inpGender","cinsiyet","sex","form_gender"]);
 }
 function isFemaleGender(g){
   const x = norm(g);
   return x === "kadın" || x === "kadin" || x === "female" || x === "woman";
 }
 function getTeam(u){
-  return String(u.team || u.formTeam || u.takim || u.team_name || "").trim();
+  return String(pickFirst(u, ["team","formTeam","takim","team_name","form_team","teamName"])).trim();
 }
 
-function closeMenuOverlay(){
-  const overlay = $("menuOverlay");
-  if(overlay) overlay.classList.remove("open");
-}
-function goChat(){
-  closeMenuOverlay();
-  location.href = "/pages/chat.html";
-}
-
+/* ✅ Menüde var mı? */
 function menuHasHref(container, href){
   if(!container) return false;
-  const normHref = href.replace(/^\//, "");
   const nodes = container.querySelectorAll(".menu-action");
   for(const n of nodes){
     const on = (n.getAttribute("onclick") || "");
-    if(on.includes(href) || on.includes(normHref)) return true;
+    if(on.includes(href)) return true;
   }
   return false;
 }
@@ -60,6 +64,16 @@ function appendMenuAction(container, icon, title, href){
   container.appendChild(div);
 }
 
+function closeMenuOverlay(){
+  const overlay = $("menuOverlay");
+  if(overlay) overlay.classList.remove("open");
+}
+function goChat(){
+  closeMenuOverlay();
+  location.href = "/pages/chat.html";
+}
+
+/* ✅ ASİSTAN MENÜSÜ: dolu olsa bile eksikleri ekle */
 function ensureAsistanMenus(){
   const asistan = $("menuAsistan");
   if(!asistan) return;
@@ -68,7 +82,7 @@ function ensureAsistanMenus(){
   const female = isFemaleGender(getGender(u));
   const team = getTeam(u);
 
-  // boşsa temel kur
+  // boşsa temel set
   if(asistan.children.length === 0){
     asistan.innerHTML = `
       <div class="menu-action" onclick="location.href='/pages/chat.html'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
@@ -80,13 +94,17 @@ function ensureAsistanMenus(){
     `;
   }
 
-  // eksikleri ekle
+  // alışveriş yoksa ekle
   if(!menuHasHref(asistan, "/pages/translate.html")){
     appendMenuAction(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
   }
+
+  // kadınsa regl ekle
   if(female && !menuHasHref(asistan, "/pages/regl.html")){
     appendMenuAction(asistan, "🌸", "Regl Takip", "/pages/regl.html");
   }
+
+  // takım varsa takım adıyla ekle
   if(team && !menuHasHref(asistan, "/pages/clup.html")){
     appendMenuAction(asistan, "⚽", team, "/pages/clup.html");
   }
@@ -116,6 +134,7 @@ function renderFallbackMenus(){
   }
 }
 
+/* ✅ HISTORY: tıklayınca setCurrent + chat’e git */
 function renderHistory(){
   const listEl = $("historyList");
   if(!listEl) return;
@@ -125,7 +144,6 @@ function renderHistory(){
   if(!items.length) return;
 
   items.forEach((c)=>{
-    const isActive = ChatStore.currentId === c.id;
     const title = short15(c.title || "");
 
     const row = document.createElement("div");
@@ -140,11 +158,6 @@ function renderHistory(){
       </div>
     `;
 
-    if(isActive){
-      row.style.borderColor = "rgba(190,242,100,.45)";
-    }
-
-    // ✅ tıkla: setCurrent + chat’e git
     row.addEventListener("click", (e)=>{
       const act = e.target?.getAttribute?.("data-act");
       if(act) return;
@@ -154,36 +167,28 @@ function renderHistory(){
 
     row.querySelector('[data-act="edit"]').addEventListener("click",(e)=>{
       e.stopPropagation();
-      const curTitle = c.title || "";
-      const newTitle = prompt("Sohbet başlığını yaz (Enter ile kaydet):", curTitle);
+      const newTitle = prompt("Sohbet başlığını yaz (max 15):", c.title || "");
       if(newTitle === null) return;
       const cleaned = String(newTitle).trim();
       if(!cleaned) return;
-
-      ChatStore.renameChat?.(c.id, cleaned);
+      ChatStore.renameChat(c.id, cleaned);
       renderHistory();
     });
 
     row.querySelector('[data-act="del"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
-
       const wasCurrent = (ChatStore.currentId === c.id);
       ChatStore.deleteChat(c.id);
 
-      // ✅ chat sayfasındaysan ekrandan da gitsin
-      if((location.pathname || "").endsWith("/pages/chat.html")){
+      // chat sayfasındaysan anında temizlensin
+      if((location.pathname||"").endsWith("/pages/chat.html")){
         location.reload();
         return;
       }
 
-      // değilse menüyü güncelle
       renderHistory();
-
-      // current silindiyse chat’e atmak mantıklı
-      if(wasCurrent){
-        goChat();
-      }
+      if(wasCurrent) goChat();
     });
 
     listEl.appendChild(row);
