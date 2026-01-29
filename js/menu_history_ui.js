@@ -1,10 +1,4 @@
 // FILE: /js/menu_history_ui.js
-// ✅ Mevcut kodun BOZULMADI. Sadece İLAVE yaptım:
-// 1) Hamburger menüde ✅ Alışveriş eklendi
-// 2) Profilde cinsiyet Kadın ise ✅ Regl Takip eklendi (yoksa görünmez)
-// 3) Profilde team varsa ✅ takım adıyla buton eklendi (ör: Beşiktaş) (yoksa görünmez)
-// 4) Başlık düzenlemede hem eski hem yeni chat_index key’lerini güvenli günceller (çakışma olmasın)
-
 import { ChatStore } from "./chat_store.js";
 
 const $ = (id) => document.getElementById(id);
@@ -35,9 +29,13 @@ function isFemaleGender(g){
   const x = norm(g);
   return x === "kadın" || x === "kadin" || x === "female" || x === "woman";
 }
+function getGender(u){
+  // farklı key’leri kapsa
+  return u.gender || u.formGender || u.inpGender || u.cinsiyet || u.sex || "";
+}
 function getTeamName(u){
-  // farklı isimlerle kaydetmiş olabilirsin diye toleranslı okuyoruz
-  return String(u.team || u.formTeam || u.takim || "").trim();
+  // farklı key’leri kapsa
+  return String(u.team || u.formTeam || u.takim || u.form_team || u.team_name || "").trim();
 }
 
 /* ✅ Chat index key uyumluluğu (eski + yeni) */
@@ -46,8 +44,6 @@ function getUserKey(){
   return norm(u.user_id || u.id || u.email) || "guest";
 }
 function getIndexKeys(){
-  // eski sistem: caynana_chat_index
-  // yeni sistem: caynana_chat_index::<user>
   const ukey = getUserKey();
   return ["caynana_chat_index", `caynana_chat_index::${ukey}`];
 }
@@ -68,20 +64,38 @@ function patchTitleEverywhere(chatId, newTitle){
   });
 }
 
-function renderFallbackMenus(){
-  // Eğer main.js zaten dolduruyorsa elleme:
+/* ✅ Menüde var mı? (href ile kontrol) */
+function menuHasHref(container, href){
+  if(!container) return false;
+  const nodes = container.querySelectorAll(".menu-action");
+  for(const n of nodes){
+    const on = n.getAttribute("onclick") || "";
+    if(on.includes(`'${href}'`) || on.includes(`"${href}"`) || on.includes(href)) return true;
+  }
+  return false;
+}
+
+/* ✅ Menüye eleman ekle */
+function appendMenuAction(container, icon, title, href){
+  if(!container) return;
+  const div = document.createElement("div");
+  div.className = "menu-action";
+  div.setAttribute("onclick", `location.href='${href}'`);
+  div.innerHTML = `<div class="ico">${icon}</div><div><div>${esc(title)}</div></div>`;
+  container.appendChild(div);
+}
+
+/* ✅ Boşsa bas, doluysa eksikleri ekle */
+function ensureAsistanMenus(){
   const asistan = $("menuAsistan");
-  const astro = $("menuAstro");
-  const kur = $("menuKurumsal");
+  if(!asistan) return;
 
   const u = getUser();
-  const female = isFemaleGender(u.gender || u.formGender || u.cinsiyet);
+  const female = isFemaleGender(getGender(u));
   const team = getTeamName(u);
 
-  if(asistan && asistan.children.length === 0){
-    // ✅ Alışveriş eklendi
-    // ✅ Regl Takip şartlı eklendi
-    // ✅ Takım butonu şartlı eklendi (buton adı takımın kendisi)
+  // Eğer tamamen boşsa temel menüyü yaz
+  if(asistan.children.length === 0){
     asistan.innerHTML = `
       <div class="menu-action" onclick="location.href='/pages/chat.html'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
       <div class="menu-action" onclick="location.href='/pages/translate.html'"><div class="ico">🛍️</div><div><div>Alışveriş</div></div></div>
@@ -89,10 +103,28 @@ function renderFallbackMenus(){
       <div class="menu-action" onclick="location.href='/pages/gossip.html'"><div class="ico">🗣️</div><div><div>Dedikodu Kazanı</div></div></div>
       <div class="menu-action" onclick="location.href='/pages/diyet.html'"><div class="ico">🥗</div><div><div>Diyet</div></div></div>
       <div class="menu-action" onclick="location.href='/pages/health.html'"><div class="ico">❤️</div><div><div>Sağlık</div></div></div>
-      ${female ? `<div class="menu-action" onclick="location.href='/pages/regl.html'"><div class="ico">🌸</div><div><div>Regl Takip</div></div></div>` : ``}
-      ${team ? `<div class="menu-action" onclick="location.href='/pages/clup.html'"><div class="ico">⚽</div><div><div>${esc(team)}</div></div></div>` : ``}
     `;
   }
+
+  // ✅ Dolu olsa bile: Alışveriş yoksa ekle
+  if(!menuHasHref(asistan, "/pages/translate.html")){
+    appendMenuAction(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
+  }
+
+  // ✅ Kadın ise: Regl Takip ekle
+  if(female && !menuHasHref(asistan, "/pages/regl.html")){
+    appendMenuAction(asistan, "🌸", "Regl Takip", "/pages/regl.html");
+  }
+
+  // ✅ Takım varsa: takım adıyla ekle
+  if(team && !menuHasHref(asistan, "/pages/clup.html")){
+    appendMenuAction(asistan, "⚽", team, "/pages/clup.html");
+  }
+}
+
+function renderFallbackMenus(){
+  const astro = $("menuAstro");
+  const kur = $("menuKurumsal");
 
   if(astro && astro.children.length === 0){
     astro.innerHTML = `
@@ -119,14 +151,13 @@ function renderHistory(){
   if(!listEl) return;
 
   const items = ChatStore.list(); // son 10
-
   listEl.innerHTML = "";
-  if(!items.length) return; // "Yeni sohbet" gibi boş başlık göstermiyoruz
+  if(!items.length) return;
 
   items.forEach((c)=>{
     const isActive = ChatStore.currentId === c.id;
-
     const title = short15(c.title || "");
+
     const row = document.createElement("div");
     row.className = "history-row";
     row.dataset.chatId = c.id;
@@ -143,7 +174,6 @@ function renderHistory(){
       row.style.borderColor = "rgba(190,242,100,.45)";
     }
 
-    // tıkla: sohbete geç
     row.addEventListener("click", (e)=>{
       const act = e.target?.getAttribute?.("data-act");
       if(act) return;
@@ -151,29 +181,22 @@ function renderHistory(){
       renderHistory();
     });
 
-    // edit
     row.querySelector('[data-act="edit"]').addEventListener("click",(e)=>{
       e.stopPropagation();
-
       const curTitle = c.title || "";
       const newTitle = prompt("Sohbet başlığını yaz (Enter ile kaydet):", curTitle);
       if(newTitle === null) return;
-
       const cleaned = String(newTitle).trim();
       if(!cleaned) return;
 
-      // ✅ ChatStore.renameChat varsa onu kullan
       if(typeof ChatStore.renameChat === "function"){
         ChatStore.renameChat(c.id, cleaned);
       } else {
-        // ✅ yoksa hem eski hem yeni index key’lerini güncelle
         patchTitleEverywhere(c.id, cleaned);
       }
-
       renderHistory();
     });
 
-    // delete
     row.querySelector('[data-act="del"]').addEventListener("click",(e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
@@ -188,10 +211,13 @@ function renderHistory(){
 export function initMenuHistoryUI(){
   try { ChatStore.init(); } catch {}
 
+  // önce astro/kurumsal fallback
   renderFallbackMenus();
+  // sonra asistanı “boş olsa da dolu olsa da” garanti et
+  ensureAsistanMenus();
+
   renderHistory();
 
-  // Yeni sohbet butonu
   const newBtn = $("newChatBtn");
   if(newBtn){
     newBtn.addEventListener("click", ()=>{
