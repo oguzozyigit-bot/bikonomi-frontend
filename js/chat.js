@@ -2,7 +2,9 @@
 // STABLE (LOCAL NAME MEMORY + KAYNANA OPENER + DELAYED STORE WRITE)
 // ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render/çift mesaj riskini azaltır)
 // ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
-// ✅ Name memory + kaynana opener + profile merge korunur
+// ✅ Kaynana opener + profile merge korunur
+// ✅ NEW: Samimiyet UI (sp_score/sp_delta) +1/-1 toast
+// ✅ NEW: İzinli profil kaydı akışına uyum -> otomatik isim kaydetme KAPALI
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -45,7 +47,7 @@ function writeChatId(userId, chatId) {
   if (chatId) localStorage.setItem(key, String(chatId));
 }
 
-// NAME CAPTURE
+// NAME CAPTURE (artık sadece “hint” amaçlı; otomatik profile yazmaz)
 function extractNameFromText(text = "") {
   const s = String(text || "").trim();
   let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
@@ -55,21 +57,26 @@ function extractNameFromText(text = "") {
   return "";
 }
 
+/**
+ * ⚠️ İZİNLİ KAYIT KURALI:
+ * - Profil boşsa, isim/diğer bilgiler kullanıcıdan "EVET" onayı gelmeden kaydedilmez.
+ * - Bu yüzden burada localStorage profile'a otomatik yazmayı KAPATTIK.
+ * - Sadece memory_profile'a “geçici hint” koyabiliriz (istersen onu da kapatırız).
+ */
 function maybePersistNameFromUserMessage(userMessage) {
-  const p = getProfile();
-  const has = !!(String(p.hitap || "").trim() || String(p.fullname || "").trim());
-  if (has) return;
-
-  const name = extractNameFromText(userMessage);
-  if (!name) return;
-
-  p.fullname = name;
-  const fn = firstNameFromFullname(name);
-  if (!p.hitap) p.hitap = fn || name;
-  setProfile(p);
-
   try {
-    setMemoryProfile({ name, hitap: (p.hitap || fn || name), fullname: name });
+    const p = getProfile();
+    const has = !!(String(p.hitap || "").trim() || String(p.fullname || "").trim() || String(p.name || "").trim());
+    if (has) return;
+
+    const name = extractNameFromText(userMessage);
+    if (!name) return;
+
+    // ✅ sadece geçici hafıza (profil değil)
+    try {
+      const fn = firstNameFromFullname(name);
+      setMemoryProfile({ name, fullname: name, hitap: (fn || name) });
+    } catch {}
   } catch {}
 }
 
@@ -207,6 +214,93 @@ function scheduleAssistantStoreWrite(outText){
   }catch{}
 }
 
+// ------------------------
+// ✅ Samimiyet UI helpers
+// ------------------------
+function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+function setSamimiyetUI(score){
+  const s = clamp(parseInt(score || 0, 10) || 0, 0, 100);
+  const pct = clamp(Math.round((s / 100) * 100), 0, 100);
+
+  const fill = document.getElementById("ypFill");
+  const num  = document.getElementById("ypNum");
+  if (fill) fill.style.width = pct + "%";
+  if (num) num.textContent = `${s}/100`;
+}
+
+function ensureToastStyle(){
+  if (document.getElementById("__sp_toast_style")) return;
+  const st = document.createElement("style");
+  st.id = "__sp_toast_style";
+  st.textContent = `
+    .sp-toast{
+      position: fixed;
+      left: 50%;
+      top: 84px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing: .2px;
+      background: rgba(20,20,20,.92);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(8px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+    .sp-toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .sp-toast .chip{
+      width: 26px;
+      height: 22px;
+      border-radius: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+    }
+    .sp-toast.pos .chip{ background: rgba(190,242,100,.14); border-color: rgba(190,242,100,.25); }
+    .sp-toast.neg .chip{ background: rgba(255,82,82,.14); border-color: rgba(255,82,82,.25); }
+    .sp-toast .txt{ color: rgba(255,255,255,.9); }
+  `;
+  document.head.appendChild(st);
+}
+
+function showSPDeltaToast(delta){
+  const d = parseInt(delta || 0, 10) || 0;
+  if (!d) return;
+
+  ensureToastStyle();
+
+  const el = document.createElement("div");
+  el.className = `sp-toast ${d > 0 ? "pos" : "neg"}`;
+  el.innerHTML = `
+    <span class="chip">${d > 0 ? "+":""}${d}</span>
+    <span class="txt">S.P ${d > 0 ? "arttı" : "azaldı"}</span>
+  `;
+  document.body.appendChild(el);
+
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => { try{ el.remove(); }catch{} }, 220);
+  }, 1200);
+}
+
+// ------------------------
+// MAIN
+// ------------------------
 export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
@@ -219,7 +313,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
   }
 
-  // isim yakala
+  // ✅ isim yakala (AMA profile yazma yok, sadece geçici hafıza)
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
@@ -250,7 +344,8 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     city: profile.city || null,
     isProfileCompleted: !!profile.isProfileCompleted,
     height_cm: profile.height_cm || null,
-    weight_kg: profile.weight_kg || null
+    weight_kg: profile.weight_kg || null,
+    plan: profile.plan || null
   }, memP);
 
   const st = getKaynanaState(userId);
@@ -284,9 +379,29 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     }
     const data = await res.json().catch(()=> ({}));
 
+    // chat_id
     if (data.chat_id) {
       writeChatId(userId, data.chat_id);
       ChatStore.setServerId?.(data.chat_id);
+    }
+
+    // ✅ Samimiyet (SP) backend response
+    if (data && typeof data === "object") {
+      const spScore = (data.sp_score ?? data.spScore ?? null);
+      const spDelta = (data.sp_delta ?? data.spDelta ?? 0);
+
+      if (spScore !== null && spScore !== undefined) {
+        setSamimiyetUI(spScore);
+
+        // local profile'a skor yaz (profil değil, sadece UI state)
+        try {
+          const p2 = getProfile();
+          p2.sp_score = parseInt(spScore, 10);
+          setProfile(p2);
+        } catch {}
+      }
+
+      if (spDelta) showSPDeltaToast(spDelta);
     }
 
     let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
@@ -299,7 +414,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     }
 
     scheduleAssistantStoreWrite(out);
-    return { text: out };
+    return { text: out, raw: data };
   };
 
   try { return await attempt(); }
