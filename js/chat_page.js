@@ -1,9 +1,13 @@
 // FILE: /js/chat_page.js
-// FINAL (CHAT.html uyumlu ID + SCROLL FIX + AUTO-FOLLOW)
+// FINAL (CHAT.html uyumlu ID + SCROLL FIX + AUTO-FOLLOW + STT AUTO-SEND + SEESAW)
 // ✅ messages container: #chat
-// ✅ Auto-follow: alttaysan takip, yukarı çıktıysan bırak
+// ✅ Auto-follow: alttaysan takip, yukarı çıktıysa bırak
 // ✅ DOM render sonrası scroll: requestAnimationFrame
 // ✅ Wheel/touch parent'ta boğulmaz
+// ✅ STT: konuşma bitince otomatik gönder
+// ✅ Tahtaravalli: usering/botting/thinking class
+// ✅ FIX: fetchTextResponse imzası doğru
+// ✅ FIX: assistant store double-write yok (chat.js zaten delayed write yapıyor)
 
 import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
@@ -14,20 +18,21 @@ if (!t) window.location.href = "/index.html";
 
 const $ = (id) => document.getElementById(id);
 
-const sidebar = $("menuOverlay");           // chat.html'de overlay
-const menuToggle = $("hambBtn");            // chat.html'de hamburger
+const menuOverlay = $("menuOverlay");
+const menuToggle = $("hambBtn");
 const historyList = $("historyList");
 const newChatBtn = $("newChatBtn");
 
-// ✅ CHAT container (scroll burada)
+// ✅ CHAT container
 const messages = $("chat");
 
 const msgInput = $("msgInput");
 const sendBtn = $("sendBtn");
 const micBtn = $("micBtn");
 
-// chat.html'de attach akışı ayrı (plus sheet + fileCamera/filePhotos/fileFiles)
-// Bu dosyada eski attach inputları yok; o yüzden güvenli şekilde yok sayıyoruz.
+// seesaw / brand
+const brandWrapper = $("brandWrapper");
+
 let pendingFile = null;
 
 // ------------------------
@@ -52,21 +57,31 @@ function scrollBottom(force = false) {
 }
 
 if (messages) {
-  // parentların wheel/touch’u yutmasını engelle
   messages.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
   messages.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
 
-  // follow toggle
   messages.addEventListener("scroll", () => {
     follow = isNearBottom();
   }, { passive: true });
 }
 
 // ------------------------
+// ✅ Tahtaravalli state
+// ------------------------
+function setSeesaw(mode = "") {
+  if (!brandWrapper) return;
+  brandWrapper.classList.remove("usering", "botting", "thinking");
+  if (mode) brandWrapper.classList.add(mode);
+}
+function clearSeesaw() {
+  if (!brandWrapper) return;
+  brandWrapper.classList.remove("usering", "botting", "thinking");
+}
+
+// ------------------------
 // UI helpers
 // ------------------------
 function roleToClass(role){
-  // ChatStore "assistant" kullanıyor → css bot
   return role === "user" ? "user" : "bot";
 }
 
@@ -77,7 +92,6 @@ function bubble(role, text) {
   div.className = `bubble ${roleToClass(role)}`;
   div.textContent = text;
 
-  // boş placeholder varsa temizle (chat.html CSS/empty ve/veya inline boş ekran)
   if (messages.dataset.empty === "1") {
     messages.innerHTML = "";
     messages.dataset.empty = "0";
@@ -138,7 +152,7 @@ function renderHistory() {
       ChatStore.currentId = c.id;
       loadCurrentChat();
       renderHistory();
-      sidebar?.classList.remove("open");
+      menuOverlay?.classList.remove("open");
     });
 
     row.querySelector(".history-del")?.addEventListener("click", (e) => {
@@ -159,10 +173,8 @@ function loadCurrentChat() {
   const h = ChatStore.history() || [];
 
   if (h.length === 0) {
-    // chat.html'de sen zaten boş ekran HTML basıyorsun; burada da basıp dataset işaretliyoruz
     messages.innerHTML = `
       <div style="text-align:center; margin-top:20vh; color:#444;">
-        <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:20px; color:#333;"></i>
         <h3>Ne lazım evladım?</h3>
         <p style="font-size:13px; color:#666; margin-top:10px;">Sen sor, ben hallederim.</p>
       </div>
@@ -179,23 +191,30 @@ function loadCurrentChat() {
   scrollBottom(true);
 }
 
-function storeHistoryAsRoleContent() {
-  const h = ChatStore.history() || [];
-  return h.map((x) => ({ role: x.role, content: x.content }));
-}
+// ------------------------
+// Mic (STT) + AUTO SEND
+// ------------------------
+let __rec = null;
+let __sttBusy = false;
 
-// ------------------------
-// Mic (STT)
-// ------------------------
 function startSTT() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     alert("Tarayıcı mikrofon yazıya çevirme desteklemiyor.");
     return;
   }
+  if (__sttBusy) return;
+
   const rec = new SR();
+  __rec = rec;
+  __sttBusy = true;
+
   rec.lang = "tr-TR";
   rec.interimResults = false;
+  rec.continuous = false;
+
+  // UI: mic glow (chat.html inline css)
+  micBtn?.classList.add("listening");
 
   rec.onresult = (e) => {
     const t = e.results?.[0]?.[0]?.transcript || "";
@@ -205,17 +224,35 @@ function startSTT() {
       setSendActive();
     }
   };
+
+  rec.onerror = () => {
+    // sessiz geç
+  };
+
+  rec.onend = async () => {
+    __sttBusy = false;
+    micBtn?.classList.remove("listening");
+
+    // ✅ konuşma bitti: otomatik gönder
+    const txt = (msgInput?.value || "").trim();
+    if (txt) {
+      await send(true); // stt mode
+    }
+  };
+
   rec.start();
 }
 
 // ------------------------
 // Send flow
 // ------------------------
-async function send() {
+async function send(fromSTT = false) {
   const text = (msgInput?.value || "").trim();
   if (!text && !pendingFile) return;
 
-  // Welcome temizle
+  // usering seesaw
+  setSeesaw("usering");
+
   const h0 = ChatStore.history() || [];
   if (h0.length === 0) messages.innerHTML = "";
 
@@ -228,31 +265,45 @@ async function send() {
   autoGrow();
   setSendActive();
 
+  // thinking seesaw
+  setSeesaw("thinking");
+
   const loader = typingIndicator();
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
-    const out = await fetchTextResponse(text || "Merhaba", "chat", storeHistoryAsRoleContent());
+    // ✅ fetchTextResponse imzası: (msg, mode)
+    const out = await fetchTextResponse(text || "Merhaba", "chat");
     reply = out?.text || reply;
   } catch {}
 
   try { loader?.remove(); } catch {}
+
+  // botting seesaw
+  setSeesaw("botting");
+
   bubble("assistant", reply);
-  ChatStore.add("assistant", reply);
+
+  // ❌ assistant store double-write yok:
+  // chat.js zaten scheduleAssistantStoreWrite ile yazıyor.
+  // Burada sadece UI bubble basıyoruz.
 
   renderHistory();
   scrollBottom(false);
+
+  // kısa bir süre sonra idle
+  setTimeout(() => clearSeesaw(), 700);
 }
 
 // ------------------------
 // Events
 // ------------------------
 menuToggle?.addEventListener("click", () => {
-  $("menuOverlay")?.classList.toggle("open");
+  menuOverlay?.classList.toggle("open");
 });
 
-// overlay tıklayınca kapat (sidebar dışına basınca)
-$("menuOverlay")?.addEventListener("click", (e) => {
+// overlay tıklayınca kapat
+menuOverlay?.addEventListener("click", (e) => {
   const sidebarEl = e.currentTarget?.querySelector?.(".menu-sidebar");
   if (!sidebarEl) return;
   if (sidebarEl.contains(e.target)) return;
@@ -263,20 +314,24 @@ newChatBtn?.addEventListener("click", () => {
   ChatStore.newChat();
   loadCurrentChat();
   renderHistory();
-  $("menuOverlay")?.classList.remove("open");
+  menuOverlay?.classList.remove("open");
 });
 
-sendBtn?.addEventListener("click", send);
+sendBtn?.addEventListener("click", () => send(false));
 
 msgInput?.addEventListener("input", () => {
   autoGrow();
   setSendActive();
+  setSeesaw("usering");
+  // kısa idle
+  clearTimeout(window.__typingIdle);
+  window.__typingIdle = setTimeout(() => clearSeesaw(), 500);
 });
 
 msgInput?.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    send();
+    send(false);
   }
 });
 
@@ -291,3 +346,4 @@ renderHistory();
 autoGrow();
 setSendActive();
 scrollBottom(true);
+clearSeesaw();
