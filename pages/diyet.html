@@ -5,26 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Diyet Planım</title>
   <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="/css/style.css?v=1" />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
 
   <style>
     :root{
       --gold:#ffb300;
       --pistachio:#bef264;
       --red:#ff5252;
+
+      /* chat.html ile aynı mantık */
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --gapH: 6px;
     }
 
-    .menu-overlay { display:none; pointer-events:none; }
-    .menu-overlay.open { display:flex; pointer-events:auto; }
+    /* ✅ Menü overlay'i style.css yönetiyor. Burada sakın display:none yapma. */
+    /* (silindi) .menu-overlay { display:none; pointer-events:none; } */
 
     .diet-wrap{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH));
       padding: 16px;
-      padding-bottom: 100px;
       display:flex;
       flex-direction:column;
       gap:16px;
       overflow-y:auto;
-      height:100%;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+      min-height:0;
     }
 
     .card{
@@ -205,6 +219,33 @@
 
     /* Doğum tarihi 3'lü seçim düzeni */
     .dob-row{ display:flex; gap:10px; }
+
+    /* ✅ Alt bar (assistant-bar) chat.html ile aynı konumda */
+    .assistant-bar{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
+      height: var(--assistH) !important;
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      pointer-events: none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+
+    /* Footer frame içinde sabit */
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
   </style>
 </head>
 
@@ -217,7 +258,7 @@
       <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <div class="brand-wrapper" id="brandWrapper">
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
           <g class="seesaw-bar" id="seesawBar">
@@ -301,7 +342,7 @@
     </div>
   </div>
 
-  <!-- CONTENT -->
+  <!-- CONTENT (orta alan) -->
   <div class="diet-wrap">
 
     <div id="profileSetup" class="card">
@@ -330,7 +371,6 @@
         </div>
       </div>
 
-      <!-- DOB: Yıl / Ay / Gün -->
       <div class="dob-row">
         <div class="form-group">
           <label class="form-label">Yıl</label>
@@ -388,6 +428,15 @@
 
   <div class="diet-notif" id="dietNotif">🔔 Bugün diyet menün geldi, incele evladım!</div>
 
+  <!-- ALT MODÜL BAR (dokunmuyoruz, sadece navigation) -->
+  <div class="assistant-bar" id="assistantBar">
+    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
+  </div>
+
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -400,6 +449,10 @@
 
 </div>
 
+<!-- Ortak scriptler -->
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
+
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
   const DIET_API = "/api/diet/today";
@@ -408,6 +461,13 @@
   function safeJson(s){ try{return JSON.parse(s||"{}");}catch{return {};} }
   function todayStr(){ return new Date().toISOString().split("T")[0]; }
   function baseUrl(){ return (BASE_DOMAIN || "").replace(/\/+$/, ""); }
+
+  function getApiToken(){
+    return (localStorage.getItem("caynana_api_token") || "").trim();
+  }
+  function getGoogleToken(){
+    return (localStorage.getItem("google_id_token") || "").trim();
+  }
 
   function getUserLocal(){
     const a = safeJson(localStorage.getItem(STORAGE_KEY));
@@ -432,9 +492,15 @@
   }
 
   async function postDiet(payload){
+    const apiToken = getApiToken();
+    const google = getGoogleToken();
+    const headers = { "Content-Type":"application/json" };
+    if (apiToken) headers["Authorization"] = `Bearer ${apiToken}`;
+    if (google) headers["X-Google-Id-Token"] = google;
+
     const res = await fetch(`${baseUrl()}${DIET_API}`, {
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
+      headers,
       body: JSON.stringify(payload)
     });
     return await res.json();
@@ -540,11 +606,11 @@
     const m = $("dobMonth").value;
     const d = $("dobDay").value;
     if(!y || !m || !d) return "";
-    return `${y}-${pad2(m)}-${pad2(d)}`; // YYYY-MM-DD
+    return `${y}-${pad2(m)}-${pad2(d)}`;
   }
 
   function daysInMonth(year, month){
-    return new Date(Number(year), Number(month), 0).getDate(); // month: 1-12
+    return new Date(Number(year), Number(month), 0).getDate();
   }
 
   function buildDobOptions(){
@@ -585,12 +651,10 @@
   }
 
   function setDobSelectsFromISO(iso){
-    // iso: YYYY-MM-DD
     try{
       const [y,m,d] = String(iso||"").split("-");
       if(y) $("dobYear").value = y;
       if(m) $("dobMonth").value = String(Number(m));
-      // gün listesi ay/yıl değişince yeniden kurulduğu için önce tetikle:
       $("dobMonth").dispatchEvent(new Event("change"));
       if(d) $("dobDay").value = String(Number(d));
     }catch{}
@@ -631,13 +695,11 @@
 
     const userLocal = getUserLocal();
 
-    // doldur
     if(userLocal?.height_cm) $("inpHeight").value = userLocal.height_cm;
     if(userLocal?.weight_kg) $("inpWeight").value = userLocal.weight_kg;
     if(userLocal?.gender) $("inpGender").value = userLocal.gender;
     if(userLocal?.birth_date) setDobSelectsFromISO(userLocal.birth_date);
 
-    // kilitle (dob+gender varsa)
     $("inpHeight").disabled = false;
     $("inpWeight").disabled = false;
 
@@ -679,21 +741,18 @@
 
     const payload = { user_id: userId, height_cm: Number(h), weight_kg: Number(w), date: todayStr() };
 
-    // DOB sadece yoksa al (dropdown’dan)
     if(!userLocal.birth_date){
       const dob = getDobFromSelects();
       if(!dob) return alert("Doğum tarihini seç evladım.");
       payload.birth_date = dob;
     }
 
-    // Gender sadece yoksa al
     if(!userLocal.gender){
       const g = $("inpGender").value;
       if(!g) return alert("Cinsiyet seç evladım.");
       payload.gender = g;
     }
 
-    // local güncelle
     const updated = { ...userLocal, ...payload };
     delete updated.date;
     setUserLocal(updated);
@@ -741,6 +800,15 @@
       btn.textContent = old;
     }
   };
+
+  // Profile button
+  $("profileBtn")?.addEventListener("click", ()=> location.href="/pages/profil.html");
+  $("profileShortcutBtn")?.addEventListener("click", ()=> location.href="/pages/profil.html");
+
+  // Alt bar navigation
+  document.querySelectorAll(".assistant-item[data-go]").forEach(el=>{
+    el.addEventListener("click", ()=> location.href = el.getAttribute("data-go"));
+  });
 
   init();
 </script>
