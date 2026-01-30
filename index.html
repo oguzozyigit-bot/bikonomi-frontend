@@ -1,9 +1,4 @@
-<!-- FILE: /index.html
-     FULL (UPDATED):
-     - Gözler: daha büyük + sayfanın ortasında
-     - Login card içine CaynanaAI logo + slogan (butonların üstünde)
-     - Üst bar / alt bar yapısı korunur
--->
+<!-- FILE: /index.html (FULL - EYES BACK + CENTER + DEMO IN GAP + LOGO THERE) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -31,16 +26,16 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      padding: 18px 16px 160px; /* ✅ gözler büyüdü: alt boşluk biraz arttı */
+      padding: 18px 16px 180px;
       display:flex;
       flex-direction:column;
       align-items:center;
-      justify-content:center;
-      gap: 12px;
+      justify-content:flex-start;
+      gap: 14px;
     }
 
     /* Hareketli arka plan */
-    .bg-anim{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .bg-anim{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
     .bg-anim::before{
       content:"";
       position:absolute;
@@ -89,15 +84,16 @@
       align-items:center;
       gap: 12px;
       position: relative;
-      z-index: 3; /* ✅ card gözlerin üstünde */
+      z-index: 3;
       backdrop-filter: blur(10px);
+      margin-top: 90px; /* ✅ gözler merkezdeyken card biraz aşağı */
     }
     .login-lead{
       font-size: 13px;
       font-weight: 950;
       color: rgba(255,255,255,.86);
       letter-spacing:.2px;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
     .trust-row{
@@ -327,33 +323,33 @@
       100%{ transform: rotate(-3deg); }
     }
 
-    /* ===== GÖZLER (BÜYÜK + ORTADA) ===== */
+    /* ===== GÖZLER (BÜYÜK + ORTADA - GERİ GELDİ) ===== */
     .kaynana-eyes{
       position:absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -58%);
-      width: 240px;
-      height: 110px;
-      border-radius: 28px;
+      transform: translate(-50%, -70%);
+      width: 260px;
+      height: 120px;
+      border-radius: 30px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.32);
       box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 22px;
+      gap: 24px;
       padding: 18px 18px;
       pointer-events:none;
       backdrop-filter: blur(6px);
-      opacity: .96;
-      z-index: 2; /* card'ın arkasında */
+      opacity: .98;
+      z-index: 4; /* ✅ card'ın üstünde, görünür */
     }
-    .eye-wrap{ position:relative; width:70px; height:84px; display:flex; align-items:center; justify-content:center; }
+    .eye-wrap{ position:relative; width:74px; height:90px; display:flex; align-items:center; justify-content:center; }
     .brow{
       position:absolute;
       top: -6px;
-      width: 74px;
+      width: 78px;
       height: 20px;
       border-top: 5px solid rgba(255,255,255,.55);
       border-radius: 999px;
@@ -362,8 +358,8 @@
     }
     .lashes{
       position:absolute;
-      top: 16px;
-      width: 78px;
+      top: 18px;
+      width: 82px;
       height: 12px;
       opacity:.35;
       display:flex;
@@ -375,10 +371,9 @@
       border-radius: 999px;
       transform: rotate(18deg);
     }
-
     .eye{
-      width: 70px;
-      height: 70px;
+      width: 74px;
+      height: 74px;
       border-radius: 50%;
       background: rgba(255,255,255,.95);
       position: relative;
@@ -386,13 +381,13 @@
       box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
     }
     .pupil{
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: rgba(0,0,0,.80);
       position:absolute;
-      top: 23px;
-      left: 23px;
+      top: 24px;
+      left: 24px;
       transition: transform .10s linear;
     }
     .shine{
@@ -416,9 +411,105 @@
       94%{ transform: translateY(0%); }
       96%{ transform: translateY(-110%); }
     }
-
-    /* “AI” yeşil vurgu */
     .brand-name .ai-green{ color: var(--pistachio); }
+
+    /* ===== ALT BOŞLUKTA DEMO (mouse’un olduğu yer) ===== */
+    .prelogin-demo{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 96px; /* footerbar üstü */
+      width: min(460px, 92vw);
+      z-index: 2;
+      pointer-events:none;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 10px;
+    }
+    .demo-logo{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 4px;
+      opacity: .92;
+    }
+    .demo-logo .line{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .demo-logo .name{
+      font-weight:1000;
+      font-size:16px;
+      letter-spacing:.2px;
+      color:#fff;
+    }
+    .demo-logo .slog{
+      font-size:11px;
+      font-weight:900;
+      color: rgba(255,255,255,.62);
+    }
+
+    .demo-card{
+      width:100%;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(10,10,10,.35);
+      box-shadow: 0 18px 45px rgba(0,0,0,.40);
+      padding: 12px;
+      overflow:hidden;
+      backdrop-filter: blur(8px);
+    }
+    .demo-bubble{
+      max-width: 88%;
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 750;
+      font-size: 12px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      margin: 8px 0;
+    }
+    .demo-bubble.bot{
+      border-left: 3px solid var(--gold);
+      margin-right:auto;
+    }
+    .demo-bubble.user{
+      border-right: 3px solid var(--pistachio);
+      margin-left:auto;
+      text-align:right;
+    }
+    .demo-typing{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      margin: 8px 0 0;
+      opacity:.9;
+    }
+    .dot{
+      width:6px;height:6px;border-radius:99px;
+      background: rgba(255,255,255,.65);
+      animation: dot 1.2s infinite ease-in-out;
+    }
+    .dot:nth-child(2){ animation-delay:.15s; }
+    .dot:nth-child(3){ animation-delay:.3s; }
+    @keyframes dot{
+      0%,100%{ transform: translateY(0); opacity:.55; }
+      50%{ transform: translateY(-4px); opacity:1; }
+    }
+    .demo-textline{
+      color: rgba(255,255,255,.78);
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 8px;
+      min-height: 16px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
   </style>
 </head>
 
@@ -466,43 +557,14 @@
       </div>
     </div>
 
+    <!-- Login card -->
     <div class="login-card">
-
-      <!-- ✅ Login Logo + Slogan (alt bar ile butonlar arasında) -->
-      <div style="
-        width:100%;
-        display:flex;
-        flex-direction:column;
-        align-items:center;
-        gap:6px;
-        padding: 6px 0 2px;
-      ">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true" style="width:44px;height:22px;">
-            <g class="seesaw-bar">
-              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-              <circle cx="3" cy="5" r="3" fill="#bef264" />
-              <circle cx="37" cy="5" r="3" fill="#ffb300" />
-            </g>
-            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-          </svg>
-
-          <div style="font-weight:1000;font-size:18px;letter-spacing:.2px;color:#fff;">
-            Caynana<span style="color:var(--pistachio);">AI</span>
-          </div>
-        </div>
-
-        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.62);">
-          Yapay Zekanın Geleneksel Aklı
-        </div>
-      </div>
-
       <div class="login-lead">Üyelik Ücretsizdir.</div>
 
       <div class="trust-row">
-        <div class="trust-pill"><span class="dot"></span> Güvenli giriş</div>
-        <div class="trust-pill"><span class="dot"></span> İzinle çalışır</div>
-        <div class="trust-pill"><span class="dot"></span> Şeffaf gizlilik</div>
+        <div class="trust-pill"><span class="dot" style="animation:none;background:rgba(190,242,100,.9)"></span> Güvenli giriş</div>
+        <div class="trust-pill"><span class="dot" style="animation:none;background:rgba(190,242,100,.9)"></span> İzinle çalışır</div>
+        <div class="trust-pill"><span class="dot" style="animation:none;background:rgba(190,242,100,.9)"></span> Şeffaf gizlilik</div>
       </div>
 
       <ul class="trust-bullets">
@@ -528,6 +590,36 @@
         Devam ederek Kullanıcı Sözleşmesi’ni onaylayacaksın.
       </div>
     </div>
+
+    <!-- ✅ ALT BOŞLUK: LOGO + CHATGPT-TARZI DEMO -->
+    <div class="prelogin-demo" aria-hidden="true">
+      <div class="demo-logo">
+        <div class="line">
+          <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:42px;height:20px;">
+            <g class="seesaw-bar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" />
+            </g>
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          </svg>
+          <div class="name">Caynana<span class="ai-green">AI</span></div>
+        </div>
+        <div class="slog">Yapay Zekanın Geleneksel Aklı</div>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-bubble user">Kaynana… bugün moralim sıfır.</div>
+        <div class="demo-bubble bot" id="demoBotText">Evladım, bir anlat bakalım…</div>
+
+        <div class="demo-typing">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
+
+        <div class="demo-textline" id="demoTypeLine"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ALT BAR -->
@@ -634,20 +726,10 @@
 
   initAuth();
 
-  const bw = $("brandWrapper");
-  const gBtn = $("googleLoginBtn");
-  if(gBtn && bw){
-    gBtn.addEventListener("pointerdown", ()=> bw.classList.add("thinking"));
-    gBtn.addEventListener("pointerup", ()=> bw.classList.remove("thinking"));
-    gBtn.addEventListener("pointercancel", ()=> bw.classList.remove("thinking"));
-  }
-
   // ===== Gözler: mouse takip, mouse yoksa kendi dolaş =====
   const p1 = $("p1");
   const p2 = $("p2");
-
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-
   let lastMoveAt = Date.now();
 
   function setPupil(px, py){
@@ -681,11 +763,34 @@
   setInterval(()=>{
     const idle = (Date.now() - lastMoveAt) > 1200;
     if(!idle) return;
-
     const dx = (Math.random()*20 - 10);
     const dy = (Math.random()*16 - 8);
     setPupil(dx, dy);
   }, 900);
+
+  // ===== Demo typing (ChatGPT hissi) =====
+  const demoLine = $("demoTypeLine");
+  const botText = $("demoBotText");
+  const lines = [
+    "Bugün sana mini bir plan çıkarayım: su iç, az şeker, çok yürüyüş…",
+    "Dert varsa anlat, ben buradayım. (Ama boş boş yalan yok 😄)",
+    "Hadi evladım, bir tıkla giriş yap da başlayalım."
+  ];
+  let li = 0, ci = 0;
+
+  function typeTick(){
+    if(!demoLine) return;
+    const s = lines[li] || "";
+    demoLine.textContent = s.slice(0, ci++);
+    if(ci > s.length){
+      ci = 0;
+      li = (li + 1) % lines.length;
+      setTimeout(typeTick, 700);
+    }else{
+      setTimeout(typeTick, 28);
+    }
+  }
+  typeTick();
 
 </script>
 </body>
