@@ -1,327 +1,293 @@
-// FILE: /js/chat.js
-// STABLE (LOCAL NAME MEMORY + KAYNANA OPENER + DELAYED STORE WRITE)
-// ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render/çift mesaj riskini azaltır)
-// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)  ✅ FIX: #chatScroll varsa onu scroll'lar
-// ✅ Name memory + kaynana opener + profile merge korunur
+// FILE: /js/chat_page.js
+// FINAL (CHAT.html uyumlu ID + SCROLL FIX + AUTO-FOLLOW)
+// ✅ messages container: #chat
+// ✅ Auto-follow: alttaysan takip, yukarı çıktıysan bırak
+// ✅ DOM render sonrası scroll: requestAnimationFrame
+// ✅ Wheel/touch parent'ta boğulmaz
 
-import { apiPOST } from "./api.js";
-import { STORAGE_KEY } from "./config.js";
+import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
-import { getMemoryProfile, setMemoryProfile } from "./memory_profile.js";
 
-const SAFETY_PATTERNS = {
-  self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
-};
+// Login zorunlu: token yoksa index'e yolla
+const t = (localStorage.getItem("google_id_token") || "").trim();
+if (!t) window.location.href = "/index.html";
 
-function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
-function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
-function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {})); }
+const $ = (id) => document.getElementById(id);
 
-function hasLoginToken() {
-  const apiToken = (localStorage.getItem("caynana_api_token") || "").trim();
-  const google = (localStorage.getItem("google_id_token") || "").trim();
-  return !!(apiToken || google);
-}
+const sidebar = $("menuOverlay");           // chat.html'de overlay
+const menuToggle = $("hambBtn");            // chat.html'de hamburger
+const historyList = $("historyList");
+const newChatBtn = $("newChatBtn");
 
-function firstNameFromFullname(full = "") {
-  const s = String(full || "").trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
-}
+// ✅ CHAT container (scroll burada)
+const messages = $("chat");
 
-// USER-SCOPED CHAT_ID
-function getChatKeyForUser(userId) {
-  const u = String(userId || "").trim().toLowerCase();
-  return u ? `caynana_chat_id:${u}` : "caynana_chat_id";
-}
-function readChatId(userId) {
-  const key = getChatKeyForUser(userId);
-  const v = (localStorage.getItem(key) || "").trim();
-  if (!v || v === "null" || v === "undefined") return null;
-  return v;
-}
-function writeChatId(userId, chatId) {
-  const key = getChatKeyForUser(userId);
-  if (chatId) localStorage.setItem(key, String(chatId));
-}
+const msgInput = $("msgInput");
+const sendBtn = $("sendBtn");
+const micBtn = $("micBtn");
 
-// NAME CAPTURE
-function extractNameFromText(text = "") {
-  const s = String(text || "").trim();
-  let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if (m && m[2]) return m[2];
-  m = s.match(/\bben\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if (m && m[1]) return m[1];
-  return "";
-}
+// chat.html'de attach akışı ayrı (plus sheet + fileCamera/filePhotos/fileFiles)
+// Bu dosyada eski attach inputları yok; o yüzden güvenli şekilde yok sayıyoruz.
+let pendingFile = null;
 
-function maybePersistNameFromUserMessage(userMessage) {
-  const p = getProfile();
-  const has = !!(String(p.hitap || "").trim() || String(p.fullname || "").trim());
-  if (has) return;
+// ------------------------
+// ✅ SCROLL FIX (AUTO-FOLLOW)
+// ------------------------
+let follow = true;
 
-  const name = extractNameFromText(userMessage);
-  if (!name) return;
-
-  p.fullname = name;
-  const fn = firstNameFromFullname(name);
-  if (!p.hitap) p.hitap = fn || name;
-  setProfile(p);
-
+function isNearBottom(slack = 140) {
   try {
-    setMemoryProfile({ name, hitap: (p.hitap || fn || name), fullname: name });
-  } catch {}
-}
-
-function cleanValue(v) {
-  if (v === null || v === undefined) return null;
-  const s = typeof v === "string" ? v.trim() : v;
-  if (s === "") return null;
-  return s;
-}
-function mergeProfiles(formProfile = {}, memProfile = {}) {
-  const out = { ...(memProfile || {}) };
-  for (const [k, v] of Object.entries(formProfile || {})) {
-    const cv = cleanValue(v);
-    if (cv !== null) out[k] = cv;
+    return (messages.scrollHeight - messages.scrollTop - messages.clientHeight) < slack;
+  } catch {
+    return true;
   }
-  return out;
 }
 
-function pickAssistantText(data) {
-  if (!data || typeof data !== "object") return "";
-  const keys = ["assistant_text", "text", "assistant", "reply", "answer", "output"];
-  for (const k of keys) {
-    const v = String(data[k] || "").trim();
-    if (v) return v;
-  }
-  return "";
+function scrollBottom(force = false) {
+  if (!messages) return;
+  requestAnimationFrame(() => {
+    if (!messages) return;
+    if (force || follow) messages.scrollTop = messages.scrollHeight;
+  });
 }
 
-async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+if (messages) {
+  // parentların wheel/touch’u yutmasını engelle
+  messages.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+  messages.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
 
-/* =========================
-   SCROLL HELPER (FIXED)
-   - chat.html’de scroll yapan eleman: #chatScroll
-   - yoksa fallback: elementin kendisi
-   ========================= */
-function _getScrollEl(fallbackEl){
-  const sc = document.getElementById("chatScroll"); // ✅ senin chat.html
-  if(sc) return sc;
-  return fallbackEl || null;
+  // follow toggle
+  messages.addEventListener("scroll", () => {
+    follow = isNearBottom();
+  }, { passive: true });
 }
 
-function _forceBottom(el){
-  const sc = _getScrollEl(el);
-  if(!sc) return;
-
-  let n = 0;
-  const tick = () => {
-    try { sc.scrollTop = sc.scrollHeight; } catch {}
-    n++;
-    if(n < 3) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-
+// ------------------------
 // UI helpers
-export function addBotBubble(text, elId="chat"){
-  const div = document.getElementById(elId);
-  if(!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
-  bubble.textContent = String(text||"");
-  div.appendChild(bubble);
-
-  // ✅ bot balonu eklenince alta indir (wrapper doğru scroll’lanır)
-  _forceBottom(div);
+// ------------------------
+function roleToClass(role){
+  // ChatStore "assistant" kullanıyor → css bot
+  return role === "user" ? "user" : "bot";
 }
 
-export function typeWriter(text, elId = "chat") {
-  const div = document.getElementById(elId);
-  if (!div) return;
+function bubble(role, text) {
+  if (!messages) return null;
 
-  const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
-  div.appendChild(bubble);
+  const div = document.createElement("div");
+  div.className = `bubble ${roleToClass(role)}`;
+  div.textContent = text;
 
-  const s = String(text || "");
-  let i = 0;
+  // boş placeholder varsa temizle (chat.html CSS/empty ve/veya inline boş ekran)
+  if (messages.dataset.empty === "1") {
+    messages.innerHTML = "";
+    messages.dataset.empty = "0";
+  }
 
-  (function type() {
-    if (i < s.length) {
-      bubble.textContent += s.charAt(i++);
-      _forceBottom(div);
-      setTimeout(type, 28);
-    } else {
-      _forceBottom(div);
+  messages.appendChild(div);
+  scrollBottom(false);
+  return div;
+}
+
+function typingIndicator() {
+  if (!messages) return null;
+
+  const div = document.createElement("div");
+  div.className = "bubble bot";
+  div.innerHTML = `
+    <span class="typing-indicator">
+      <span></span><span></span><span></span>
+    </span>
+  `;
+  messages.appendChild(div);
+  scrollBottom(false);
+  return div;
+}
+
+function setSendActive() {
+  const hasText = !!(msgInput?.value || "").trim();
+  const hasFile = !!pendingFile;
+  sendBtn?.classList.toggle("active", hasText || hasFile);
+}
+
+function autoGrow() {
+  if (!msgInput) return;
+  msgInput.style.height = "auto";
+  msgInput.style.height = Math.min(msgInput.scrollHeight, 150) + "px";
+}
+
+// ------------------------
+// Sidebar (last 10 chats)
+// ------------------------
+function renderHistory() {
+  if (!historyList) return;
+  historyList.innerHTML = "";
+
+  const items = ChatStore.list(); // son 10
+
+  items.forEach((c) => {
+    const row = document.createElement("div");
+    row.className = "history-row" + (ChatStore.currentId === c.id ? " active" : "");
+    row.title = c.title || "Sohbet";
+
+    row.innerHTML = `
+      <div class="history-title">${c.title || "Sohbet"}</div>
+      <button class="history-del" title="Sil">🗑️</button>
+    `;
+
+    row.addEventListener("click", () => {
+      ChatStore.currentId = c.id;
+      loadCurrentChat();
+      renderHistory();
+      sidebar?.classList.remove("open");
+    });
+
+    row.querySelector(".history-del")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      ChatStore.deleteChat(c.id);
+      loadCurrentChat();
+      renderHistory();
+    });
+
+    historyList.appendChild(row);
+  });
+}
+
+function loadCurrentChat() {
+  if (!messages) return;
+
+  messages.innerHTML = "";
+  const h = ChatStore.history() || [];
+
+  if (h.length === 0) {
+    // chat.html'de sen zaten boş ekran HTML basıyorsun; burada da basıp dataset işaretliyoruz
+    messages.innerHTML = `
+      <div style="text-align:center; margin-top:20vh; color:#444;">
+        <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:20px; color:#333;"></i>
+        <h3>Ne lazım evladım?</h3>
+        <p style="font-size:13px; color:#666; margin-top:10px;">Sen sor, ben hallederim.</p>
+      </div>
+    `;
+    messages.dataset.empty = "1";
+    follow = true;
+    scrollBottom(true);
+    return;
+  }
+
+  messages.dataset.empty = "0";
+  h.forEach((m) => bubble(m.role, m.content));
+  follow = true;
+  scrollBottom(true);
+}
+
+function storeHistoryAsRoleContent() {
+  const h = ChatStore.history() || [];
+  return h.map((x) => ({ role: x.role, content: x.content }));
+}
+
+// ------------------------
+// Mic (STT)
+// ------------------------
+function startSTT() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    alert("Tarayıcı mikrofon yazıya çevirme desteklemiyor.");
+    return;
+  }
+  const rec = new SR();
+  rec.lang = "tr-TR";
+  rec.interimResults = false;
+
+  rec.onresult = (e) => {
+    const t = e.results?.[0]?.[0]?.transcript || "";
+    if (t) {
+      msgInput.value = (msgInput.value ? msgInput.value + " " : "") + t;
+      autoGrow();
+      setSendActive();
     }
-  })();
-}
-
-export function addUserBubble(text) {
-  const div = document.getElementById("chat");
-  if (!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble user";
-  bubble.textContent = String(text || "");
-  div.appendChild(bubble);
-
-  _forceBottom(div);
-}
-
-// Kaynana opener
-function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
-
-function buildProfileContextForKaynana(profile={}, memP={}) {
-  const born = String(profile.dogumYeri || memP.dogumYeri || "").trim();
-  const live = String(profile.city || memP.city || "").trim();
-  const team = String(profile.team || memP.team || "").trim();
-  const spouse = String(profile.spouse || memP.spouse || "").trim();
-  const kidsRaw = String(profile.childNames || memP.childNames || "").trim();
-  const kids = kidsRaw ? kidsRaw.split(/[,/]+/).map(x=>x.trim()).filter(Boolean).slice(0,6) : [];
-  const kg = Number(profile.weight_kg || memP.weight_kg || 0) || 0;
-  const cm = Number(profile.height_cm || memP.height_cm || 0) || 0;
-  return { born, live, team, spouse, kids, kg, cm };
-}
-
-function kaynanaOpener(ctx, hitap="evladım") {
-  const pool = [];
-  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase())
-    pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
-  if (ctx.spouse) pool.push(`${hitap}, eşin ${ctx.spouse} nasıl?`);
-  if (ctx.kids.length) pool.push(`Torunlarım ${ctx.kids.join(", ")} nasıl ${hitap}?`);
-  if (ctx.team) pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
-  if (ctx.kg) pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
-  pool.push(`Ee ${hitap}, bugün moral nasıl?`);
-  return _pick(pool);
-}
-
-function isConversationStuck(userMessage="") {
-  const t = String(userMessage||"").trim().toLowerCase();
-  if(!t) return true;
-  return (t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t));
-}
-
-function getKaynanaState(userId) {
-  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
-  try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch { return {}; }
-}
-function setKaynanaState(userId, st) {
-  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
-  localStorage.setItem(k, JSON.stringify(st || {}));
-}
-
-// Assistant store write: delayed
-function scheduleAssistantStoreWrite(outText){
-  try{
-    const s = String(outText || "");
-    const delay = Math.max(600, Math.min(4500, s.length * 12));
-    setTimeout(()=>{ try{ ChatStore.add?.("assistant", s); }catch{} }, delay);
-  }catch{}
-}
-
-export async function fetchTextResponse(msg, modeOrHistory = "chat") {
-  const message = String(msg || "").trim();
-  if (!message) return { text: "", error: true };
-
-  if (!hasLoginToken()) {
-    return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
-  }
-
-  if (SAFETY_PATTERNS.self_harm.test(message)) {
-    return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
-  }
-
-  // isim yakala
-  maybePersistNameFromUserMessage(message);
-
-  const profile = getProfile();
-  const userId = String(profile?.email || profile?.user_id || profile?.id || "").trim();
-  if (!userId) return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true };
-
-  const memP = (()=>{ try{return getMemoryProfile()||{}}catch{return {}} })();
-  const displayName = String(
-    profile.hitap ||
-    firstNameFromFullname(profile.fullname||"") ||
-    memP.hitap ||
-    firstNameFromFullname(memP.fullname||memP.name||"") ||
-    ""
-  ).trim();
-
-  const mergedProfile = mergeProfiles({
-    hitap: profile.hitap || null,
-    fullname: profile.fullname || null,
-    display_name: displayName || null,
-    botName: profile.botName || null,
-    dob: profile.dob || null,
-    gender: profile.gender || null,
-    maritalStatus: profile.maritalStatus || null,
-    spouse: profile.spouse || null,
-    childCount: profile.childCount || null,
-    childNames: profile.childNames || null,
-    team: profile.team || null,
-    city: profile.city || null,
-    isProfileCompleted: !!profile.isProfileCompleted,
-    height_cm: profile.height_cm || null,
-    weight_kg: profile.weight_kg || null
-  }, memP);
-
-  const st = getKaynanaState(userId);
-  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
-  setKaynanaState(userId, st);
-
-  // user store (başlık anında)
-  try { ChatStore.add?.("user", message); } catch {}
-
-  const ctx = buildProfileContextForKaynana(profile, memP);
-  const serverChatId = (ChatStore.getCurrentServerId?.() || null);
-
-  const payload = {
-    text: message,
-    message: message,
-    user_id: userId,
-    chat_id: (serverChatId || readChatId(userId)),
-    mode: String(modeOrHistory || "chat"),
-    profile: mergedProfile,
-    user_meta: mergedProfile,
-    web: "auto",
-    enable_web_search: true,
-    history: (ChatStore.getLastForApi?.(30) || [])
   };
-
-  const attempt = async () => {
-    const res = await apiPOST("/api/chat", payload);
-    if (!res.ok) {
-      const t = await res.text().catch(()=> "");
-      throw new Error(`API Error ${res.status} ${t}`);
-    }
-    const data = await res.json().catch(()=> ({}));
-
-    if (data.chat_id) {
-      writeChatId(userId, data.chat_id);
-      ChatStore.setServerId?.(data.chat_id);
-    }
-
-    let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
-
-    const st2 = getKaynanaState(userId);
-    if (Number(st2.stuckCount || 0) >= 2) {
-      st2.stuckCount = 0;
-      setKaynanaState(userId, st2);
-      out = `${out}\n\n${kaynanaOpener(ctx, String(mergedProfile.hitap || "evladım"))}`;
-    }
-
-    scheduleAssistantStoreWrite(out);
-    return { text: out };
-  };
-
-  try { return await attempt(); }
-  catch(e){
-    await sleep(500);
-    try { return await attempt(); } catch {}
-    return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
-  }
+  rec.start();
 }
+
+// ------------------------
+// Send flow
+// ------------------------
+async function send() {
+  const text = (msgInput?.value || "").trim();
+  if (!text && !pendingFile) return;
+
+  // Welcome temizle
+  const h0 = ChatStore.history() || [];
+  if (h0.length === 0) messages.innerHTML = "";
+
+  if (text) {
+    bubble("user", text);
+    ChatStore.add("user", text);
+  }
+
+  msgInput.value = "";
+  autoGrow();
+  setSendActive();
+
+  const loader = typingIndicator();
+
+  let reply = "Evladım bir şeyler ters gitti.";
+  try {
+    const out = await fetchTextResponse(text || "Merhaba", "chat", storeHistoryAsRoleContent());
+    reply = out?.text || reply;
+  } catch {}
+
+  try { loader?.remove(); } catch {}
+  bubble("assistant", reply);
+  ChatStore.add("assistant", reply);
+
+  renderHistory();
+  scrollBottom(false);
+}
+
+// ------------------------
+// Events
+// ------------------------
+menuToggle?.addEventListener("click", () => {
+  $("menuOverlay")?.classList.toggle("open");
+});
+
+// overlay tıklayınca kapat (sidebar dışına basınca)
+$("menuOverlay")?.addEventListener("click", (e) => {
+  const sidebarEl = e.currentTarget?.querySelector?.(".menu-sidebar");
+  if (!sidebarEl) return;
+  if (sidebarEl.contains(e.target)) return;
+  e.currentTarget.classList.remove("open");
+});
+
+newChatBtn?.addEventListener("click", () => {
+  ChatStore.newChat();
+  loadCurrentChat();
+  renderHistory();
+  $("menuOverlay")?.classList.remove("open");
+});
+
+sendBtn?.addEventListener("click", send);
+
+msgInput?.addEventListener("input", () => {
+  autoGrow();
+  setSendActive();
+});
+
+msgInput?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    send();
+  }
+});
+
+micBtn?.addEventListener("click", startSTT);
+
+// ------------------------
+// Boot
+// ------------------------
+ChatStore.init();
+loadCurrentChat();
+renderHistory();
+autoGrow();
+setSendActive();
+scrollBottom(true);
