@@ -1,11 +1,8 @@
 <!-- FILE: /index.html
-     FULL (NO PATCH NEEDED):
-     - Tahtaravalli: sürekli hafif hareket
-     - “Kaynana gözleri”: büyük, üstte, kaş/kirpik, blink + mouse takip + mouse yoksa kendi bakış
-     - Apple tık: "Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap."
-     - Google: auth.js (GSI overlay) kullanır
-     - İlk giriş: sözleşme zorunlu (pages/sozlesme.html)
-     - Başarılı giriş: /pages/chat.html
+     FULL (UPDATED):
+     - Gözler: daha büyük + sayfanın ortasında
+     - Login card içine CaynanaAI logo + slogan (butonların üstünde)
+     - Üst bar / alt bar yapısı korunur
 -->
 <!DOCTYPE html>
 <html lang="tr">
@@ -34,7 +31,7 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      padding: 18px 16px 140px;
+      padding: 18px 16px 160px; /* ✅ gözler büyüdü: alt boşluk biraz arttı */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -92,7 +89,7 @@
       align-items:center;
       gap: 12px;
       position: relative;
-      z-index: 2;
+      z-index: 3; /* ✅ card gözlerin üstünde */
       backdrop-filter: blur(10px);
     }
     .login-lead{
@@ -330,79 +327,80 @@
       100%{ transform: rotate(-3deg); }
     }
 
-    /* ===== GÖZLER (büyük + kaş + kirpik + blink) ===== */
+    /* ===== GÖZLER (BÜYÜK + ORTADA) ===== */
     .kaynana-eyes{
       position:absolute;
-      top: 14px;
-      right: 14px;
-      width: 140px;
-      height: 66px;
-      border-radius: 22px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -58%);
+      width: 240px;
+      height: 110px;
+      border-radius: 28px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.32);
       box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 14px;
-      padding: 12px 12px;
+      gap: 22px;
+      padding: 18px 18px;
       pointer-events:none;
       backdrop-filter: blur(6px);
       opacity: .96;
-      z-index: 3;
+      z-index: 2; /* card'ın arkasında */
     }
-    .eye-wrap{ position:relative; width:38px; height:44px; display:flex; align-items:center; justify-content:center; }
+    .eye-wrap{ position:relative; width:70px; height:84px; display:flex; align-items:center; justify-content:center; }
     .brow{
       position:absolute;
-      top: -2px;
-      width: 40px;
-      height: 16px;
-      border-top: 4px solid rgba(255,255,255,.55);
+      top: -6px;
+      width: 74px;
+      height: 20px;
+      border-top: 5px solid rgba(255,255,255,.55);
       border-radius: 999px;
       transform: rotate(-6deg);
       opacity:.65;
     }
     .lashes{
       position:absolute;
-      top: 10px;
-      width: 46px;
-      height: 10px;
+      top: 16px;
+      width: 78px;
+      height: 12px;
       opacity:.35;
       display:flex;
       justify-content:space-between;
     }
     .lashes span{
-      width: 8px; height: 10px;
+      width: 12px; height: 12px;
       border-top: 2px solid rgba(255,255,255,.55);
       border-radius: 999px;
       transform: rotate(18deg);
     }
 
     .eye{
-      width: 38px;
-      height: 38px;
+      width: 70px;
+      height: 70px;
       border-radius: 50%;
       background: rgba(255,255,255,.95);
       position: relative;
       overflow:hidden;
-      box-shadow: inset 0 -2px 0 rgba(0,0,0,.12);
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
     }
     .pupil{
-      width: 14px;
-      height: 14px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: rgba(0,0,0,.80);
       position:absolute;
-      top: 12px;
-      left: 12px;
+      top: 23px;
+      left: 23px;
       transition: transform .10s linear;
     }
     .shine{
-      width: 5px; height: 5px;
+      width: 8px; height: 8px;
       border-radius: 50%;
       background: rgba(255,255,255,.85);
       position:absolute;
-      top: 6px; left: 9px;
+      top: 12px; left: 16px;
       opacity:.9;
     }
     .lid{
@@ -419,7 +417,7 @@
       96%{ transform: translateY(-110%); }
     }
 
-    /* “AI” yeşil vurgu (üstteki logo zaten CaynanaAI; burada görsel bir vurgu ekliyoruz) */
+    /* “AI” yeşil vurgu */
     .brand-name .ai-green{ color: var(--pistachio); }
   </style>
 </head>
@@ -442,7 +440,6 @@
           <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
         </svg>
 
-        <!-- CaynanaAI içinde AI yeşil -->
         <div class="brand-name">Caynana<span class="ai-green">AI</span></div>
       </div>
       <div class="slogan">Yapay Zekanın Geleneksel Aklı</div>
@@ -451,7 +448,7 @@
     <div class="right-controls"></div>
   </div>
 
-  <!-- GEL GEL STAGE -->
+  <!-- STAGE -->
   <div class="login-stage">
     <div class="bg-anim"></div>
 
@@ -470,6 +467,36 @@
     </div>
 
     <div class="login-card">
+
+      <!-- ✅ Login Logo + Slogan (alt bar ile butonlar arasında) -->
+      <div style="
+        width:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:6px;
+        padding: 6px 0 2px;
+      ">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true" style="width:44px;height:22px;">
+            <g class="seesaw-bar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" />
+            </g>
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          </svg>
+
+          <div style="font-weight:1000;font-size:18px;letter-spacing:.2px;color:#fff;">
+            Caynana<span style="color:var(--pistachio);">AI</span>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.62);">
+          Yapay Zekanın Geleneksel Aklı
+        </div>
+      </div>
+
       <div class="login-lead">Üyelik Ücretsizdir.</div>
 
       <div class="trust-row">
@@ -557,13 +584,11 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // ✅ Apple uyarısı (tam metin)
   $("appleLoginBtn")?.addEventListener("click", (e) => {
     e.preventDefault();
     alert("Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap.");
   });
 
-  // Terms UI
   const termsOverlay = $("termsOverlay");
   const termsCheck = $("termsCheck");
   const termsAcceptBtn = $("termsAcceptBtn");
@@ -607,10 +632,8 @@
     else openTerms();
   }
 
-  // Google render
   initAuth();
 
-  // Google basınca tahtaravalli daha canlı
   const bw = $("brandWrapper");
   const gBtn = $("googleLoginBtn");
   if(gBtn && bw){
@@ -628,20 +651,19 @@
   let lastMoveAt = Date.now();
 
   function setPupil(px, py){
-    const x = clamp(px, -7, 7);
-    const y = clamp(py, -5, 5);
+    const x = clamp(px, -10, 10);
+    const y = clamp(py, -8, 8);
     const t = `translate(${x}px, ${y}px)`;
     if(p1) p1.style.transform = t;
     if(p2) p2.style.transform = t;
   }
 
-  // mouse/touch move
   window.addEventListener("mousemove", (e)=>{
     lastMoveAt = Date.now();
     const cx = window.innerWidth * 0.5;
-    const cy = window.innerHeight * 0.35;
-    const dx = (e.clientX - cx) / 60;
-    const dy = (e.clientY - cy) / 60;
+    const cy = window.innerHeight * 0.5;
+    const dx = (e.clientX - cx) / 45;
+    const dy = (e.clientY - cy) / 55;
     setPupil(dx, dy);
   }, { passive:true });
 
@@ -650,19 +672,18 @@
     if(!t) return;
     lastMoveAt = Date.now();
     const cx = window.innerWidth * 0.5;
-    const cy = window.innerHeight * 0.35;
-    const dx = (t.clientX - cx) / 60;
-    const dy = (t.clientY - cy) / 60;
+    const cy = window.innerHeight * 0.5;
+    const dx = (t.clientX - cx) / 45;
+    const dy = (t.clientY - cy) / 55;
     setPupil(dx, dy);
   }, { passive:true });
 
-  // mouse yoksa: kendi bakış turu
   setInterval(()=>{
     const idle = (Date.now() - lastMoveAt) > 1200;
     if(!idle) return;
 
-    const dx = (Math.random()*14 - 7) / 1;  // -7..7
-    const dy = (Math.random()*10 - 5) / 1;  // -5..5
+    const dx = (Math.random()*20 - 10);
+    const dy = (Math.random()*16 - 8);
     setPupil(dx, dy);
   }, 900);
 
