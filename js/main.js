@@ -1,15 +1,17 @@
 // FILE: /js/main.js
-// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ) + CHATSCROLL FIX
-// ✅ Chat’i hiçbir eventte tekrar render ETME
-// ✅ Sadece menü/history update
-// ✅ Scroll: send sonrası + typing sırasında zorla aşağı
-// ✅ KRİTİK FIX: scrollTop artık #chatScroll üzerinde (chat.html’de scroll yapan eleman bu)
+// FINAL - GLOBAL ONLY (ÜST/ALT BAR DOKUNMAZ)
+// ✅ Auth + Terms gating
+// ✅ Hamburger open/close
+// ✅ Bottom bar navigation
+// ✅ Logout / delete account
+// ✅ Notif init
+// ✅ Menü/history UI update (SADECE menü)
+// ✅ SP tek kaynak: caynana_user_v1.sp_score -> ypFill/ypNum
+// ❌ Chat render / send / typewriter burada YOK (chat_page.js yönetir)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
 import { initNotif } from "./notif.js";
-import { fetchTextResponse, addUserBubble, typeWriter, addBotBubble } from "./chat.js";
-import { ChatStore } from "./chat_store.js";
 import { initMenuHistoryUI } from "./menu_history_ui.js";
 
 window.CAYNANA_GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
@@ -19,9 +21,11 @@ window.CAYNANA_STORAGE_KEY = STORAGE_KEY;
 const $ = (id) => document.getElementById(id);
 function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
 function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
+
 function termsKey(email=""){ return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`; }
 function isLoggedUser(u){ return !!(u?.isSessionActive && (u?.id || u?.user_id) && u?.provider && u?.provider !== "guest"); }
 
+// ✅ Tahtaravalli state API (chat_page.js kullanabilir)
 window.setSeesawState = function(state){
   const bw = $("brandWrapper");
   if(!bw) return;
@@ -30,21 +34,26 @@ window.setSeesawState = function(state){
   if(state === "bot")  bw.classList.add("botting","thinking");
 };
 
-// ✅ chat.html’de scroll yapan eleman: #chatScroll
-function getScrollEl(){
-  return $("chatScroll") || $("chat") || null;
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+// ✅ SP tek kaynak: caynana_user_v1.sp_score
+function refreshSP(){
+  const u = getUser();
+  const sp = clamp(parseInt(u?.sp_score ?? 10, 10) || 10, 0, 100);
+  if ($("ypNum")) $("ypNum").textContent = `${sp}/100`;
+  if ($("ypFill")) $("ypFill").style.width = `${sp}%`;
 }
 
-function refreshPremiumBars() {
+function refreshTopProfileShortcut(){
   const u = getUser();
-  document.body.classList.toggle("is-logged", isLoggedUser(u));
 
-  const yp = Number(u?.yp_percent ?? 19);
-  const p = Math.max(5, Math.min(100, yp));
-  if ($("ypNum")) $("ypNum").textContent = `${p}%`;
-  if ($("ypFill")) $("ypFill").style.width = `${p}%`;
+  // plan chip (FREE default)
+  try{
+    const plan = String(u?.plan || "FREE").toUpperCase();
+    if($("planChip")) $("planChip").textContent = plan || "FREE";
+  }catch{}
 
-  // ✅ Profil kartı bazen boş kalıyordu → burada garanti boya
+  // profil kısa kart (menü içinde)
   try {
     const nm = $("profileShortcutName");
     if(nm){
@@ -57,6 +66,13 @@ function refreshPremiumBars() {
       else ico.textContent = "👤";
     }
   } catch {}
+}
+
+function refreshBars(){
+  const u = getUser();
+  document.body.classList.toggle("is-logged", isLoggedUser(u));
+  refreshSP();
+  refreshTopProfileShortcut();
 }
 
 function bindHamburger(){
@@ -161,95 +177,10 @@ function bindTermsOverlay(){
       if(ok){
         termsOverlay.classList.remove("active");
         termsOverlay.style.display="none";
-        refreshPremiumBars();
+        refreshBars();
       }
     });
   }
-}
-
-// ✅ scroll helper: #chatScroll üzerinde çalışır (DOM gecikmesine dayanıklı)
-function scrollBottom(){
-  const sc = getScrollEl();
-  if(!sc) return;
-  requestAnimationFrame(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} });
-  setTimeout(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} }, 20);
-  setTimeout(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} }, 80);
-}
-
-function renderHistoryToChat(){
-  const chatEl = $("chat");
-  if(!chatEl) return;
-
-  ChatStore.init();
-  const hist = ChatStore.history() || [];
-  chatEl.innerHTML = "";
-
-  hist.forEach(m=>{
-    if(m.role === "user") addUserBubble(m.content);
-    else if(m.role === "assistant") addBotBubble(m.content);
-  });
-
-  // ✅ inner #chat değil, wrapper scroll
-  scrollBottom();
-}
-
-function bindChatUI(){
-  const input = $("msgInput");
-  const sendBtn = $("sendBtn");
-  const chatEl = $("chat");
-  if(!input || !sendBtn || !chatEl) return;
-
-  renderHistoryToChat();
-
-  async function sendMessage(){
-    const text = String(input.value || "").trim();
-    if(!text) return;
-
-    window.setSeesawState?.("user");
-
-    input.value = "";
-    input.style.height = "auto";
-
-    addUserBubble(text);
-    scrollBottom();
-
-    window.setSeesawState?.("bot");
-    const res = await fetchTextResponse(text, "chat");
-    window.setSeesawState?.("idle");
-
-    if(res?.text){
-      typeWriter(res.text);
-
-      // typing sırasında da alta tut
-      setTimeout(()=>scrollBottom(), 120);
-      setTimeout(()=>scrollBottom(), 420);
-      setTimeout(()=>scrollBottom(), 900);
-    }
-
-    try { initMenuHistoryUI(); } catch {}
-  }
-
-  input.addEventListener("keydown", (e)=>{
-    if(e.key === "Enter" && !e.shiftKey){
-      e.preventDefault();
-      sendMessage();
-    }
-  });
-  sendBtn.addEventListener("click", sendMessage);
-
-  input.addEventListener("input", ()=>{
-    input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 120) + "px";
-  });
-}
-
-function bindNewChatButton(){
-  $("newChatBtn")?.addEventListener("click", ()=>{
-    ChatStore.newChat();
-    renderHistoryToChat();
-    try { initMenuHistoryUI(); } catch {}
-    $("menuOverlay")?.classList.remove("open");
-  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -258,19 +189,26 @@ document.addEventListener("DOMContentLoaded", () => {
   bindLogoutAndDelete();
   bindTermsOverlay();
 
+  // Menü listesi ve modüller (layout-common.js ve/veya menu_history_ui.js yapar)
   try { initMenuHistoryUI(); } catch {}
+
   const ok = gateAuthAndTerms();
-  refreshPremiumBars();
+  refreshBars();
   try { initNotif(); } catch {}
 
-  if(ok){
-    bindChatUI();
-    bindNewChatButton();
-  }
+  // ✅ CHAT’e dokunma: chat_page.js zaten yönetiyor
 
-  // ✅ Event: SADECE menü güncelle (chat’i yeniden çizme!)
+  // ✅ Sadece menü güncelle (chat’i yeniden çizme!)
   window.addEventListener("caynana:chats-updated", ()=>{
     try { initMenuHistoryUI(); } catch {}
-    // chat render yok
   });
+
+  // ✅ SP değişirse (chat.js günceller) anında yansısın
+  window.addEventListener("storage", (e)=>{
+    if(!e || !e.key) return;
+    if(e.key === STORAGE_KEY) refreshBars();
+  });
+
+  // ok kullanılmıyor ama akış dursun diye bıraktım
+  void ok;
 });
