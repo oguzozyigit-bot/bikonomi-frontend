@@ -1,8 +1,9 @@
 // FILE: /js/chat_store.js
-// FINAL++ (USER-SCOPED INDEX + CURRENT CHAT PERSIST + LIVE UI EVENT + TITLE 15 CHARS)
-// ✅ Seçilen sohbet kalıcı (eski sohbet tıkla → chat açılınca doğru sohbet gelir)
-// ✅ Yeni sohbet / mesaj sonrası menü başlığı anında güncellenebilir (event)
-// ✅ "Yeni sohbet" görünmez (başlık ilk user mesajından, 15 karakter)
+// FINAL+++ (USER-SCOPED INDEX + CURRENT CHAT PERSIST + LIVE UI EVENT + TITLE 15 CHARS + CONFIRM SUPPORT)
+// ✅ Seçilen sohbet kalıcı
+// ✅ "Yeni sohbet" görünmez
+// ✅ Başlık ilk user mesajından 15 karakter
+// ✅ deleteChat: UI onay sonrası force ile silebilir
 
 const INDEX_KEY_PREFIX = "caynana_chat_index::";
 const CURRENT_KEY_PREFIX = "caynana_chat_current::";
@@ -86,14 +87,12 @@ export const ChatStore = {
       return;
     }
 
-    // ✅ Önce saklı currentId
     const stored = readCurrent();
     if(stored && index.some(c => c.id === stored && !c.deleted_at)){
       this.currentId = stored;
       return;
     }
 
-    // ✅ Yoksa en güncel
     const sorted = index.sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at));
     this.currentId = sorted[0].id;
     writeCurrent(this.currentId);
@@ -170,7 +169,15 @@ export const ChatStore = {
     return true;
   },
 
-  deleteChat(id){
+  // ✅ force param: UI zaten onayladıysa true geçer
+  deleteChat(id, force = false){
+    if(!id) return;
+
+    if(!force){
+      // UI tarafında confirm yapılacak, burada hiçbir şey yapma
+      return;
+    }
+
     const index = loadIndex().map(c=>{
       if(c.id === id) return { ...c, deleted_at: now() };
       return c;
