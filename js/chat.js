@@ -1,5 +1,11 @@
 // FILE: /js/chat.js
-// STABLE + DUP SAFE + SP BALLOON POP + +5 ONLY ONCE/DAY VISUAL
+// STABLE (LOCAL NAME MEMORY + KAYNANA OPENER + DELAYED STORE WRITE)
+// ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render/çift mesaj riskini azaltır)
+// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
+// ✅ Kaynana opener + profile merge korunur
+// ✅ NEW: Samimiyet UI (sp_score/sp_delta) +1/-1 toast
+// ✅ NEW: İzinli profil kaydı akışına uyum -> otomatik isim kaydetme KAPALI
+// ✅ FIX: Assistant store write DUP SAFE (2x/3x/patlama biter)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -22,7 +28,8 @@ function hasLoginToken() {
 
 function firstNameFromFullname(full = "") {
   const s = String(full || "").trim();
-  return s ? s.split(/\s+/)[0] : "";
+  if (!s) return "";
+  return s.split(/\s+/)[0];
 }
 
 // USER-SCOPED CHAT_ID
@@ -41,7 +48,7 @@ function writeChatId(userId, chatId) {
   if (chatId) localStorage.setItem(key, String(chatId));
 }
 
-// NAME CAPTURE (izinli kayıt: sadece geçici hint)
+// NAME CAPTURE (artık sadece “hint” amaçlı; otomatik profile yazmaz)
 function extractNameFromText(text = "") {
   const s = String(text || "").trim();
   let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
@@ -51,6 +58,12 @@ function extractNameFromText(text = "") {
   return "";
 }
 
+/**
+ * ⚠️ İZİNLİ KAYIT KURALI:
+ * - Profil boşsa, isim/diğer bilgiler kullanıcıdan "EVET" onayı gelmeden kaydedilmez.
+ * - Bu yüzden burada localStorage profile'a otomatik yazmayı KAPATTIK.
+ * - Sadece memory_profile'a “geçici hint” koyabiliriz (istersen onu da kapatırız).
+ */
 function maybePersistNameFromUserMessage(userMessage) {
   try {
     const p = getProfile();
@@ -60,7 +73,7 @@ function maybePersistNameFromUserMessage(userMessage) {
     const name = extractNameFromText(userMessage);
     if (!name) return;
 
-    // sadece geçici hafıza
+    // ✅ sadece geçici hafıza (profil değil)
     try {
       const fn = firstNameFromFullname(name);
       setMemoryProfile({ name, fullname: name, hitap: (fn || name) });
@@ -95,7 +108,63 @@ function pickAssistantText(data) {
 
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-// Kaynana opener helpers (mevcut davranış korunuyor)
+// SCROLL HELPER
+function _forceBottom(el){
+  if(!el) return;
+  let n = 0;
+  const tick = () => {
+    try { el.scrollTop = el.scrollHeight; } catch {}
+    n++;
+    if(n < 3) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+// UI helpers
+export function addBotBubble(text, elId="chat"){
+  const div = document.getElementById(elId);
+  if(!div) return;
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot";
+  bubble.textContent = String(text||"");
+  div.appendChild(bubble);
+}
+
+export function typeWriter(text, elId = "chat") {
+  const div = document.getElementById(elId);
+  if (!div) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble bot";
+  div.appendChild(bubble);
+
+  const s = String(text || "");
+  let i = 0;
+
+  (function type() {
+    if (i < s.length) {
+      bubble.textContent += s.charAt(i++);
+      _forceBottom(div);
+      setTimeout(type, 28);
+    } else {
+      _forceBottom(div);
+    }
+  })();
+}
+
+export function addUserBubble(text) {
+  const div = document.getElementById("chat");
+  if (!div) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble user";
+  bubble.textContent = String(text || "");
+  div.appendChild(bubble);
+
+  _forceBottom(div);
+}
+
+// Kaynana opener
 function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
 function buildProfileContextForKaynana(profile={}, memP={}) {
@@ -137,17 +206,21 @@ function setKaynanaState(userId, st) {
   localStorage.setItem(k, JSON.stringify(st || {}));
 }
 
-// DUP SAFE assistant store
+// Assistant store write: delayed (DUP SAFE)
 let __lastAssistantWritten = "";
+
 function scheduleAssistantStoreWrite(outText){
   try{
     const s = String(outText || "").trim();
     if(!s) return;
+
+    // aynı metni iki kere yazma
     if(__lastAssistantWritten === s) return;
 
+    // store'un son mesajı zaten buysa yazma
     try{
       const last = (ChatStore.getLastForApi?.(1) || [])[0];
-      if(last && String(last.role||"")==="assistant" && String(last.content||"").trim()===s){
+      if(last && String(last.role||"") === "assistant" && String(last.content||"").trim() === s){
         __lastAssistantWritten = s;
         return;
       }
@@ -158,7 +231,7 @@ function scheduleAssistantStoreWrite(outText){
       try{
         if(__lastAssistantWritten === s) return;
         const last2 = (ChatStore.getLastForApi?.(1) || [])[0];
-        if(last2 && String(last2.role||"")==="assistant" && String(last2.content||"").trim()===s){
+        if(last2 && String(last2.role||"") === "assistant" && String(last2.content||"").trim() === s){
           __lastAssistantWritten = s;
           return;
         }
@@ -169,85 +242,93 @@ function scheduleAssistantStoreWrite(outText){
   }catch{}
 }
 
-// Samimiyet UI + balloon
+// ------------------------
+// ✅ Samimiyet UI helpers
+// ------------------------
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
 function setSamimiyetUI(score){
   const s = clamp(parseInt(score || 0, 10) || 0, 0, 100);
   const pct = clamp(Math.round((s / 100) * 100), 0, 100);
+
   const fill = document.getElementById("ypFill");
   const num  = document.getElementById("ypNum");
   if (fill) fill.style.width = pct + "%";
   if (num) num.textContent = `${s}/100`;
 }
 
-function ensureBalloonStyle(){
-  if (document.getElementById("__sp_balloon_style")) return;
+function ensureToastStyle(){
+  if (document.getElementById("__sp_toast_style")) return;
   const st = document.createElement("style");
-  st.id="__sp_balloon_style";
+  st.id = "__sp_toast_style";
   st.textContent = `
-    .sp-balloon{
+    .sp-toast{
       position: fixed;
+      left: 50%;
+      top: 84px;
+      transform: translateX(-50%);
       z-index: 99999;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-weight: 950;
+      padding: 8px 12px;
+      border-radius: 14px;
+      font-weight: 900;
       font-size: 12px;
       letter-spacing: .2px;
-      border: 1px solid rgba(255,255,255,.12);
       background: rgba(20,20,20,.92);
-      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.12);
       box-shadow: 0 18px 40px rgba(0,0,0,.45);
-      transform: translate(-50%, 0) scale(.9);
+      backdrop-filter: blur(8px);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
       opacity: 0;
+      transition: opacity .18s ease, transform .18s ease;
       pointer-events: none;
-      animation: spPop 900ms ease-out forwards;
     }
-    .sp-balloon.pos{ border-color: rgba(190,242,100,.35); }
-    .sp-balloon.neg{ border-color: rgba(255,82,82,.35); }
-    @keyframes spPop{
-      0%{ opacity:0; transform: translate(-50%, 10px) scale(.85); }
-      20%{ opacity:1; transform: translate(-50%, 0) scale(1); }
-      70%{ opacity:1; transform: translate(-50%, -14px) scale(1); }
-      100%{ opacity:0; transform: translate(-50%, -22px) scale(.95); }
+    .sp-toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
+    .sp-toast .chip{
+      width: 26px;
+      height: 22px;
+      border-radius: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+    }
+    .sp-toast.pos .chip{ background: rgba(190,242,100,.14); border-color: rgba(190,242,100,.25); }
+    .sp-toast.neg .chip{ background: rgba(255,82,82,.14); border-color: rgba(255,82,82,.25); }
+    .sp-toast .txt{ color: rgba(255,255,255,.9); }
   `;
   document.head.appendChild(st);
 }
 
-function showSPBalloon(delta){
+function showSPDeltaToast(delta){
   const d = parseInt(delta || 0, 10) || 0;
   if (!d) return;
 
-  ensureBalloonStyle();
-
-  const chip = document.getElementById("ypNum") || document.querySelector(".yp-chip") || document.body;
-  let x = window.innerWidth * 0.78;
-  let y = 76;
-
-  try{
-    const r = chip.getBoundingClientRect();
-    x = r.left + r.width * 0.65;
-    y = r.top - 8;
-  }catch{}
+  ensureToastStyle();
 
   const el = document.createElement("div");
-  el.className = `sp-balloon ${d>0?"pos":"neg"}`;
-  el.style.left = `${x}px`;
-  el.style.top  = `${y}px`;
-  el.textContent = `${d>0?"+":""}${d}`;
+  el.className = `sp-toast ${d > 0 ? "pos" : "neg"}`;
+  el.innerHTML = `
+    <span class="chip">${d > 0 ? "+":""}${d}</span>
+    <span class="txt">S.P ${d > 0 ? "arttı" : "azaldı"}</span>
+  `;
   document.body.appendChild(el);
 
-  setTimeout(()=>{ try{ el.remove(); }catch{} }, 950);
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => { try{ el.remove(); }catch{} }, 220);
+  }, 1200);
 }
 
-// ✅ +5'i aynı gün içinde 1 kere gösterme anahtarı
-function shouldShowFirstMsgBalloonOncePerDay(userId){
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const seenKey = `caynana_sp_firstmsg_seen:${String(userId).toLowerCase()}:${todayKey}`;
-  const seen = (localStorage.getItem(seenKey) || "") === "1";
-  return { seenKey, seen };
-}
-
+// ------------------------
+// MAIN
+// ------------------------
 export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
@@ -255,10 +336,12 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   if (!hasLoginToken()) {
     return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
   }
+
   if (SAFETY_PATTERNS.self_harm.test(message)) {
     return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
   }
 
+  // ✅ isim yakala (AMA profile yazma yok, sadece geçici hafıza)
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
@@ -297,7 +380,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
   setKaynanaState(userId, st);
 
-  // user store
+  // user store (başlık anında)
   try { ChatStore.add?.("user", message); } catch {}
 
   const ctx = buildProfileContextForKaynana(profile, memP);
@@ -324,19 +407,21 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     }
     const data = await res.json().catch(()=> ({}));
 
+    // chat_id
     if (data.chat_id) {
       writeChatId(userId, data.chat_id);
       ChatStore.setServerId?.(data.chat_id);
     }
 
-    // ✅ SP UI + balloon
+    // ✅ Samimiyet (SP) backend response
     if (data && typeof data === "object") {
-      const spScore   = (data.sp_score ?? data.spScore ?? null);
-      const spDelta   = (data.sp_delta ?? data.spDelta ?? 0);
-      const spReasons = (data.sp_reasons || data.spReasons || {});
+      const spScore = (data.sp_score ?? data.spScore ?? null);
+      const spDelta = (data.sp_delta ?? data.spDelta ?? 0);
 
       if (spScore !== null && spScore !== undefined) {
         setSamimiyetUI(spScore);
+
+        // local profile'a skor yaz (profil değil, sadece UI state)
         try {
           const p2 = getProfile();
           p2.sp_score = parseInt(spScore, 10);
@@ -344,20 +429,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
         } catch {}
       }
 
-      // +5'i günde 1 kere göster (puan artmıyorsa balon spam yapmasın)
-      if (spDelta) {
-        const { seenKey, seen } = shouldShowFirstMsgBalloonOncePerDay(userId);
-        const looksLikeFirst = (spDelta === 5) && (spReasons.first_msg_bonus != null);
-
-        if (spDelta === 5 && looksLikeFirst) {
-          if (!seen) {
-            showSPBalloon(spDelta);
-            localStorage.setItem(seenKey, "1");
-          }
-        } else {
-          showSPBalloon(spDelta);
-        }
-      }
+      if (spDelta) showSPDeltaToast(spDelta);
     }
 
     let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
