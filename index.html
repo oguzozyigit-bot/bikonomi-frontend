@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FULL - NO BACKGROUND BOXES + FIXED BARS + CENTER EYES + ICON STACK + FAQ CHAT DEMO) -->
+<!-- FILE: /index.html (FULL - DEMO INPUT + BOTTOM-UP CHAT + TYPEWRITER ALL + NO BLANK SPACE) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -26,7 +26,7 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      padding: 18px 16px 170px; /* alt bar boşluğu */
+      padding: 18px 16px 150px; /* demo input + footer için */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -34,7 +34,7 @@
       gap: 14px;
     }
 
-    /* Hafif arkaplan (sayfa genel) */
+    /* Arka plan */
     .bg-anim{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
     .bg-anim::before{
       content:"";
@@ -68,40 +68,39 @@
       100%{ transform: translateX(-40%); }
     }
 
-    /* ===== GÖZLER (ORTALI, BİR TIK KÜÇÜK, ZEMİN YOK) ===== */
+    /* ===== GÖZLER (ORTALI, KÜÇÜK, ZEMİN YOK) ===== */
     .kaynana-eyes{
       position: relative;
       z-index: 3;
-      margin-top: 10px;
-      width: 210px;
-      height: 90px;
+      margin-top: 8px;
+      width: 200px;
+      height: 86px;
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 18px;
+      gap: 16px;
       pointer-events:none;
-      /* ✅ zemin yok */
       background: transparent;
       border: none;
       box-shadow: none;
     }
-    .eye-wrap{ position:relative; width:64px; height:78px; display:flex; align-items:center; justify-content:center; }
+    .eye-wrap{ position:relative; width:60px; height:72px; display:flex; align-items:center; justify-content:center; }
     .brow{
       position:absolute;
       top: -6px;
-      width: 66px;
+      width: 62px;
       height: 18px;
       border-top: 5px solid rgba(255,255,255,.55);
       border-radius: 999px;
       transform: rotate(-6deg);
-      opacity:.60;
+      opacity:.55;
     }
     .lashes{
       position:absolute;
-      top: 16px;
-      width: 68px;
+      top: 15px;
+      width: 64px;
       height: 12px;
-      opacity:.30;
+      opacity:.28;
       display:flex;
       justify-content:space-between;
     }
@@ -112,8 +111,8 @@
       transform: rotate(18deg);
     }
     .eye{
-      width: 60px;
-      height: 60px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       background: rgba(255,255,255,.95);
       position: relative;
@@ -121,13 +120,13 @@
       box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
     }
     .pupil{
-      width: 22px;
-      height: 22px;
+      width: 21px;
+      height: 21px;
       border-radius: 50%;
       background: rgba(0,0,0,.80);
       position:absolute;
-      top: 19px;
-      left: 19px;
+      top: 18px;
+      left: 18px;
       transition: transform .10s linear;
     }
     .shine{
@@ -135,7 +134,7 @@
       border-radius: 50%;
       background: rgba(255,255,255,.85);
       position:absolute;
-      top: 10px; left: 13px;
+      top: 10px; left: 12px;
       opacity:.9;
     }
     .lid{
@@ -152,7 +151,7 @@
       96%{ transform: translateY(-110%); }
     }
 
-    /* ===== ICON STACK (GOOGLE üstte, APPLE altta) ===== */
+    /* ===== ICON STACK ===== */
     .login-stack{
       position: relative;
       z-index: 3;
@@ -161,15 +160,14 @@
       flex-direction:column;
       align-items:center;
       gap: 12px;
-      margin-top: 6px;
+      margin-top: 4px;
     }
-
     .btn-icon{
       width: 100%;
       height: 56px;
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05); /* buton zemin olur, sorun yok */
+      background: rgba(255,255,255,.05);
       color:#fff;
       display:flex;
       align-items:center;
@@ -183,7 +181,6 @@
       transition: transform .12s ease, filter .12s ease;
     }
     .btn-icon:active{ transform: translateY(1px); filter: brightness(.97); }
-
     .g-badge{
       width: 26px; height: 26px;
       border-radius: 10px;
@@ -200,7 +197,7 @@
       font-size: 16px;
     }
 
-    /* GSI overlay (google butonu tıklamayı iframe’e bırakır) */
+    /* GSI overlay */
     .google-wrap{ position: relative; width: 100%; height: 56px; }
     #googleBtnWrap{
       position:absolute; inset:0;
@@ -216,22 +213,25 @@
       cursor:pointer !important;
     }
 
-    /* ===== DEMO: Apple altından başlar, aşağı akar, üstte kaybolur ===== */
-    .demo-wrap{
-      position: relative;
+    /* ===== DEMO: mesajlar alttan yukarı ===== */
+    .demo-zone{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(480px, calc(100vw - 18px));
+      bottom: 66px; /* footer üstü */
       z-index: 2;
-      width: min(440px, 92vw);
-      margin-top: 6px;
-      max-height: 220px;
-      overflow: hidden; /* ✅ Apple altında başlar, üstte kaybolur */
+      padding: 0 14px 10px;
+      pointer-events:none;
     }
 
     .demo-stream{
       width:100%;
+      max-height: 240px;   /* ekran dolmasın */
+      overflow:hidden;      /* üstten kaybolsun */
       display:flex;
-      flex-direction:column; /* ✅ üstten aşağı akar */
+      flex-direction:column-reverse; /* ✅ alttan yukarı büyür */
       gap: 10px;
-      padding: 0;
     }
 
     .demo-bubble{
@@ -257,11 +257,12 @@
       text-align:right;
     }
 
+    /* typing dots */
     .demo-typing{
       display:flex;
       gap:6px;
       align-items:center;
-      margin-top: 6px;
+      margin: 8px 0 0;
       opacity:.9;
     }
     .demo-typing .dot{
@@ -274,6 +275,65 @@
     @keyframes dot{
       0%,100%{ transform: translateY(0); opacity:.55; }
       50%{ transform: translateY(-4px); opacity:1; }
+    }
+
+    /* Demo input (footer’ın hemen üstünde, boşluk bırakmaz) */
+    .demo-inputbar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(480px, calc(100vw - 18px));
+      bottom: 8px; /* footer içinde değil; footerın üst çizgisine yakın */
+      z-index: 3;
+      padding: 0 14px;
+      pointer-events:none;
+    }
+    .demo-input{
+      width: 100%;
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      display:flex;
+      align-items:center;
+      padding: 0 14px;
+      gap: 10px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.25);
+      backdrop-filter: blur(10px);
+    }
+    .demo-caret{
+      width: 8px;
+      height: 18px;
+      border-radius: 2px;
+      background: rgba(190,242,100,.85);
+      opacity: .0;
+      animation: caret 1.1s infinite;
+    }
+    @keyframes caret{
+      0%,45%{ opacity: 0; }
+      55%,100%{ opacity: 1; }
+    }
+    .demo-inputtext{
+      flex:1;
+      color: rgba(255,255,255,.86);
+      font-weight: 850;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .demo-send{
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
+      background: rgba(190,242,100,.14);
+      border: 1px solid rgba(190,242,100,.25);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(190,242,100,.95);
+      font-weight: 1000;
+      font-size: 12px;
     }
 
     /* Alt bar */
@@ -388,7 +448,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (sabit) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls"></div>
 
@@ -430,7 +490,6 @@
 
     <!-- ICON STACK -->
     <div class="login-stack">
-      <!-- Google (ikon) -->
       <div class="google-wrap">
         <button class="btn-icon" id="googleLoginBtn" type="button">
           <span class="g-badge">G</span> Google ile Giriş Yap
@@ -438,22 +497,30 @@
         <div id="googleBtnWrap"></div>
       </div>
 
-      <!-- Apple (ikon) -->
       <button class="btn-icon" id="appleLoginBtn" type="button">
         <span class="a-badge"></span> Apple ile Giriş Yap
       </button>
-
-      <!-- DEMO (Apple altından başlar) -->
-      <div class="demo-wrap">
-        <div class="demo-stream" id="demoStream"></div>
-        <div class="demo-typing" id="demoTyping">
-          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        </div>
-      </div>
     </div>
   </div>
 
-  <!-- ALT BAR (sabit) -->
+  <!-- DEMO ZONE (footer üstü) -->
+  <div class="demo-zone" aria-hidden="true">
+    <div class="demo-stream" id="demoStream"></div>
+    <div class="demo-typing" id="demoTyping">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  </div>
+
+  <!-- DEMO INPUT (footer üstü, boşluk bırakmaz) -->
+  <div class="demo-inputbar" aria-hidden="true">
+    <div class="demo-input">
+      <div class="demo-caret"></div>
+      <div class="demo-inputtext" id="demoInputText"></div>
+      <div class="demo-send">➤</div>
+    </div>
+  </div>
+
+  <!-- ALT BAR -->
   <div class="login-footerbar">
     <div class="login-links">
       <a href="/pages/about.html">Hakkımızda</a>
@@ -507,7 +574,6 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // ✅ Apple: kaynana dili
   $("appleLoginBtn")?.addEventListener("click", (e) => {
     e.preventDefault();
     alert("Apple daha hazır değil evladım… Biraz sabır. Şimdilik Google hesabın ile devam et, ben seni içeri alayım.");
@@ -559,7 +625,7 @@
 
   initAuth();
 
-  // ===== GÖZLER: pointer varsa onu takip, yoksa demo yazısını takip =====
+  // ===== Gözler: pointer takip; yoksa demo’daki en yeni balona bak =====
   const p1 = $("p1");
   const p2 = $("p2");
   const eyesBox = $("eyesBox");
@@ -598,17 +664,15 @@
     aimAt(t.clientX, t.clientY);
   }, { passive:true });
 
-  // idle: demo yazısını takip et
   setInterval(()=>{
     const idle = (Date.now() - lastPointerAt) > 900;
     if(!idle) return;
 
     let tx = window.innerWidth/2;
-    let ty = window.innerHeight*0.72;
+    let ty = window.innerHeight*0.75;
 
     try{
-      // en yeni baloncuk (en alttaki) hedef
-      const last = demoStream?.lastElementChild;
+      const last = demoStream?.querySelector?.(".demo-bubble:last-child");
       const r = last?.getBoundingClientRect?.();
       if(r){
         tx = r.left + r.width/2;
@@ -619,26 +683,19 @@
     aimAt(tx, ty);
   }, 220);
 
-  // ===== DEMO: mini SSS Q/A, kullanıcı -> kaynana, daktilo, aşağı akar, üstten kaybolur =====
-  const stream = demoStream;
+  // ===== DEMO: input’a yaz -> gönder -> balon yukarı -> kaynana cevap =====
+  const stream = $("demoStream");
   const typing = $("demoTyping");
-  const turns = [
-    ["user","Kaynana… sana nasıl üye olurum?"],
-    ["bot","Google ya da Apple’dan birini seç evladım. Şimdilik Google daha hızlı."],
-    ["user","Üyelik ücretli mi?"],
-    ["bot","Ücretsiz başlıyorsun evladım. Sonra istersen PLUS/PRO bakarız."],
-    ["user","Sözleşme zorunlu mu?"],
-    ["bot","Zorunlu. Onaylamadan içeri giremezsin. Düzen şart."],
-    ["user","Verilerimi kaydediyor musun?"],
-    ["bot","Görüntü/ses kaydetmem. Sadece izin verdiğin profil bilgisi durur."],
-    ["user","S.P ne işe yarıyor?"],
-    ["bot","Samimiyet puanı evladım. Artarsa ben de sana daha ‘içten’ konuşurum."],
-    ["user","Küfür edersem?"],
-    ["bot","Hop! Kaynana kızar. S.P düşer. Ağzını topla."],
-    ["user","Profil doldurunca ne olur?"],
-    ["bot","Her alan bir ödül. İşin kolaylaşır, ben de seni daha iyi tanırım."],
-    ["user","Peki giriş yaptıktan sonra ilk sayfa ne?"],
-    ["bot","Sohbet sayfası. Orası ana yerin. Hadi bas Google’a."]
+  const inputText = $("demoInputText");
+
+  const qa = [
+    ["Kaynana… sana nasıl üye olurum?","Google ya da Apple’dan birini seç evladım. Şimdilik Google daha hızlı."],
+    ["Üyelik ücretli mi?","Ücretsiz başlıyorsun evladım. Sonra istersen PLUS/PRO bakarız."],
+    ["Sözleşme zorunlu mu?","Zorunlu. Onaylamadan içeri giremezsin. Düzen şart."],
+    ["Verilerimi kaydediyor musun?","Görüntü/ses kaydetmem. Sadece izin verdiğin profil bilgisi durur."],
+    ["S.P ne işe yarıyor?","Samimiyet puanı evladım. Artarsa ben de sana daha içten konuşurum."],
+    ["Profil doldurunca ne olur?","Her alan bir ödül. İşin kolaylaşır, ben de seni daha iyi tanırım."],
+    ["İlk sayfa ne olacak?","Sohbet sayfası evladım. Hadi Google’a bas da başlayalım."]
   ];
 
   function makeBubble(cls){
@@ -650,7 +707,7 @@
 
   const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
 
-  async function typeInto(el, text, speed=28){
+  async function typeInto(el, text, speed=30){
     el.textContent = "";
     const s = String(text || "");
     for(let i=0;i<s.length;i++){
@@ -659,34 +716,58 @@
     }
   }
 
+  async function typeIntoInput(text){
+    if(!inputText) return;
+    inputText.textContent = "";
+    const s = String(text || "");
+    for(let i=0;i<s.length;i++){
+      inputText.textContent += s[i];
+      await sleep(32);
+    }
+  }
+
+  function trimBubbles(max=10){
+    if(!stream) return;
+    const kids = Array.from(stream.children);
+    if(kids.length > max){
+      // column-reverse: DOM’da ilk eleman en altta görünür, ama biz en eskiyi silmek için sonlardan kırparız
+      kids.slice(max).forEach(n=>n.remove());
+    }
+  }
+
   async function runDemo(){
     if(!stream) return;
-
-    // reset
     stream.innerHTML = "";
     let i = 0;
 
     while(true){
-      const [who, txt] = turns[i % turns.length];
-      const cls = (who === "user") ? "user" : "bot";
+      const [q,a] = qa[i % qa.length];
 
-      if(typing) typing.style.display = (cls === "bot") ? "flex" : "none";
+      // 1) kullanıcı input’a yazsın
+      if(typing) typing.style.display = "none";
+      await typeIntoInput(q);
+      await sleep(240);
 
-      const bubble = makeBubble(cls);
-      stream.appendChild(bubble);
+      // 2) gönderilmiş gibi: input temizle + user bubble ekle
+      const ub = makeBubble("user");
+      stream.prepend(ub); // column-reverse: prepend -> en altta görünür
+      await typeInto(ub, q, 28);
+      if(inputText) inputText.textContent = "";
+      trimBubbles(10);
+      await sleep(320);
 
-      // daktilo yavaş ve hep
-      const speed = (cls === "user") ? 30 : 28;
-      await typeInto(bubble, txt, speed);
+      // 3) kaynana typing dots + cevap
+      if(typing) typing.style.display = "flex";
+      await sleep(420);
 
-      // max 10 baloncuk (üstten kaybolsun)
-      const kids = Array.from(stream.children);
-      if(kids.length > 10){
-        kids.slice(0, kids.length - 10).forEach(n=>n.remove());
-      }
+      const bb = makeBubble("bot");
+      stream.prepend(bb);
+      await typeInto(bb, a, 30);
+      if(typing) typing.style.display = "none";
+      trimBubbles(10);
 
       i++;
-      await sleep(520);
+      await sleep(680);
     }
   }
 
