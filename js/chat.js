@@ -1,12 +1,14 @@
 // FILE: /js/chat.js
-// STABLE + DUP SAFE + SP BALLOON POP
+// STABLE + DUP SAFE + SP BALLOON POP + +5 ONLY ONCE/DAY VISUAL
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
 import { ChatStore } from "./chat_store.js";
 import { getMemoryProfile, setMemoryProfile } from "./memory_profile.js";
 
-const SAFETY_PATTERNS = { self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i };
+const SAFETY_PATTERNS = {
+  self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
+};
 
 function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
 function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
@@ -23,6 +25,7 @@ function firstNameFromFullname(full = "") {
   return s ? s.split(/\s+/)[0] : "";
 }
 
+// USER-SCOPED CHAT_ID
 function getChatKeyForUser(userId) {
   const u = String(userId || "").trim().toLowerCase();
   return u ? `caynana_chat_id:${u}` : "caynana_chat_id";
@@ -38,6 +41,7 @@ function writeChatId(userId, chatId) {
   if (chatId) localStorage.setItem(key, String(chatId));
 }
 
+// NAME CAPTURE (izinli kayıt: sadece geçici hint)
 function extractNameFromText(text = "") {
   const s = String(text || "").trim();
   let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
@@ -47,7 +51,6 @@ function extractNameFromText(text = "") {
   return "";
 }
 
-// İzinli kayıt: sadece geçici hint
 function maybePersistNameFromUserMessage(userMessage) {
   try {
     const p = getProfile();
@@ -57,6 +60,7 @@ function maybePersistNameFromUserMessage(userMessage) {
     const name = extractNameFromText(userMessage);
     if (!name) return;
 
+    // sadece geçici hafıza
     try {
       const fn = firstNameFromFullname(name);
       setMemoryProfile({ name, fullname: name, hitap: (fn || name) });
@@ -91,17 +95,7 @@ function pickAssistantText(data) {
 
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-function _forceBottom(el){
-  if(!el) return;
-  let n = 0;
-  const tick = () => {
-    try { el.scrollTop = el.scrollHeight; } catch {}
-    n++;
-    if(n < 3) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-
+// Kaynana opener helpers (mevcut davranış korunuyor)
 function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
 function buildProfileContextForKaynana(profile={}, memP={}) {
@@ -175,7 +169,7 @@ function scheduleAssistantStoreWrite(outText){
   }catch{}
 }
 
-// Samimiyet UI
+// Samimiyet UI + balloon
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
 function setSamimiyetUI(score){
   const s = clamp(parseInt(score || 0, 10) || 0, 0, 100);
@@ -186,7 +180,6 @@ function setSamimiyetUI(score){
   if (num) num.textContent = `${s}/100`;
 }
 
-// ✅ BALON PATLAMA
 function ensureBalloonStyle(){
   if (document.getElementById("__sp_balloon_style")) return;
   const st = document.createElement("style");
@@ -227,7 +220,6 @@ function showSPBalloon(delta){
 
   ensureBalloonStyle();
 
-  // S.P chip’e yakın patlasın
   const chip = document.getElementById("ypNum") || document.querySelector(".yp-chip") || document.body;
   let x = window.innerWidth * 0.78;
   let y = 76;
@@ -246,6 +238,14 @@ function showSPBalloon(delta){
   document.body.appendChild(el);
 
   setTimeout(()=>{ try{ el.remove(); }catch{} }, 950);
+}
+
+// ✅ +5'i aynı gün içinde 1 kere gösterme anahtarı
+function shouldShowFirstMsgBalloonOncePerDay(userId){
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const seenKey = `caynana_sp_firstmsg_seen:${String(userId).toLowerCase()}:${todayKey}`;
+  const seen = (localStorage.getItem(seenKey) || "") === "1";
+  return { seenKey, seen };
 }
 
 export async function fetchTextResponse(msg, modeOrHistory = "chat") {
@@ -297,6 +297,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
   setKaynanaState(userId, st);
 
+  // user store
   try { ChatStore.add?.("user", message); } catch {}
 
   const ctx = buildProfileContextForKaynana(profile, memP);
@@ -328,42 +329,36 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
       ChatStore.setServerId?.(data.chat_id);
     }
 
+    // ✅ SP UI + balloon
     if (data && typeof data === "object") {
-  const spScore   = (data.sp_score ?? data.spScore ?? null);
-  const spDelta   = (data.sp_delta ?? data.spDelta ?? 0);
-  const spReasons = (data.sp_reasons || data.spReasons || {});
+      const spScore   = (data.sp_score ?? data.spScore ?? null);
+      const spDelta   = (data.sp_delta ?? data.spDelta ?? 0);
+      const spReasons = (data.sp_reasons || data.spReasons || {});
 
-  // skor UI
-  if (spScore !== null && spScore !== undefined) {
-    setSamimiyetUI(spScore);
-    try {
-      const p2 = getProfile();
-      p2.sp_score = parseInt(spScore, 10);
-      setProfile(p2);
-    } catch {}
-  }
-
-  // ✅ +5 (günün ilk mesaj bonusu) balonunu günde 1 kez göster
-  if (spDelta) {
-    const todayKey = new Date().toISOString().slice(0, 10);
-    const seenKey = `caynana_sp_firstmsg_seen:${String(userId).toLowerCase()}:${todayKey}`;
-
-    const isFirstMsgBonus =
-      (spDelta === 5) &&
-      (spReasons.first_msg_bonus === 5 || spReasons.first_msg_bonus === +5 || spReasons.first_msg_bonus != null);
-
-    if (spDelta === 5 && isFirstMsgBonus) {
-      const seen = (localStorage.getItem(seenKey) || "") === "1";
-      if (!seen) {
-        showSPBalloon(spDelta);
-        localStorage.setItem(seenKey, "1");
+      if (spScore !== null && spScore !== undefined) {
+        setSamimiyetUI(spScore);
+        try {
+          const p2 = getProfile();
+          p2.sp_score = parseInt(spScore, 10);
+          setProfile(p2);
+        } catch {}
       }
-    } else {
-      // -5 ceza, -1 küfür, +1 yalakalık vb hepsi her sefer gösterilebilir
-      showSPBalloon(spDelta);
+
+      // +5'i günde 1 kere göster (puan artmıyorsa balon spam yapmasın)
+      if (spDelta) {
+        const { seenKey, seen } = shouldShowFirstMsgBalloonOncePerDay(userId);
+        const looksLikeFirst = (spDelta === 5) && (spReasons.first_msg_bonus != null);
+
+        if (spDelta === 5 && looksLikeFirst) {
+          if (!seen) {
+            showSPBalloon(spDelta);
+            localStorage.setItem(seenKey, "1");
+          }
+        } else {
+          showSPBalloon(spDelta);
+        }
+      }
     }
-  }
-}
 
     let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
 
