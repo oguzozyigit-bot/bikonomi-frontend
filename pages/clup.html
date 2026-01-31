@@ -1,0 +1,355 @@
+<!-- FILE: /pages/clup.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Takım</title>
+
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
+
+  <style>
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      color-scheme: dark;
+
+      --gold:#ffb300;
+      --pistachio:#bef264;
+      --red:#ff5252;
+    }
+
+    html,body{ background:#000 !important; }
+    .mobile-frame{ background:#000 !important; }
+
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .assistant-bar{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
+      height: var(--assistH) !important;
+      padding: 6px 10px !important;
+      pointer-events: none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+
+    .module-area{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + 10px);
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      padding-bottom: 22px;
+    }
+
+    .card{
+      background: rgba(0,0,0,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 16px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.55);
+      margin-bottom: 12px;
+    }
+
+    .head{ display:flex; align-items:center; gap:12px; }
+    .ico{
+      width:44px; height:44px; border-radius:16px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      font-size:22px;
+      flex:0 0 44px;
+    }
+    .ttl{ font-weight:1000; color:#fff; font-size:16px; }
+    .sub{ margin-top:6px; font-weight:900; color: rgba(255,255,255,.70); font-size: 13px; line-height:1.35; }
+
+    .pillrow{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.85);
+      font-weight: 1000;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+    .pill.gold{ border-color: rgba(255,179,0,.18); background: rgba(255,179,0,.08); color: rgba(255,179,0,.95); }
+    .pill.green{ border-color: rgba(190,242,100,.18); background: rgba(190,242,100,.08); color: rgba(190,242,100,.95); }
+
+    .box{
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+    .inp{
+      flex:1;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 14px;
+      outline:none;
+      font-weight: 900;
+      min-width: 0;
+    }
+
+    .btn{
+      border:none;
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 1000;
+      font-size: 13px;
+      cursor:pointer;
+      background: var(--pistachio);
+      color:#111;
+      box-shadow: 0 12px 26px rgba(190,242,100,.12);
+      white-space: nowrap;
+    }
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
+      box-shadow:none;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .tile{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      padding: 12px;
+      display:flex;
+      gap: 10px;
+      align-items:flex-start;
+      justify-content:space-between;
+    }
+    .tile .l{ flex:1; min-width:0; }
+    .t1{ font-weight:1000; color:#fff; font-size: 13px; }
+    .t2{ margin-top:4px; font-weight:900; color: rgba(255,255,255,.70); font-size: 12px; line-height:1.35; }
+
+    .mini{
+      margin-top: 10px;
+      font-weight: 900;
+      color: rgba(255,255,255,.55);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      top: 84px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 1000;
+      font-size: 12px;
+      background: rgba(20,20,20,.92);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+      display:none;
+      color: rgba(255,255,255,.92);
+      max-width: min(440px, calc(100vw - 24px));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .toast.show{ display:block; }
+  </style>
+</head>
+
+<body>
+<div class="mobile-frame" id="mobileFrame">
+
+  <!-- ÜST BAR (aynı) -->
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
+    </div>
+
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">10/100</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HAMBURGER (aynı) -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORTA -->
+  <div class="module-area">
+    <div class="card">
+      <div class="head">
+        <div class="ico">⚽</div>
+        <div>
+          <div class="ttl" id="teamTitle">Takım</div>
+          <div class="sub" id="teamSub">Profilindeki takım adına göre bildirim ayarları.</div>
+        </div>
+      </div>
+
+      <div class="pillrow">
+        <div class="pill" id="planPill">Plan: FREE</div>
+        <div class="pill gold" id="freqPill">Bildirim: Haftada 1</div>
+      </div>
+
+      <div class="box" id="noTeamBox" style="display:none;">
+        <div class="t1">Takım yok evladım 🙂</div>
+        <div class="t2">Profilde “Tuttuğu Takım” alanını doldur, burada açılır.</div>
+        <div class="row">
+          <button class="btn" id="goProfile">Profilde Takım Yaz</button>
+        </div>
+      </div>
+
+      <div class="box" id="teamBox" style="display:none;">
+        <div class="t1">Takım: <span id="teamName">—</span></div>
+        <div class="t2">Motor bağlanınca “maç var / sonuç / puan durumu” gibi bildirimler gelecek.</div>
+
+        <div class="row">
+          <button class="btn" id="btnTestNotif">Test Bildirimi</button>
+          <button class="btn secondary" id="btnChangeTeam">Takımı Değiştir</button>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <div class="tile">
+            <div class="l">
+              <div class="t1">📌 Bildirim Türleri</div>
+              <div class="t2">Maç hatırlatma, sonuç, transfer dedikodusu (kaynana yorumlu). Motor sonra.</div>
+            </div>
+          </div>
+
+          <div class="tile">
+            <div class="l">
+              <div class="t1">⏱️ Sıklık</div>
+              <div class="t2" id="freqText">FREE: Haftada 1 özet bildirimi.</div>
+            </div>
+          </div>
+
+          <div class="tile">
+            <div class="l">
+              <div class="t1">🧪 Demo</div>
+              <div class="t2">Şimdilik sadece toast. Google Play/push motor gelince gerçek bildirim olacak.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mini">
+          Not: Takım bildirimi PLUS/PRO’da sınırsız. FREE’de haftalık 1 özet.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <!-- ALT BAR -->
+  <div class="assistant-bar" id="assistantBar"></div>
+
+  <!-- FOOTER -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
+</div>
+
+<script type="module" src="/js/layout-common.js?v=1"></script>
+<script type="module" src="/js/menu_history_ui.js?v=2"></script>
+<script type="module" src="/js/clup_page.js?v=1"></script>
+</body>
+</html>
