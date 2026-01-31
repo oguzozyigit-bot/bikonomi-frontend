@@ -1,8 +1,7 @@
 // FILE: /js/teacher_page.js
-// Teacher UI = translator style (no top/bottom bars, only back)
-// Strict pronunciation: correct >= 0.92
-// Teacher TTS says ONLY the word (no extra sentences)
-// Flow: Speak -> Student Mic -> STT -> check -> next or repeat
+// Teacher says the target word ONCE (rate=1.0) – no slow, no syllable, no extra talk.
+// Strict pronunciation: similarity >= 0.92
+// Correct => auto next word, Wrong => repeat same word (teacher says once again)
 
 const $ = (id)=>document.getElementById(id);
 
@@ -12,7 +11,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 1800);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1600);
 }
 
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
@@ -26,7 +25,6 @@ function norm(s){
     .replace(/\s+/g," ");
 }
 
-// Levenshtein-lite similarity 0..1
 function similarity(a,b){
   a = norm(a); b = norm(b);
   if(!a || !b) return 0;
@@ -45,7 +43,7 @@ function similarity(a,b){
   return 1 - (dist / Math.max(m,n));
 }
 
-function speakWord(word, lang, rate=1.0){
+function speakOnce(word, lang){
   return new Promise((resolve)=>{
     if(!("speechSynthesis" in window)){
       resolve(false); return;
@@ -54,7 +52,7 @@ function speakWord(word, lang, rate=1.0){
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(String(word||""));
       u.lang = LOCALES[lang] || "en-US";
-      u.rate = rate;
+      u.rate = 1.0;   // ✅ sabit, asla bozma
       u.pitch = 1.0;
       u.onend = ()=> resolve(true);
       u.onerror = ()=> resolve(false);
@@ -75,43 +73,43 @@ function makeRecognizer(lang){
   return rec;
 }
 
-/* A1 word blocks (small starter – büyütürüz) */
+/* A1 starter – büyütürüz */
 const DATA = {
   en: [
-    { tr:"elma", target:"apple", slow:"apple", syll:"ap ple" },
-    { tr:"su", target:"water", slow:"water", syll:"wa ter" },
-    { tr:"ekmek", target:"bread", slow:"bread", syll:"bread" },
-    { tr:"teşekkürler", target:"thank you", slow:"thank you", syll:"thank you" },
-    { tr:"lütfen", target:"please", slow:"please", syll:"please" },
-    { tr:"menü", target:"menu", slow:"menu", syll:"me nu" },
-    { tr:"fiyat", target:"price", slow:"price", syll:"price" },
-    { tr:"evet", target:"yes", slow:"yes", syll:"yes" },
-    { tr:"hayır", target:"no", slow:"no", syll:"no" },
-    { tr:"merhaba", target:"hello", slow:"hello", syll:"hel lo" },
+    { tr:"elma", target:"apple" },
+    { tr:"su", target:"water" },
+    { tr:"ekmek", target:"bread" },
+    { tr:"teşekkürler", target:"thank you" },
+    { tr:"lütfen", target:"please" },
+    { tr:"menü", target:"menu" },
+    { tr:"fiyat", target:"price" },
+    { tr:"evet", target:"yes" },
+    { tr:"hayır", target:"no" },
+    { tr:"merhaba", target:"hello" },
   ],
   de: [
-    { tr:"elma", target:"apfel", slow:"apfel", syll:"ap fel" },
-    { tr:"su", target:"wasser", slow:"wasser", syll:"was ser" },
-    { tr:"ekmek", target:"brot", slow:"brot", syll:"brot" },
-    { tr:"teşekkürler", target:"danke", slow:"danke", syll:"dan ke" },
-    { tr:"lütfen", target:"bitte", slow:"bitte", syll:"bit te" },
-    { tr:"menü", target:"speisekarte", slow:"speisekarte", syll:"spei se kar te" },
+    { tr:"elma", target:"apfel" },
+    { tr:"su", target:"wasser" },
+    { tr:"ekmek", target:"brot" },
+    { tr:"teşekkürler", target:"danke" },
+    { tr:"lütfen", target:"bitte" },
+    { tr:"menü", target:"speisekarte" },
   ],
   fr: [
-    { tr:"elma", target:"pomme", slow:"pomme", syll:"pom me" },
-    { tr:"su", target:"eau", slow:"eau", syll:"eau" },
-    { tr:"ekmek", target:"pain", slow:"pain", syll:"pain" },
-    { tr:"teşekkürler", target:"merci", slow:"merci", syll:"mer ci" },
-    { tr:"lütfen", target:"s'il vous plaît", slow:"s'il vous plaît", syll:"sil vu ple" },
-    { tr:"menü", target:"menu", slow:"menu", syll:"me nu" },
+    { tr:"elma", target:"pomme" },
+    { tr:"su", target:"eau" },
+    { tr:"ekmek", target:"pain" },
+    { tr:"teşekkürler", target:"merci" },
+    { tr:"lütfen", target:"s'il vous plaît" },
+    { tr:"menü", target:"menu" },
   ],
   it: [
-    { tr:"elma", target:"mela", slow:"mela", syll:"me la" },
-    { tr:"su", target:"acqua", slow:"acqua", syll:"ac qua" },
-    { tr:"ekmek", target:"pane", slow:"pane", syll:"pa ne" },
-    { tr:"teşekkürler", target:"grazie", slow:"grazie", syll:"gra zie" },
-    { tr:"lütfen", target:"per favore", slow:"per favore", syll:"per fa vo re" },
-    { tr:"menü", target:"menu", slow:"menu", syll:"me nu" },
+    { tr:"elma", target:"mela" },
+    { tr:"su", target:"acqua" },
+    { tr:"ekmek", target:"pane" },
+    { tr:"teşekkürler", target:"grazie" },
+    { tr:"lütfen", target:"per favore" },
+    { tr:"menü", target:"menu" },
   ],
 };
 
@@ -138,19 +136,16 @@ function setUI(){
 async function teacherSpeak(){
   const item = cur();
   $("teacherStatus").textContent = "🔊";
-  // Öğretmen SADECE kelimeyi söyler:
-  await speakWord(item.target, lang, 1.0);
-  await speakWord(item.target, lang, 0.78);
-  // hece hece hissi: kelimeyi bölerek ama yine kelime:
-  await speakWord(item.syll || item.target, lang, 0.62);
+  await speakOnce(item.target, lang);
   $("teacherStatus").textContent = "—";
 }
 
-async function onWrong(){
+async function onWrong(score){
   $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
   $("resultMsg").className = "status bad";
+  $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
   toast("Tekrar et");
-  await teacherSpeak();
+  await teacherSpeak(); // ✅ yine aynı kelime, tek sefer
 }
 
 async function onCorrect(score){
@@ -158,9 +153,11 @@ async function onCorrect(score){
   $("resultMsg").className = "status ok";
   $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
   toast("Aferin");
+
   // otomatik sonraki kelime
   idx++;
   if(idx >= list().length) idx = 0;
+
   setUI();
   await teacherSpeak();
 }
@@ -178,8 +175,7 @@ async function startListen(){
   $("btnMic").classList.add("listening");
   $("studentTop").textContent = "Dinliyorum…";
 
-  const item = cur();
-  const expected = item.target;
+  const expected = cur().target;
 
   rec.onresult = async (e)=>{
     const heard = e.results?.[0]?.[0]?.transcript || "";
@@ -189,12 +185,17 @@ async function startListen(){
     $("btnMic").classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
 
+    if(!heard.trim()){
+      toast("Duyamadım. Tekrar söyle.");
+      await teacherSpeak();
+      return;
+    }
+
     const sc = similarity(expected, heard);
     if(sc >= 0.92){
       await onCorrect(sc);
     }else{
-      $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
-      await onWrong();
+      await onWrong(sc);
     }
   };
 
@@ -223,7 +224,6 @@ async function startListen(){
   }
 }
 
-/* Boot */
 document.addEventListener("DOMContentLoaded", async ()=>{
   $("backBtn").addEventListener("click", ()=>{
     if(history.length>1) history.back();
