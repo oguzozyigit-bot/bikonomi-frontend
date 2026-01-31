@@ -18,6 +18,12 @@
       --assistH: 68px;
       --gapH: 6px;
       color-scheme: dark;
+
+      --tarot-bg: rgba(20,20,20,.85);
+      --tarot-br: rgba(255,255,255,.12);
+      --tarot-gold: #ffb300;
+      --tarot-green: #bef264;
+      --tarot-red: #ff5252;
     }
 
     .footer-container{
@@ -85,11 +91,7 @@
     .ttl{ font-weight:1000; color:#fff; font-size:16px; }
     .sub{ margin-top:6px; color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; font-weight: 800; }
 
-    .seg-tabs{
-      display:flex;
-      gap:8px;
-      margin-top: 12px;
-    }
+    .seg-tabs{ display:flex; gap:8px; margin-top: 12px; }
     .seg{
       flex:1;
       padding: 10px 10px;
@@ -106,7 +108,7 @@
     .seg.active{
       border-color: rgba(190,242,100,.35);
       background: rgba(190,242,100,.10);
-      color: var(--pistachio);
+      color: var(--tarot-green);
     }
 
     .btn-row{ display:flex; gap:10px; margin-top: 12px; }
@@ -118,7 +120,7 @@
       font-weight: 1000;
       font-size: 14px;
       cursor:pointer;
-      background: var(--pistachio);
+      background: var(--tarot-green);
       color:#111;
       box-shadow: 0 12px 26px rgba(190,242,100,.18);
     }
@@ -129,48 +131,61 @@
       box-shadow:none;
     }
 
-    /* Deck */
-    .deck-wrap{
+    /* ===== Deck showcase (güzel desteler) ===== */
+    .deck-showcase{
       margin-top: 14px;
+      display:flex;
+      align-items:stretch;
+      justify-content:space-between;
+      gap: 12px;
+    }
+    .deck-box{
+      flex: 1;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(900px 280px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(900px 280px at 100% 0%, rgba(190,242,100,.10), transparent 60%),
+        rgba(14,14,14,.70);
+      box-shadow: 0 18px 45px rgba(0,0,0,.45);
+      padding: 12px;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 10px;
-      padding: 12px 12px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      gap: 12px;
     }
-    .deck-left{ display:flex; align-items:center; gap:10px; }
-    .deck-pile{
-      width: 54px;
-      height: 74px;
-      border-radius: 14px;
+    .deck-stack{
+      width: 74px;
+      height: 104px;
+      position: relative;
+      flex:0 0 74px;
+    }
+    .deck-stack .c{
+      position:absolute;
+      inset:0;
+      border-radius: 16px;
       border: 1px solid rgba(255,255,255,.14);
       background:
-        radial-gradient(220px 120px at 20% 10%, rgba(190,242,100,.12), transparent 60%),
-        radial-gradient(220px 120px at 90% 0%, rgba(255,179,0,.10), transparent 60%),
-        rgba(20,20,20,.85);
-      box-shadow: 0 18px 40px rgba(0,0,0,.40);
-      position: relative;
+        radial-gradient(180px 120px at 10% 0%, rgba(190,242,100,.10), transparent 65%),
+        radial-gradient(180px 120px at 100% 0%, rgba(255,179,0,.10), transparent 65%),
+        rgba(25,25,25,.85);
+      box-shadow: 0 16px 34px rgba(0,0,0,.40);
       overflow:hidden;
     }
-    .deck-pile::after{
-      content:"";
-      position:absolute;
-      inset:-20%;
-      background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,.06) 50%, transparent 70%);
-      animation: shimmer 6.5s ease-in-out infinite;
-      opacity: .7;
-    }
-    @keyframes shimmer{
-      0%{ transform: translateX(-40%); }
-      50%{ transform: translateX(40%); }
-      100%{ transform: translateX(-40%); }
-    }
-    .deck-name{ font-weight:1000; color:#fff; font-size: 13px; }
-    .deck-sub{ font-weight: 900; color: rgba(255,255,255,.60); font-size: 11px; margin-top: 2px; }
+    .deck-stack .c:nth-child(1){ transform: translate(8px, -6px) rotate(2deg); opacity:.55; }
+    .deck-stack .c:nth-child(2){ transform: translate(4px, -3px) rotate(1deg); opacity:.75; }
+    .deck-stack .c:nth-child(3){ transform: translate(0, 0) rotate(0deg); opacity:1; }
 
+    .deck-back-art{
+      position:absolute;
+      inset:0;
+      opacity:.92;
+    }
+    .deck-back-art svg{ width:100%; height:100%; display:block; }
+
+    .deck-meta{ flex:1; min-width:0; }
+    .deck-name{ font-weight:1000; color:#fff; font-size: 13px; }
+    .deck-sub{ font-weight: 900; color: rgba(255,255,255,.60); font-size: 11px; margin-top: 2px; line-height:1.25; }
     .pill{
       padding: 8px 10px;
       border-radius: 999px;
@@ -180,31 +195,49 @@
       font-weight: 1000;
       font-size: 11px;
       white-space:nowrap;
+      flex-shrink:0;
     }
 
-    /* Cards grid */
+    /* ===== Card grid with FLIP ===== */
     .grid{
       margin-top: 14px;
       display:grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 10px;
     }
-    .card-back{
+
+    .flip{
       aspect-ratio: 3/4.4;
+      position: relative;
+      perspective: 1000px;
+    }
+    .flip .inner{
+      position:absolute;
+      inset:0;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.2,.9,.2,1);
+    }
+    .flip.flipped .inner{ transform: rotateY(180deg); }
+
+    .face{
+      position:absolute;
+      inset:0;
       border-radius: 14px;
+      backface-visibility: hidden;
       border: 1px solid rgba(255,255,255,.12);
+      overflow:hidden;
+      box-shadow: 0 16px 34px rgba(0,0,0,.40);
+    }
+
+    .back{
       background:
         radial-gradient(180px 120px at 10% 0%, rgba(190,242,100,.10), transparent 65%),
         radial-gradient(180px 120px at 100% 0%, rgba(255,179,0,.10), transparent 65%),
-        rgba(25,25,25,.75);
-      box-shadow: 0 16px 34px rgba(0,0,0,.40);
-      position: relative;
-      overflow:hidden;
+        rgba(25,25,25,.85);
       cursor:pointer;
       user-select:none;
-      transform: translateZ(0);
     }
-    .card-back::before{
+    .back::before{
       content:"✶";
       position:absolute;
       left: 10px; top: 8px;
@@ -212,59 +245,84 @@
       color: rgba(255,255,255,.9);
       font-weight: 1000;
     }
-    .card-back::after{
+    .back::after{
       content:"";
       position:absolute;
       inset:0;
       background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,.06) 52%, transparent 70%);
       opacity: .6;
     }
-    .card-back.disabled{
-      opacity: .35;
-      cursor:not-allowed;
-      filter: grayscale(1);
+
+    .front{
+      transform: rotateY(180deg);
+      background:
+        radial-gradient(220px 160px at 50% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(220px 160px at 50% 100%, rgba(190,242,100,.08), transparent 60%),
+        rgba(18,18,18,.92);
+      display:flex;
+      flex-direction:column;
+      padding: 10px;
+      gap: 8px;
     }
-    .card-back.selected{
-      outline: 2px solid rgba(190,242,100,.35);
-      box-shadow: 0 0 0 3px rgba(190,242,100,.08), 0 16px 34px rgba(0,0,0,.40);
+    .front .frame{
+      flex:1;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.20);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .front .frame svg{ width:82%; height:82%; opacity:.92; }
+
+    .front .title{
+      font-weight: 1000;
+      color:#fff;
+      font-size: 11px;
+      line-height:1.2;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .front .meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 8px;
+      font-size: 10px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.70);
+    }
+    .tag{
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .tag.rev{
+      border-color: rgba(255,82,82,.25);
+      background: rgba(255,82,82,.10);
+      color: rgba(255,82,82,.95);
     }
 
-    /* Selected area */
-    .picked{
-      margin-top: 12px;
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-    }
+    .flip.disabled .back{ cursor:not-allowed; opacity:.40; }
+    .flip.selected .back{ outline:2px solid rgba(190,242,100,.35); }
+
+    /* Picked */
+    .picked{ margin-top: 12px; display:flex; gap: 10px; flex-wrap:wrap; }
     .picked-card{
-      width: 92px;
+      width: 110px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
       padding: 10px;
     }
-    .picked-title{
-      font-weight: 1000;
-      color:#fff;
-      font-size: 11px;
-      line-height: 1.2;
-    }
-    .picked-tag{
-      margin-top:6px;
-      display:inline-flex;
-      padding: 5px 8px;
-      border-radius: 999px;
-      font-size: 10px;
-      font-weight: 1000;
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.75);
-      background: rgba(255,255,255,.04);
-    }
-    .picked-tag.rev{
-      border-color: rgba(255,82,82,.25);
-      background: rgba(255,82,82,.10);
-      color: rgba(255,82,82,.95);
-    }
+    .picked-pos{ font-weight:1000; color: rgba(255,255,255,.80); font-size: 10px; text-transform: uppercase; letter-spacing:.6px; }
+    .picked-name{ margin-top:6px; font-weight:1000; color:#fff; font-size: 11px; line-height:1.2; }
+    .picked-tag{ margin-top:8px; display:inline-flex; padding:5px 8px; border-radius:999px; font-size:10px; font-weight:1000; border:1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.75); background: rgba(255,255,255,.04); }
+    .picked-tag.rev{ border-color: rgba(255,82,82,.25); background: rgba(255,82,82,.10); color: rgba(255,82,82,.95); }
 
     /* Thinking overlay */
     .thinking-overlay{
@@ -343,7 +401,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (aynı) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -383,7 +441,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER MENÜ (aynı) -->
+  <!-- HAMBURGER MENÜ -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -420,7 +478,7 @@
         <div class="ico">🃏</div>
         <div>
           <div class="ttl">Tarot</div>
-          <div class="sub">Açılım seç, karıştır, kartlarını seç. Sonra ben “kaynana gibi” yorumlarım.</div>
+          <div class="sub">Açılım seç → Karıştır → Kart seç. Kartlar <b>çevirilerek</b> görünür.</div>
         </div>
       </div>
 
@@ -430,15 +488,54 @@
         <div class="seg" data-n="5">5 Kart</div>
       </div>
 
-      <div class="deck-wrap">
-        <div class="deck-left">
-          <div class="deck-pile" id="deckPile"></div>
-          <div>
+      <div class="deck-showcase">
+        <div class="deck-box">
+          <div class="deck-stack" aria-hidden="true">
+            <div class="c">
+              <div class="deck-back-art">
+                <svg viewBox="0 0 100 140">
+                  <defs>
+                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stop-color="rgba(190,242,100,.35)"/>
+                      <stop offset="1" stop-color="rgba(255,179,0,.30)"/>
+                    </linearGradient>
+                  </defs>
+                  <rect x="8" y="10" width="84" height="120" rx="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+                  <circle cx="50" cy="70" r="26" fill="url(#g1)" opacity=".7"/>
+                  <path d="M50 40 L56 60 L78 60 L60 73 L66 94 L50 82 L34 94 L40 73 L22 60 L44 60 Z"
+                        fill="rgba(255,255,255,.18)"/>
+                </svg>
+              </div>
+            </div>
+            <div class="c">
+              <div class="deck-back-art">
+                <svg viewBox="0 0 100 140">
+                  <rect x="10" y="12" width="80" height="116" rx="14" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
+                  <path d="M18 26 C40 10, 60 10, 82 26" stroke="rgba(255,255,255,.12)" fill="none" stroke-width="2"/>
+                  <path d="M18 114 C40 130, 60 130, 82 114" stroke="rgba(255,255,255,.12)" fill="none" stroke-width="2"/>
+                  <circle cx="50" cy="70" r="14" stroke="rgba(255,255,255,.14)" fill="none" stroke-width="2"/>
+                </svg>
+              </div>
+            </div>
+            <div class="c">
+              <div class="deck-back-art">
+                <svg viewBox="0 0 100 140">
+                  <rect x="8" y="10" width="84" height="120" rx="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
+                  <path d="M50 24 L62 48 L88 52 L68 70 L72 96 L50 84 L28 96 L32 70 L12 52 L38 48 Z"
+                        fill="rgba(255,179,0,.18)"/>
+                  <path d="M50 32 L58 50 L78 52 L62 64 L66 82 L50 72 L34 82 L38 64 L22 52 L42 50 Z"
+                        fill="rgba(190,242,100,.14)"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="deck-meta">
             <div class="deck-name">Kaynana Destesi</div>
             <div class="deck-sub" id="needTxt">Seçilecek: 1 kart</div>
           </div>
+          <div class="pill" id="statePill">Hazır</div>
         </div>
-        <div class="pill" id="statePill">Hazır</div>
       </div>
 
       <div class="btn-row">
@@ -446,9 +543,7 @@
         <button class="btn secondary" id="btnReset">Sıfırla</button>
       </div>
 
-      <div class="sub" style="margin-top:10px;">
-        Kartlara dokun ve seç. (Düz/Ters gelebilir.)
-      </div>
+      <div class="sub" style="margin-top:10px;">Kartlara dokun ve seç. (Düz/Ters gelebilir.)</div>
 
       <div class="grid" id="grid"></div>
 
@@ -490,6 +585,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/tarot_page.js?v=1"></script>
+<script type="module" src="/js/tarot_page.js?v=2"></script>
 </body>
 </html>
