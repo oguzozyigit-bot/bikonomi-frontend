@@ -60,17 +60,18 @@
       white-space: nowrap;
     }
 
+    /* Middle area */
     .module-area{
       position:absolute;
       left:0; right:0;
       top: var(--topH);
       bottom: calc(var(--footerH) + var(--assistH) + 10px);
-      overflow: hidden; /* chat + dock yönetiyor */
-      padding: 0;
+      overflow:hidden;
+      padding:0;
     }
 
-    .panel{
-      height: 100%;
+    .wrap{
+      height:100%;
       display:flex;
       flex-direction:column;
       padding: 16px;
@@ -95,26 +96,27 @@
       flex:0 0 44px;
     }
     .ttl{ font-weight:1000; color:#fff; font-size:16px; }
-    .sub{ margin-top:6px; color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; font-weight: 800; }
-
-    .row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      margin-top: 10px;
+    .sub{
+      margin-top:6px;
+      color: rgba(255,255,255,.70);
+      font-size: 13px;
+      line-height: 1.35;
+      font-weight: 800;
     }
+
+    .row{ display:flex; gap:10px; align-items:center; margin-top: 10px; }
     .inp{
       flex:1;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.12);
-      color: #fff;
+      color:#fff;
       padding: 12px;
       border-radius: 14px;
       font-size: 14px;
-      outline: none;
-      width:100%;
-      font-weight: 850;
+      outline:none;
+      font-weight: 900;
     }
+
     .btn{
       border:none;
       border-radius: 14px;
@@ -133,6 +135,13 @@
       color:#fff;
       box-shadow:none;
     }
+    .btn.danger{
+      background: rgba(255,82,82,.12);
+      border: 1px solid rgba(255,82,82,.20);
+      color: rgba(255,255,255,.92);
+      box-shadow:none;
+    }
+
     .badge{
       display:inline-flex;
       min-width:18px;
@@ -148,12 +157,27 @@
       margin-left: 6px;
     }
 
-    /* Inbox */
-    .inbox{
-      display:none;
-      gap: 10px;
-      flex-direction:column;
+    /* Kaynana toggle */
+    .toggle{
+      margin-top: 10px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      padding: 10px 12px;
     }
+    .toggle .l{
+      display:flex; flex-direction:column; gap:4px;
+    }
+    .toggle .l .t{ font-weight:1000; color:#fff; font-size: 12px; }
+    .toggle .l .d{ font-weight:900; color: rgba(255,255,255,.65); font-size: 11px; }
+    .toggle input{ width:22px; height:22px; }
+
+    /* Inbox */
+    .inbox{ display:none; gap:10px; flex-direction:column; margin-top: 10px; }
     .inbox.show{ display:flex; }
     .req{
       border-radius: 18px;
@@ -170,10 +194,21 @@
       color: rgba(255,255,255,.88);
       font-size: 12px;
       line-height: 1.2;
+      min-width:0;
     }
-    .req .r{ display:flex; gap:8px; }
+    .req .l .id{ opacity:.85; }
+    .req .l .nm{
+      margin-top:4px;
+      color: rgba(255,255,255,.60);
+      font-weight:900;
+      font-size: 11px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .req .r{ display:flex; gap:8px; flex-shrink:0; }
 
-    /* Chat */
+    /* Chat frame */
     .chat-wrap{
       flex: 1 1 auto;
       min-height: 0;
@@ -200,12 +235,14 @@
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
+      min-width:0;
     }
     .chat-top .meta{
       font-weight: 1000;
       color: rgba(255,255,255,.65);
       font-size: 11px;
       white-space: nowrap;
+      flex-shrink:0;
     }
 
     .chat-scroller{
@@ -220,10 +257,10 @@
     }
 
     .bubble{
-      max-width: 86%;
+      max-width: 88%;
       padding: 10px 12px;
       border-radius: 16px;
-      font-weight: 800;
+      font-weight: 850;
       font-size: 13px;
       line-height: 1.35;
       border: 1px solid rgba(255,255,255,.10);
@@ -240,15 +277,22 @@
       align-self:flex-start;
       border-left: 3px solid var(--gold);
     }
+    .bubble.sys{
+      align-self:center;
+      max-width: 92%;
+      text-align:center;
+      opacity:.85;
+      background: rgba(255,255,255,.03);
+    }
 
-    /* ✅ Kaynana yorumu: sadece local user görür */
+    /* Kaynana local-only */
     .bubble.kaynana{
       align-self:flex-start;
       max-width: 92%;
       border-left: 3px solid var(--red);
       background: rgba(255,82,82,.08);
       color: rgba(255,255,255,.92);
-      font-weight: 900;
+      font-weight: 950;
     }
     .bubble.kaynana .tag{
       display:inline-flex;
@@ -261,7 +305,7 @@
       margin-bottom: 6px;
     }
 
-    /* Dock */
+    /* Dock - chat.html vibe */
     .dock{
       padding: 10px 10px;
       border-top: 1px solid rgba(255,255,255,.06);
@@ -270,6 +314,34 @@
       gap: 8px;
       align-items:flex-end;
     }
+
+    .icon-btn{
+      width:44px;
+      height:44px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
+    }
+    .icon-btn svg{
+      width:22px;
+      height:22px;
+      stroke: rgba(255,255,255,.80);
+      fill:none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .icon-btn.listening{
+      border-color: rgba(190,242,100,.35);
+      background: rgba(190,242,100,.10);
+      box-shadow: 0 0 18px rgba(190,242,100,.12);
+    }
+
     .txt{
       flex:1;
       min-height: 44px;
@@ -280,10 +352,11 @@
       background: rgba(255,255,255,.06);
       padding: 10px 12px;
       color:#fff;
-      font-weight: 850;
+      font-weight: 900;
       font-size: 14px;
       outline:none;
     }
+
     .send{
       width: 44px;
       height: 44px;
@@ -297,6 +370,7 @@
       align-items:center;
       justify-content:center;
       box-shadow: 0 12px 26px rgba(190,242,100,.12);
+      flex-shrink:0;
     }
 
     .toast{
@@ -327,7 +401,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (aynı) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -367,7 +441,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER (aynı) -->
+  <!-- HAMBURGER -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -397,32 +471,43 @@
     </div>
   </div>
 
-  <!-- ORTA MODÜL -->
+  <!-- ORTA -->
   <div class="module-area">
-    <div class="panel">
+    <div class="wrap">
 
       <div class="card">
         <div class="head">
-          <div class="ico">🗣️</div>
+          <div class="ico">🫕</div>
           <div>
             <div class="ttl">Dedikodu Kazanı</div>
             <div class="sub">
-              Karşı tarafın ID’sini ekle → istek gider → onaylanınca sohbet başlar.
-              Senin Kaynanan araya laf sokar. Karşı taraf kendi kaynanasını görür, sen görmezsin.
+              ID ekle → onay gelsin → max 10 kişi. Kaynana istersen araya girer.
+              Sadece yazı. Mesajlar kaydedilmez. Sohbet kapanınca silinir.
             </div>
           </div>
         </div>
 
         <div class="row">
-          <input class="inp" id="peerId" placeholder="Karşı taraf ID (ör: AB12345678)" />
+          <input class="inp" id="peerId" placeholder="Kişi ID’si ekle (ör: AB12345678)" />
           <button class="btn" id="btnInvite">Ekle</button>
+        </div>
+
+        <div class="toggle">
+          <div class="l">
+            <div class="t">Kaynana sohbete katılsın mı?</div>
+            <div class="d">Açarsan senin kaynanan araya laf sokar. Sadece sen görürsün.</div>
+          </div>
+          <input type="checkbox" id="kaynanaOn" />
         </div>
 
         <div class="row" style="justify-content:space-between;">
           <div class="sub" style="margin:0;">
             Gelen istekler <span class="badge" id="inboxCount">0</span>
           </div>
-          <button class="btn secondary" id="btnRefresh">Yenile</button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn secondary" id="btnRefresh">Yenile</button>
+            <button class="btn danger" id="btnLeave">Ayrıl</button>
+          </div>
         </div>
 
         <div class="inbox" id="inbox"></div>
@@ -430,15 +515,23 @@
 
       <div class="chat-wrap">
         <div class="chat-top">
-          <div class="title" id="roomTitle">Henüz eşleşme yok</div>
-          <div class="meta" id="roomMeta">ID ekleyip onay bekle</div>
+          <div class="title" id="roomTitle">Henüz oda yok</div>
+          <div class="meta" id="roomMeta">ID ekle + onay</div>
         </div>
 
         <div class="chat-scroller" id="chat"></div>
 
         <div class="dock">
-          <textarea class="txt" id="msg" rows="1" placeholder="Dedikodu yaz…"></textarea>
-          <button class="send" id="send">➤</button>
+          <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            </svg>
+          </button>
+
+          <textarea class="txt" id="msg" rows="1" placeholder="Sadece yazı…"></textarea>
+
+          <button class="send" id="send" aria-label="Gönder">➤</button>
         </div>
       </div>
 
@@ -465,6 +558,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/gossip_page.js?v=1"></script>
+<script type="module" src="/js/gossip_page.js?v=2"></script>
 </body>
 </html>
