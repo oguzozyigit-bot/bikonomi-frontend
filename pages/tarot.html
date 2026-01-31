@@ -22,9 +22,6 @@
       --gold:#ffb300;
       --pistachio:#bef264;
       --red:#ff5252;
-
-      --cardBr: rgba(255,255,255,.14);
-      --glass: rgba(20,20,20,.90);
     }
 
     .footer-container{
@@ -134,78 +131,31 @@
       box-shadow:none;
     }
 
-    /* ✅ RENKLİ DESTE SHOWCASE */
-    .deck-showcase{
+    /* ✅ Gizli yatay scroll deste */
+    .deck-strip{
       margin-top: 14px;
-      display:flex;
-      gap: 12px;
-      align-items:stretch;
-    }
-    .deck-box{
-      flex: 1;
-      border-radius: 20px;
+      border-radius: 18px;
       border: 1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(700px 220px at 0% 0%, rgba(255,82,82,.14), transparent 60%),
-        radial-gradient(700px 220px at 100% 0%, rgba(66,133,244,.14), transparent 60%),
-        radial-gradient(700px 220px at 50% 110%, rgba(190,242,100,.12), transparent 65%),
-        rgba(10,10,10,.92);
-      box-shadow: 0 18px 45px rgba(0,0,0,.45);
+      background: rgba(255,255,255,.03);
       padding: 12px;
+      overflow-x:auto;
+      overflow-y:hidden;
       display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-    }
-    .deck-stack{
-      width: 74px;
-      height: 104px;
-      position: relative;
-      flex:0 0 74px;
-    }
-    .deck-stack .c{
-      position:absolute;
-      inset:0;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.35);
-      box-shadow: 0 16px 34px rgba(0,0,0,.40);
-      overflow:hidden;
-    }
-    .deck-stack .c:nth-child(1){ transform: translate(8px, -6px) rotate(3deg); opacity:.40; }
-    .deck-stack .c:nth-child(2){ transform: translate(4px, -3px) rotate(1.5deg); opacity:.70; }
-    .deck-stack .c:nth-child(3){ transform: translate(0, 0) rotate(0deg); opacity:1; }
-
-    .deck-back-art{ position:absolute; inset:0; }
-    .deck-back-art svg{ width:100%; height:100%; display:block; }
-
-    .deck-meta{ flex:1; min-width:0; }
-    .deck-name{ font-weight:1000; color:#fff; font-size: 13px; }
-    .deck-sub{ font-weight: 900; color: rgba(255,255,255,.60); font-size: 11px; margin-top: 2px; line-height:1.25; }
-    .pill{
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.75);
-      font-weight: 1000;
-      font-size: 11px;
-      white-space:nowrap;
-      flex-shrink:0;
-    }
-
-    /* ✅ RENKLİ KART GRID + FLIP */
-    .grid{
-      margin-top: 14px;
-      display:grid;
-      grid-template-columns: repeat(4, 1fr);
       gap: 10px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
     }
+    .deck-strip::-webkit-scrollbar{ display:none; }
+    .deck-strip{ scrollbar-width: none; }
 
+    /* Kart bileşeni (flip) */
     .flip{
-      aspect-ratio: 3/4.4;
+      width: 78px;
+      height: 112px;
+      flex: 0 0 78px;
       position: relative;
       perspective: 1000px;
+      scroll-snap-align: start;
     }
     .flip .inner{
       position:absolute;
@@ -214,58 +164,47 @@
       transition: transform .55s cubic-bezier(.2,.9,.2,1);
     }
     .flip.flipped .inner{ transform: rotateY(180deg); }
-
     .face{
       position:absolute;
       inset:0;
-      border-radius: 14px;
+      border-radius: 16px;
       backface-visibility: hidden;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
       overflow:hidden;
-      box-shadow: 0 16px 34px rgba(0,0,0,.40);
+      box-shadow: 0 16px 34px rgba(0,0,0,.42);
     }
-
-    /* Sırt: çok renkli */
     .back{
+      background: rgba(0,0,0,.35);
       cursor:pointer;
       user-select:none;
-      background: rgba(0,0,0,.35);
     }
-    .back .backsvg{
-      position:absolute; inset:0;
-    }
+    .back .backsvg{ position:absolute; inset:0; }
     .back .backsvg svg{ width:100%; height:100%; display:block; }
 
     .front{
       transform: rotateY(180deg);
-      background:
-        radial-gradient(220px 160px at 50% 0%, rgba(255,179,0,.16), transparent 60%),
-        radial-gradient(240px 180px at 0% 100%, rgba(66,133,244,.14), transparent 65%),
-        radial-gradient(240px 180px at 100% 110%, rgba(255,82,82,.14), transparent 65%),
-        rgba(10,10,10,.92);
+      background: rgba(10,10,10,.92);
       display:flex;
       flex-direction:column;
-      padding: 10px;
-      gap: 8px;
+      padding: 8px;
+      gap: 6px;
     }
     .front .frame{
       flex:1;
       border-radius: 12px;
       border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.25);
+      background: rgba(0,0,0,.22);
       display:flex;
       align-items:center;
       justify-content:center;
-      position:relative;
       overflow:hidden;
     }
-    .front .frame svg{ width:92%; height:92%; display:block; }
-
+    .front .frame svg{ width:96%; height:96%; display:block; }
     .front .title{
       font-weight: 1000;
       color:#fff;
-      font-size: 11px;
-      line-height:1.2;
+      font-size: 10px;
+      line-height:1.15;
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
@@ -274,13 +213,13 @@
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap: 8px;
-      font-size: 10px;
+      gap: 6px;
+      font-size: 9px;
       font-weight: 1000;
-      color: rgba(255,255,255,.70);
+      color: rgba(255,255,255,.72);
     }
     .tag{
-      padding: 4px 8px;
+      padding: 3px 7px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
@@ -291,13 +230,13 @@
       color: rgba(255,82,82,.95);
     }
 
-    .flip.disabled{ opacity:.45; }
+    .flip.disabled{ opacity:.42; }
     .flip.disabled .back{ cursor:not-allowed; }
 
     /* Picked */
     .picked{ margin-top: 12px; display:flex; gap: 10px; flex-wrap:wrap; }
     .picked-card{
-      width: 120px;
+      width: 130px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
@@ -385,7 +324,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (aynı) -->
+  <!-- ÜST BAR (aynı kalıyor) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -425,7 +364,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER (aynı) -->
+  <!-- HAMBURGER MENÜ (aynı) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -462,7 +401,7 @@
         <div class="ico">🃏</div>
         <div>
           <div class="ttl">Tarot</div>
-          <div class="sub">Açılım seç → Karıştır → Kart seç. Kartlar <b>renkli</b> ve <b>çevirilerek</b> görünür.</div>
+          <div class="sub">Tam deste: <b>78 kart</b>. Parmağınla kaydır, kartı seç, flip ile yüzü gör.</div>
         </div>
       </div>
 
@@ -472,30 +411,16 @@
         <div class="seg" data-n="5">5 Kart</div>
       </div>
 
-      <div class="deck-showcase">
-        <div class="deck-box">
-          <div class="deck-stack" aria-hidden="true">
-            <div class="c"><div class="deck-back-art" id="deckBack1"></div></div>
-            <div class="c"><div class="deck-back-art" id="deckBack2"></div></div>
-            <div class="c"><div class="deck-back-art" id="deckBack3"></div></div>
-          </div>
-
-          <div class="deck-meta">
-            <div class="deck-name">Renkli Kaynana Destesi</div>
-            <div class="deck-sub" id="needTxt">Seçilecek: 1 kart</div>
-          </div>
-          <div class="pill" id="statePill">Hazır</div>
-        </div>
-      </div>
-
       <div class="btn-row">
-        <button class="btn" id="btnShuffle">Kartları Karıştır</button>
+        <button class="btn" id="btnShuffle">Karıştır</button>
         <button class="btn secondary" id="btnReset">Sıfırla</button>
       </div>
 
-      <div class="sub" style="margin-top:10px;">Kartlara dokun. Düz/Ters gelebilir.</div>
+      <div class="sub" style="margin-top:10px;">
+        Deste kaydır: kartın üstüne dokun → çevir. (Düz/Ters olabilir.)
+      </div>
 
-      <div class="grid" id="grid"></div>
+      <div class="deck-strip" id="deckStrip"></div>
 
       <div class="sub" style="margin-top:12px;font-weight:1000;color:rgba(255,255,255,.85);">Seçtiklerin:</div>
       <div class="picked" id="picked"></div>
@@ -509,9 +434,9 @@
   <div class="thinking-overlay" id="thinking">
     <div class="think-card">
       <div class="think-title">Kaynana düşünüyor… 🃏</div>
-      <div class="think-sub">Kartlar renkli ama mesele “anlam” evladım…</div>
+      <div class="think-sub">Tam deste… tam naz… Şimdi yorum gelir.</div>
       <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-      <div class="think-sub" style="margin-top:10px;">Şimdi uzun uzun anlatacağım…</div>
+      <div class="think-sub" style="margin-top:10px;">Az sabır…</div>
     </div>
   </div>
 
@@ -533,6 +458,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/tarot_page.js?v=3"></script>
+<script type="module" src="/js/tarot_page.js?v=4"></script>
 </body>
 </html>
