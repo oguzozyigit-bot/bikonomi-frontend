@@ -1,0 +1,278 @@
+<!-- FILE: /pages/ocr_translate.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Fotoğraftan Çeviri</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
+
+  <style>
+    /* ÜST/ALT BAR’a dokunmuyoruz. Sadece orta alan */
+    .page-wrap{
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 14px 120px;
+    }
+    .card{
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.35);
+      margin-bottom: 12px;
+    }
+    .title{
+      font-size: 16px;
+      font-weight: 950;
+      color: #fff;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin-bottom: 6px;
+    }
+    .desc{
+      font-size: 12px;
+      color: rgba(255,255,255,.70);
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top: 12px; }
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font-weight: 950;
+      font-size: 13px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.92);
+    }
+    .btn.primary{
+      background: var(--pistachio);
+      color:#111;
+      border-color: rgba(190,242,100,.30);
+      box-shadow: 0 14px 30px rgba(190,242,100,.16);
+    }
+    .btn.gold{
+      background: var(--gold);
+      color:#111;
+      border-color: rgba(255,179,0,.30);
+      box-shadow: 0 14px 30px rgba(255,179,0,.16);
+    }
+    .btn:active{ transform: translateY(1px); }
+
+    .select{
+      padding: 11px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      min-width: 180px;
+      outline:none;
+    }
+
+    .preview{
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      overflow:hidden;
+      margin-top: 12px;
+    }
+    .preview img{
+      width: 100%;
+      display:block;
+      max-height: 360px;
+      object-fit: cover;
+    }
+
+    .area{
+      width:100%;
+      min-height: 140px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 12px;
+      color: rgba(255,255,255,.92);
+      font-weight: 850;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+    .label{
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 950;
+      color: rgba(255,255,255,.70);
+      letter-spacing:.6px;
+      text-transform: uppercase;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      top: 78px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 950;
+      font-size: 12px;
+      background: rgba(20,20,20,.92);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+      display:none;
+      color: rgba(255,255,255,.92);
+      max-width: min(480px, calc(100vw - 24px));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .toast.show{ display:block; }
+  </style>
+</head>
+
+<body>
+  <div class="mobile-frame" id="mobileFrame">
+
+    <!-- ÜST BAR (mevcut yapın) -->
+    <div class="topbar">
+      <div class="left-controls">
+        <button class="hamb-btn" id="hambBtn">☰</button>
+      </div>
+
+      <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+        <div class="logo-area">
+          <svg class="seesaw-svg" viewBox="0 0 40 20">
+            <g class="seesaw-bar" id="seesawBar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" />
+            </g>
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          </svg>
+          <div class="brand-name">Caynana AI</div>
+        </div>
+        <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
+
+      <div class="right-controls">
+        <div class="notif-row">
+          <div class="notif-topline">
+            <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+              <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              <div class="badge" id="notifBadge"></div>
+            </button>
+            <div id="planChip" class="plan-chip">FREE</div>
+          </div>
+
+          <div class="yp-chip">
+            <div class="yp-label">SAMİMİYET</div>
+            <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+            <div class="yp-num" id="ypNum">10/100</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HAMBURGER (mevcut yapın) -->
+    <div class="menu-overlay" id="menuOverlay">
+      <div class="menu-sidebar">
+        <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+        <div class="profile-shortcut-wrap" id="profileShortcutMount">
+          <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+            <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+            <div class="profile-shortcut-text">
+              <div class="profile-shortcut-title">Profil Düzenle</div>
+              <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+        <div class="history-list" id="historyList"></div>
+
+        <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+        <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+        <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+        <div class="menu-footer-actions">
+          <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+          <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+          <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORTA İÇERİK -->
+    <div class="page-wrap">
+      <div class="card">
+        <div class="title">📷 Fotoğraftan Çeviri</div>
+        <div class="desc">
+          Menü, tabela, etiket… fotoğraf çek veya galeriden seç.
+          Metni çıkarırım, istersen hedef dile çeviririm.
+        </div>
+
+        <div class="row">
+          <button class="btn gold" id="btnCamera">Kamera</button>
+          <button class="btn" id="btnGallery">Galeriden Seç</button>
+
+          <select class="select" id="toLang">
+            <option value="tr">Türkçe</option>
+            <option value="en" selected>İngilizce</option>
+            <option value="de">Almanca</option>
+            <option value="fr">Fransızca</option>
+            <option value="es">İspanyolca</option>
+            <option value="it">İtalyanca</option>
+            <option value="ar">Arapça</option>
+            <option value="ru">Rusça</option>
+          </select>
+
+          <button class="btn primary" id="btnRun">Oku + Çevir</button>
+        </div>
+
+        <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+        <input type="file" id="fileGallery" accept="image/*" hidden>
+
+        <div class="preview" id="preview" style="display:none;">
+          <img id="previewImg" alt="preview" />
+        </div>
+
+        <div class="label">Çıkarılan metin</div>
+        <div class="area" id="rawText">—</div>
+
+        <div class="label">Çeviri</div>
+        <div class="area" id="translatedText">—</div>
+      </div>
+    </div>
+
+    <!-- ALT BAR (mevcut yapın) -->
+    <div class="assistant-bar" id="assistantBar"></div>
+
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/pages/hakkimizda.html">Hakkımızda</a>
+        <a href="/pages/sss.html">SSS</a>
+        <a href="/pages/gizlilik.html">Gizlilik</a>
+        <a href="/pages/iletisim.html">İletişim</a>
+      </div>
+      <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <script type="module" src="/js/main.js?v=2"></script>
+  <script src="/js/layout-common.js?v=1"></script>
+  <script type="module" src="/js/ocr_translate_page.js?v=1"></script>
+</body>
+</html>
