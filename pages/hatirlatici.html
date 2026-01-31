@@ -82,7 +82,8 @@
     .ttl{ font-weight:1000; color:#fff; font-size:16px; }
     .sub{ margin-top:6px; font-weight:900; color: rgba(255,255,255,.70); font-size: 13px; line-height:1.35; }
 
-    .row{ display:flex; gap:10px; align-items:center; margin-top:10px; }
+    .row{ display:flex; gap:10px; align-items:center; margin-top:10px; flex-wrap:wrap; }
+
     .inp, .sel{
       flex:1;
       background: rgba(255,255,255,.06);
@@ -93,7 +94,21 @@
       font-size: 14px;
       outline:none;
       font-weight: 900;
+      min-width: 0;
     }
+
+    /* ✅ Dropdown beyaz olmasın */
+    select.sel{
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-color: rgba(255,255,255,.06) !important;
+    }
+    select.sel option{
+      background: #111 !important;
+      color: #fff !important;
+    }
+
     .btn{
       border:none;
       border-radius: 14px;
@@ -111,6 +126,39 @@
       border: 1px solid rgba(255,255,255,.12);
       color:#fff;
       box-shadow:none;
+    }
+
+    /* Çoklu saat chip’leri */
+    .time-chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 8px;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.90);
+      font-weight: 1000;
+      font-size: 12px;
+      user-select:none;
+    }
+    .chip .x{
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      cursor:pointer;
+      font-size: 12px;
+      line-height: 18px;
     }
 
     .list{ display:flex; flex-direction:column; gap:10px; }
@@ -261,7 +309,7 @@
         <div class="ico">⏰</div>
         <div>
           <div class="ttl">Hatırlatıcı</div>
-          <div class="sub">İlaç saati gibi <b>her gün</b> hatırlatabilir. (Motor sonra gerçek bildirim olur.)</div>
+          <div class="sub">İlaç saati gibi <b>çoklu saat</b> ekleyebilirsin. (Motor sonra gerçek bildirim olur.)</div>
         </div>
       </div>
 
@@ -271,8 +319,11 @@
 
       <div class="row">
         <input class="inp" id="date" type="date" />
-        <input class="inp" id="time" type="time" />
+        <input class="inp" id="timeAdd" type="time" />
+        <button class="btn secondary" id="btnAddTime">Saat Ekle</button>
       </div>
+
+      <div class="time-chips" id="timeChips"></div>
 
       <div class="row">
         <select class="sel" id="repeat">
@@ -324,6 +375,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=2"></script>
-<script type="module" src="/js/hatirlatici_page.js?v=2"></script>
+<script type="module" src="/js/hatirlatici_page.js?v=3"></script>
 </body>
 </html>
