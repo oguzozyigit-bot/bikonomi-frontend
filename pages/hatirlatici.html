@@ -127,6 +127,7 @@
     .item .l{ flex:1; min-width:0; }
     .t1{ font-weight:1000; color:#fff; font-size: 13px; line-height:1.2; }
     .t2{ margin-top:4px; font-weight:900; color: rgba(255,255,255,.70); font-size: 12px; }
+    .tags{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
     .tag{
       display:inline-flex;
       padding: 5px 8px;
@@ -136,10 +137,10 @@
       color: rgba(255,255,255,.80);
       font-weight: 1000;
       font-size: 10px;
-      margin-top: 8px;
     }
     .tag.sys{ border-color: rgba(255,179,0,.18); background: rgba(255,179,0,.08); color: rgba(255,179,0,.95); }
     .tag.user{ border-color: rgba(190,242,100,.18); background: rgba(190,242,100,.08); color: rgba(190,242,100,.95); }
+    .tag.rep{ border-color: rgba(0,194,255,.18); background: rgba(0,194,255,.08); color: rgba(0,194,255,.95); }
 
     .del{
       width: 36px; height: 36px;
@@ -260,27 +261,32 @@
         <div class="ico">⏰</div>
         <div>
           <div class="ttl">Hatırlatıcı</div>
-          <div class="sub">
-            Özel günler + kendi eklediklerin burada. (Motor sonra bağlanır; şimdilik kayıt & liste.)
-          </div>
+          <div class="sub">İlaç saati gibi <b>her gün</b> hatırlatabilir. (Motor sonra gerçek bildirim olur.)</div>
         </div>
       </div>
 
       <div class="row">
-        <input class="inp" id="title" placeholder="Başlık (ör: Mahkeme / Toplantı / İlaç)" />
+        <input class="inp" id="title" placeholder="Başlık (ör: İlaç / Mahkeme / Toplantı)" />
       </div>
+
       <div class="row">
         <input class="inp" id="date" type="date" />
         <input class="inp" id="time" type="time" />
       </div>
+
       <div class="row">
+        <select class="sel" id="repeat">
+          <option value="once">Tek sefer</option>
+          <option value="daily">Her gün</option>
+          <option value="weekdays">Hafta içi</option>
+          <option value="weekly">Haftalık</option>
+        </select>
         <select class="sel" id="type">
           <option value="custom">Kendi Hatırlatmam</option>
+          <option value="medicine">İlaç</option>
           <option value="court">Mahkeme</option>
           <option value="meeting">Toplantı</option>
           <option value="payment">Ödeme</option>
-          <option value="birthday">Doğum Günü</option>
-          <option value="anniversary">Yıldönümü</option>
         </select>
         <button class="btn" id="add">Ekle</button>
       </div>
@@ -292,7 +298,7 @@
 
     <div class="card">
       <div class="ttl" style="font-size:14px;">Liste</div>
-      <div class="sub">Buradaki kayıtlar cihazda durur. (Motor gelince gerçek bildirim olur.)</div>
+      <div class="sub">Sayfa açıkken zamanı gelince toast ile hatırlatır (demo).</div>
       <div style="height:10px"></div>
       <div class="list" id="list"></div>
     </div>
@@ -318,6 +324,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=2"></script>
-<script type="module" src="/js/hatirlatici_page.js?v=1"></script>
+<script type="module" src="/js/hatirlatici_page.js?v=2"></script>
 </body>
 </html>
