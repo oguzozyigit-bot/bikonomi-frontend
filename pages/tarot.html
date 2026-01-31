@@ -22,6 +22,11 @@
       --gold:#ffb300;
       --pistachio:#bef264;
       --red:#ff5252;
+
+      --navy:#0b1430;
+      --navy2:#111b3d;
+      --white: rgba(255,255,255,.92);
+      --white2: rgba(255,255,255,.14);
     }
 
     .footer-container{
@@ -69,9 +74,10 @@
     }
 
     .card{
-      background: radial-gradient(1000px 260px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-                  radial-gradient(1000px 260px at 100% 0%, rgba(190,242,100,.10), transparent 60%),
-                  rgba(12,12,12,.92);
+      background:
+        radial-gradient(900px 240px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(900px 240px at 100% 0%, rgba(190,242,100,.10), transparent 60%),
+        rgba(10,10,10,.92);
       border: 1px solid rgba(255,255,255,.10);
       border-radius: 22px;
       padding: 18px;
@@ -131,7 +137,7 @@
       box-shadow:none;
     }
 
-    /* ✅ Dikey scroll: 3 sütun, 78 kart */
+    /* ✅ Dikey grid 3x (78 kart) */
     .deck-grid{
       margin-top: 14px;
       border-radius: 18px;
@@ -143,7 +149,7 @@
       gap: 12px;
     }
 
-    /* Kart (flip) */
+    /* Kart flip */
     .flip{
       width: 100%;
       aspect-ratio: 3/4.4;
@@ -168,13 +174,17 @@
       box-shadow: 0 16px 34px rgba(0,0,0,.42);
     }
 
-    .back{ cursor:pointer; user-select:none; background: rgba(0,0,0,.35); }
+    .back{ cursor:pointer; user-select:none; background: rgba(0,0,0,.30); }
     .back .backsvg{ position:absolute; inset:0; }
     .back .backsvg svg{ width:100%; height:100%; display:block; }
 
     .front{
       transform: rotateY(180deg);
-      background: rgba(10,10,10,.92);
+      background:
+        radial-gradient(220px 160px at 50% 0%, rgba(255,179,0,.16), transparent 60%),
+        radial-gradient(260px 180px at 0% 100%, rgba(0,162,255,.16), transparent 65%),
+        radial-gradient(260px 180px at 100% 115%, rgba(255,82,82,.16), transparent 65%),
+        rgba(8,8,8,.95);
       display:flex;
       flex-direction:column;
       padding: 10px;
@@ -183,8 +193,8 @@
     .front .frame{
       flex:1;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.22);
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.26);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -208,16 +218,16 @@
       gap: 6px;
       font-size: 9px;
       font-weight: 1000;
-      color: rgba(255,255,255,.72);
+      color: rgba(255,255,255,.78);
     }
     .tag{
       padding: 3px 7px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.14);
       background: rgba(255,255,255,.06);
     }
     .tag.rev{
-      border-color: rgba(255,82,82,.30);
+      border-color: rgba(255,82,82,.32);
       background: rgba(255,82,82,.14);
       color: rgba(255,82,82,.95);
     }
@@ -225,7 +235,6 @@
     .flip.disabled{ opacity:.42; }
     .flip.disabled .back{ cursor:not-allowed; }
 
-    /* Picked */
     .picked{ margin-top: 12px; display:flex; gap: 10px; flex-wrap:wrap; }
     .picked-card{
       width: 130px;
@@ -239,7 +248,6 @@
     .picked-tag{ margin-top:8px; display:inline-flex; padding:5px 8px; border-radius:999px; font-size:10px; font-weight:1000; border:1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.75); background: rgba(255,255,255,.04); }
     .picked-tag.rev{ border-color: rgba(255,82,82,.25); background: rgba(255,82,82,.10); color: rgba(255,82,82,.95); }
 
-    /* Thinking */
     .thinking-overlay{
       position: fixed;
       inset:0;
@@ -316,7 +324,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (aynı) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -356,7 +364,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER (aynı) -->
+  <!-- HAMBURGER -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -393,7 +401,7 @@
         <div class="ico">🃏</div>
         <div>
           <div class="ttl">Tarot</div>
-          <div class="sub">Tam deste: <b>78 kart</b>. 3’lü grid. Dikey kaydır → seç → flip.</div>
+          <div class="sub">Günde 1 kez: Tek/3/5 kart ayrı ayrı. “Fal dakika başı değişmez” 🙂</div>
         </div>
       </div>
 
@@ -409,7 +417,7 @@
       </div>
 
       <div class="sub" style="margin-top:10px;">
-        Kart sırtı: Caynana “C” + tahtaravalli. (Bize özel.)
+        Kart sırtı: <b>lacivert</b> + <b>beyaz çerçeve</b> + <b>kırmızı C</b>. (Bize özgü.)
       </div>
 
       <div class="deck-grid" id="deckGrid"></div>
@@ -426,9 +434,9 @@
   <div class="thinking-overlay" id="thinking">
     <div class="think-card">
       <div class="think-title">Kaynana düşünüyor… 🃏</div>
-      <div class="think-sub">Kartlar “C” dedi… ben de “tamam” dedim 🙂</div>
+      <div class="think-sub">Günde bir kere bakıyorum evladım… sabır.</div>
       <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-      <div class="think-sub" style="margin-top:10px;">Az sabır…</div>
+      <div class="think-sub" style="margin-top:10px;">Fal geliyor…</div>
     </div>
   </div>
 
@@ -450,6 +458,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/tarot_page.js?v=5"></script>
+<script type="module" src="/js/tarot_page.js?v=6"></script>
 </body>
 </html>
