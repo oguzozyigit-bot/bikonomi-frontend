@@ -1,9 +1,10 @@
 // FILE: /js/translate_page.js
-// ✅ No TR/EN labels anywhere
+// ✅ Removes TR/EN labels completely
+// ✅ Removes "Hazır" UI entirely (no status elements)
+// ✅ Auto speak ON by default; speaker button toggles mute only
 // ✅ History log + scroll + auto-follow if near bottom
-// ✅ Wave animates when listening
-// ✅ Speaker: default ON (auto speak). Tap speaker toggles MUTE (no manual speak).
-// ✅ Slogan translates based on selected language.
+// ✅ Wave animates only while listening
+// ✅ Slogan translated by selected language
 
 import { BASE_DOMAIN } from "/js/config.js";
 
@@ -15,7 +16,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 2400);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 2000);
 }
 
 function setWaveListening(on){
@@ -43,13 +44,13 @@ const SLOGAN_MAP = {
   ru: "Традиционный разум ИИ"
 };
 function sloganFor(code){ return SLOGAN_MAP[code] || SLOGAN_TR; }
-
 function speechLocale(code){ return LANGS.find(x=>x.code===code)?.speech || "en-US"; }
 function ttsLocale(code){ return LANGS.find(x=>x.code===code)?.tts || "en-US"; }
 
 async function translateViaApi(text, source, target){
   const base = (BASE_DOMAIN || "").replace(/\/+$/,"");
-  if(!base) return `[${target.toUpperCase()}] ${text}`;
+  if(!base) return text; // ✅ no [TR] prefix, no tags
+
   try{
     const r = await fetch(`${base}/api/translate`,{
       method:"POST",
@@ -59,9 +60,9 @@ async function translateViaApi(text, source, target){
     if(!r.ok) throw new Error("api");
     const data = await r.json();
     const out = String(data?.text || data?.translation || data?.translated || "").trim();
-    return out || `[${target.toUpperCase()}] ${text}`;
+    return out || text;
   }catch{
-    return `[${target.toUpperCase()}] ${text}`;
+    return text; // ✅ no prefix
   }
 }
 
@@ -88,23 +89,12 @@ function scrollIfNeeded(sideName, el){
   if(follow[sideName]) el.scrollTop = el.scrollHeight;
 }
 
-/* Add message bubbles */
-function addBubble(sideName, kind, label, text){
+/* Add bubbles (NO labels) */
+function addBubble(sideName, kind, text){
   const wrap = $(sideName === "top" ? "topBody" : "botBody");
   const b = document.createElement("div");
   b.className = `bubble ${kind}`;
-
-  if(label){
-    const lab = document.createElement("div");
-    lab.className = "label";
-    lab.textContent = label;
-    b.appendChild(lab);
-  }
-
-  const tx = document.createElement("div");
-  tx.textContent = text || "—";
-  b.appendChild(tx);
-
+  b.textContent = text || "—";
   wrap.appendChild(b);
   scrollIfNeeded(sideName, wrap);
 }
@@ -128,7 +118,6 @@ function buildDropdown(ddId, btnId, txtId, menuId, defCode, onChange){
     onChange?.(code);
   }
 
-  // ✅ no TR/EN codes, only names
   menu.innerHTML = LANGS.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("");
 
   menu.querySelectorAll(".dd-item").forEach(it=>{
@@ -160,9 +149,7 @@ let botRec = null;
 
 function setMicUI(side, on){
   const mic = $(side === "top" ? "topMic" : "botMic");
-  const st  = $(side === "top" ? "topStatus" : "botStatus");
   mic.classList.toggle("listening", !!on);
-  st.textContent = on ? "Dinliyor…" : "Hazır";
   setWaveListening(!!on);
 }
 
@@ -177,7 +164,7 @@ function stopAll(){
   setWaveListening(false);
 }
 
-/* ✅ Auto speak toggle (mute) */
+/* Auto speak toggle (mute) */
 const mute = { top:false, bot:false }; // false => speak ON
 function setMute(side, on){
   mute[side] = !!on;
@@ -186,11 +173,10 @@ function setMute(side, on){
 }
 
 function speakAuto(text, langCode, side){
-  if(mute[side]) return; // muted, do nothing
+  if(mute[side]) return;
   const t = String(text||"").trim();
   if(!t) return;
-
-  if(!("speechSynthesis" in window)) return; // no toast spam
+  if(!("speechSynthesis" in window)) return;
 
   try{
     const u = new SpeechSynthesisUtterance(t);
@@ -202,18 +188,15 @@ function speakAuto(text, langCode, side){
 
 async function onFinal(side, srcCode, dstCode, finalText){
   const otherSide = (side === "top") ? "bot" : "top";
-  const otherStatus = $(otherSide === "top" ? "topStatus" : "botStatus");
 
-  // Speaker transcript (their own language)
-  addBubble(side, "them", "Duyulan", finalText);
+  // Speaker transcript on their side
+  addBubble(side, "them", finalText);
 
-  // Translation shown on other side
-  otherStatus.textContent = "Çeviriyor…";
+  // Translation on other side
   const out = await translateViaApi(finalText, srcCode, dstCode);
-  addBubble(otherSide, "me", "Çeviri", out);
-  otherStatus.textContent = "Hazır";
+  addBubble(otherSide, "me", out);
 
-  // ✅ Auto speak translation to the listener side (otherSide)
+  // auto speak to listener side
   speakAuto(out, dstCode, otherSide);
 }
 
@@ -270,7 +253,7 @@ function startSide(side, getLang, getOtherLang){
 
   try{ rec.start(); }
   catch{
-    toast("Mikrofon açılamadı. (İzin verildi mi?)");
+    toast("Mikrofon açılamadı.");
     stopAll();
   }
 }
@@ -288,7 +271,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   // dropdowns
   const topDD = buildDropdown("ddTop","ddTopBtn","ddTopTxt","ddTopMenu","en", (code)=>{
     $("sloganTop").textContent = sloganFor(code);
-    // if currently listening on top, restart on next tap (we keep simple)
   });
 
   const botDD = buildDropdown("ddBot","ddBotBtn","ddBotTxt","ddBotMenu","tr", (code)=>{
@@ -299,25 +281,25 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("sloganTop").textContent = sloganFor(topDD.get());
   $("sloganBot").textContent = sloganFor(botDD.get());
 
-  // init bodies empty
+  // clear
   $("topBody").innerHTML = "";
   $("botBody").innerHTML = "";
 
-  // speaker buttons now toggle mute (NOT speak)
+  // speaker buttons toggle mute only
   $("topSpeak").addEventListener("click", ()=>{
     setMute("top", !mute.top);
-    toast(mute.top ? "Karşı taraf sesi kapalı" : "Karşı taraf sesi açık");
+    toast(mute.top ? "Ses kapalı" : "Ses açık");
   });
   $("botSpeak").addEventListener("click", ()=>{
     setMute("bot", !mute.bot);
-    toast(mute.bot ? "Benim ses kapalı" : "Benim ses açık");
+    toast(mute.bot ? "Ses kapalı" : "Ses açık");
   });
 
-  // default: sound ON
+  // default sound ON
   setMute("top", false);
   setMute("bot", false);
 
-  // mic buttons
+  // mic
   $("topMic").addEventListener("click", ()=> startSide("top", ()=>topDD.get(), ()=>botDD.get()));
   $("botMic").addEventListener("click", ()=> startSide("bot", ()=>botDD.get(), ()=>topDD.get()));
 
