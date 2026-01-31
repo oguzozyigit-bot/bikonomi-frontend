@@ -1,8 +1,5 @@
 // FILE: /js/translate_page.js
-// ✅ Dropdown: search + scroll (fix)
-// ✅ Many languages
-// ✅ Translate works with backend payload {text, from_lang, to_lang}
-// ✅ No TR/EN labels, no extra UI labels
+// FINAL – Dropdown search + scroll hidden + favorites on top
 
 import { BASE_DOMAIN } from "/js/config.js";
 const $ = (id)=>document.getElementById(id);
@@ -20,54 +17,6 @@ function setWaveListening(on){
   $("frameRoot")?.classList.toggle("listening", !!on);
 }
 
-/* 40+ language list */
-const LANGS = [
-  { code:"tr", name:"Türkçe",  speech:"tr-TR", tts:"tr-TR" },
-  { code:"en", name:"English", speech:"en-US", tts:"en-US" },
-  { code:"en_gb", name:"English (UK)", speech:"en-GB", tts:"en-GB" },
-  { code:"de", name:"Deutsch", speech:"de-DE", tts:"de-DE" },
-  { code:"fr", name:"Français", speech:"fr-FR", tts:"fr-FR" },
-  { code:"es", name:"Español", speech:"es-ES", tts:"es-ES" },
-  { code:"it", name:"Italiano", speech:"it-IT", tts:"it-IT" },
-  { code:"pt", name:"Português (BR)", speech:"pt-BR", tts:"pt-BR" },
-  { code:"pt_pt", name:"Português (PT)", speech:"pt-PT", tts:"pt-PT" },
-  { code:"nl", name:"Nederlands", speech:"nl-NL", tts:"nl-NL" },
-  { code:"sv", name:"Svenska", speech:"sv-SE", tts:"sv-SE" },
-  { code:"no", name:"Norsk", speech:"nb-NO", tts:"nb-NO" },
-  { code:"da", name:"Dansk", speech:"da-DK", tts:"da-DK" },
-  { code:"fi", name:"Suomi", speech:"fi-FI", tts:"fi-FI" },
-  { code:"pl", name:"Polski", speech:"pl-PL", tts:"pl-PL" },
-  { code:"cs", name:"Čeština", speech:"cs-CZ", tts:"cs-CZ" },
-  { code:"sk", name:"Slovenčina", speech:"sk-SK", tts:"sk-SK" },
-  { code:"hu", name:"Magyar", speech:"hu-HU", tts:"hu-HU" },
-  { code:"ro", name:"Română", speech:"ro-RO", tts:"ro-RO" },
-  { code:"bg", name:"Български", speech:"bg-BG", tts:"bg-BG" },
-  { code:"el", name:"Ελληνικά", speech:"el-GR", tts:"el-GR" },
-  { code:"uk", name:"Українська", speech:"uk-UA", tts:"uk-UA" },
-  { code:"ru", name:"Русский", speech:"ru-RU", tts:"ru-RU" },
-  { code:"ar", name:"العربية", speech:"ar-SA", tts:"ar-SA" },
-  { code:"he", name:"עברית", speech:"he-IL", tts:"he-IL" },
-  { code:"fa", name:"فارسی", speech:"fa-IR", tts:"fa-IR" },
-  { code:"hi", name:"हिन्दी", speech:"hi-IN", tts:"hi-IN" },
-  { code:"ur", name:"اردو", speech:"ur-PK", tts:"ur-PK" },
-  { code:"bn", name:"বাংলা", speech:"bn-BD", tts:"bn-BD" },
-  { code:"ta", name:"தமிழ்", speech:"ta-IN", tts:"ta-IN" },
-  { code:"te", name:"తెలుగు", speech:"te-IN", tts:"te-IN" },
-  { code:"mr", name:"मराठी", speech:"mr-IN", tts:"mr-IN" },
-  { code:"th", name:"ไทย", speech:"th-TH", tts:"th-TH" },
-  { code:"vi", name:"Tiếng Việt", speech:"vi-VN", tts:"vi-VN" },
-  { code:"id", name:"Bahasa Indonesia", speech:"id-ID", tts:"id-ID" },
-  { code:"ms", name:"Bahasa Melayu", speech:"ms-MY", tts:"ms-MY" },
-  { code:"tl", name:"Filipino", speech:"fil-PH", tts:"fil-PH" },
-  { code:"zh_cn", name:"中文 (简体)", speech:"zh-CN", tts:"zh-CN" },
-  { code:"zh_tw", name:"中文 (繁體)", speech:"zh-TW", tts:"zh-TW" },
-  { code:"ja", name:"日本語", speech:"ja-JP", tts:"ja-JP" },
-  { code:"ko", name:"한국어", speech:"ko-KR", tts:"ko-KR" },
-  { code:"af", name:"Afrikaans", speech:"af-ZA", tts:"af-ZA" },
-  { code:"sw", name:"Kiswahili", speech:"sw-KE", tts:"sw-KE" },
-  { code:"zu", name:"isiZulu", speech:"zu-ZA", tts:"zu-ZA" },
-];
-
 const SLOGAN_TR = "Yapay Zekânın Geleneksel Aklı";
 const SLOGAN_MAP = {
   tr: SLOGAN_TR,
@@ -78,12 +27,66 @@ const SLOGAN_MAP = {
   ar: "عقل الذكاء الاصطناعي التقليدي",
   ru: "Традиционный разум ИИ"
 };
-function sloganFor(code){ return SLOGAN_MAP[code] || SLOGAN_TR; }
+const sloganFor = (code)=> SLOGAN_MAP[code] || SLOGAN_TR;
+
+// ✅ En sık kullanılanlar en üstte (Türkçe birinci)
+const FAV = [
+  { code:"tr", name:"Türkçe", speech:"tr-TR", tts:"tr-TR" },
+  { code:"en", name:"İngilizce", speech:"en-US", tts:"en-US" },
+  { code:"de", name:"Almanca", speech:"de-DE", tts:"de-DE" },
+  { code:"fr", name:"Fransızca", speech:"fr-FR", tts:"fr-FR" },
+  { code:"es", name:"İspanyolca", speech:"es-ES", tts:"es-ES" },
+  { code:"it", name:"İtalyanca", speech:"it-IT", tts:"it-IT" },
+  { code:"ar", name:"Arapça", speech:"ar-SA", tts:"ar-SA" },
+  { code:"ru", name:"Rusça", speech:"ru-RU", tts:"ru-RU" },
+];
+
+// ✅ Diğer diller (Türkçe adlarla)
+const OTHERS = [
+  { code:"en_gb", name:"İngilizce (UK)", speech:"en-GB", tts:"en-GB" },
+  { code:"pt", name:"Portekizce (BR)", speech:"pt-BR", tts:"pt-BR" },
+  { code:"pt_pt", name:"Portekizce (PT)", speech:"pt-PT", tts:"pt-PT" },
+  { code:"nl", name:"Hollandaca", speech:"nl-NL", tts:"nl-NL" },
+  { code:"sv", name:"İsveççe", speech:"sv-SE", tts:"sv-SE" },
+  { code:"no", name:"Norveççe", speech:"nb-NO", tts:"nb-NO" },
+  { code:"da", name:"Danca", speech:"da-DK", tts:"da-DK" },
+  { code:"fi", name:"Fince", speech:"fi-FI", tts:"fi-FI" },
+  { code:"pl", name:"Lehçe", speech:"pl-PL", tts:"pl-PL" },
+  { code:"cs", name:"Çekçe", speech:"cs-CZ", tts:"cs-CZ" },
+  { code:"sk", name:"Slovakça", speech:"sk-SK", tts:"sk-SK" },
+  { code:"hu", name:"Macarca", speech:"hu-HU", tts:"hu-HU" },
+  { code:"ro", name:"Romence", speech:"ro-RO", tts:"ro-RO" },
+  { code:"bg", name:"Bulgarca", speech:"bg-BG", tts:"bg-BG" },
+  { code:"el", name:"Yunanca", speech:"el-GR", tts:"el-GR" },
+  { code:"uk", name:"Ukraynaca", speech:"uk-UA", tts:"uk-UA" },
+  { code:"he", name:"İbranice", speech:"he-IL", tts:"he-IL" },
+  { code:"fa", name:"Farsça", speech:"fa-IR", tts:"fa-IR" },
+  { code:"hi", name:"Hintçe", speech:"hi-IN", tts:"hi-IN" },
+  { code:"ur", name:"Urduca", speech:"ur-PK", tts:"ur-PK" },
+  { code:"bn", name:"Bengalce", speech:"bn-BD", tts:"bn-BD" },
+  { code:"ta", name:"Tamilce", speech:"ta-IN", tts:"ta-IN" },
+  { code:"te", name:"Teluguca", speech:"te-IN", tts:"te-IN" },
+  { code:"mr", name:"Marathi", speech:"mr-IN", tts:"mr-IN" },
+  { code:"th", name:"Tayca", speech:"th-TH", tts:"th-TH" },
+  { code:"vi", name:"Vietnamca", speech:"vi-VN", tts:"vi-VN" },
+  { code:"id", name:"Endonezce", speech:"id-ID", tts:"id-ID" },
+  { code:"ms", name:"Malayca", speech:"ms-MY", tts:"ms-MY" },
+  { code:"tl", name:"Filipince", speech:"fil-PH", tts:"fil-PH" },
+  { code:"zh_cn", name:"Çince (Basitleştirilmiş)", speech:"zh-CN", tts:"zh-CN" },
+  { code:"zh_tw", name:"Çince (Geleneksel)", speech:"zh-TW", tts:"zh-TW" },
+  { code:"ja", name:"Japonca", speech:"ja-JP", tts:"ja-JP" },
+  { code:"ko", name:"Korece", speech:"ko-KR", tts:"ko-KR" },
+  { code:"af", name:"Afrikanca", speech:"af-ZA", tts:"af-ZA" },
+  { code:"sw", name:"Svahili", speech:"sw-KE", tts:"sw-KE" },
+  { code:"zu", name:"Zulu", speech:"zu-ZA", tts:"zu-ZA" },
+];
+
+// Birleştir (favs üstte)
+const LANGS = [...FAV, ...OTHERS];
 
 const normLang = (c)=> String(c||"").toLowerCase().split("_")[0];
 function speechLocale(code){ return LANGS.find(x=>x.code===code)?.speech || "en-US"; }
 function ttsLocale(code){ return LANGS.find(x=>x.code===code)?.tts || "en-US"; }
-
 function apiBase(){ return String(BASE_DOMAIN || "").replace(/\/+$/,""); }
 
 /* ✅ Backend translate: {text, from_lang, to_lang} */
@@ -115,7 +118,7 @@ async function translateViaApi(text, fromLang, toLang){
   }
 }
 
-/* TTS (browser) - speaker is mute toggle only; auto speak on */
+/* Auto speak toggle (mute) */
 const mute = { top:false, bot:false };
 function setMute(side, on){
   mute[side] = !!on;
@@ -193,14 +196,11 @@ function stopAll(){
 async function onFinal(side, srcCode, dstCode, finalText){
   const otherSide = (side === "top") ? "bot" : "top";
 
-  // transcript on speaker side
   addBubble(side, "them", finalText);
 
-  // translation on other side
   const out = await translateViaApi(finalText, srcCode, dstCode);
   addBubble(otherSide, "me", out);
 
-  // auto speak to listener side
   speakAuto(out, dstCode, otherSide);
 }
 
@@ -262,7 +262,7 @@ function startSide(side, getLang, getOtherLang){
   }
 }
 
-/* ✅ Dropdown with search + filter + scroll */
+/* ✅ Dropdown with search + favorites header */
 function buildDropdown(ddId, btnId, txtId, menuId, defCode, onChange){
   const dd = $(ddId);
   const btn = $(btnId);
@@ -281,50 +281,63 @@ function buildDropdown(ddId, btnId, txtId, menuId, defCode, onChange){
     onChange?.(code);
   }
 
-  // build menu: search + items
+  // menu build
+  const favCodes = new Set(FAV.map(x=>x.code));
+
   menu.innerHTML = `
     <div class="dd-search-wrap">
-      <input class="dd-search" type="text" placeholder="Ara..." />
+      <input class="dd-search" type="text" placeholder="Dil ara..." />
     </div>
     <div class="dd-items"></div>
   `;
 
   const itemsWrap = menu.querySelector(".dd-items");
-  itemsWrap.innerHTML = LANGS.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("");
 
-  // click select
-  itemsWrap.querySelectorAll(".dd-item").forEach(it=>{
-    it.addEventListener("click", ()=>{
-      const code = it.getAttribute("data-code");
-      closeAll();
-      setValue(code);
+  function renderItems(){
+    const q = String(menu.querySelector(".dd-search").value || "").trim().toLowerCase();
+
+    const match = (name)=> !q || String(name||"").toLowerCase().includes(q);
+
+    const favItems = LANGS.filter(l=>favCodes.has(l.code) && match(l.name));
+    const otherItems = LANGS.filter(l=>!favCodes.has(l.code) && match(l.name));
+
+    const sepFav = favItems.length ? `<div class="dd-sep">Sık kullanılan</div>` : "";
+    const sepOther = otherItems.length ? `<div class="dd-sep">Diğer diller</div>` : "";
+
+    const html =
+      sepFav +
+      favItems.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("") +
+      sepOther +
+      otherItems.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("");
+
+    itemsWrap.innerHTML = html || `<div class="dd-item">Sonuç yok</div>`;
+
+    itemsWrap.querySelectorAll(".dd-item[data-code]").forEach(it=>{
+      it.addEventListener("click", ()=>{
+        const code = it.getAttribute("data-code");
+        closeAll();
+        setValue(code);
+      });
     });
-  });
+  }
 
-  // search filter
+  // search
   const search = menu.querySelector(".dd-search");
-  const filter = ()=>{
-    const q = String(search.value || "").trim().toLowerCase();
-    itemsWrap.querySelectorAll(".dd-item").forEach(it=>{
-      const label = String(it.textContent || "").toLowerCase();
-      it.classList.toggle("hidden", q && !label.includes(q));
-    });
-  };
-  search.addEventListener("input", filter);
+  search.addEventListener("input", renderItems);
 
+  // open/close
   btn.addEventListener("click", (e)=>{
     e.stopPropagation();
     const open = dd.classList.contains("open");
     closeAll();
     dd.classList.toggle("open", !open);
-
-    // open focus
     if(!open){
+      renderItems();
       setTimeout(()=>{ try{ search.focus(); }catch{} }, 0);
     }
   });
 
-  // Prevent closing when scrolling inside menu
+  // menu scroll event should not bubble (mobile)
   menu.addEventListener("touchmove", (e)=> e.stopPropagation(), { passive:true });
   menu.addEventListener("wheel", (e)=> e.stopPropagation(), { passive:true });
 
@@ -345,10 +358,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
   hookScrollFollow("top", $("topBody"));
   hookScrollFollow("bot", $("botBody"));
 
+  // Default: üst EN, alt TR
   const topDD = buildDropdown("ddTop","ddTopBtn","ddTopTxt","ddTopMenu","en", (code)=>{
     $("sloganTop").textContent = sloganFor(normLang(code));
   });
-
   const botDD = buildDropdown("ddBot","ddBotBtn","ddBotTxt","ddBotMenu","tr", (code)=>{
     $("sloganBot").textContent = sloganFor(normLang(code));
   });
