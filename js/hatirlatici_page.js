@@ -1,7 +1,7 @@
 // FILE: /js/hatirlatici_page.js
-// Hatırlatıcı: custom reminders + profile-based special days (read-only import)
-// Storage: localStorage (per user)
-// (Real notifications later)
+// Hatırlatıcı: custom reminders + profile-based specials (read-only import)
+// ✅ NEW: repeat (once/daily/weekdays/weekly)
+// ✅ Demo notifier: page open -> checks every 20s, shows toast at time
 
 import { STORAGE_KEY } from "/js/config.js";
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
@@ -10,14 +10,13 @@ const $ = (id)=>document.getElementById(id);
 
 function safeJson(s, fb={}){ try{return JSON.parse(s||"");}catch{return fb;} }
 function setJson(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
-function esc(s=""){ return String(s); }
 
 function toast(msg){
   const t = document.getElementById("toast");
   if(!t) return;
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(()=> t.classList.remove("show"), 2400);
+  setTimeout(()=> t.classList.remove("show"), 2600);
 }
 
 function getUser(){
@@ -42,12 +41,12 @@ function saveReminders(arr){
   setJson(storeKey(), arr || []);
 }
 
+// --------- profile specials (read only) ----------
 function profileSpecials(profile){
   const items = [];
-
   const push = (title, date)=>{
     if(!date) return;
-    items.push({ title, date, time:"09:00", type:"profile", source:"profile" });
+    items.push({ title, date, time:"09:00", type:"profile", source:"profile", repeat:"yearly" });
   };
 
   push("Eş Doğum Günü", profile.spouse_birth_date || profile.spouseBirthday || profile.spouse_birthday);
@@ -75,24 +74,50 @@ function profileSpecials(profile){
   return items;
 }
 
+// --------- helpers ----------
+function pad2(n){ return String(n).padStart(2,"0"); }
+function todayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function nowHM(){
+  const d = new Date();
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function weekday(d=new Date()){
+  // 0=Sun..6=Sat
+  return d.getDay();
+}
 function fmt(date, time){
   const d = String(date||"").trim();
   const t = String(time||"").trim();
   return (d ? d : "—") + (t ? ` • ${t}` : "");
 }
+function repeatLabel(rep){
+  const m = {
+    once: "Tek sefer",
+    daily: "Her gün",
+    weekdays: "Hafta içi",
+    weekly: "Haftalık",
+    yearly: "Yıllık"
+  };
+  return m[rep] || rep || "Tek sefer";
+}
 
+// --------- render ----------
 function render(){
   const box = $("list");
   const profile = getUser();
   const customs = loadReminders();
-
-  // profile specials: göster ama kaydetme zorunlu değil (motor gelince birleşir)
   const prof = profileSpecials(profile);
 
   const all = [
     ...prof.map(x => ({ ...x, id:`p:${x.title}:${x.date}`, readonly:true })),
     ...customs
-  ].sort((a,b)=> (String(a.date)+String(a.time)).localeCompare(String(b.date)+String(b.time)));
+  ];
+
+  // sort: date/time (for display)
+  all.sort((a,b)=> (String(a.date)+String(a.time)).localeCompare(String(b.date)+String(b.time)));
 
   if(!all.length){
     box.innerHTML = `<div style="font-weight:900;color:rgba(255,255,255,.70);">Henüz hatırlatıcı yok evladım 🙂</div>`;
@@ -100,17 +125,18 @@ function render(){
   }
 
   box.innerHTML = all.map(it=>{
-    const tag = it.source === "profile"
-      ? `<div class="tag sys">PROFİL</div>`
-      : `<div class="tag user">SENİN</div>`;
+    const tags = [];
+    tags.push(it.source === "profile" ? `<div class="tag sys">PROFİL</div>` : `<div class="tag user">SENİN</div>`);
+    tags.push(`<div class="tag rep">🔁 ${repeatLabel(it.repeat)}</div>`);
+
     const delBtn = it.readonly ? "" : `<div class="del" data-del="${it.id}">×</div>`;
 
     return `
       <div class="item">
         <div class="l">
-          <div class="t1">${esc(it.title)}</div>
+          <div class="t1">${it.title}</div>
           <div class="t2">${fmt(it.date, it.time)}</div>
-          ${tag}
+          <div class="tags">${tags.join("")}</div>
         </div>
         ${delBtn}
       </div>
@@ -128,24 +154,90 @@ function render(){
   });
 }
 
+// --------- add ----------
 function add(){
   const title = String($("title").value||"").trim();
   const date = String($("date").value||"").trim();
   const time = String($("time").value||"").trim();
   const type = String($("type").value||"custom").trim();
+  const repeat = String($("repeat").value||"once").trim();
 
   if(!title) return toast("Evladım başlık yaz.");
-  if(!date) return toast("Evladım tarih seç.");
+  if(!time) return toast("Evladım saat seç. İlaç saati şakaya gelmez 🙂");
+
+  // repeat=once ise tarih şart; repeat!=once ise tarih opsiyonel (başlangıç tarihi)
+  if(repeat === "once" && !date) return toast("Tek sefer için tarih seç evladım.");
+  const useDate = date || todayISO();
 
   const id = "r_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-
   const arr = loadReminders();
-  arr.unshift({ id, title, date, time: time || "09:00", type, source:"custom" });
+  arr.unshift({ id, title, date: useDate, time, type, source:"custom", repeat });
+
   saveReminders(arr);
 
   $("title").value = "";
   toast("Eklendi evladım.");
   render();
+}
+
+// --------- notifier (demo) ----------
+function shouldFire(item, nowDate, nowTime){
+  const rep = item.repeat || "once";
+
+  if(rep === "once"){
+    return item.date === nowDate && item.time === nowTime;
+  }
+  if(rep === "daily"){
+    return item.time === nowTime;
+  }
+  if(rep === "weekdays"){
+    const wd = weekday();
+    const isWeekday = wd >= 1 && wd <= 5;
+    return isWeekday && item.time === nowTime;
+  }
+  if(rep === "weekly"){
+    // weekly: same weekday as item's date
+    const base = new Date(item.date + "T00:00:00");
+    const wd0 = base.getDay();
+    return weekday() === wd0 && item.time === nowTime;
+  }
+  if(rep === "yearly"){
+    // match month-day
+    const mdNow = nowDate.slice(5);
+    const mdIt = String(item.date||"").slice(5);
+    return mdIt === mdNow && item.time === nowTime;
+  }
+  return false;
+}
+
+function firedKey(uid, itemId, nowDate, nowTime){
+  return `caynana_rem_fired:${uid}:${itemId}:${nowDate}:${nowTime}`;
+}
+
+function startNotifier(){
+  const uid = userKey();
+
+  setInterval(()=>{
+    const nowDate = todayISO();
+    const nowTime = nowHM();
+
+    const profile = getUser();
+    const customs = loadReminders();
+    const prof = profileSpecials(profile).map(x => ({ ...x, id:`p:${x.title}:${x.date}`, readonly:true }));
+
+    const all = [...prof, ...customs];
+
+    all.forEach(it=>{
+      if(!it.time) return;
+      if(!shouldFire(it, nowDate, nowTime)) return;
+
+      const k = firedKey(uid, it.id, nowDate, nowTime);
+      if(localStorage.getItem(k) === "1") return;
+
+      localStorage.setItem(k, "1");
+      toast(`⏰ ${it.title} (${it.time})`);
+    });
+  }, 20000);
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
@@ -164,5 +256,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
   $("add")?.addEventListener("click", add);
   $("goProfile")?.addEventListener("click", ()=> location.href="/pages/profil.html");
 
+  // Defaults: date today
+  try{ $("date").value = todayISO(); }catch{}
+
   render();
+  startNotifier();
 });
