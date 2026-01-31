@@ -1,0 +1,420 @@
+<!-- FILE: /pages/fal.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kahve Falı</title>
+
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
+
+  <style>
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --gapH: 6px;
+      color-scheme: dark;
+    }
+
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .assistant-bar{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
+      height: var(--assistH) !important;
+      padding: 6px 10px !important;
+      pointer-events: none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+    .assistant-item .lbl{
+      display:block !important;
+      font-size: 8px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      margin-top: 2px !important;
+      opacity: .85;
+      white-space: nowrap;
+    }
+
+    /* Orta alan */
+    .module-area{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + 10px);
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 16px;
+      padding-bottom: 22px;
+    }
+
+    .card{
+      background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.95));
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.55);
+      margin-bottom: 14px;
+    }
+
+    .head{ display:flex; align-items:center; gap:12px; }
+    .ico{
+      width:44px; height:44px; border-radius:16px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,179,0,.14);
+      border:1px solid rgba(255,179,0,.30);
+      font-size:22px;
+      flex:0 0 44px;
+    }
+    .ttl{ font-weight:1000; color:#fff; font-size:16px; }
+    .sub{ margin-top:6px; color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; font-weight: 800; }
+
+    .btn-row{ display:flex; gap:10px; margin-top: 12px; }
+    .btn{
+      flex:1;
+      border:none;
+      border-radius: 18px;
+      padding: 14px 14px;
+      font-weight: 1000;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--gold);
+      color:#111;
+      box-shadow: 0 12px 26px rgba(255,179,0,.18);
+    }
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
+      box-shadow:none;
+    }
+
+    .shots{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .shot{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      overflow:hidden;
+      aspect-ratio: 1/1;
+      position: relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: rgba(255,255,255,.65);
+      font-weight: 1000;
+      font-size: 12px;
+    }
+    .shot img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
+    .shot .badgeN{
+      position:absolute;
+      top:8px; left:8px;
+      width:24px; height:24px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.55);
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 12px;
+      font-weight: 1000;
+      color:#fff;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Thinking overlay */
+    .thinking-overlay{
+      position: fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.88);
+      z-index: 9999;
+      padding: 18px;
+    }
+    .thinking-overlay.show{ display:flex; }
+
+    .think-card{
+      width:min(460px, 92vw);
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(14,14,14,.92);
+      box-shadow: 0 40px 120px rgba(0,0,0,.75);
+      padding: 18px;
+    }
+    .think-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .think-title{
+      font-weight:1000;
+      font-size: 14px;
+      color:#fff;
+    }
+    .think-sub{
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(255,255,255,.70);
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+    .dots{ display:flex; gap:6px; margin-top: 12px; }
+    .dot{
+      width:8px; height:8px;
+      border-radius:99px;
+      background: rgba(255,255,255,.65);
+      animation: dot 1.2s infinite ease-in-out;
+    }
+    .dot:nth-child(2){ animation-delay:.15s; }
+    .dot:nth-child(3){ animation-delay:.3s; }
+    @keyframes dot{
+      0%,100%{ transform: translateY(0); opacity:.55; }
+      50%{ transform: translateY(-5px); opacity:1; }
+    }
+
+    .scroll-chant{
+      margin-top: 14px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-weight: 1000;
+      color: rgba(255,255,255,.88);
+      overflow:hidden;
+      white-space: nowrap;
+    }
+    .scroll-chant span{
+      display:inline-block;
+      padding-left: 100%;
+      animation: marquee 10s linear infinite;
+    }
+    @keyframes marquee{
+      0%{ transform: translateX(0); }
+      100%{ transform: translateX(-100%); }
+    }
+
+    /* Result */
+    .result{
+      display:none;
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.90);
+      font-weight: 800;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+    .result.show{ display:block; }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 50%;
+      top: 84px;
+      transform: translateX(-50%);
+      z-index: 99999;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 1000;
+      font-size: 12px;
+      background: rgba(20,20,20,.92);
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+      display:none;
+      color: rgba(255,255,255,.92);
+      max-width: min(440px, calc(100vw - 24px));
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .toast.show{ display:block; }
+
+    /* file inputs hidden */
+    input[type=file]{ display:none; }
+  </style>
+</head>
+
+<body>
+<div class="mobile-frame" id="mobileFrame">
+
+  <!-- ÜST BAR (aynı) -->
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
+    </div>
+
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">10/100</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HAMBURGER MENÜ (aynı) -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ ORTA MODÜL -->
+  <div class="module-area">
+    <div class="card">
+      <div class="head">
+        <div class="ico">☕</div>
+        <div>
+          <div class="ttl">Kahve Falı</div>
+          <div class="sub">
+            3 foto çek: <b>fincan içi</b>, <b>fincan dışı</b>, <b>tabak</b>.
+            Başka şey gönderirsen kızarım evladım.
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" id="btnTake">📸 Fotoğraf Çek</button>
+        <button class="btn secondary" id="btnReset">Sıfırla</button>
+      </div>
+
+      <div class="shots" id="shots">
+        <div class="shot" data-i="0"><div class="badgeN">1</div>Fincan İçi</div>
+        <div class="shot" data-i="1"><div class="badgeN">2</div>Fincan Dışı</div>
+        <div class="shot" data-i="2"><div class="badgeN">3</div>Tabak</div>
+      </div>
+
+      <div class="result" id="resultBox"></div>
+    </div>
+
+    <div class="card">
+      <div class="ttl" style="font-size:14px;">Kural</div>
+      <div class="sub" style="margin-top:8px;">
+        Fotoğrafta <b>kahve fincanı</b> veya <b>tabak</b> dışında bir şey olursa:
+        “Evladım bu fincan mı, saksı mı? Tekrar çek.” diye uyarırım.
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">—</div>
+
+  <!-- Thinking overlay -->
+  <div class="thinking-overlay" id="thinking">
+    <div class="think-card">
+      <div class="think-top">
+        <div>
+          <div class="think-title">Neyse halin çıksın falın… ☕</div>
+          <div class="think-sub">Bir bakayım evladım… İçimden bir şeyler geçiyor…</div>
+        </div>
+      </div>
+      <div class="scroll-chant"><span>“Neyse halin çıksın falın…” “Neyse halin çıksın falın…” “Neyse halin çıksın falın…”</span></div>
+      <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+      <div class="think-sub" style="margin-top:10px;">Düşünüyorum… arada da sana bakıyorum. 🙂</div>
+    </div>
+  </div>
+
+  <!-- ALT BAR -->
+  <div class="assistant-bar" id="assistantBar"></div>
+
+  <!-- FOOTER -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
+</div>
+
+<!-- hidden camera input -->
+<input type="file" id="camInput" accept="image/*" capture="environment" />
+
+<script type="module" src="/js/layout-common.js?v=1"></script>
+<script type="module" src="/js/menu_history_ui.js?v=1"></script>
+<script type="module" src="/js/fal_page.js?v=1"></script>
+</body>
+</html>
