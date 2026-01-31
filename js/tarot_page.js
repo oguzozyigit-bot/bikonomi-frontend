@@ -1,6 +1,6 @@
 // FILE: /js/tarot_page.js
-// FULL DECK (78) + hidden horizontal scroll + flip reveal + colorful original SVG art
-// ✅ NEW: shuffle animation -> auto left-right scroll for ~5s
+// FULL DECK (78) + vertical grid (3 per row) + flip reveal
+// ✅ NEW: Back design = C monogram + seesaw (brand unique)
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -52,7 +52,7 @@ function pickPalette(seedStr){
   return PALETTES[h % PALETTES.length];
 }
 
-// --------- FULL DECK GENERATION (78) ----------
+// --------- FULL DECK (78) ----------
 const MAJOR = [
   "Deli (0)","Büyücü (I)","Başrahibe (II)","İmparatoriçe (III)","İmparator (IV)","Aziz (V)",
   "Aşıklar (VI)","Savaş Arabası (VII)","Güç (VIII)","Ermiş (IX)","Kader Çarkı (X)","Adalet (XI)",
@@ -78,80 +78,77 @@ const RANKS = [
 
 function buildDeck(){
   const deck = [];
-
-  // Major 22
   MAJOR.forEach((nm, idx)=>{
-    deck.push({
-      id: `major_${idx}`,
-      type: "major",
-      name: nm,
-      suit: null,
-      rank: null,
-      seed: `major:${idx}:${nm}`
-    });
+    deck.push({ id:`major_${idx}`, type:"major", name:nm, suit:null, rank:null, seed:`major:${idx}:${nm}` });
   });
-
-  // Minor 56
   SUITS.forEach(s=>{
     RANKS.forEach(r=>{
-      deck.push({
-        id: `minor_${s.key}_${r.key}`,
-        type: "minor",
-        name: `${s.name} - ${r.name}`,
-        suit: s,
-        rank: r,
-        seed: `minor:${s.key}:${r.key}`
-      });
+      deck.push({ id:`minor_${s.key}_${r.key}`, type:"minor", name:`${s.name} - ${r.name}`, suit:s, rank:r, seed:`minor:${s.key}:${r.key}` });
     });
   });
-
   return deck;
 }
-
 const FULL_DECK = buildDeck();
 
-// --------- COLORFUL SVG BACK ----------
+// --------- UNIQUE BACK: C + seesaw + neon gradients ----------
 function deckBackSVG(seed){
   const p = pickPalette(seed);
+
   return `
   <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${p.a}" stop-opacity="0.40"/>
-        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.30"/>
-        <stop offset="1" stop-color="${p.c}" stop-opacity="0.28"/>
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.45"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.33"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.30"/>
       </linearGradient>
-      <radialGradient id="orb" cx="50%" cy="40%" r="70%">
-        <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+
+      <radialGradient id="glow" cx="50%" cy="40%" r="75%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
         <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
-      <pattern id="stars" width="18" height="18" patternUnits="userSpaceOnUse">
-        <circle cx="4" cy="6" r="1" fill="rgba(255,255,255,.30)"/>
-        <circle cx="14" cy="14" r="1" fill="rgba(255,255,255,.20)"/>
-        <circle cx="12" cy="4" r="0.8" fill="rgba(255,255,255,.18)"/>
-      </pattern>
+
+      <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur stdDeviation="1.2" result="b"/>
+        <feMerge>
+          <feMergeNode in="b"/>
+          <feMergeNode in="SourceGraphic"/>
+        </feMerge>
+      </filter>
     </defs>
 
-    <rect x="0" y="0" width="100" height="140" rx="16" fill="rgba(0,0,0,.80)"/>
+    <rect x="0" y="0" width="100" height="140" rx="16" fill="rgba(0,0,0,.86)"/>
     <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#bg)"/>
-    <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#stars)" opacity="0.60"/>
-    <circle cx="50" cy="70" r="28" fill="url(#orb)"/>
+    <circle cx="50" cy="62" r="34" fill="url(#glow)"/>
 
-    <path d="M50 26 L60 52 L88 56 L66 72 L72 100 L50 86 L28 100 L34 72 L12 56 L40 52 Z"
-          fill="rgba(255,255,255,.12)"/>
-    <path d="M50 36 L56 52 L74 54 L60 64 L64 84 L50 74 L36 84 L40 64 L26 54 L44 52 Z"
-          fill="rgba(0,0,0,.28)"/>
-
+    <!-- Outer frame -->
     <rect x="10" y="14" width="80" height="112" rx="12"
           fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+
+    <!-- Seesaw mark -->
+    <g filter="url(#soft)" opacity="0.9">
+      <line x1="22" y1="42" x2="78" y2="42" stroke="rgba(255,255,255,.35)" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="28" cy="38" r="5" fill="rgba(190,242,100,.55)"/>
+      <circle cx="72" cy="38" r="5" fill="rgba(255,179,0,.55)"/>
+      <polygon points="46,54 54,54 50,42" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+    </g>
+
+    <!-- C monogram -->
+    <g filter="url(#soft)">
+      <path d="M64 88c-5 6-12 10-20 10-14 0-25-11-25-25s11-25 25-25c8 0 15 4 20 10"
+            fill="none" stroke="rgba(255,255,255,.45)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M64 88c-5 6-12 10-20 10-14 0-25-11-25-25s11-25 25-25c8 0 15 4 20 10"
+            fill="none" stroke="rgba(0,0,0,.25)" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
     <text x="50" y="126" text-anchor="middle"
           font-family="system-ui, -apple-system, Segoe UI, Arial"
           font-size="9" font-weight="900"
-          fill="rgba(255,255,255,.62)">Caynana Tarot</text>
+          fill="rgba(255,255,255,.70)">Caynana</text>
   </svg>`;
 }
 
-// --------- COLORFUL SVG FACE ----------
+// --------- COLORFUL FACE ----------
 function faceSVG(card, rev){
   const p = pickPalette(card.seed);
   const suitAccent = card.suit?.accent || p.a;
@@ -164,12 +161,12 @@ function faceSVG(card, rev){
   <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="fbg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${p.a}" stop-opacity="0.34"/>
-        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.26"/>
-        <stop offset="1" stop-color="${p.c}" stop-opacity="0.24"/>
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.36"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.28"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.26"/>
       </linearGradient>
-      <radialGradient id="glow" cx="50%" cy="45%" r="60%">
-        <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+      <radialGradient id="orb" cx="50%" cy="45%" r="60%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
         <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
     </defs>
@@ -178,7 +175,7 @@ function faceSVG(card, rev){
       <rect x="10" y="10" width="100" height="100" rx="18"
             fill="rgba(0,0,0,.34)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
       <rect x="14" y="14" width="92" height="92" rx="16" fill="url(#fbg)"/>
-      <circle cx="60" cy="58" r="34" fill="url(#glow)"/>
+      <circle cx="60" cy="58" r="34" fill="url(#orb)"/>
 
       <path d="M24 60 C40 34, 80 34, 96 60" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>
       <path d="M24 60 C40 86, 80 86, 96 60" stroke="rgba(255,255,255,.12)" stroke-width="3" fill="none" stroke-linecap="round"/>
@@ -189,9 +186,9 @@ function faceSVG(card, rev){
             font-size="30">${sym}</text>
 
       <text x="22" y="28" font-family="system-ui, -apple-system, Segoe UI, Arial"
-            font-size="12" font-weight="900" fill="${suitAccent}" opacity="0.95">${rankSym}</text>
+            font-size="12" font-weight="1000" fill="${suitAccent}" opacity="0.98">${rankSym}</text>
       <text x="98" y="100" text-anchor="end" font-family="system-ui, -apple-system, Segoe UI, Arial"
-            font-size="12" font-weight="900" fill="${suitAccent}" opacity="0.85">${rankSym}</text>
+            font-size="12" font-weight="1000" fill="${suitAccent}" opacity="0.88">${rankSym}</text>
     </g>
   </svg>`;
 }
@@ -204,6 +201,9 @@ const state = {
   picked: []
 };
 
+function showThinking(on){
+  $("thinking").classList.toggle("show", !!on);
+}
 function setPill(text, good=true){
   const p = $("statePill");
   if(!p) return;
@@ -211,14 +211,6 @@ function setPill(text, good=true){
   p.style.borderColor = good ? "rgba(190,242,100,.25)" : "rgba(255,82,82,.25)";
   p.style.background  = good ? "rgba(190,242,100,.10)" : "rgba(255,82,82,.10)";
   p.style.color       = good ? "rgba(190,242,100,.95)" : "rgba(255,82,82,.95)";
-}
-function showThinking(on){
-  $("thinking").classList.toggle("show", !!on);
-}
-
-function renderNeed(){
-  const txt = $("needTxt");
-  if(txt) txt.textContent = `Seçilecek: ${state.need} kart`;
 }
 
 function renderPicked(){
@@ -238,7 +230,7 @@ function renderPicked(){
 
 function makeLongReading(){
   const lines = [];
-  lines.push(`<b>Evladım…</b> tam deste kaydırıp seçtin. Güzel. Şimdi yorum:`);
+  lines.push(`<b>Evladım…</b> bu sefer C’li desteden seçtin. Şimdi dinle:`);
   lines.push(`<br><br><b>Seçtiklerin:</b>`);
   state.picked.forEach(p=>{
     lines.push(`<br>• <b>${p.posLabel}:</b> ${p.card.name} (${p.rev?"ters":"düz"})`);
@@ -261,10 +253,10 @@ async function runReading(){
   box.classList.add("show");
 }
 
-// --------- BUILD STRIP ----------
-function buildDeckStrip(){
-  const strip = $("deckStrip");
-  strip.innerHTML = "";
+// --------- BUILD GRID (78) ----------
+function buildDeckGrid(){
+  const grid = $("deckGrid");
+  grid.innerHTML = "";
 
   FULL_DECK.forEach((card, idx)=>{
     const flip = document.createElement("div");
@@ -288,11 +280,11 @@ function buildDeckStrip(){
     `;
 
     flip.querySelector(".back").addEventListener("click", ()=> onPick(flip, card));
-    strip.appendChild(flip);
+    grid.appendChild(flip);
   });
 }
 
-// --------- PICK FLOW ----------
+// --------- PICK ----------
 function onPick(flipEl, card){
   if(!state.ready){
     toast("Önce karıştır evladım.");
@@ -332,57 +324,7 @@ function onPick(flipEl, card){
   }
 }
 
-// --------- SHUFFLE ANIMATION (NEW) ----------
-let __shuffling = false;
-
-async function animateShuffle(){
-  const strip = $("deckStrip");
-  if(!strip) return;
-  if(__shuffling) return;
-
-  __shuffling = true;
-
-  const start = strip.scrollLeft;
-  const max = strip.scrollWidth - strip.clientWidth;
-
-  // küçük bir “karışıyor” hissi: sağa/sola dalga
-  const t0 = performance.now();
-  const duration = 5200; // ~5s
-  const amplitude = Math.max(40, Math.min(160, strip.clientWidth * 0.25));
-
-  // hedef: orta bölgeye yaklaş
-  const baseTarget = Math.min(max, Math.max(0, start + amplitude));
-
-  function easeInOut(t){
-    return t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
-  }
-
-  while(true){
-    const now = performance.now();
-    const dt = now - t0;
-    const p = Math.min(1, dt / duration);
-
-    // sinüs dalga + ease
-    const wave = Math.sin(p * Math.PI * 6); // 3 tam salınım
-    const e = easeInOut(p);
-
-    let x = baseTarget + wave * amplitude;
-    x = Math.max(0, Math.min(max, x));
-
-    strip.scrollLeft = x;
-
-    if(p >= 1) break;
-    await sleep(16);
-  }
-
-  // final: biraz “random settle”
-  const settle = Math.max(0, Math.min(max, baseTarget + (Math.random()*2-1)*amplitude*0.35));
-  strip.scrollLeft = settle;
-
-  __shuffling = false;
-}
-
-// --------- CONTROLS ----------
+// --------- RESET / SPREAD / BUTTONS ----------
 function resetAll(){
   state.ready = false;
   state.used = new Set();
@@ -390,10 +332,8 @@ function resetAll(){
   $("resultBox").classList.remove("show");
   $("resultBox").innerHTML = "";
   setPill("Hazır", true);
-  renderNeed();
   renderPicked();
 
-  // flipleri geri al
   document.querySelectorAll(".flip").forEach(el=>{
     el.classList.remove("flipped");
     el.classList.remove("disabled");
@@ -415,12 +355,19 @@ function bindSpreads(){
 
 function bindButtons(){
   $("btnShuffle").addEventListener("click", async ()=>{
-    // reset selection but keep deck
     state.ready = true;
     setPill("Karışıyor…", true);
-
     toast("Karıştırıyorum evladım…");
-    await animateShuffle();
+
+    // küçük dikey “shake” hissi (tasarım)
+    const area = document.querySelector(".module-area");
+    const t0 = performance.now();
+    const dur = 900;
+    while(performance.now() - t0 < dur){
+      const p = (performance.now()-t0)/dur;
+      area.scrollTop += Math.sin(p*Math.PI*8) * 3;
+      await sleep(16);
+    }
 
     setPill("Karıştı", true);
     toast("Karıştı. Kaydır, seç.");
@@ -444,10 +391,9 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   syncTopUI();
   setPill("Hazır", true);
-  renderNeed();
   renderPicked();
 
-  buildDeckStrip();
+  buildDeckGrid();
   bindSpreads();
   bindButtons();
 });
