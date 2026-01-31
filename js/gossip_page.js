@@ -1,9 +1,10 @@
 // FILE: /js/gossip_page.js
-// DESIGN-FIRST: ID invite + accept/reject + 2-person chat room (local demo)
-// ✅ My Kaynana comments: only me see
-// ✅ Other side would see their own Kaynana on their device (backend later)
-// ✅ Tone by sp_score (0-100) -> praise/roast
-// ✅ Inbox polling (localStorage demo)
+// GROUP CHAT (max 10) + invite/accept + ephemeral messages (sessionStorage)
+// ✅ Only text
+// ✅ Mic fills textarea (no auto-send). Send via airplane or Enter.
+// ✅ Optional local Kaynana interjection (checkbox). Only local user sees it.
+// ✅ Leave -> notify others + remove member
+// ✅ Room close -> clear messages for all (ephemeral)
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -19,18 +20,17 @@ function toast(msg){
   if(!t) return;
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(()=> t.classList.remove("show"), 2400);
+  setTimeout(()=> t.classList.remove("show"), 2600);
 }
 
-function getMe(){
+function getUser(){
   const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
-  const id = String(u.user_id || u.id || u.email || "").trim();
-  return id || "guest";
+  const id = String(u.user_id || u.id || u.email || "").trim() || "guest";
+  const name = String(u.fullname || u.display_name || u.name || u.email || id).trim();
+  const sp = clamp(parseInt(u.sp_score ?? 10,10)||10, 0, 100);
+  return { id, name, sp };
 }
-function getSP(){
-  const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
-  return clamp(parseInt(u.sp_score ?? 10,10)||10, 0, 100);
-}
+
 function syncTopUI(){
   try{
     const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
@@ -41,92 +41,84 @@ function syncTopUI(){
   }catch{}
 }
 
-/* -------------------------------------------------
-   Local demo “backend” keys
-------------------------------------------------- */
-function inboxKey(userId){ return `caynana_gossip_inbox:${userId}`; }
-function roomKey(a,b){
-  const x = [String(a), String(b)].sort();
-  return `caynana_gossip_room:${x[0]}__${x[1]}`;
-}
-function sessionKey(){ return `caynana_gossip_session:${getMe()}`; }
+/* =========================================================
+   Storage model
+   - Invites (localStorage): per user inbox
+   - Room metadata (localStorage): participants list, accepted state
+   - Messages (sessionStorage): ephemeral, wiped on close/leave/refresh
+   - Realtime (BroadcastChannel): between tabs/devices (same origin)
+========================================================= */
 
-function loadInbox(uid){
-  return safeJson(localStorage.getItem(inboxKey(uid)), []);
-}
-function saveInbox(uid, items){
-  localStorage.setItem(inboxKey(uid), JSON.stringify(items||[]));
-}
+function inboxKey(uid){ return `caynana_gossip_inbox:${uid}`; }
+function roomMetaKey(roomId){ return `caynana_gossip_meta:${roomId}`; }
+function roomMsgKey(roomId){ return `caynana_gossip_msgs:${roomId}`; } // sessionStorage
+function myRoomKey(uid){ return `caynana_gossip_myroom:${uid}`; }      // localStorage
+
+function loadInbox(uid){ return safeJson(localStorage.getItem(inboxKey(uid)), []); }
+function saveInbox(uid, arr){ localStorage.setItem(inboxKey(uid), JSON.stringify(arr||[])); }
+
 function pushInbox(uid, item){
   const arr = loadInbox(uid);
   arr.unshift(item);
-  saveInbox(uid, arr.slice(0,20));
+  saveInbox(uid, arr.slice(0,30));
 }
 
-function loadRoom(a,b){
-  return safeJson(localStorage.getItem(roomKey(a,b)), { ok:false, a, b, accepted:false, messages:[] });
-}
-function saveRoom(a,b, obj){
-  localStorage.setItem(roomKey(a,b), JSON.stringify(obj||{}));
+function genRoomId(meId){
+  return `room_${meId}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,7)}`;
 }
 
-function setSession(peerId){
-  localStorage.setItem(sessionKey(), String(peerId||""));
+function loadRoomMeta(roomId){
+  return safeJson(localStorage.getItem(roomMetaKey(roomId)), null);
 }
-function getSession(){
-  return (localStorage.getItem(sessionKey()) || "").trim();
-}
-
-/* -------------------------------------------------
-   Kaynana Interjection (tone by sp_score)
-------------------------------------------------- */
-function kaynanaTone(sp){
-  if(sp < 20) return "sert";
-  if(sp < 40) return "normal";
-  if(sp < 70) return "samimi";
-  return "evladim_modu";
+function saveRoomMeta(roomId, meta){
+  localStorage.setItem(roomMetaKey(roomId), JSON.stringify(meta||{}));
 }
 
-function kaynanaComment(sp, userText){
-  const t = kaynanaTone(sp);
-  const s = String(userText||"").trim().toLowerCase();
-
-  const poke = [
-    "Evladım… bunu yazarken iki kez düşünseydin keşke.",
-    "Bak bak… dedikodunun da bir adabı var.",
-    "Sen yaz, ben araya gerçekleri serpiştireyim 🙂",
-    "Hah! Tam da bunu bekliyordum…",
-  ];
-  const praise = [
-    "Aferin evladım, sakin kalmışsın. Nadir görülür 🙂",
-    "Bak bu sefer iyi toparladın, helal.",
-    "Akıllı konuşuyorsun bugün… nazar değmesin.",
-    "Kaynana gurur duydu. Çok da şımarmayalım ama 🙂",
-  ];
-  const spicy = [
-    "Bunu yazdın ya… karşı tarafın kaşı kalkar, söyleyeyim.",
-    "Heh! Tam ‘dedikodu kazanı’ kıvamı.",
-    "Biraz daha yazarsan kazan taşacak evladım.",
-    "Ağzından çıkanı kulağın duysun… ama devam 🙂",
-  ];
-
-  // basit tetikleyiciler
-  let pool = spicy;
-  if(s.includes("özür") || s.includes("pardon") || s.includes("haklısın")) pool = praise;
-  if(s.includes("salak") || s.includes("aptal") || s.includes("küst") || s.includes("kızdım")) pool = poke;
-
-  if(t === "sert") return "Evladım… senin dilin bazen çok uzuyor. Biraz toparlan.";
-  if(t === "normal") return pool[Math.floor(Math.random()*pool.length)];
-  if(t === "samimi") return praise[Math.floor(Math.random()*praise.length)];
-  return "Canım evladım… ben senin iyiliğini isterim. Yaz ama ölçülü yaz 🙂";
+function loadMsgs(roomId){
+  return safeJson(sessionStorage.getItem(roomMsgKey(roomId)), []);
+}
+function saveMsgs(roomId, msgs){
+  sessionStorage.setItem(roomMsgKey(roomId), JSON.stringify(msgs||[]));
 }
 
-/* -------------------------------------------------
-   UI rendering
-------------------------------------------------- */
+function setMyRoom(uid, roomId){
+  if(roomId) localStorage.setItem(myRoomKey(uid), roomId);
+  else localStorage.removeItem(myRoomKey(uid));
+}
+function getMyRoom(uid){
+  return (localStorage.getItem(myRoomKey(uid)) || "").trim() || "";
+}
+
+function bcName(roomId){ return `caynana_gossip_bc:${roomId}`; }
+let bc = null;
+
+/* =========================================================
+   UI helpers
+========================================================= */
+
+function escapeHTML(s=""){
+  return String(s).replace(/[&<>"']/g, (m)=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
+}
+
+function setHeader(meta){
+  const title = $("roomTitle");
+  const info = $("roomMeta");
+
+  if(!meta){
+    title.textContent = "Henüz oda yok";
+    info.textContent = "ID ekle + onay";
+    return;
+  }
+
+  title.textContent = `Kazan: ${meta.title || "Dedikodu"}`;
+  info.textContent = `${meta.members.length}/10 kişi`;
+}
+
 function renderInbox(){
-  const me = getMe();
-  const inbox = loadInbox(me);
+  const me = getUser();
+  const inbox = loadInbox(me.id);
   $("inboxCount").textContent = String(inbox.length||0);
 
   const box = $("inbox");
@@ -138,13 +130,13 @@ function renderInbox(){
   }
   box.classList.add("show");
 
-  inbox.forEach((it, idx)=>{
+  inbox.forEach((it)=>{
     const row = document.createElement("div");
     row.className = "req";
     row.innerHTML = `
       <div class="l">
-        <div><b>İstek:</b> ${it.from}</div>
-        <div style="margin-top:4px;color:rgba(255,255,255,.60);font-weight:900;font-size:11px;">“Dedikodu kazanına gelsene”</div>
+        <div class="id"><b>İstek:</b> ${escapeHTML(it.fromId)}</div>
+        <div class="nm">${escapeHTML(it.fromName || "—")}</div>
       </div>
       <div class="r">
         <button class="btn" data-act="ok">Onayla</button>
@@ -152,206 +144,48 @@ function renderInbox(){
       </div>
     `;
 
-    row.querySelector('[data-act="ok"]').addEventListener("click", ()=>{
-      acceptInvite(it.from);
-    });
-    row.querySelector('[data-act="no"]').addEventListener("click", ()=>{
-      rejectInvite(it.from);
-    });
-
+    row.querySelector('[data-act="ok"]').addEventListener("click", ()=> acceptInvite(it));
+    row.querySelector('[data-act="no"]').addEventListener("click", ()=> rejectInvite(it));
     box.appendChild(row);
   });
 }
 
-function renderChat(room){
-  const chat = $("chat");
-  chat.innerHTML = "";
+function renderChat(roomId){
+  const me = getUser();
+  const meta = roomId ? loadRoomMeta(roomId) : null;
+  setHeader(meta);
 
-  if(!room?.accepted){
-    chat.innerHTML = `<div class="bubble other">Henüz sohbet yok evladım. ID ekle, istek gitsin, onay gelsin 🙂</div>`;
+  const sc = $("chat");
+  sc.innerHTML = "";
+
+  if(!roomId || !meta){
+    sc.innerHTML = `<div class="bubble other">Henüz kazan kaynamıyor evladım. ID ekle, onay gelsin 🙂</div>`;
     return;
   }
 
-  room.messages.forEach(m=>{
+  const msgs = loadMsgs(roomId);
+  if(!msgs.length){
+    sc.innerHTML = `<div class="bubble sys">Sohbet başladı. Dedikodu serbest ama ölçülü 🙂</div>`;
+    return;
+  }
+
+  msgs.forEach(m=>{
     const div = document.createElement("div");
-    if(m.type === "kaynana"){
+    if(m.type === "sys"){
+      div.className = "bubble sys";
+      div.textContent = m.text;
+    }else if(m.type === "kaynana"){
+      // local-only
       div.className = "bubble kaynana";
-      div.innerHTML = `<div class="tag">Kaynana (sadece sana)</div>${escapeHTML(m.text)}`;
+      div.innerHTML = `<div class="tag">Kaynana (sadece sen)</div>${escapeHTML(m.text)}`;
     }else{
-      div.className = `bubble ${m.from === getMe() ? "me" : "other"}`;
+      div.className = `bubble ${m.fromId === me.id ? "me" : "other"}`;
       div.textContent = m.text;
     }
-    chat.appendChild(div);
+    sc.appendChild(div);
   });
 
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function escapeHTML(s=""){
-  return String(s).replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  }[m]));
-}
-
-/* -------------------------------------------------
-   Invite flow (design)
-------------------------------------------------- */
-function normalizeId(x){
-  return String(x||"").trim();
-}
-
-function sendInvite(peerId){
-  const me = getMe();
-  const peer = normalizeId(peerId);
-  if(!peer || peer.length < 4) return toast("Evladım düzgün bir ID yaz.");
-  if(peer === me) return toast("Kendinle dedikodu mu yapacaksın evladım? 🙂");
-
-  // create room skeleton
-  const r = loadRoom(me, peer);
-  r.ok = true;
-  r.a = me; r.b = peer;
-  r.accepted = false;
-  r.messages = r.messages || [];
-  saveRoom(me, peer, r);
-
-  // push inbox to peer
-  pushInbox(peer, { type:"invite", from: me, at: Date.now() });
-
-  // local session set
-  setSession(peer);
-  updateRoomHeader(peer, false);
-  renderChat(r);
-
-  toast("İstek gitti evladım. Karşı taraf onaylarsa kazan kaynar.");
-}
-
-function acceptInvite(fromId){
-  const me = getMe();
-  const peer = String(fromId);
-
-  // mark room accepted
-  const r = loadRoom(me, peer);
-  r.ok = true;
-  r.accepted = true;
-  r.messages = r.messages || [];
-  if(!r.messages.length){
-    r.messages.push({ id: "sys1", from: me, type:"msg", text:"Tamam, dedikodu kazanı açıldı." , at: Date.now()});
-  }
-  saveRoom(me, peer, r);
-
-  // remove from inbox
-  const inbox = loadInbox(me).filter(x => x.from !== peer);
-  saveInbox(me, inbox);
-
-  // notify other (demo): push "accepted" into their inbox
-  pushInbox(peer, { type:"accepted", from: me, at: Date.now() });
-
-  setSession(peer);
-  updateRoomHeader(peer, true);
-  renderInbox();
-  renderChat(r);
-
-  toast("Onayladım evladım. Şimdi yaz bakalım.");
-}
-
-function rejectInvite(fromId){
-  const me = getMe();
-  const peer = String(fromId);
-  const inbox = loadInbox(me).filter(x => x.from !== peer);
-  saveInbox(me, inbox);
-  renderInbox();
-  toast("Reddettim. Kazanı soğuttun evladım 🙂");
-}
-
-function updateRoomHeader(peerId, accepted){
-  const peer = normalizeId(peerId);
-  const title = $("roomTitle");
-  const meta = $("roomMeta");
-  if(!peer){
-    title.textContent = "Henüz eşleşme yok";
-    meta.textContent = "ID ekleyip onay bekle";
-    return;
-  }
-  title.textContent = `Dedikodu: ${peer}`;
-  meta.textContent = accepted ? "Sohbet açık" : "Onay bekleniyor";
-}
-
-/* -------------------------------------------------
-   Messaging
-------------------------------------------------- */
-function ensureRoom(){
-  const peer = getSession();
-  const me = getMe();
-  if(!peer) return null;
-
-  const r = loadRoom(me, peer);
-  return { peer, room: r };
-}
-
-function pushMessage(roomObj, from, text){
-  const msg = { id: "m_" + Date.now(), from, type:"msg", text: String(text||""), at: Date.now() };
-  roomObj.messages.push(msg);
-}
-
-function pushKaynana(roomObj, text){
-  const msg = { id: "k_" + Date.now(), from: "kaynana", type:"kaynana", text: String(text||""), at: Date.now() };
-  roomObj.messages.push(msg);
-}
-
-async function sendMessage(){
-  const txt = String($("msg").value||"").trim();
-  if(!txt) return;
-
-  const me = getMe();
-  const s = ensureRoom();
-  if(!s){ return toast("Evladım önce ID ekle, eşleş."); }
-
-  const { peer, room } = s;
-  if(!room.accepted){
-    toast("Evladım daha onay gelmedi. Sabır 🙂");
-    return;
-  }
-
-  $("msg").value = "";
-  autoGrow();
-
-  // add my message
-  pushMessage(room, me, txt);
-
-  // ✅ Kaynana araya laf sokar (sadece ben görürüm)
-  const sp = getSP();
-  if(Math.random() < 0.65){
-    pushKaynana(room, kaynanaComment(sp, txt));
-  }
-
-  saveRoom(me, peer, room);
-  renderChat(room);
-
-  // demo other reply (tasarım için): kısa gecikmeyle “karşı taraf” mesajı
-  await sleep(650);
-  const fake = makeOtherReply(txt);
-  pushMessage(room, peer, fake);
-
-  // karşı tarafın kaynanası da ona yazacak (ben görmem) → burada eklemiyoruz.
-  // gerçek sistemde server other-side response produce eder.
-
-  saveRoom(me, peer, room);
-  renderChat(room);
-}
-
-function makeOtherReply(userTxt){
-  const s = String(userTxt||"").toLowerCase();
-  const pool = [
-    "Hee… anladım. Devam et.",
-    "Yok ya, abartıyorsun bence.",
-    "Tamam tamam, susma söyle 🙂",
-    "Bunu böyle anlatınca komik oldu.",
-    "Sen var ya… neyse 😄",
-    "Hımm… buna bir bakmak lazım."
-  ];
-  if(s.includes("özür")) return "Tamam, uzatma. Ama not ettim.";
-  if(s.includes("kızd")) return "Kızma ya, sakin ol biraz.";
-  return pool[Math.floor(Math.random()*pool.length)];
+  sc.scrollTop = sc.scrollHeight;
 }
 
 function autoGrow(){
@@ -360,44 +194,387 @@ function autoGrow(){
   ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
 }
 
-/* -------------------------------------------------
-   Polling inbox + accepted signal (demo)
-------------------------------------------------- */
-function poll(){
-  const me = getMe();
-  const inbox = loadInbox(me);
+/* =========================================================
+   Kaynana comment by SP
+========================================================= */
+function kaynanaTone(sp){
+  if(sp < 20) return "sert";
+  if(sp < 40) return "normal";
+  if(sp < 70) return "samimi";
+  return "evladim_modu";
+}
 
-  // accepted message from peer -> room accepted
-  const acceptedFrom = inbox.find(x => x.type === "accepted");
-  if(acceptedFrom){
-    const peer = acceptedFrom.from;
-    const r = loadRoom(me, peer);
-    r.ok = true;
-    r.accepted = true;
-    r.messages = r.messages || [];
-    saveRoom(me, peer, r);
+function kaynanaComment(sp, userText){
+  const t = kaynanaTone(sp);
+  const s = String(userText||"").trim().toLowerCase();
 
-    // remove accepted note
-    saveInbox(me, inbox.filter(x => !(x.type==="accepted" && x.from===peer)));
-
-    setSession(peer);
-    updateRoomHeader(peer, true);
+  if(t === "sert"){
+    return "Evladım… sen yine fazla konuştun. Dedikodu var diye her şeyi yazılmaz.";
+  }
+  if(t === "evladim_modu"){
+    return "Canım evladım… tamam tamam, ben anladım. Ama yine de ölçüyü kaçırma 🙂";
   }
 
+  const spicy = [
+    "Heh! Kazan kaynadı… ama taşırma evladım.",
+    "Bunu yazdın ya… karşı tarafın kaşı kalkar 🙂",
+    "Biraz daha yazarsan dumanı komşu görür.",
+    "Sen yaz, ben araya gerçekleri koyarım."
+  ];
+  const praise = [
+    "Aferin… bu sefer akıllı yazdın.",
+    "Bak bu cümle tam ‘kıvamında’. Helal.",
+    "Kaynana onayladı. Çok şımarmadan devam 🙂"
+  ];
+
+  if(s.includes("özür") || s.includes("hakli") || s.includes("pardon")) return praise[Math.floor(Math.random()*praise.length)];
+  return spicy[Math.floor(Math.random()*spicy.length)];
+}
+
+/* =========================================================
+   Invite / accept flow
+========================================================= */
+function normalizeId(x){ return String(x||"").trim(); }
+
+function sendInvite(peerId){
+  const me = getUser();
+  const peer = normalizeId(peerId);
+
+  if(!peer || peer.length < 4) return toast("Evladım düzgün bir ID yaz.");
+  if(peer === me.id) return toast("Kendinle dedikodu mu yapacaksın evladım? 🙂");
+
+  // if I already have room, don't allow (design decision)
+  const myRoom = getMyRoom(me.id);
+  if(myRoom){
+    toast("Evladım zaten bir kazandasın. Önce ayrıl, sonra yeni kişi ekle.");
+    return;
+  }
+
+  // create room meta
+  const roomId = genRoomId(me.id);
+  const meta = {
+    roomId,
+    title: "Dedikodu Kazanı",
+    hostId: me.id,
+    members: [{ id: me.id, name: me.name }],
+    pending: [{ id: peer, name: "" }],
+    createdAt: Date.now(),
+    open: true
+  };
+  saveRoomMeta(roomId, meta);
+
+  // store my room
+  setMyRoom(me.id, roomId);
+
+  // send invite to peer inbox
+  pushInbox(peer, {
+    type: "invite",
+    roomId,
+    fromId: me.id,
+    fromName: me.name,
+    at: Date.now()
+  });
+
+  // create first sys msg (ephemeral)
+  saveMsgs(roomId, [{ type:"sys", text:`${me.name} kazanı kurdu. ${peer} bekleniyor…`, at: Date.now() }]);
+
+  openRoom(roomId);
+  toast("İstek gitti evladım. Onay gelince başlarız.");
+}
+
+function acceptInvite(inv){
+  const me = getUser();
+  const roomId = inv.roomId;
+  const meta = loadRoomMeta(roomId);
+
+  if(!meta || !meta.open){
+    toast("Evladım bu istek bayatlamış. Oda kapalı.");
+    // remove from inbox
+    saveInbox(me.id, loadInbox(me.id).filter(x => !(x.roomId===roomId)));
+    renderInbox();
+    return;
+  }
+
+  // capacity check
+  if(meta.members.length >= 10){
+    toast("Evladım bu kazan dolu (10 kişi). Giremezsin.");
+    saveInbox(me.id, loadInbox(me.id).filter(x => !(x.roomId===roomId)));
+    renderInbox();
+    return;
+  }
+
+  // join
+  meta.members.push({ id: me.id, name: me.name });
+  meta.pending = (meta.pending||[]).filter(p => p.id !== me.id && p.id !== inv.fromId);
+  saveRoomMeta(roomId, meta);
+
+  setMyRoom(me.id, roomId);
+
+  // inbox remove
+  saveInbox(me.id, loadInbox(me.id).filter(x => !(x.roomId===roomId)));
   renderInbox();
 
-  // refresh current room
-  const peer = getSession();
-  if(peer){
-    const r = loadRoom(me, peer);
-    updateRoomHeader(peer, !!r.accepted);
-    renderChat(r);
+  // broadcast join + add system message (ephemeral)
+  const msgs = loadMsgs(roomId);
+  msgs.push({ type:"sys", text:`${me.name} katıldı. Kazan kızışıyor 🙂`, at: Date.now() });
+  saveMsgs(roomId, msgs);
+
+  // notify others
+  broadcast(roomId, { kind:"joined", user:{ id: me.id, name: me.name } });
+
+  openRoom(roomId);
+  toast("Onayladın. Hadi yaz bakalım 🙂");
+}
+
+function rejectInvite(inv){
+  const me = getUser();
+  saveInbox(me.id, loadInbox(me.id).filter(x => !(x.roomId===inv.roomId)));
+  renderInbox();
+  toast("Reddettin. Kazanı soğuttun evladım 🙂");
+}
+
+/* =========================================================
+   Room open / close / leave
+========================================================= */
+function closeBC(){
+  try{ bc?.close?.(); }catch{}
+  bc = null;
+}
+
+function openRoom(roomId){
+  // open BroadcastChannel
+  closeBC();
+  bc = new BroadcastChannel(bcName(roomId));
+  bc.onmessage = (ev)=> onBC(roomId, ev.data);
+
+  // render
+  renderChat(roomId);
+  updateRoomHeaderRoom(roomId);
+}
+
+function updateRoomHeaderRoom(roomId){
+  const meta = loadRoomMeta(roomId);
+  setHeader(meta);
+}
+
+function broadcast(roomId, payload){
+  try{
+    const c = new BroadcastChannel(bcName(roomId));
+    c.postMessage(payload);
+    c.close();
+  }catch{}
+}
+
+function leaveRoom(){
+  const me = getUser();
+  const roomId = getMyRoom(me.id);
+  if(!roomId) return toast("Evladım zaten odada değilsin.");
+
+  const meta = loadRoomMeta(roomId);
+  if(meta){
+    meta.members = (meta.members||[]).filter(m => m.id !== me.id);
+    saveRoomMeta(roomId, meta);
+
+    // system message local
+    const msgs = loadMsgs(roomId);
+    msgs.push({ type:"sys", text:`${me.name} ayrıldı.`, at: Date.now() });
+    saveMsgs(roomId, msgs);
+
+    // notify others
+    broadcast(roomId, { kind:"left", user:{ id: me.id, name: me.name } });
+
+    // if room empty => close for all
+    if(meta.members.length === 0){
+      meta.open = false;
+      saveRoomMeta(roomId, meta);
+      broadcast(roomId, { kind:"closed" });
+    }
+  }
+
+  // clear my session
+  sessionStorage.removeItem(roomMsgKey(roomId));
+  setMyRoom(me.id, "");
+  closeBC();
+  renderChat("");
+  toast("Ayrıldın evladım.");
+}
+
+/* =========================================================
+   Message send (text only)
+========================================================= */
+function sendText(){
+  const me = getUser();
+  const roomId = getMyRoom(me.id);
+  if(!roomId) return toast("Evladım önce odaya gir.");
+
+  const meta = loadRoomMeta(roomId);
+  if(!meta || !meta.open) return toast("Evladım oda kapalı.");
+
+  const txt = String($("msg").value||"").trim();
+  if(!txt) return;
+
+  $("msg").value = "";
+  autoGrow();
+
+  const msgs = loadMsgs(roomId);
+  msgs.push({ type:"msg", fromId: me.id, fromName: me.name, text: txt, at: Date.now() });
+
+  // Kaynana local only (checkbox)
+  if($("kaynanaOn").checked){
+    const ktxt = kaynanaComment(me.sp, txt);
+    msgs.push({ type:"kaynana", fromId:"k", fromName:"Kaynana", text: ktxt, at: Date.now() });
+  }
+
+  saveMsgs(roomId, msgs);
+  renderChat(roomId);
+
+  // broadcast only the user msg (NOT kaynana)
+  broadcast(roomId, { kind:"msg", msg:{ type:"msg", fromId: me.id, fromName: me.name, text: txt, at: Date.now() } });
+}
+
+/* =========================================================
+   BroadcastChannel receive
+========================================================= */
+function onBC(roomId, data){
+  if(!data) return;
+
+  const me = getUser();
+
+  if(data.kind === "msg"){
+    // store only normal messages
+    const msgs = loadMsgs(roomId);
+    // prevent duplicate (same timestamp+from+text)
+    const exists = msgs.some(m => m.type==="msg" && m.fromId===data.msg.fromId && m.at===data.msg.at && m.text===data.msg.text);
+    if(!exists){
+      msgs.push(data.msg);
+      saveMsgs(roomId, msgs);
+    }
+    renderChat(roomId);
+    return;
+  }
+
+  if(data.kind === "joined"){
+    // update meta
+    const meta = loadRoomMeta(roomId);
+    if(meta){
+      const ex = meta.members.some(x => x.id === data.user.id);
+      if(!ex){
+        if(meta.members.length < 10){
+          meta.members.push({ id: data.user.id, name: data.user.name });
+          saveRoomMeta(roomId, meta);
+        }
+      }
+    }
+    const msgs = loadMsgs(roomId);
+    msgs.push({ type:"sys", text:`${data.user.name} katıldı.`, at: Date.now() });
+    saveMsgs(roomId, msgs);
+    updateRoomHeaderRoom(roomId);
+    renderChat(roomId);
+    return;
+  }
+
+  if(data.kind === "left"){
+    const meta = loadRoomMeta(roomId);
+    if(meta){
+      meta.members = (meta.members||[]).filter(m => m.id !== data.user.id);
+      saveRoomMeta(roomId, meta);
+    }
+    const msgs = loadMsgs(roomId);
+    msgs.push({ type:"sys", text:`${data.user.name} ayrıldı.`, at: Date.now() });
+    saveMsgs(roomId, msgs);
+    updateRoomHeaderRoom(roomId);
+    renderChat(roomId);
+    return;
+  }
+
+  if(data.kind === "closed"){
+    // clear everything
+    const meta = loadRoomMeta(roomId);
+    if(meta){
+      meta.open = false;
+      saveRoomMeta(roomId, meta);
+    }
+    sessionStorage.removeItem(roomMsgKey(roomId));
+    setMyRoom(me.id, "");
+    closeBC();
+    renderChat("");
+    toast("Kazan kapandı evladım. Mesajlar uçtu 🙂");
+    return;
   }
 }
 
-/* -------------------------------------------------
+/* =========================================================
+   Mic -> textarea (no autosend)
+========================================================= */
+let rec = null;
+let listening = false;
+
+function setMic(on){
+  listening = !!on;
+  $("micBtn")?.classList.toggle("listening", listening);
+}
+
+function startMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    toast("Bu cihaz mikrofondan yazıya çevirmiyor evladım.");
+    return;
+  }
+  stopMic();
+
+  rec = new SR();
+  rec.lang = "tr-TR";
+  rec.interimResults = false;
+  rec.continuous = true;
+
+  setMic(true);
+
+  rec.onresult = (e)=>{
+    let chunk = "";
+    for(let i=e.resultIndex; i<e.results.length; i++){
+      const t = e.results[i]?.[0]?.transcript || "";
+      chunk += t + " ";
+    }
+    chunk = chunk.trim();
+    if(!chunk) return;
+
+    const ta = $("msg");
+    ta.value = (ta.value ? ta.value + " " : "") + chunk;
+    autoGrow();
+  };
+
+  rec.onerror = ()=> toast("Mikrofon bir durdu evladım. Tekrar dene.");
+  rec.onend = ()=>{
+    // user mic açıkken bazen kendiliğinden kapanır → tekrar aç
+    if(listening){
+      try{ rec.start(); }catch{}
+    }
+  };
+
+  try{ rec.start(); }catch{ toast("Mikrofon açılamadı evladım (HTTPS/izin)."); stopMic(); }
+}
+
+function stopMic(){
+  try{ rec?.stop?.(); }catch{}
+  rec = null;
+  setMic(false);
+}
+
+function toggleMic(){
+  if(listening) stopMic();
+  else startMic();
+}
+
+/* =========================================================
+   Inbox polling (localStorage)
+========================================================= */
+function pollInbox(){
+  renderInbox();
+}
+
+/* =========================================================
    Boot
-------------------------------------------------- */
+========================================================= */
 document.addEventListener("DOMContentLoaded", ()=>{
   const token = (localStorage.getItem("google_id_token") || "").trim();
   if(!token){ location.href="/index.html"; return; }
@@ -412,32 +589,45 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   syncTopUI();
 
+  // actions
   $("btnInvite")?.addEventListener("click", ()=> sendInvite($("peerId").value));
-  $("btnRefresh")?.addEventListener("click", ()=> poll());
+  $("btnRefresh")?.addEventListener("click", ()=> pollInbox());
+  $("btnLeave")?.addEventListener("click", ()=> leaveRoom());
 
-  $("send")?.addEventListener("click", sendMessage);
+  $("send")?.addEventListener("click", sendText);
   $("msg")?.addEventListener("input", autoGrow);
   $("msg")?.addEventListener("keydown", (e)=>{
     if(e.key==="Enter" && !e.shiftKey){
       e.preventDefault();
-      sendMessage();
+      sendText();
     }
   });
 
-  // restore session
-  const peer = getSession();
-  if(peer){
-    const r = loadRoom(getMe(), peer);
-    updateRoomHeader(peer, !!r.accepted);
-    renderChat(r);
+  $("micBtn")?.addEventListener("click", toggleMic);
+
+  // restore room
+  const me = getUser();
+  const roomId = getMyRoom(me.id);
+  if(roomId){
+    openRoom(roomId);
   }else{
-    updateRoomHeader("", false);
-    renderChat({ accepted:false, messages:[] });
+    renderChat("");
   }
 
+  // inbox render
   renderInbox();
   autoGrow();
 
-  // poll every 2s (demo)
-  setInterval(poll, 2000);
+  // poll every 2s
+  setInterval(pollInbox, 2000);
+
+  // best-effort leave on close
+  window.addEventListener("beforeunload", ()=>{
+    try{
+      if(getMyRoom(getUser().id)){
+        // attempt to broadcast leave (may not complete)
+        leaveRoom();
+      }
+    }catch{}
+  });
 });
