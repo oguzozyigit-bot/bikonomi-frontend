@@ -59,10 +59,7 @@ function addMenuItem(root, ico, label, href){
   root.appendChild(div);
 }
 
-/* ✅ Takım adını toleranslı oku:
-   - user.team (ideal)
-   - user.meta.team / profile_v2.team gibi alternatifler (bazı sürümlerde)
-*/
+/* ✅ Takım adını toleranslı oku */
 function readTeamName(){
   try{
     const u = getProfile();
@@ -71,7 +68,6 @@ function readTeamName(){
     const t3 = String(u.favorite_team || "").trim();
     if(t1 || t2 || t3) return (t1 || t2 || t3);
 
-    // profil meta v2 (senin profil sayfan local meta da yazıyor olabilir)
     const meta = JSON.parse(localStorage.getItem("caynana_profile_v2") || "{}");
     const mt = String(meta.team || meta.takim || "").trim();
     return mt || "";
@@ -98,10 +94,13 @@ function renderMenusFresh(){
     addMenuItem(asistan, "💬", "Sohbet", "/pages/chat.html");
     addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/alisveris.html");
 
-    // ✅ TERCÜMAN
+    // ✅ Tercüman
     addMenuItem(asistan, "🌍", "Tercüman", "/pages/translate.html");
 
-    // ✅ İSTEDİĞİN: Tercüman'ın hemen altına
+    // ✅ Teacher butonu (İSTEDİĞİN)
+    addMenuItem(asistan, "🎓", "Dil Öğren (Teacher)", "/pages/teacher.html");
+
+    // ✅ Fotoğraftan çeviri
     addMenuItem(asistan, "📷", "Fotoğraftan Çeviri", "/pages/ocr_translate.html");
 
     addMenuItem(asistan, "🗣️", "Dedikodu Kazanı", "/pages/gossip.html");
@@ -114,7 +113,7 @@ function renderMenusFresh(){
       addMenuItem(asistan, "🩸", "Regl Takip", "/pages/regl.html");
     }
 
-    // ✅ HER ZAMAN VAR: takım yoksa "Takım Bildirimleri", varsa takım adı
+    // ✅ takım butonu her zaman
     const teamName = readTeamName();
     addMenuItem(asistan, "⚽", (teamName || "Takım Bildirimleri"), "/pages/clup.html");
   }
@@ -210,7 +209,7 @@ export function initMenuHistoryUI(){
       try{ ChatStore.init(); }catch{}
       paintProfileShortcut();
       renderHistory();
-      renderMenusFresh(); // ✅ team değişebilir
+      renderMenusFresh();
     });
   }
 }
