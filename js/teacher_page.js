@@ -1,10 +1,10 @@
 // FILE: /js/teacher_page.js
-// FINAL (No exam button)
-// - "1. Ders" göster
+// FINAL (mic press required)
 // - Teacher says word ONCE (native, rate=1.0)
-// - After teacher speaks => auto start listening (student does NOT need to tap mic)
-// - Skip exists; skipped words come back before lesson ends
-// - Big green tick + "Congratulations!" 2s on correct
+// - Student must press mic to answer (avoids auto-start errors)
+// - Correct => green tick + "Congratulations!" 2s => next word
+// - Wrong => teacher repeats once, student tries again
+// - Skip exists; skipped words return before lesson ends
 
 const $ = (id)=>document.getElementById(id);
 
@@ -14,7 +14,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 1800);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1700);
 }
 
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
@@ -98,7 +98,7 @@ const LESSON = [
   { tr:"bugün", en:"today" },
 ];
 
-const STORE = "caynana_teacher_lesson1_v1";
+const STORE = "caynana_teacher_lesson1_v2";
 
 const state = (()=>{
   let s = {};
@@ -124,12 +124,10 @@ function save(){
   }catch{}
 }
 
-function remainingIndices(){
-  const out = [];
-  for(let i=0;i<LESSON.length;i++){
-    if(!state.learned[i]) out.push(i);
-  }
-  return out;
+function remainingCount(){
+  let c = 0;
+  for(let i=0;i<LESSON.length;i++) if(!state.learned[i]) c++;
+  return c;
 }
 
 function pickNextIndex(){
@@ -137,11 +135,11 @@ function pickNextIndex(){
   for(let i=0;i<LESSON.length;i++){
     if(!state.learned[i] && !state.skipped[i]) return i;
   }
-  // Sonra atlananlardan dön
+  // Sonra atlananlar
   for(let i=0;i<LESSON.length;i++){
     if(!state.learned[i] && state.skipped[i]) return i;
   }
-  return null; // hepsi bitti
+  return null;
 }
 
 function cur(){
@@ -152,8 +150,6 @@ function updateUI(){
   const item = cur();
   $("wTarget").textContent = item.en;
   $("repeatTxt").textContent = item.en;
-
-  // ✅ Türkçeyi daha büyük yaz (teacher.html’de CSS ile büyütebilirsin)
   $("wTr").textContent = `Türkçesi: ${item.tr}`;
 
   const done = Object.keys(state.learned).length;
@@ -166,7 +162,8 @@ function updateUI(){
   $("resultMsg").className = "status";
   $("scoreTop").textContent = "—";
   $("teacherStatus").textContent = "—";
-  $("studentTop").textContent = "Dinleyeceğim… sen tekrar et.";
+
+  $("studentTop").textContent = "Mikrofona bas ve söyle.";
 }
 
 async function showCongrats(){
@@ -177,22 +174,49 @@ async function showCongrats(){
   el.classList.remove("show");
 }
 
-async function teacherSpeakAndListen(){
-  if(state.speaking || state.listening) return;
-
-  const item = cur();
+async function teacherSpeak(){
+  if(state.speaking) return;
   state.speaking = true;
   $("teacherStatus").textContent = "🔊";
-  await speakOnce(item.en, state.lang);
+  await speakOnce(cur().en, state.lang);
   $("teacherStatus").textContent = "—";
   state.speaking = false;
+}
 
-  // ✅ konuşma biter bitmez otomatik dinle
-  await startListen();
+async function correctFlow(score){
+  $("resultMsg").textContent = "Doğru ✅";
+  $("resultMsg").className = "status ok";
+  $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
+
+  await showCongrats();
+
+  state.learned[state.pos] = true;
+  delete state.skipped[state.pos];
+  save();
+
+  const next = pickNextIndex();
+  if(next === null){
+    toast("Tebrikler! 1. Ders bitti.");
+    $("studentTop").textContent = "Ders bitti.";
+    return;
+  }
+
+  state.pos = next;
+  save();
+  updateUI();
+  await teacherSpeak();
+}
+
+async function wrongFlow(score){
+  $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
+  $("resultMsg").className = "status bad";
+  $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
+  toast("Tekrar et");
+  await teacherSpeak();
 }
 
 async function startListen(){
-  if(state.listening) return;
+  if(state.listening || state.speaking) return;
 
   const rec = makeRecognizer(state.lang);
   if(!rec){
@@ -202,6 +226,7 @@ async function startListen(){
 
   state.listening = true;
   $("btnMic")?.classList.add("listening");
+  $("studentTop").textContent = "Dinliyorum…";
 
   const expected = cur().en;
 
@@ -211,60 +236,30 @@ async function startListen(){
 
     state.listening = false;
     $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
 
     if(!heard.trim()){
-      toast("Duyamadım. Tekrar.");
-      await teacherSpeakAndListen();
+      toast("Duyamadım. Tekrar söyle.");
       return;
     }
 
     const sc = similarity(expected, heard);
-    $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
-
-    if(sc >= 0.92){
-      $("resultMsg").textContent = "Doğru ✅";
-      $("resultMsg").className = "status ok";
-
-      // ✅ büyük tik + congratulations
-      await showCongrats();
-
-      // learned
-      state.learned[state.pos] = true;
-      delete state.skipped[state.pos];
-      save();
-
-      const next = pickNextIndex();
-      if(next === null){
-        toast("Tebrikler! 1. Ders bitti.");
-        // burada sınav akışı daha sonra (sen sınav başlat butonu istemiyorsun)
-        // şimdilik ders bitti mesajı
-        return;
-      }
-
-      state.pos = next;
-      save();
-      updateUI();
-      await teacherSpeakAndListen();
-    }else{
-      $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
-      $("resultMsg").className = "status bad";
-      toast("Tekrar et");
-      await teacherSpeakAndListen();
-    }
+    if(sc >= 0.92) await correctFlow(sc);
+    else await wrongFlow(sc);
   };
 
-  rec.onerror = async ()=>{
+  rec.onerror = ()=>{
     state.listening = false;
     $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon hatası (izin/HTTPS).");
-    // tekrar dene
-    await teacherSpeakAndListen();
   };
 
   rec.onend = ()=>{
     if(state.listening){
       state.listening = false;
       $("btnMic")?.classList.remove("listening");
+      $("studentTop").textContent = "Mikrofona bas ve söyle.";
     }
   };
 
@@ -272,12 +267,12 @@ async function startListen(){
   catch{
     state.listening = false;
     $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon açılamadı.");
   }
 }
 
 function skip(){
-  // Atla: bu kelimeyi sona bırak
   state.skipped[state.pos] = true;
   save();
 
@@ -289,7 +284,7 @@ function skip(){
   state.pos = next;
   save();
   updateUI();
-  teacherSpeakAndListen();
+  teacherSpeak();
 }
 
 function bindOnce(){
@@ -302,26 +297,23 @@ function bindOnce(){
   });
 
   $("langSel")?.addEventListener("change", ()=>{
-    // Şimdilik sadece EN ders var. Dil seçimi UI dursun, sonra diğer dillerin 1. dersini ekleriz.
+    // Şimdilik 1. ders İngilizce
     toast("Şimdilik 1. ders İngilizce evladım.");
     $("langSel").value = "en";
   });
 
   $("btnSpeak")?.addEventListener("pointerdown", (e)=>{
     e.preventDefault(); e.stopPropagation();
-    teacherSpeakAndListen();
+    teacherSpeak();
   });
 
-  // mic button: zorunlu değil ama kullanıcı isterse yeniden dinletir
   $("btnMic")?.addEventListener("pointerdown", (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if(state.listening || state.speaking) return;
     startListen();
   });
 
   $("btnSkip")?.addEventListener("pointerdown", (e)=>{
     e.preventDefault(); e.stopPropagation();
-    if(state.listening || state.speaking) return;
     skip();
   });
 }
@@ -329,13 +321,11 @@ function bindOnce(){
 document.addEventListener("DOMContentLoaded", async ()=>{
   bindOnce();
 
-  // İlk açılışta pos geçersizse düzelt
-  const rem = remainingIndices();
-  if(rem.length && !rem.includes(state.pos)) state.pos = rem[0];
-  if(rem.length === 0) state.pos = 0;
+  // İlk açılış düzelt
+  const next = pickNextIndex();
+  if(next !== null) state.pos = next;
+  save();
 
   updateUI();
-
-  // Otomatik başlat: öğretmen söyler → dinler
-  await teacherSpeakAndListen();
+  await teacherSpeak();
 });
