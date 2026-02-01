@@ -1,10 +1,15 @@
 // FILE: /js/teacher_page.js
-// FINAL (mic press required)
-// - Teacher says word ONCE (native, rate=1.0)
-// - Student must press mic to answer (avoids auto-start errors)
-// - Correct => green tick + "Congratulations!" 2s => next word
-// - Wrong => teacher repeats once, student tries again
-// - Skip exists; skipped words return before lesson ends
+// FINAL v21
+// - lang from URL: ?lang=en|de|fr|it
+// - Lesson: 20 items
+// - PASS-TO-EXAM threshold: 18/20 learned (baraj)
+// - Skipped words return before reaching baraj
+// - Correct => bigCheck 2s => next
+// - Lesson end/baraj reached => confirm Yes/No for exam
+// - Exam: 10 Q, pass >=8
+// - Fail: ask retry Yes/No, if No => exam pending
+// - 3rd fail => reset lesson w/ motivational message
+// - Emoji visuals for A1 where available
 
 const $ = (id)=>document.getElementById(id);
 
@@ -14,10 +19,18 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 1700);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1800);
 }
 
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
+const LANG_LABEL = { en:"🇬🇧 İngilizce Öğren", de:"🇩🇪 Almanca Öğren", fr:"🇫🇷 Fransızca Öğren", it:"🇮🇹 İtalyanca Öğren" };
+
+function getLang(){
+  const u = new URL(location.href);
+  const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
+  return ["en","de","fr","it"].includes(q) ? q : "en";
+}
+const lang = getLang();
 
 function norm(s){
   return String(s||"")
@@ -53,7 +66,7 @@ function speakOnce(word, lang){
       window.speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(String(word||""));
       u.lang = LOCALES[lang] || "en-US";
-      u.rate = 1.0;   // ✅ sabit
+      u.rate = 1.0;
       u.pitch = 1.0;
       u.onend = ()=> resolve(true);
       u.onerror = ()=> resolve(false);
@@ -74,167 +87,295 @@ function makeRecognizer(lang){
   return rec;
 }
 
-/* 1. Ders = 20 kelime (EN) */
-const LESSON = [
-  { tr:"elma", en:"apple" },
-  { tr:"su", en:"water" },
-  { tr:"ekmek", en:"bread" },
-  { tr:"menü", en:"menu" },
-  { tr:"fiyat", en:"price" },
-  { tr:"evet", en:"yes" },
-  { tr:"hayır", en:"no" },
-  { tr:"merhaba", en:"hello" },
-  { tr:"güle güle", en:"goodbye" },
-  { tr:"teşekkürler", en:"thank you" },
-  { tr:"lütfen", en:"please" },
-  { tr:"affedersiniz", en:"excuse me" },
-  { tr:"anlamıyorum", en:"i don't understand" },
-  { tr:"yardım", en:"help" },
-  { tr:"tuvalet", en:"toilet" },
-  { tr:"hesap", en:"the bill" },
-  { tr:"çok güzel", en:"very good" },
-  { tr:"sıcak", en:"hot" },
-  { tr:"soğuk", en:"cold" },
-  { tr:"bugün", en:"today" },
-];
+/* A1 – Lesson 1 (20) + emoji/ikon */
+const LESSON1 = {
+  en: [
+    { tr:"elma", t:"apple", em:"🍎" },
+    { tr:"su", t:"water", em:"💧" },
+    { tr:"ekmek", t:"bread", em:"🍞" },
+    { tr:"menü", t:"menu", em:"📜" },
+    { tr:"fiyat", t:"price", em:"🏷️" },
+    { tr:"evet", t:"yes", em:"✅" },
+    { tr:"hayır", t:"no", em:"❌" },
+    { tr:"merhaba", t:"hello", em:"👋" },
+    { tr:"güle güle", t:"goodbye", em:"👋" },
+    { tr:"teşekkürler", t:"thank you", em:"🙏" },
+    { tr:"lütfen", t:"please", em:"🤝" },
+    { tr:"affedersiniz", t:"excuse me", em:"🙋" },
+    { tr:"anlamıyorum", t:"i don't understand", em:"🤷" },
+    { tr:"yardım", t:"help", em:"🆘" },
+    { tr:"tuvalet", t:"toilet", em:"🚻" },
+    { tr:"hesap", t:"the bill", em:"🧾" },
+    { tr:"çok güzel", t:"very good", em:"🌟" },
+    { tr:"sıcak", t:"hot", em:"🔥" },
+    { tr:"soğuk", t:"cold", em:"❄️" },
+    { tr:"bugün", t:"today", em:"📅" },
+  ],
+  de: [
+    { tr:"elma", t:"apfel", em:"🍎" }, { tr:"su", t:"wasser", em:"💧" }, { tr:"ekmek", t:"brot", em:"🍞" }, { tr:"menü", t:"speisekarte", em:"📜" }, { tr:"fiyat", t:"preis", em:"🏷️" },
+    { tr:"evet", t:"ja", em:"✅" }, { tr:"hayır", t:"nein", em:"❌" }, { tr:"merhaba", t:"hallo", em:"👋" }, { tr:"güle güle", t:"tschüss", em:"👋" }, { tr:"teşekkürler", t:"danke", em:"🙏" },
+    { tr:"lütfen", t:"bitte", em:"🤝" }, { tr:"affedersiniz", t:"entschuldigung", em:"🙋" }, { tr:"anlamıyorum", t:"ich verstehe nicht", em:"🤷" }, { tr:"yardım", t:"hilfe", em:"🆘" }, { tr:"tuvalet", t:"toilette", em:"🚻" },
+    { tr:"hesap", t:"die rechnung", em:"🧾" }, { tr:"çok güzel", t:"sehr gut", em:"🌟" }, { tr:"sıcak", t:"heiß", em:"🔥" }, { tr:"soğuk", t:"kalt", em:"❄️" }, { tr:"bugün", t:"heute", em:"📅" },
+  ],
+  fr: [
+    { tr:"elma", t:"pomme", em:"🍎" }, { tr:"su", t:"eau", em:"💧" }, { tr:"ekmek", t:"pain", em:"🍞" }, { tr:"menü", t:"menu", em:"📜" }, { tr:"fiyat", t:"prix", em:"🏷️" },
+    { tr:"evet", t:"oui", em:"✅" }, { tr:"hayır", t:"non", em:"❌" }, { tr:"merhaba", t:"bonjour", em:"👋" }, { tr:"güle güle", t:"au revoir", em:"👋" }, { tr:"teşekkürler", t:"merci", em:"🙏" },
+    { tr:"lütfen", t:"s'il vous plaît", em:"🤝" }, { tr:"affedersiniz", t:"excusez-moi", em:"🙋" }, { tr:"anlamıyorum", t:"je ne comprends pas", em:"🤷" }, { tr:"yardım", t:"aide", em:"🆘" }, { tr:"tuvalet", t:"toilettes", em:"🚻" },
+    { tr:"hesap", t:"l'addition", em:"🧾" }, { tr:"çok güzel", t:"très bien", em:"🌟" }, { tr:"sıcak", t:"chaud", em:"🔥" }, { tr:"soğuk", t:"froid", em:"❄️" }, { tr:"bugün", t:"aujourd'hui", em:"📅" },
+  ],
+  it: [
+    { tr:"elma", t:"mela", em:"🍎" }, { tr:"su", t:"acqua", em:"💧" }, { tr:"ekmek", t:"pane", em:"🍞" }, { tr:"menü", t:"menu", em:"📜" }, { tr:"fiyat", t:"prezzo", em:"🏷️" },
+    { tr:"evet", t:"sì", em:"✅" }, { tr:"hayır", t:"no", em:"❌" }, { tr:"merhaba", t:"ciao", em:"👋" }, { tr:"güle güle", t:"arrivederci", em:"👋" }, { tr:"teşekkürler", t:"grazie", em:"🙏" },
+    { tr:"lütfen", t:"per favore", em:"🤝" }, { tr:"affedersiniz", t:"scusi", em:"🙋" }, { tr:"anlamıyorum", t:"non capisco", em:"🤷" }, { tr:"yardım", t:"aiuto", em:"🆘" }, { tr:"tuvalet", t:"bagno", em:"🚻" },
+    { tr:"hesap", t:"il conto", em:"🧾" }, { tr:"çok güzel", t:"molto bene", em:"🌟" }, { tr:"sıcak", t:"caldo", em:"🔥" }, { tr:"soğuk", t:"freddo", em:"❄️" }, { tr:"bugün", t:"oggi", em:"📅" },
+  ],
+};
 
-const STORE = "caynana_teacher_lesson1_v2";
+const STORE = `caynana_teacher_${lang}_lesson1_v2`;
 
-const state = (()=>{
-  let s = {};
-  try{ s = JSON.parse(localStorage.getItem(STORE) || "{}"); }catch{}
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STORE) || "{}"); }catch{ return {}; }
+}
+function saveState(s){
+  try{ localStorage.setItem(STORE, JSON.stringify(s||{})); }catch{}
+}
+
+const S = (() => {
+  const x = loadState();
   return {
-    lang: "en",
-    pos: Number.isInteger(s.pos) ? s.pos : 0,
-    learned: s.learned || {},   // index -> true
-    skipped: s.skipped || {},   // index -> true
-    speaking: false,
-    listening: false,
-    bound: false
+    pos: Number.isInteger(x.pos) ? x.pos : 0,
+    learned: x.learned || {},      // index->true
+    skipped: x.skipped || {},      // index->true
+    exam: x.exam || { pending:false, failCount:0, q:[], qi:0, score:0 },
+    speaking:false,
+    listening:false,
+    bound:false
   };
 })();
 
-function save(){
-  try{
-    localStorage.setItem(STORE, JSON.stringify({
-      pos: state.pos,
-      learned: state.learned,
-      skipped: state.skipped
-    }));
-  }catch{}
-}
+function lesson(){ return LESSON1[lang] || LESSON1.en; }
+function total(){ return lesson().length; }
+function cur(){ return lesson()[S.pos]; }
+function learnedCount(){ return Object.keys(S.learned).length; }
 
-function remainingCount(){
-  let c = 0;
-  for(let i=0;i<LESSON.length;i++) if(!state.learned[i]) c++;
-  return c;
+const EXAM_GATE = 18;   // ✅ 18/20 baraj
+const EXAM_Q = 10;
+const EXAM_PASS = 8;
+
+function persist(){
+  saveState({ pos:S.pos, learned:S.learned, skipped:S.skipped, exam:S.exam });
 }
 
 function pickNextIndex(){
-  // Önce öğrenilmemiş ama atlanmamış
-  for(let i=0;i<LESSON.length;i++){
-    if(!state.learned[i] && !state.skipped[i]) return i;
+  // not learned, not skipped
+  for(let i=0;i<total();i++){
+    if(!S.learned[i] && !S.skipped[i]) return i;
   }
-  // Sonra atlananlar
-  for(let i=0;i<LESSON.length;i++){
-    if(!state.learned[i] && state.skipped[i]) return i;
+  // then skipped
+  for(let i=0;i<total();i++){
+    if(!S.learned[i] && S.skipped[i]) return i;
   }
   return null;
 }
 
-function cur(){
-  return LESSON[state.pos];
+function setMeaningText(){
+  const item = cur();
+  // Türkçeyi daha büyük: HTML’de zaten büyük, burada emoji ekleyelim
+  const em = item.em ? `${item.em} ` : "";
+  $("wTr").textContent = `Türkçesi: ${em}${item.tr}`;
 }
 
 function updateUI(){
-  const item = cur();
-  $("wTarget").textContent = item.en;
-  $("repeatTxt").textContent = item.en;
-  $("wTr").textContent = `Türkçesi: ${item.tr}`;
+  $("langPill").textContent = LANG_LABEL[lang] || "Teacher";
+  $("wTarget").textContent = cur().t;
+  $("repeatTxt").textContent = cur().t;
 
-  const done = Object.keys(state.learned).length;
+  setMeaningText();
+
+  const done = learnedCount();
   $("lessonInfo").textContent = `1. Ders • ${done}/20`;
-  $("modeInfo").textContent = "Ders";
-  $("progBar").style.width = `${Math.round((done/20)*100)}%`;
+  $("modeInfo").textContent = (S.exam?.pending ? "Sınav" : "Ders");
+  $("progBar").style.width = `${Math.round((done/total())*100)}%`;
 
   $("heardBox").textContent = "Söylediğin burada görünecek…";
   $("resultMsg").textContent = "—";
   $("resultMsg").className = "status";
   $("scoreTop").textContent = "—";
   $("teacherStatus").textContent = "—";
-
   $("studentTop").textContent = "Mikrofona bas ve söyle.";
 }
 
 async function showCongrats(){
   const el = $("bigCheck");
-  if(!el) return;
   el.classList.add("show");
   await new Promise(r=>setTimeout(r, 2000));
   el.classList.remove("show");
 }
 
 async function teacherSpeak(){
-  if(state.speaking) return;
-  state.speaking = true;
+  if(S.speaking) return;
+  S.speaking = true;
   $("teacherStatus").textContent = "🔊";
-  await speakOnce(cur().en, state.lang);
+  await speakOnce(cur().t, lang);
   $("teacherStatus").textContent = "—";
-  state.speaking = false;
+  S.speaking = false;
 }
 
-async function correctFlow(score){
-  $("resultMsg").textContent = "Doğru ✅";
-  $("resultMsg").className = "status ok";
-  $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
+function askExamReady(){
+  const ok = confirm("Ders bitti. Sınava hazır mısın? (Yes/No)");
+  if(ok){
+    startExam(true);
+  }else{
+    S.exam.pending = true;
+    persist();
+    toast("Sınav beklemede.");
+  }
+}
 
-  await showCongrats();
+function buildExamQuestions(){
+  // 10 random question indices from full 20
+  const pool = [...Array(total()).keys()];
+  const q = [];
+  while(pool.length && q.length < EXAM_Q){
+    const k = Math.floor(Math.random()*pool.length);
+    q.push(pool.splice(k,1)[0]);
+  }
+  return q;
+}
 
-  state.learned[state.pos] = true;
-  delete state.skipped[state.pos];
-  save();
+function startExam(reset){
+  if(reset){
+    S.exam.q = buildExamQuestions();
+    S.exam.qi = 0;
+    S.exam.score = 0;
+  }
+  S.exam.pending = true;
+  persist();
+  showExamQuestion();
+}
 
-  const next = pickNextIndex();
-  if(next === null){
-    toast("Tebrikler! 1. Ders bitti.");
-    $("studentTop").textContent = "Ders bitti.";
+function showExamQuestion(){
+  const qi = S.exam.qi || 0;
+  const idx = S.exam.q[qi];
+  const item = lesson()[idx];
+
+  $("modeInfo").textContent = `Sınav ${qi+1}/${EXAM_Q}`;
+  $("lessonInfo").textContent = `Skor ${S.exam.score}/${EXAM_Q}`;
+
+  $("wTarget").textContent = item.t;
+  $("repeatTxt").textContent = item.t;
+
+  // meaning with emoji
+  const em = item.em ? `${item.em} ` : "";
+  $("wTr").textContent = `Türkçesi: ${em}${item.tr}`;
+
+  $("heardBox").textContent = "Söylediğin burada görünecek…";
+  $("resultMsg").textContent = "Sınav: doğru söyle.";
+  $("resultMsg").className = "status";
+  $("scoreTop").textContent = "—";
+  $("teacherStatus").textContent = "—";
+
+  persist();
+}
+
+async function finishExam(){
+  const score = S.exam.score || 0;
+
+  if(score >= EXAM_PASS){
+    alert("🎉 Tebrikler! Bu dersten geçtin.");
+    localStorage.setItem(`caynana_teacher_${lang}_lesson1_passed`, "1");
+    // Ders 2'yi ekleyince buradan yöneteceğiz; şimdilik bu ders state'ini sıfırlayıp bırakıyoruz
+    localStorage.removeItem(STORE);
+    location.reload();
     return;
   }
 
-  state.pos = next;
-  save();
-  updateUI();
-  await teacherSpeak();
+  S.exam.failCount = (S.exam.failCount || 0) + 1;
+  persist();
+
+  if(S.exam.failCount >= 3){
+    alert(
+      "Üzgünüm… Bu dersten kaldın.\n\n" +
+      "Ama sorun değil evladım.\n" +
+      "Sen zeki bir çocuksun.\n" +
+      "Sadece biraz daha konsantre olacağız.\n\n" +
+      "Dersi yeniden öğreneceğiz."
+    );
+    // reset everything
+    S.pos = 0;
+    S.learned = {};
+    S.skipped = {};
+    S.exam = { pending:false, failCount:0, q:[], qi:0, score:0 };
+    persist();
+    updateUI();
+    await teacherSpeak();
+    return;
+  }
+
+  const again = confirm(
+    "Üzgünüz, sınavı geçemedin.\n" +
+    "Sınavı geçmeden ilerleyemezsin.\n\n" +
+    "Tekrar sınava girmek ister misin? (Yes/No)"
+  );
+
+  if(again){
+    startExam(true);
+  }else{
+    // keep pending & resume later
+    S.exam.pending = true;
+    persist();
+    toast("Sınav beklemede.");
+  }
 }
 
-async function wrongFlow(score){
-  $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
-  $("resultMsg").className = "status bad";
-  $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
-  toast("Tekrar et");
-  await teacherSpeak();
+async function handleExamAnswer(heard){
+  const qi = S.exam.qi || 0;
+  const idx = S.exam.q[qi];
+  const expected = lesson()[idx].t;
+
+  const sc = similarity(expected, heard);
+  $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
+
+  if(sc >= 0.92){
+    S.exam.score++;
+    $("resultMsg").textContent = "Doğru ✅";
+    $("resultMsg").className = "status ok";
+  }else{
+    $("resultMsg").textContent = "Yanlış ❌";
+    $("resultMsg").className = "status bad";
+  }
+
+  S.exam.qi = qi + 1;
+  persist();
+
+  if(S.exam.qi >= EXAM_Q){
+    await finishExam();
+    return;
+  }
+
+  showExamQuestion();
 }
 
 async function startListen(){
-  if(state.listening || state.speaking) return;
+  if(S.listening || S.speaking) return;
 
-  const rec = makeRecognizer(state.lang);
+  const rec = makeRecognizer(lang);
   if(!rec){
     toast("Bu cihaz konuşmayı yazıya çevirmiyor.");
     return;
   }
 
-  state.listening = true;
+  S.listening = true;
   $("btnMic")?.classList.add("listening");
   $("studentTop").textContent = "Dinliyorum…";
 
-  const expected = cur().en;
+  const expected = (S.exam?.pending ? $("wTarget").textContent : cur().t);
 
   rec.onresult = async (e)=>{
     const heard = e.results?.[0]?.[0]?.transcript || "";
     $("heardBox").textContent = heard ? `Söyledin: ${heard}` : "Duyamadım…";
 
-    state.listening = false;
+    S.listening = false;
     $("btnMic")?.classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
 
@@ -243,21 +384,64 @@ async function startListen(){
       return;
     }
 
-    const sc = similarity(expected, heard);
-    if(sc >= 0.92) await correctFlow(sc);
-    else await wrongFlow(sc);
+    // EXAM mode if pending
+    if(S.exam?.pending){
+      await handleExamAnswer(heard);
+      return;
+    }
+
+    // LESSON mode
+    const sc = similarity(cur().t, heard);
+    $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
+
+    if(sc >= 0.92){
+      $("resultMsg").textContent = "Doğru ✅";
+      $("resultMsg").className = "status ok";
+
+      await showCongrats();
+
+      S.learned[S.pos] = true;
+      delete S.skipped[S.pos];
+      persist();
+
+      // gate logic (18/20)
+      const done = learnedCount();
+
+      if(done >= EXAM_GATE){
+        // Ask exam readiness
+        askExamReady();
+        return;
+      }
+
+      const next = pickNextIndex();
+      if(next === null){
+        // should not happen before 18, but safe
+        askExamReady();
+        return;
+      }
+
+      S.pos = next;
+      persist();
+      updateUI();
+      await teacherSpeak();
+    }else{
+      $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
+      $("resultMsg").className = "status bad";
+      toast("Tekrar et");
+      await teacherSpeak();
+    }
   };
 
   rec.onerror = ()=>{
-    state.listening = false;
+    S.listening = false;
     $("btnMic")?.classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon hatası (izin/HTTPS).");
   };
 
   rec.onend = ()=>{
-    if(state.listening){
-      state.listening = false;
+    if(S.listening){
+      S.listening = false;
       $("btnMic")?.classList.remove("listening");
       $("studentTop").textContent = "Mikrofona bas ve söyle.";
     }
@@ -265,7 +449,7 @@ async function startListen(){
 
   try{ rec.start(); }
   catch{
-    state.listening = false;
+    S.listening = false;
     $("btnMic")?.classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon açılamadı.");
@@ -273,33 +457,35 @@ async function startListen(){
 }
 
 function skip(){
-  state.skipped[state.pos] = true;
-  save();
+  if(S.exam?.pending){
+    toast("Sınavda atlama yok evladım.");
+    return;
+  }
+
+  S.skipped[S.pos] = true;
+  persist();
 
   const next = pickNextIndex();
   if(next === null){
-    toast("Atlayacak kelime kalmadı.");
+    // if somehow no next, check exam gate
+    if(learnedCount() >= EXAM_GATE) askExamReady();
+    else toast("Atlayacak kelime kalmadı.");
     return;
   }
-  state.pos = next;
-  save();
+
+  S.pos = next;
+  persist();
   updateUI();
   teacherSpeak();
 }
 
 function bindOnce(){
-  if(state.bound) return;
-  state.bound = true;
+  if(S.bound) return;
+  S.bound = true;
 
   $("backBtn")?.addEventListener("click", ()=>{
     if(history.length>1) history.back();
     else location.href = "/pages/chat.html";
-  });
-
-  $("langSel")?.addEventListener("change", ()=>{
-    // Şimdilik 1. ders İngilizce
-    toast("Şimdilik 1. ders İngilizce evladım.");
-    $("langSel").value = "en";
   });
 
   $("btnSpeak")?.addEventListener("pointerdown", (e)=>{
@@ -320,12 +506,16 @@ function bindOnce(){
 
 document.addEventListener("DOMContentLoaded", async ()=>{
   bindOnce();
-
-  // İlk açılış düzelt
-  const next = pickNextIndex();
-  if(next !== null) state.pos = next;
-  save();
-
   updateUI();
+
+  // If exam pending, ask to continue
+  if(S.exam?.pending){
+    const ok = confirm("Sınav bekliyor. Devam edelim mi? (Yes/No)");
+    if(ok) showExamQuestion();
+    else toast("Sınav beklemede.");
+    return;
+  }
+
+  // Normal: start by speaking
   await teacherSpeak();
 });
