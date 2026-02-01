@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <title>Duo Practice</title>
+  <link rel="icon" href="data:,"/>
+  <style>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;height:100dvh;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial}
+    body{background:#070812;color:#fff}
+    .wrap{width:100%;max-width:480px;height:100%;margin:0 auto;position:relative}
+    .back{position:absolute;top:12px;left:12px;z-index:9;width:46px;height:46px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.35);color:#fff;font-size:22px;font-weight:1000;display:flex;align-items:center;justify-content:center}
+    .split{position:absolute;inset:0;display:grid;grid-template-rows:1fr 1fr;gap:10px;padding:70px 12px 14px}
+    .pane{border-radius:26px;border:1px solid rgba(255,255,255,.12);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 28px 90px rgba(0,0,0,.6)}
+    .top{background:linear-gradient(180deg, rgba(40,120,255,.25), rgba(0,0,0,.2))}
+    .bot{background:linear-gradient(180deg, rgba(120,20,35,.75), rgba(0,0,0,.2));transform: rotate(180deg);}
+    .bar{padding:12px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.18)}
+    .title{font-weight:1000}
+    .score{font-weight:1000;opacity:.85}
+    .body{padding:14px;display:flex;flex-direction:column;gap:10px}
+    .word{font-size:26px;font-weight:1000}
+    .hint{opacity:.8;font-weight:900;font-size:12px}
+    .btnrow{padding:14px;display:flex;justify-content:center;gap:10px}
+    .btn{border:none;border-radius:18px;padding:12px 14px;font-weight:1000;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;min-width:120px}
+    .btn.primary{background:rgba(190,242,100,.18);border-color:rgba(190,242,100,.30)}
+    .btn:active{transform:translateY(1px)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <button class="back" id="backBtn">←</button>
+
+  <div class="split">
+    <section class="pane top">
+      <div class="bar">
+        <div class="title">Oyuncu A</div>
+        <div class="score" id="scoreA">0</div>
+      </div>
+      <div class="body">
+        <div class="word" id="wordA">—</div>
+        <div class="hint" id="hintA">Sıran sende. Tek hak.</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" id="micA">Söyle</button>
+      </div>
+    </section>
+
+    <section class="pane bot">
+      <div class="bar">
+        <div class="title">Oyuncu B</div>
+        <div class="score" id="scoreB">0</div>
+      </div>
+      <div class="body">
+        <div class="word" id="wordB">—</div>
+        <div class="hint" id="hintB">Sıran gelince konuş.</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" id="micB">Söyle</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script type="module" src="/js/teacher_duo.js?v=1"></script>
+</body>
+</html>
