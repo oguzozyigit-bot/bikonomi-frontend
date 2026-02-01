@@ -1,6 +1,7 @@
 // FILE: /js/menu_history_ui.js
 // ✅ Menüler her init'te sıfırlanır (tekrar yok)
 // ✅ Teacher AI bloğu DOM'a otomatik inject (HTML'e dokunmadan)
+// ✅ Teacher AI altında 4 dil + Duo Practice (lang parametreli)
 // ✅ Hatırlatıcı her zaman görünür
 // ✅ Takım butonu her zaman görünür (takım yoksa "Takım Bildirimleri", varsa takım adı)
 // ✅ Chat’e dokunmaz
@@ -95,7 +96,7 @@ function ensureTeacherBlock(){
   if(astroBlock) sidebar.insertBefore(block, astroBlock);
   else sidebar.appendChild(block);
 
-  // Teacher başlığının rengini hafif mavi/premium yapalım (style.css yoksa da idare eder)
+  // Head renk dokunuşu
   const head = block.querySelector(".block-head");
   if(head) head.style.color = "#7dd3fc";
 }
@@ -136,12 +137,15 @@ function renderMenusFresh(){
     addMenuItem(asistan, "⚽", (teamName || "Takım Bildirimleri"), "/pages/clup.html");
   }
 
-  /* ---- TEACHER AI (Dil ayrı butonlar) ---- */
+  /* ---- TEACHER AI (Dil ayrı butonlar + Duo) ---- */
   if(teacher){
     addMenuItem(teacher, "🇬🇧", "İngilizce Öğren", "/pages/teacher.html?lang=en");
     addMenuItem(teacher, "🇩🇪", "Almanca Öğren", "/pages/teacher.html?lang=de");
     addMenuItem(teacher, "🇫🇷", "Fransızca Öğren", "/pages/teacher.html?lang=fr");
     addMenuItem(teacher, "🇮🇹", "İtalyanca Öğren", "/pages/teacher.html?lang=it");
+
+    // ✅ Duo Practice (lang parametreli)
+    addMenuItem(teacher, "🆚", "Duo Practice (İkili Çalışma)", "/pages/teacher_duo.html?lang=en");
   }
 
   /* ---- ASTRO ---- */
