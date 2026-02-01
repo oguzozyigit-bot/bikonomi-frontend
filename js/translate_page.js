@@ -1,7 +1,16 @@
-// FILE: /js/translate_page.js
-// FINAL – Dropdown search + scroll hidden + favorites on top
+// FILE: /js/teacher_page.js
+// Teacher AI (per-language progress)
+// - Language from URL ?lang=en|de|fr|it
+// - 1. Ders: 20 kelime
+// - Speak: teacher says target ONCE (native) when user taps speaker
+// - Student must press mic to answer
+// - Correct => big green tick + Congratulations 2s => next remaining word
+// - Skip exists; skipped return before lesson ends
+// - Lesson done => ask "Ders bitti. Sınava hazır mısın? (Yes/No)"
+// - Exam: 10 questions, pass >= 8
+// - Fail: ask retry Yes/No; if No => keep exam pending and resume later
+// - 3rd fail => reset lesson + motivational text
 
-import { BASE_DOMAIN } from "/js/config.js";
 const $ = (id)=>document.getElementById(id);
 
 function toast(msg){
@@ -10,376 +19,494 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 2000);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1800);
 }
 
-function setWaveListening(on){
-  $("frameRoot")?.classList.toggle("listening", !!on);
+const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
+
+function getLang(){
+  const u = new URL(location.href);
+  const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
+  return ["en","de","fr","it"].includes(q) ? q : "en";
 }
 
-const SLOGAN_TR = "Yapay Zekânın Geleneksel Aklı";
-const SLOGAN_MAP = {
-  tr: SLOGAN_TR,
-  en: "The Traditional Mind of AI",
-  de: "Der traditionelle Verstand der KI",
-  fr: "L’esprit traditionnel de l’IA",
-  es: "La mente tradicional de la IA",
-  ar: "عقل الذكاء الاصطناعي التقليدي",
-  ru: "Традиционный разум ИИ"
-};
-const sloganFor = (code)=> SLOGAN_MAP[code] || SLOGAN_TR;
+const LANG_LABEL = { en:"🇬🇧 İngilizce Öğren", de:"🇩🇪 Almanca Öğren", fr:"🇫🇷 Fransızca Öğren", it:"🇮🇹 İtalyanca Öğren" };
 
-// ✅ En sık kullanılanlar en üstte (Türkçe birinci)
-const FAV = [
-  { code:"tr", name:"Türkçe", speech:"tr-TR", tts:"tr-TR" },
-  { code:"en", name:"İngilizce", speech:"en-US", tts:"en-US" },
-  { code:"de", name:"Almanca", speech:"de-DE", tts:"de-DE" },
-  { code:"fr", name:"Fransızca", speech:"fr-FR", tts:"fr-FR" },
-  { code:"es", name:"İspanyolca", speech:"es-ES", tts:"es-ES" },
-  { code:"it", name:"İtalyanca", speech:"it-IT", tts:"it-IT" },
-  { code:"ar", name:"Arapça", speech:"ar-SA", tts:"ar-SA" },
-  { code:"ru", name:"Rusça", speech:"ru-RU", tts:"ru-RU" },
-];
+function norm(s){
+  return String(s||"")
+    .toLowerCase()
+    .trim()
+    .replace(/[’']/g,"'")
+    .replace(/[.,!?;:]/g,"")
+    .replace(/\s+/g," ");
+}
 
-// ✅ Diğer diller (Türkçe adlarla)
-const OTHERS = [
-  { code:"en_gb", name:"İngilizce (UK)", speech:"en-GB", tts:"en-GB" },
-  { code:"pt", name:"Portekizce (BR)", speech:"pt-BR", tts:"pt-BR" },
-  { code:"pt_pt", name:"Portekizce (PT)", speech:"pt-PT", tts:"pt-PT" },
-  { code:"nl", name:"Hollandaca", speech:"nl-NL", tts:"nl-NL" },
-  { code:"sv", name:"İsveççe", speech:"sv-SE", tts:"sv-SE" },
-  { code:"no", name:"Norveççe", speech:"nb-NO", tts:"nb-NO" },
-  { code:"da", name:"Danca", speech:"da-DK", tts:"da-DK" },
-  { code:"fi", name:"Fince", speech:"fi-FI", tts:"fi-FI" },
-  { code:"pl", name:"Lehçe", speech:"pl-PL", tts:"pl-PL" },
-  { code:"cs", name:"Çekçe", speech:"cs-CZ", tts:"cs-CZ" },
-  { code:"sk", name:"Slovakça", speech:"sk-SK", tts:"sk-SK" },
-  { code:"hu", name:"Macarca", speech:"hu-HU", tts:"hu-HU" },
-  { code:"ro", name:"Romence", speech:"ro-RO", tts:"ro-RO" },
-  { code:"bg", name:"Bulgarca", speech:"bg-BG", tts:"bg-BG" },
-  { code:"el", name:"Yunanca", speech:"el-GR", tts:"el-GR" },
-  { code:"uk", name:"Ukraynaca", speech:"uk-UA", tts:"uk-UA" },
-  { code:"he", name:"İbranice", speech:"he-IL", tts:"he-IL" },
-  { code:"fa", name:"Farsça", speech:"fa-IR", tts:"fa-IR" },
-  { code:"hi", name:"Hintçe", speech:"hi-IN", tts:"hi-IN" },
-  { code:"ur", name:"Urduca", speech:"ur-PK", tts:"ur-PK" },
-  { code:"bn", name:"Bengalce", speech:"bn-BD", tts:"bn-BD" },
-  { code:"ta", name:"Tamilce", speech:"ta-IN", tts:"ta-IN" },
-  { code:"te", name:"Teluguca", speech:"te-IN", tts:"te-IN" },
-  { code:"mr", name:"Marathi", speech:"mr-IN", tts:"mr-IN" },
-  { code:"th", name:"Tayca", speech:"th-TH", tts:"th-TH" },
-  { code:"vi", name:"Vietnamca", speech:"vi-VN", tts:"vi-VN" },
-  { code:"id", name:"Endonezce", speech:"id-ID", tts:"id-ID" },
-  { code:"ms", name:"Malayca", speech:"ms-MY", tts:"ms-MY" },
-  { code:"tl", name:"Filipince", speech:"fil-PH", tts:"fil-PH" },
-  { code:"zh_cn", name:"Çince (Basitleştirilmiş)", speech:"zh-CN", tts:"zh-CN" },
-  { code:"zh_tw", name:"Çince (Geleneksel)", speech:"zh-TW", tts:"zh-TW" },
-  { code:"ja", name:"Japonca", speech:"ja-JP", tts:"ja-JP" },
-  { code:"ko", name:"Korece", speech:"ko-KR", tts:"ko-KR" },
-  { code:"af", name:"Afrikanca", speech:"af-ZA", tts:"af-ZA" },
-  { code:"sw", name:"Svahili", speech:"sw-KE", tts:"sw-KE" },
-  { code:"zu", name:"Zulu", speech:"zu-ZA", tts:"zu-ZA" },
-];
-
-// Birleştir (favs üstte)
-const LANGS = [...FAV, ...OTHERS];
-
-const normLang = (c)=> String(c||"").toLowerCase().split("_")[0];
-function speechLocale(code){ return LANGS.find(x=>x.code===code)?.speech || "en-US"; }
-function ttsLocale(code){ return LANGS.find(x=>x.code===code)?.tts || "en-US"; }
-function apiBase(){ return String(BASE_DOMAIN || "").replace(/\/+$/,""); }
-
-/* ✅ Backend translate: {text, from_lang, to_lang} */
-async function translateViaApi(text, fromLang, toLang){
-  const base = apiBase();
-  if(!base) return text;
-
-  const payload = {
-    text: String(text || ""),
-    from_lang: fromLang ? normLang(fromLang) : null,
-    to_lang: normLang(toLang || "en")
-  };
-
-  try{
-    const r = await fetch(`${base}/api/translate`,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json", "accept":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    if(!r.ok){
-      const t = await r.text().catch(()=> "");
-      throw new Error(`translate ${r.status} ${t}`);
+function similarity(a,b){
+  a = norm(a); b = norm(b);
+  if(!a || !b) return 0;
+  if(a === b) return 1;
+  const m=a.length, n=b.length;
+  const dp = Array.from({length:m+1},()=>Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i;
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      dp[i][j]=Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
     }
-    const data = await r.json().catch(()=> ({}));
-    return String(data?.translated || "").trim() || text;
-  }catch(e){
-    console.warn("translateViaApi failed:", e);
-    return text;
   }
+  const dist = dp[m][n];
+  return 1 - (dist / Math.max(m,n));
 }
 
-/* Auto speak toggle (mute) */
-const mute = { top:false, bot:false };
-function setMute(side, on){
-  mute[side] = !!on;
-  const btn = $(side === "top" ? "topSpeak" : "botSpeak");
-  btn?.classList.toggle("muted", mute[side]);
-}
-function speakAuto(text, langCode, side){
-  if(mute[side]) return;
-  const t = String(text||"").trim();
-  if(!t) return;
-  if(!("speechSynthesis" in window)) return;
-
-  try{
-    const u = new SpeechSynthesisUtterance(t);
-    u.lang = ttsLocale(langCode);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-  }catch{}
+function speakOnce(word, lang){
+  return new Promise((resolve)=>{
+    if(!("speechSynthesis" in window)){ resolve(false); return; }
+    try{
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(word||""));
+      u.lang = LOCALES[lang] || "en-US";
+      u.rate = 1.0;
+      u.pitch = 1.0;
+      u.onend = ()=> resolve(true);
+      u.onerror = ()=> resolve(false);
+      window.speechSynthesis.speak(u);
+    }catch{
+      resolve(false);
+    }
+  });
 }
 
-/* Auto-follow per side */
-const follow = { top:true, bot:true };
-function isNearBottom(el, slack=140){
-  try{ return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
-  catch{ return true; }
-}
-function hookScrollFollow(sideName, el){
-  el.addEventListener("scroll", ()=>{ follow[sideName] = isNearBottom(el); }, { passive:true });
-}
-function scrollIfNeeded(sideName, el){
-  if(follow[sideName]) el.scrollTop = el.scrollHeight;
-}
-
-/* Bubbles */
-function addBubble(sideName, kind, text){
-  const wrap = $(sideName === "top" ? "topBody" : "botBody");
-  const b = document.createElement("div");
-  b.className = `bubble ${kind}`;
-  b.textContent = text || "—";
-  wrap.appendChild(b);
-  scrollIfNeeded(sideName, wrap);
-}
-
-/* Speech recognition */
-function buildRecognizer(langCode){
+function makeRecognizer(lang){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR) return null;
   const rec = new SR();
-  rec.lang = speechLocale(langCode);
-  rec.interimResults = true;
+  rec.lang = LOCALES[lang] || "en-US";
+  rec.interimResults = false;
   rec.continuous = false;
   return rec;
 }
 
-let active = null;
-let topRec = null;
-let botRec = null;
+/* 20 kelimelik Ders1 — her dil için (paralel) */
+const LESSON1 = {
+  en: [
+    { tr:"elma", t:"apple" }, { tr:"su", t:"water" }, { tr:"ekmek", t:"bread" }, { tr:"menü", t:"menu" }, { tr:"fiyat", t:"price" },
+    { tr:"evet", t:"yes" }, { tr:"hayır", t:"no" }, { tr:"merhaba", t:"hello" }, { tr:"güle güle", t:"goodbye" }, { tr:"teşekkürler", t:"thank you" },
+    { tr:"lütfen", t:"please" }, { tr:"affedersiniz", t:"excuse me" }, { tr:"anlamıyorum", t:"i don't understand" }, { tr:"yardım", t:"help" }, { tr:"tuvalet", t:"toilet" },
+    { tr:"hesap", t:"the bill" }, { tr:"çok güzel", t:"very good" }, { tr:"sıcak", t:"hot" }, { tr:"soğuk", t:"cold" }, { tr:"bugün", t:"today" },
+  ],
+  de: [
+    { tr:"elma", t:"apfel" }, { tr:"su", t:"wasser" }, { tr:"ekmek", t:"brot" }, { tr:"menü", t:"speisekarte" }, { tr:"fiyat", t:"preis" },
+    { tr:"evet", t:"ja" }, { tr:"hayır", t:"nein" }, { tr:"merhaba", t:"hallo" }, { tr:"güle güle", t:"tschüss" }, { tr:"teşekkürler", t:"danke" },
+    { tr:"lütfen", t:"bitte" }, { tr:"affedersiniz", t:"entschuldigung" }, { tr:"anlamıyorum", t:"ich verstehe nicht" }, { tr:"yardım", t:"hilfe" }, { tr:"tuvalet", t:"toilette" },
+    { tr:"hesap", t:"die rechnung" }, { tr:"çok güzel", t:"sehr gut" }, { tr:"sıcak", t:"heiß" }, { tr:"soğuk", t:"kalt" }, { tr:"bugün", t:"heute" },
+  ],
+  fr: [
+    { tr:"elma", t:"pomme" }, { tr:"su", t:"eau" }, { tr:"ekmek", t:"pain" }, { tr:"menü", t:"menu" }, { tr:"fiyat", t:"prix" },
+    { tr:"evet", t:"oui" }, { tr:"hayır", t:"non" }, { tr:"merhaba", t:"bonjour" }, { tr:"güle güle", t:"au revoir" }, { tr:"teşekkürler", t:"merci" },
+    { tr:"lütfen", t:"s'il vous plaît" }, { tr:"affedersiniz", t:"excusez-moi" }, { tr:"anlamıyorum", t:"je ne comprends pas" }, { tr:"yardım", t:"aide" }, { tr:"tuvalet", t:"toilettes" },
+    { tr:"hesap", t:"l'addition" }, { tr:"çok güzel", t:"très bien" }, { tr:"sıcak", t:"chaud" }, { tr:"soğuk", t:"froid" }, { tr:"bugün", t:"aujourd'hui" },
+  ],
+  it: [
+    { tr:"elma", t:"mela" }, { tr:"su", t:"acqua" }, { tr:"ekmek", t:"pane" }, { tr:"menü", t:"menu" }, { tr:"fiyat", t:"prezzo" },
+    { tr:"evet", t:"sì" }, { tr:"hayır", t:"no" }, { tr:"merhaba", t:"ciao" }, { tr:"güle güle", t:"arrivederci" }, { tr:"teşekkürler", t:"grazie" },
+    { tr:"lütfen", t:"per favore" }, { tr:"affedersiniz", t:"scusi" }, { tr:"anlamıyorum", t:"non capisco" }, { tr:"yardım", t:"aiuto" }, { tr:"tuvalet", t:"bagno" },
+    { tr:"hesap", t:"il conto" }, { tr:"çok güzel", t:"molto bene" }, { tr:"sıcak", t:"caldo" }, { tr:"soğuk", t:"freddo" }, { tr:"bugün", t:"oggi" },
+  ],
+};
 
-function setMicUI(side, on){
-  const mic = $(side === "top" ? "topMic" : "botMic");
-  mic?.classList.toggle("listening", !!on);
-  setWaveListening(!!on);
+const lang = getLang();
+const STORE = `caynana_teacher_${lang}_lesson1_v1`;
+
+function loadState(){
+  try{ return JSON.parse(localStorage.getItem(STORE) || "{}"); }catch{ return {}; }
 }
-function stopAll(){
-  try{ topRec?.stop?.(); }catch{}
-  try{ botRec?.stop?.(); }catch{}
-  topRec = null;
-  botRec = null;
-  active = null;
-  setMicUI("top", false);
-  setMicUI("bot", false);
-  setWaveListening(false);
+function saveState(s){
+  try{ localStorage.setItem(STORE, JSON.stringify(s||{})); }catch{}
 }
 
-async function onFinal(side, srcCode, dstCode, finalText){
-  const otherSide = (side === "top") ? "bot" : "top";
+const S = (() => {
+  const x = loadState();
+  return {
+    pos: Number.isInteger(x.pos) ? x.pos : 0,
+    learned: x.learned || {},      // index->true
+    skipped: x.skipped || {},      // index->true
+    exam: x.exam || { pending:false, failCount:0, q:[], qi:0, score:0 }, // q: indices
+    speaking:false,
+    listening:false,
+    bound:false
+  };
+})();
 
-  addBubble(side, "them", finalText);
+function lesson(){ return LESSON1[lang] || LESSON1.en; }
+function total(){ return lesson().length; }
+function cur(){ return lesson()[S.pos]; }
 
-  const out = await translateViaApi(finalText, srcCode, dstCode);
-  addBubble(otherSide, "me", out);
+function learnedCount(){ return Object.keys(S.learned).length; }
 
-  speakAuto(out, dstCode, otherSide);
+function pickNextIndex(){
+  // first: not learned, not skipped
+  for(let i=0;i<total();i++){
+    if(!S.learned[i] && !S.skipped[i]) return i;
+  }
+  // then: skipped ones
+  for(let i=0;i<total();i++){
+    if(!S.learned[i] && S.skipped[i]) return i;
+  }
+  return null;
 }
 
-function startSide(side, getLang, getOtherLang){
-  if(active && active !== side){
-    stopAll();
+function updateUI(){
+  $("langPill").textContent = LANG_LABEL[lang] || "Teacher";
+  $("wTarget").textContent = cur().t;
+  $("wTr").textContent = `Türkçesi: ${cur().tr}`;
+  $("repeatTxt").textContent = cur().t;
+
+  const done = learnedCount();
+  $("lessonInfo").textContent = `1. Ders • ${done}/20`;
+  $("modeInfo").textContent = (S.exam?.pending ? "Sınav Bekliyor" : "Ders");
+  $("progBar").style.width = `${Math.round((done/total())*100)}%`;
+
+  $("heardBox").textContent = "Söylediğin burada görünecek…";
+  $("resultMsg").textContent = "—";
+  $("resultMsg").className = "status";
+  $("scoreTop").textContent = "—";
+  $("teacherStatus").textContent = "—";
+
+  $("studentTop").textContent = "Mikrofona bas ve söyle.";
+}
+
+async function showCongrats(){
+  const el = $("bigCheck");
+  el.classList.add("show");
+  await new Promise(r=>setTimeout(r, 2000));
+  el.classList.remove("show");
+}
+
+async function teacherSpeak(){
+  if(S.speaking) return;
+  S.speaking = true;
+  $("teacherStatus").textContent = "🔊";
+  await speakOnce(cur().t, lang);
+  $("teacherStatus").textContent = "—";
+  S.speaking = false;
+}
+
+function persist(){
+  saveState({
+    pos: S.pos,
+    learned: S.learned,
+    skipped: S.skipped,
+    exam: S.exam
+  });
+}
+
+function askExamReady(){
+  // Yes/No
+  const ok = confirm("Ders bitti. Sınava hazır mısın?");
+  if(ok){
+    startExam(true);
+  }else{
+    S.exam.pending = true;
+    persist();
+    toast("Sınav beklemede.");
+  }
+}
+
+function buildExamQuestions(){
+  // 10 soru: tüm 20 içinden random
+  const idx = [...Array(total()).keys()];
+  const q = [];
+  while(idx.length && q.length < 10){
+    const k = Math.floor(Math.random()*idx.length);
+    q.push(idx.splice(k,1)[0]);
+  }
+  return q;
+}
+
+function startExam(reset){
+  if(reset){
+    S.exam.q = buildExamQuestions();
+    S.exam.qi = 0;
+    S.exam.score = 0;
+  }
+  S.exam.pending = true;
+  persist();
+  showExamQuestion();
+}
+
+function showExamQuestion(){
+  const q = S.exam.q;
+  if(!q || !q.length){
+    S.exam.q = buildExamQuestions();
+    S.exam.qi = 0;
+    S.exam.score = 0;
+  }
+  const qi = S.exam.qi || 0;
+  const idx = S.exam.q[qi];
+
+  // exam mode UI uses same screen
+  $("modeInfo").textContent = `Sınav ${qi+1}/10`;
+  $("lessonInfo").textContent = `Skor ${S.exam.score}/10`;
+
+  const item = lesson()[idx];
+  $("wTarget").textContent = item.t;
+  $("wTr").textContent = `Türkçesi: ${item.tr}`;
+  $("repeatTxt").textContent = item.t;
+
+  $("teacherStatus").textContent = "—";
+  $("heardBox").textContent = "Söylediğin burada görünecek…";
+  $("resultMsg").textContent = "Sınav: doğru söyle.";
+  $("resultMsg").className = "status";
+  $("scoreTop").textContent = "—";
+
+  // teacher speak is on speaker button (kullanıcı isterse dinler)
+  persist();
+}
+
+async function finishExam(){
+  const score = S.exam.score || 0;
+
+  if(score >= 8){
+    alert("🎉 Tebrikler! Bu dersten geçtin.");
+    // Ders 2'yi sonra ekleyeceğiz; şimdilik progress sıfırla ama “geçti” flag’i at
+    // Burada: lesson1 completed flag koyalım
+    localStorage.setItem(`caynana_teacher_${lang}_lesson1_passed`, "1");
+    // reset current lesson progress for demo:
+    localStorage.removeItem(STORE);
+    location.reload();
+    return;
   }
 
-  const srcCode = getLang();
-  const dstCode = getOtherLang();
+  // fail
+  S.exam.failCount = (S.exam.failCount || 0) + 1;
 
-  const rec = buildRecognizer(srcCode);
+  if(S.exam.failCount >= 3){
+    alert(
+      "Üzgünüm… Bu dersten kaldın.\n\n" +
+      "Ama sorun değil evladım.\n" +
+      "Sen zeki bir çocuksun.\n" +
+      "Sadece biraz daha odaklanacağız.\n\n" +
+      "Dersi yeniden öğreneceğiz."
+    );
+
+    // reset lesson progress + exam state
+    S.pos = 0;
+    S.learned = {};
+    S.skipped = {};
+    S.exam = { pending:false, failCount:0, q:[], qi:0, score:0 };
+    persist();
+    updateUI();
+    await teacherSpeak();
+    return;
+  }
+
+  const again = confirm(
+    "Üzgünüz, sınavı geçemedin.\n" +
+    "Sınavı geçmeden ilerleyemezsin.\n\n" +
+    "Tekrar sınava girmek ister misin?"
+  );
+
+  if(again){
+    // restart exam fresh
+    startExam(true);
+  }else{
+    // keep pending, resume later from current question
+    S.exam.pending = true;
+    persist();
+    toast("Sınav beklemede. Sonraki girişte devam edeceğiz.");
+  }
+}
+
+async function handleExamAnswer(heard){
+  const qi = S.exam.qi || 0;
+  const idx = S.exam.q[qi];
+  const expected = lesson()[idx].t;
+
+  const sc = similarity(expected, heard);
+  $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
+
+  if(sc >= 0.92){
+    S.exam.score++;
+    $("resultMsg").textContent = "Doğru ✅";
+    $("resultMsg").className = "status ok";
+  }else{
+    $("resultMsg").textContent = "Yanlış ❌";
+    $("resultMsg").className = "status bad";
+  }
+
+  // advance question
+  S.exam.qi = qi + 1;
+  persist();
+
+  if(S.exam.qi >= 10){
+    await finishExam();
+    return;
+  }
+
+  showExamQuestion();
+}
+
+async function startListen(){
+  if(S.listening || S.speaking) return;
+
+  const rec = makeRecognizer(lang);
   if(!rec){
     toast("Bu cihaz konuşmayı yazıya çevirmiyor.");
     return;
   }
 
-  active = side;
-  setMicUI(side, true);
+  S.listening = true;
+  $("btnMic")?.classList.add("listening");
+  $("studentTop").textContent = "Dinliyorum…";
 
-  let live = "";
-  let finalText = "";
+  const expected = (S.exam?.pending ? $("wTarget").textContent : cur().t);
 
-  rec.onresult = (e)=>{
-    let chunk = "";
-    for(let i=e.resultIndex;i<e.results.length;i++){
-      const t = e.results[i]?.[0]?.transcript || "";
-      if(e.results[i].isFinal) finalText += t + " ";
-      else chunk += t + " ";
-    }
-    live = (finalText + chunk).trim();
-  };
+  rec.onresult = async (e)=>{
+    const heard = e.results?.[0]?.[0]?.transcript || "";
+    $("heardBox").textContent = heard ? `Söyledin: ${heard}` : "Duyamadım…";
 
-  rec.onerror = ()=>{
-    toast("Mikrofon izin/HTTPS/cihaz sıkıntısı olabilir.");
-    stopAll();
-  };
+    S.listening = false;
+    $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
 
-  rec.onend = async ()=>{
-    const txt = (finalText || live || "").trim();
-    setMicUI(side, false);
-
-    if(!txt){
-      active = null;
+    if(!heard.trim()){
+      toast("Duyamadım. Tekrar söyle.");
       return;
     }
 
-    await onFinal(side, srcCode, dstCode, txt);
-    active = null;
+    // EXAM mode?
+    if(S.exam?.pending && (learnedCount() >= total())){
+      await handleExamAnswer(heard);
+      return;
+    }
+
+    // LESSON mode
+    const sc = similarity(cur().t, heard);
+    $("scoreTop").textContent = `Skor: ${Math.round(sc*100)}%`;
+
+    if(sc >= 0.92){
+      $("resultMsg").textContent = "Doğru ✅";
+      $("resultMsg").className = "status ok";
+
+      await showCongrats();
+
+      S.learned[S.pos] = true;
+      delete S.skipped[S.pos];
+      persist();
+
+      const next = pickNextIndex();
+      if(next === null){
+        // lesson complete => exam prompt
+        askExamReady();
+        return;
+      }
+
+      S.pos = next;
+      persist();
+      updateUI();
+      await teacherSpeak();
+    }else{
+      $("resultMsg").textContent = "Yanlış ❌ Tekrar et";
+      $("resultMsg").className = "status bad";
+      toast("Tekrar et");
+      await teacherSpeak();
+    }
   };
 
-  if(side === "top") topRec = rec;
-  else botRec = rec;
+  rec.onerror = ()=>{
+    S.listening = false;
+    $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
+    toast("Mikrofon hatası (izin/HTTPS).");
+  };
+
+  rec.onend = ()=>{
+    if(S.listening){
+      S.listening = false;
+      $("btnMic")?.classList.remove("listening");
+      $("studentTop").textContent = "Mikrofona bas ve söyle.";
+    }
+  };
 
   try{ rec.start(); }
   catch{
+    S.listening = false;
+    $("btnMic")?.classList.remove("listening");
+    $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon açılamadı.");
-    stopAll();
   }
 }
 
-/* ✅ Dropdown with search + favorites header */
-function buildDropdown(ddId, btnId, txtId, menuId, defCode, onChange){
-  const dd = $(ddId);
-  const btn = $(btnId);
-  const txt = $(txtId);
-  const menu = $(menuId);
-
-  let current = defCode;
-
-  function closeAll(){
-    document.querySelectorAll(".dd.open").forEach(x=> x.classList.remove("open"));
+function skip(){
+  // Skip is only for lesson mode; exam skip yok
+  if(S.exam?.pending && learnedCount() >= total()){
+    toast("Sınavda atlama yok evladım.");
+    return;
   }
 
-  function setValue(code){
-    current = code;
-    txt.textContent = (LANGS.find(l=>l.code===code)?.name || code);
-    onChange?.(code);
+  S.skipped[S.pos] = true;
+  persist();
+
+  const next = pickNextIndex();
+  if(next === null){
+    askExamReady();
+    return;
   }
-
-  // menu build
-  const favCodes = new Set(FAV.map(x=>x.code));
-
-  menu.innerHTML = `
-    <div class="dd-search-wrap">
-      <input class="dd-search" type="text" placeholder="Dil ara..." />
-    </div>
-    <div class="dd-items"></div>
-  `;
-
-  const itemsWrap = menu.querySelector(".dd-items");
-
-  function renderItems(){
-    const q = String(menu.querySelector(".dd-search").value || "").trim().toLowerCase();
-
-    const match = (name)=> !q || String(name||"").toLowerCase().includes(q);
-
-    const favItems = LANGS.filter(l=>favCodes.has(l.code) && match(l.name));
-    const otherItems = LANGS.filter(l=>!favCodes.has(l.code) && match(l.name));
-
-    const sepFav = favItems.length ? `<div class="dd-sep">Sık kullanılan</div>` : "";
-    const sepOther = otherItems.length ? `<div class="dd-sep">Diğer diller</div>` : "";
-
-    const html =
-      sepFav +
-      favItems.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("") +
-      sepOther +
-      otherItems.map(l=>`<div class="dd-item" data-code="${l.code}">${l.name}</div>`).join("");
-
-    itemsWrap.innerHTML = html || `<div class="dd-item">Sonuç yok</div>`;
-
-    itemsWrap.querySelectorAll(".dd-item[data-code]").forEach(it=>{
-      it.addEventListener("click", ()=>{
-        const code = it.getAttribute("data-code");
-        closeAll();
-        setValue(code);
-      });
-    });
-  }
-
-  // search
-  const search = menu.querySelector(".dd-search");
-  search.addEventListener("input", renderItems);
-
-  // open/close
-  btn.addEventListener("click", (e)=>{
-    e.stopPropagation();
-    const open = dd.classList.contains("open");
-    closeAll();
-    dd.classList.toggle("open", !open);
-    if(!open){
-      renderItems();
-      setTimeout(()=>{ try{ search.focus(); }catch{} }, 0);
-    }
-  });
-
-  // menu scroll event should not bubble (mobile)
-  menu.addEventListener("touchmove", (e)=> e.stopPropagation(), { passive:true });
-  menu.addEventListener("wheel", (e)=> e.stopPropagation(), { passive:true });
-
-  document.addEventListener("click", ()=> closeAll());
-
-  setValue(defCode);
-
-  return { get: ()=> current };
+  S.pos = next;
+  persist();
+  updateUI();
+  teacherSpeak();
 }
 
-/* Boot */
-document.addEventListener("DOMContentLoaded", ()=>{
+function bindOnce(){
+  if(S.bound) return;
+  S.bound = true;
+
   $("backBtn")?.addEventListener("click", ()=>{
     if(history.length>1) history.back();
     else location.href = "/pages/chat.html";
   });
 
-  hookScrollFollow("top", $("topBody"));
-  hookScrollFollow("bot", $("botBody"));
-
-  // Default: üst EN, alt TR
-  const topDD = buildDropdown("ddTop","ddTopBtn","ddTopTxt","ddTopMenu","en", (code)=>{
-    $("sloganTop").textContent = sloganFor(normLang(code));
-  });
-  const botDD = buildDropdown("ddBot","ddBotBtn","ddBotTxt","ddBotMenu","tr", (code)=>{
-    $("sloganBot").textContent = sloganFor(normLang(code));
+  $("btnSpeak")?.addEventListener("pointerdown", (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    teacherSpeak();
   });
 
-  $("sloganTop").textContent = sloganFor(normLang(topDD.get()));
-  $("sloganBot").textContent = sloganFor(normLang(botDD.get()));
+  $("btnMic")?.addEventListener("pointerdown", (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    startListen();
+  });
 
-  $("topBody").innerHTML = "";
-  $("botBody").innerHTML = "";
+  $("btnSkip")?.addEventListener("pointerdown", (e)=>{
+    e.preventDefault(); e.stopPropagation();
+    skip();
+  });
+}
 
-  $("topSpeak")?.addEventListener("click", ()=>{ setMute("top", !mute.top); toast(mute.top ? "Ses kapalı" : "Ses açık"); });
-  $("botSpeak")?.addEventListener("click", ()=>{ setMute("bot", !mute.bot); toast(mute.bot ? "Ses kapalı" : "Ses açık"); });
+document.addEventListener("DOMContentLoaded", async ()=>{
+  bindOnce();
 
-  setMute("top", false);
-  setMute("bot", false);
+  // init UI
+  updateUI();
 
-  $("topMic")?.addEventListener("click", ()=> startSide("top", ()=>topDD.get(), ()=>botDD.get()));
-  $("botMic")?.addEventListener("click", ()=> startSide("bot", ()=>botDD.get(), ()=>topDD.get()));
-
-  setWaveListening(false);
+  // if lesson completed and exam pending, ask to continue (or resume where left)
+  if(learnedCount() >= total()){
+    // if exam not started yet, ask ready
+    if(!S.exam?.pending){
+      askExamReady();
+    }else{
+      // exam pending: ask to continue where left
+      const ok = confirm("Sınav bekliyor. Devam edelim mi?");
+      if(ok){
+        // resume exam from where left
+        showExamQuestion();
+      }else{
+        toast("Sınav beklemede.");
+      }
+    }
+  }else{
+    // normal lesson start
+    await teacherSpeak();
+  }
 });
