@@ -1,9 +1,8 @@
 // FILE: /js/menu_history_ui.js
 // ✅ Menüler her init'te sıfırlanır (tekrar yok)
+// ✅ Teacher AI bloğu DOM'a otomatik inject (HTML'e dokunmadan)
 // ✅ Hatırlatıcı her zaman görünür
-// ✅ Takım butonu her zaman görünür:
-//    - takım yoksa: "Takım Bildirimleri"
-//    - takım varsa: takım adı (örn Beşiktaş)
+// ✅ Takım butonu her zaman görünür (takım yoksa "Takım Bildirimleri", varsa takım adı)
 // ✅ Chat’e dokunmaz
 
 import { ChatStore } from "./chat_store.js";
@@ -26,13 +25,13 @@ function confirmDelete(){
   return confirm("Sohbetiniz kalıcı olarak silenecek. Emin misin evladım?");
 }
 
-function getProfile(){
+function getUser(){
   try{ return JSON.parse(localStorage.getItem("caynana_user_v1") || "{}"); }
   catch{ return {}; }
 }
 
 function paintProfileShortcut(){
-  const p = getProfile();
+  const p = getUser();
   const name = String(p.fullname || p.name || p.display_name || p.email || "—").trim() || "—";
   const pic  = String(p.picture || p.avatar || p.avatar_url || "").trim();
 
@@ -62,7 +61,7 @@ function addMenuItem(root, ico, label, href){
 /* ✅ Takım adını toleranslı oku */
 function readTeamName(){
   try{
-    const u = getProfile();
+    const u = getUser();
     const t1 = String(u.team || "").trim();
     const t2 = String(u.takim || "").trim();
     const t3 = String(u.favorite_team || "").trim();
@@ -76,46 +75,73 @@ function readTeamName(){
   }
 }
 
+/* ✅ Teacher AI bloğunu menüye inject et (HTML'e dokunmadan) */
+function ensureTeacherBlock(){
+  const overlay = $("menuOverlay");
+  if(!overlay) return;
+
+  const sidebar = overlay.querySelector(".menu-sidebar");
+  if(!sidebar) return;
+
+  // varsa tekrar ekleme
+  if(sidebar.querySelector("#menuTeacher")) return;
+
+  // Astro block'un önüne ekleyelim (Asistan -> Teacher -> Astro -> Kurumsal)
+  const astroBlock = sidebar.querySelector(".menu-block.astro");
+  const block = document.createElement("div");
+  block.className = "menu-block teacher";
+  block.innerHTML = `<div class="block-head">Teacher AI</div><div class="menu-grid" id="menuTeacher"></div>`;
+
+  if(astroBlock) sidebar.insertBefore(block, astroBlock);
+  else sidebar.appendChild(block);
+
+  // Teacher başlığının rengini hafif mavi/premium yapalım (style.css yoksa da idare eder)
+  const head = block.querySelector(".block-head");
+  if(head) head.style.color = "#7dd3fc";
+}
+
 function renderMenusFresh(){
+  ensureTeacherBlock();
+
   const asistan = $("menuAsistan");
+  const teacher = $("menuTeacher");
   const astro   = $("menuAstro");
   const kur     = $("menuKurumsal");
 
   if(asistan) asistan.innerHTML = "";
+  if(teacher) teacher.innerHTML = "";
   if(astro) astro.innerHTML = "";
   if(kur) kur.innerHTML = "";
 
-  const p = getProfile();
-  const gender = String(p.gender || p.cinsiyet || "").toLowerCase().trim();
+  const u = getUser();
+  const gender = String(u.gender || u.cinsiyet || "").toLowerCase().trim();
   const isFemale = ["kadın","kadin","female","woman","f"].includes(gender);
 
   /* ---- ASİSTAN ---- */
   if(asistan){
     addMenuItem(asistan, "💬", "Sohbet", "/pages/chat.html");
     addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/alisveris.html");
-
-    // ✅ Tercüman
     addMenuItem(asistan, "🌍", "Tercüman", "/pages/translate.html");
-
-    // ✅ Teacher butonu (İSTEDİĞİN)
-    addMenuItem(asistan, "🎓", "Dil Öğren (Teacher)", "/pages/teacher.html");
-
-    // ✅ Fotoğraftan çeviri
     addMenuItem(asistan, "📷", "Fotoğraftan Çeviri", "/pages/ocr_translate.html");
-
     addMenuItem(asistan, "🗣️", "Dedikodu Kazanı", "/pages/gossip.html");
     addMenuItem(asistan, "🥗", "Diyet", "/pages/diyet.html");
     addMenuItem(asistan, "❤️", "Sağlık", "/pages/health.html");
-
     addMenuItem(asistan, "⏰", "Hatırlatıcı", "/pages/hatirlatici.html");
 
     if(isFemale){
       addMenuItem(asistan, "🩸", "Regl Takip", "/pages/regl.html");
     }
 
-    // ✅ takım butonu her zaman
     const teamName = readTeamName();
     addMenuItem(asistan, "⚽", (teamName || "Takım Bildirimleri"), "/pages/clup.html");
+  }
+
+  /* ---- TEACHER AI (Dil ayrı butonlar) ---- */
+  if(teacher){
+    addMenuItem(teacher, "🇬🇧", "İngilizce Öğren", "/pages/teacher.html?lang=en");
+    addMenuItem(teacher, "🇩🇪", "Almanca Öğren", "/pages/teacher.html?lang=de");
+    addMenuItem(teacher, "🇫🇷", "Fransızca Öğren", "/pages/teacher.html?lang=fr");
+    addMenuItem(teacher, "🇮🇹", "İtalyanca Öğren", "/pages/teacher.html?lang=it");
   }
 
   /* ---- ASTRO ---- */
