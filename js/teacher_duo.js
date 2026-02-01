@@ -1,10 +1,9 @@
 // FILE: /js/teacher_duo.js
-// FINAL v3
-// ✅ Layout: bottom = Player A (near), top = Player B rotated 180
-// ✅ Teacher reads word first -> wave green anim
-// ✅ Then active player speaks -> wave listening
-// ✅ Correct => green tick ONLY on that side
-// ✅ Wrong => red cross + fun message (EN) ONLY on that side
+// FINAL v5
+// ✅ Correct => full-panel green check on that side (2s) + pleasant ding
+// ✅ Wrong  => full-panel red X on that side (2s) + buzzer/horn style sound
+// ✅ Teacher reads first (wave green)
+// ✅ Turkish meaning shown
 // ✅ 10 rounds, single attempt each turn
 // ✅ lang from URL: ?lang=en|de|fr|it
 
@@ -16,7 +15,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 1600);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1400);
 }
 
 function getLang(){
@@ -30,10 +29,30 @@ const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
 const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
 
 const WORDS = {
-  en: ["apple","water","bread","menu","price","yes","no","hello","goodbye","thank you","please","help","toilet","the bill","hot","cold","today","excuse me","very good","i don't understand"],
-  de: ["apfel","wasser","brot","speisekarte","preis","ja","nein","hallo","tschüss","danke","bitte","hilfe","toilette","die rechnung","heiß","kalt","heute","entschuldigung","sehr gut","ich verstehe nicht"],
-  fr: ["pomme","eau","pain","menu","prix","oui","non","bonjour","au revoir","merci","s'il vous plaît","aide","toilettes","l'addition","chaud","froid","aujourd'hui","excusez-moi","très bien","je ne comprends pas"],
-  it: ["mela","acqua","pane","menu","prezzo","sì","no","ciao","arrivederci","grazie","per favore","aiuto","bagno","il conto","caldo","freddo","oggi","scusi","molto bene","non capisco"],
+  en: [
+    { t:"apple", tr:"elma" }, { t:"water", tr:"su" }, { t:"bread", tr:"ekmek" }, { t:"menu", tr:"menü" }, { t:"price", tr:"fiyat" },
+    { t:"yes", tr:"evet" }, { t:"no", tr:"hayır" }, { t:"hello", tr:"merhaba" }, { t:"goodbye", tr:"güle güle" }, { t:"thank you", tr:"teşekkürler" },
+    { t:"please", tr:"lütfen" }, { t:"help", tr:"yardım" }, { t:"toilet", tr:"tuvalet" }, { t:"the bill", tr:"hesap" }, { t:"hot", tr:"sıcak" },
+    { t:"cold", tr:"soğuk" }, { t:"today", tr:"bugün" }, { t:"excuse me", tr:"affedersiniz" }, { t:"very good", tr:"çok güzel" }, { t:"i don't understand", tr:"anlamıyorum" }
+  ],
+  de: [
+    { t:"apfel", tr:"elma" }, { t:"wasser", tr:"su" }, { t:"brot", tr:"ekmek" }, { t:"speisekarte", tr:"menü" }, { t:"preis", tr:"fiyat" },
+    { t:"ja", tr:"evet" }, { t:"nein", tr:"hayır" }, { t:"hallo", tr:"merhaba" }, { t:"tschüss", tr:"güle güle" }, { t:"danke", tr:"teşekkürler" },
+    { t:"bitte", tr:"lütfen" }, { t:"hilfe", tr:"yardım" }, { t:"toilette", tr:"tuvalet" }, { t:"die rechnung", tr:"hesap" }, { t:"heiß", tr:"sıcak" },
+    { t:"kalt", tr:"soğuk" }, { t:"heute", tr:"bugün" }, { t:"entschuldigung", tr:"affedersiniz" }, { t:"sehr gut", tr:"çok güzel" }, { t:"ich verstehe nicht", tr:"anlamıyorum" }
+  ],
+  fr: [
+    { t:"pomme", tr:"elma" }, { t:"eau", tr:"su" }, { t:"pain", tr:"ekmek" }, { t:"menu", tr:"menü" }, { t:"prix", tr:"fiyat" },
+    { t:"oui", tr:"evet" }, { t:"non", tr:"hayır" }, { t:"bonjour", tr:"merhaba" }, { t:"au revoir", tr:"güle güle" }, { t:"merci", tr:"teşekkürler" },
+    { t:"s'il vous plaît", tr:"lütfen" }, { t:"aide", tr:"yardım" }, { t:"toilettes", tr:"tuvalet" }, { t:"l'addition", tr:"hesap" }, { t:"chaud", tr:"sıcak" },
+    { t:"froid", tr:"soğuk" }, { t:"aujourd'hui", tr:"bugün" }, { t:"excusez-moi", tr:"affedersiniz" }, { t:"très bien", tr:"çok güzel" }, { t:"je ne comprends pas", tr:"anlamıyorum" }
+  ],
+  it: [
+    { t:"mela", tr:"elma" }, { t:"acqua", tr:"su" }, { t:"pane", tr:"ekmek" }, { t:"menu", tr:"menü" }, { t:"prezzo", tr:"fiyat" },
+    { t:"sì", tr:"evet" }, { t:"no", tr:"hayır" }, { t:"ciao", tr:"merhaba" }, { t:"arrivederci", tr:"güle güle" }, { t:"grazie", tr:"teşekkürler" },
+    { t:"per favore", tr:"lütfen" }, { t:"aiuto", tr:"yardım" }, { t:"bagno", tr:"tuvalet" }, { t:"il conto", tr:"hesap" }, { t:"caldo", tr:"sıcak" },
+    { t:"freddo", tr:"soğuk" }, { t:"oggi", tr:"bugün" }, { t:"scusi", tr:"affedersiniz" }, { t:"molto bene", tr:"çok güzel" }, { t:"non capisco", tr:"anlamıyorum" }
+  ],
 };
 
 function norm(s){
@@ -98,26 +117,9 @@ function setWaveMode(mode){
   w.classList.remove("teaching","listening");
   if(mode) w.classList.add(mode);
 }
-
 function setWaveLabel(txt){
   const l = $("waveLabel");
   if(l) l.textContent = txt;
-}
-
-function showBadge(side, ok, msg){
-  const box = $(side==="A" ? "badgeA" : "badgeB");
-  const ico = $(side==="A" ? "badgeIcoA" : "badgeIcoB");
-  const txt = $(side==="A" ? "badgeTxtA" : "badgeTxtB");
-  if(!box || !ico || !txt) return;
-
-  box.classList.remove("ok","bad","show");
-  box.classList.add(ok ? "ok" : "bad");
-  ico.textContent = ok ? "✅" : "❌";
-  txt.textContent = String(msg || (ok ? "Nice!" : "Oops!"));
-  box.classList.add("show");
-
-  clearTimeout(box.__t);
-  box.__t = setTimeout(()=> box.classList.remove("show"), 1800);
 }
 
 function setButtonsEnabled(enabled){
@@ -125,10 +127,72 @@ function setButtonsEnabled(enabled){
   $("micB").disabled = !enabled;
 }
 
-let turn = "A";          // A starts (near side)
+/* ✅ WebAudio SFX (ding / buzzer) */
+let __audioCtx = null;
+function ensureAudio(){
+  if(__audioCtx) return __audioCtx;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return null;
+  __audioCtx = new AC();
+  return __audioCtx;
+}
+function playTone(freq, durMs, type="sine", gain=0.06){
+  const ctx = ensureAudio();
+  if(!ctx) return;
+  try{
+    if(ctx.state === "suspended") ctx.resume().catch(()=>{});
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = gain;
+    o.connect(g); g.connect(ctx.destination);
+    o.start();
+    setTimeout(()=>{ try{o.stop();}catch{} }, durMs);
+  }catch{}
+}
+function sfxOk(){
+  // tatlı ding: iki nota
+  playTone(880, 90, "sine", 0.07);
+  setTimeout(()=> playTone(1320, 120, "sine", 0.06), 110);
+}
+function sfxBad(){
+  // buzzer: hızlı düşük frekans + kare
+  playTone(180, 120, "square", 0.05);
+  setTimeout(()=> playTone(140, 140, "square", 0.05), 140);
+}
+
+function showPanelOverlay(side, ok, msg){
+  const ov = $(side==="A" ? "overlayA" : "overlayB");
+  const ico = $(side==="A" ? "overlayIcoA" : "overlayIcoB");
+  const txt = $(side==="A" ? "overlayTxtA" : "overlayTxtB");
+  if(!ov || !ico || !txt) return;
+
+  ov.classList.remove("ok","bad","show");
+  ov.classList.add(ok ? "ok" : "bad");
+  ico.textContent = ok ? "✅" : "❌";
+  txt.textContent = msg || (ok ? "Great!" : "Nope!");
+  ov.classList.add("show");
+
+  clearTimeout(ov.__t);
+  ov.__t = setTimeout(()=> ov.classList.remove("show"), 2000);
+}
+
+function funnyWrong(){
+  const pool = [
+    "Oops… not quite 😄",
+    "Nope. Try again next round!",
+    "Teacher says: absolutely not 😅",
+    "That pronunciation took a vacation 🧳",
+    "Close… but the word refused."
+  ];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+let turn = "A";
 let scoreA = 0, scoreB = 0;
-let round = 0;           // 0..9
-let curWord = "";
+let round = 0;
+let cur = null;
 let busy = false;
 
 function updateScores(){
@@ -143,17 +207,20 @@ function setHints(){
 
 function pickWord(){
   const arr = WORDS[lang] || WORDS.en;
-  curWord = arr[Math.floor(Math.random()*arr.length)];
-  $("wordA").textContent = curWord;
-  $("wordB").textContent = curWord;
+  cur = arr[Math.floor(Math.random()*arr.length)];
+
+  $("wordA").textContent = cur.t;
+  $("wordB").textContent = cur.t;
+
+  $("meaningA").textContent = cur.tr;
+  $("meaningB").textContent = cur.tr;
 }
 
 async function teacherPhase(){
-  // Teacher reads first, wave green
   setButtonsEnabled(false);
   setWaveLabel("Öğretmen okuyor…");
   setWaveMode("teaching");
-  await speakTeacher(curWord);
+  await speakTeacher(cur.t);
   setWaveMode(null);
   setWaveLabel(turn==="A" ? "Sıra Oyuncu A" : "Sıra Oyuncu B");
   setButtonsEnabled(true);
@@ -170,34 +237,24 @@ function endMatch(){
   scoreA = 0;
   scoreB = 0;
   turn = "A";
-  pickWord();
-  setHints();
-  updateScores();
-  teacherPhase();
 }
 
 async function nextTurn(){
   round++;
   if(round >= 10){
     endMatch();
+    pickWord();
+    setHints();
+    updateScores();
+    await teacherPhase();
     return;
   }
+
   turn = (turn==="A") ? "B" : "A";
   pickWord();
   setHints();
   updateScores();
   await teacherPhase();
-}
-
-function funnyWrong(){
-  const pool = [
-    "Almost… but no 😄",
-    "Close! Try again next round.",
-    "Not bad… but the word disagrees.",
-    "Nice try. The teacher is watching 👀",
-    "That was… creative 😅"
-  ];
-  return pool[Math.floor(Math.random()*pool.length)];
 }
 
 function listenFor(player){
@@ -220,16 +277,18 @@ function listenFor(player){
 
   rec.onresult = async (e)=>{
     const said = e.results?.[0]?.[0]?.transcript || "";
-    const sc = similarity(curWord, said);
+    const sc = similarity(cur.t, said);
     const ok = sc >= 0.92;
 
     setWaveMode(null);
 
     if(ok){
       if(player==="A") scoreA++; else scoreB++;
-      showBadge(player, true, "Great! ✅");
+      sfxOk();
+      showPanelOverlay(player, true, "Great! ✅");
     }else{
-      showBadge(player, false, funnyWrong());
+      sfxBad();
+      showPanelOverlay(player, false, funnyWrong());
     }
 
     updateScores();
@@ -241,14 +300,14 @@ function listenFor(player){
 
   rec.onerror = async ()=>{
     setWaveMode(null);
-    showBadge(player, false, "Mic trouble… next round 😅");
+    sfxBad();
+    showPanelOverlay(player, false, "Mic trouble… next round 😅");
     busy = false;
     setButtonsEnabled(true);
     await nextTurn();
   };
 
   rec.onend = ()=>{
-    // safety: if ended without result
     setWaveMode(null);
     if(busy){
       busy = false;
@@ -280,6 +339,5 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   pickWord();
   setHints();
   updateScores();
-
-  await teacherPhase(); // ✅ başlangıçta öğretmen okur
+  await teacherPhase();
 });
