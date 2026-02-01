@@ -42,6 +42,7 @@
       white-space:nowrap;
       text-overflow:ellipsis;
       user-select:none;
+      cursor:pointer;
     }
 
     .grid{
@@ -70,7 +71,6 @@
         rgba(0,0,0,.18);
       transform: rotate(180deg);
     }
-
     .bottom{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(120,20,35,.72), transparent 64%),
@@ -198,7 +198,6 @@
     .wave.teaching .barw:nth-child(5){animation-delay:.24s}
     .wave.teaching .barw:nth-child(6){animation-delay:.30s}
     .wave.teaching .barw:nth-child(7){animation-delay:.36s}
-
     .wave.listening .barw{
       background: rgba(190,242,100,.55);
       animation: w 560ms ease-in-out infinite;
@@ -246,7 +245,7 @@
       display:none;
       align-items:center;
       justify-content:center;
-      z-index:50;
+      z-index:60;
       background: rgba(0,0,0,.55);
       backdrop-filter: blur(6px);
     }
@@ -373,7 +372,7 @@
 </div>
 
 <script>
-/* --------- language ---------- */
+/* ========= language picker (optional) ========= */
 function getLang(){
   const u = new URL(location.href);
   const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
@@ -384,72 +383,40 @@ const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
 const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
 document.getElementById("langPill").textContent = LANG_LABEL[lang] || "🆚 Duo Practice";
 
-/* --------- big pool base (≈220) + automatic variants => 1000+ ---------- */
-/*
-  Pratik: Buraya 200+ temel kelime koyup,
-  varyasyon üreterek havuzu 1000+ yapıyoruz.
-  Böylece aynı şeyler dönmez.
-*/
+/* ========= big pool ========= */
 const WORDS_BASE_EN = [
   ["apple","elma"],["water","su"],["bread","ekmek"],["menu","menü"],["price","fiyat"],["yes","evet"],["no","hayır"],
   ["hello","merhaba"],["goodbye","güle güle"],["thank you","teşekkürler"],["please","lütfen"],["help","yardım"],
   ["toilet","tuvalet"],["the bill","hesap"],["hot","sıcak"],["cold","soğuk"],["today","bugün"],["excuse me","affedersiniz"],
   ["very good","çok güzel"],["i don't understand","anlamıyorum"],
-  ["book","kitap"],["pen","kalem"],["phone","telefon"],["charger","şarj"],["table","masa"],["chair","sandalye"],
-  ["door","kapı"],["window","pencere"],["street","sokak"],["city","şehir"],["ticket","bilet"],["train","tren"],
-  ["bus","otobüs"],["airport","havaalanı"],["hotel","otel"],["room","oda"],["key","anahtar"],["breakfast","kahvaltı"],
-  ["lunch","öğle yemeği"],["dinner","akşam yemeği"],["coffee","kahve"],["tea","çay"],["milk","süt"],["cheese","peynir"],
-  ["chicken","tavuk"],["fish","balık"],["salad","salata"],["soup","çorba"],["salt","tuz"],["sugar","şeker"],
-  ["left","sol"],["right","sağ"],["straight","düz"],["near","yakın"],["far","uzak"],["open","açık"],["closed","kapalı"],
-  ["small","küçük"],["big","büyük"],["cheap","ucuz"],["expensive","pahalı"],["fast","hızlı"],["slow","yavaş"],
-  ["morning","sabah"],["evening","akşam"],["night","gece"],["now","şimdi"],["later","sonra"],["tomorrow","yarın"],
-  ["yesterday","dün"],["week","hafta"],["month","ay"],["year","yıl"],
+  ["book","kitap"],["pen","kalem"],["phone","telefon"],["table","masa"],["chair","sandalye"],["door","kapı"],["window","pencere"],
+  ["street","sokak"],["city","şehir"],["ticket","bilet"],["train","tren"],["bus","otobüs"],["airport","havaalanı"],["hotel","otel"],
+  ["room","oda"],["key","anahtar"],["breakfast","kahvaltı"],["lunch","öğle yemeği"],["dinner","akşam yemeği"],
+  ["coffee","kahve"],["tea","çay"],["milk","süt"],["cheese","peynir"],["chicken","tavuk"],["fish","balık"],["salad","salata"],
+  ["soup","çorba"],["salt","tuz"],["sugar","şeker"],["left","sol"],["right","sağ"],["straight","düz"],["near","yakın"],["far","uzak"],
+  ["open","açık"],["closed","kapalı"],["small","küçük"],["big","büyük"],["cheap","ucuz"],["expensive","pahalı"],["fast","hızlı"],["slow","yavaş"],
+  ["morning","sabah"],["evening","akşam"],["night","gece"],["now","şimdi"],["later","sonra"],["tomorrow","yarın"],["yesterday","dün"],
   ["where","nerede"],["when","ne zaman"],["why","neden"],["how","nasıl"],["what","ne"],["who","kim"],
   ["I want","istiyorum"],["I need","ihtiyacım var"],["I like","seviyorum"],["I don’t like","sevmiyorum"],
   ["I am hungry","acım"],["I am thirsty","susadım"],["I am tired","yorgunum"],["I am lost","kayboldum"],
-  ["check please","hesap lütfen"],["no problem","sorun değil"],["welcome","rica ederim"],["sorry","özür dilerim"],
-  ["one","bir"],["two","iki"],["three","üç"],["four","dört"],["five","beş"],["ten","on"],
-  ["hundred","yüz"],["minute","dakika"],["hour","saat"],
-  ["doctor","doktor"],["pharmacy","eczane"],["hospital","hastane"],["pain","ağrı"],["headache","baş ağrısı"],
-  ["medicine","ilaç"],["allergy","alerji"],["cold (illness)","nezle"],["fever","ateş"],
-  ["swim","yüzmek"],["run","koşmak"],["walk","yürümek"],["eat","yemek"],["drink","içmek"],["sleep","uyumak"],
-  ["buy","satın almak"],["pay","ödemek"],["order","sipariş vermek"],["wait","beklemek"],["go","gitmek"],["come","gelmek"],
-  ["stop","dur"],["start","başla"],["again","tekrar"],["correct","doğru"],["wrong","yanlış"]
+  ["check please","hesap lütfen"],["no problem","sorun değil"],["sorry","özür dilerim"],
 ];
-// Base for other langs can be added later; for now use EN pool for all duo langs with same TR meaning.
-function basePool(){
-  return WORDS_BASE_EN.map(x=>({t:x[0], tr:x[1]}));
-}
 
-// Varyasyon üretimi: 1000+ havuz
 function buildBigPool(){
-  const base = basePool();
+  const base = WORDS_BASE_EN.map(x=>({t:x[0], tr:x[1]}));
   const out = [];
-
   const prefixes = ["", "the ", "a ", "my ", "your "];
   const suffixes = ["", " please", " now", " today"];
-
   for(const it of base){
-    // original
     out.push({t: it.t, tr: it.tr});
-
-    // simple plural for single words (very naive)
-    if(/^[a-z]+$/.test(it.t) && it.t.length>2){
-      out.push({t: it.t + "s", tr: it.tr});
-    }
-
-    // pref/suf combos (controlled)
+    if(/^[a-z]+$/.test(it.t) && it.t.length>2) out.push({t: it.t + "s", tr: it.tr});
     for(const p of prefixes){
       for(const s of suffixes){
         const tt = (p + it.t + s).trim();
-        if(tt.length >= 2 && tt.length <= 22){
-          out.push({t: tt, tr: it.tr});
-        }
+        if(tt.length >= 2 && tt.length <= 22) out.push({t: tt, tr: it.tr});
       }
     }
   }
-
-  // dedupe
   const seen = new Set();
   const dedup = [];
   for(const x of out){
@@ -458,18 +425,14 @@ function buildBigPool(){
     seen.add(k);
     dedup.push(x);
   }
-  return dedup; // typically > 1000
+  return dedup;
 }
-
 const BIG_POOL = buildBigPool();
 
-/* recent blacklist (avoid repeats) */
-const RECENT_MAX = 60;
+const RECENT_MAX = 80;
 const recent = [];
-
 function pickUniqueWord(){
-  // try up to 200 attempts to avoid repeats
-  for(let tries=0; tries<200; tries++){
+  for(let tries=0; tries<300; tries++){
     const w = BIG_POOL[Math.floor(Math.random()*BIG_POOL.length)];
     const key = w.t.toLowerCase();
     if(recent.includes(key)) continue;
@@ -477,12 +440,10 @@ function pickUniqueWord(){
     if(recent.length > RECENT_MAX) recent.shift();
     return w;
   }
-  // fallback
-  const w = BIG_POOL[Math.floor(Math.random()*BIG_POOL.length)];
-  return w;
+  return BIG_POOL[Math.floor(Math.random()*BIG_POOL.length)];
 }
 
-/* -------- similarity -------- */
+/* ========= similarity ========= */
 function norm(s){
   return String(s||"").toLowerCase().trim().replace(/[’']/g,"'").replace(/[.,!?;:]/g,"").replace(/\s+/g," ");
 }
@@ -503,7 +464,7 @@ function similarity(a,b){
   return 1-dp[m][n]/Math.max(m,n);
 }
 
-/* -------- wave -------- */
+/* ========= wave ========= */
 function setWaveMode(mode){
   const w=document.getElementById("waveBox");
   w.classList.remove("teaching","listening");
@@ -515,7 +476,7 @@ function setButtonsEnabled(enabled){
   document.getElementById("micB").disabled = !enabled;
 }
 
-/* -------- sfx -------- */
+/* ========= sfx ========= */
 let okAudio=null, badAudio=null;
 try{
   okAudio=new Audio("/assets/sfx/ok.mp3");
@@ -552,7 +513,7 @@ document.addEventListener("pointerdown", ()=>{
   try{ badAudio && badAudio.play().then(()=>{badAudio.pause();badAudio.currentTime=0}).catch(()=>{}); }catch{}
 },{once:true});
 
-/* -------- overlay -------- */
+/* ========= overlay ========= */
 function showOverlay(side, ok, msg){
   const ov=document.getElementById(side==="A" ? "overlayA" : "overlayB");
   const ico=document.getElementById(side==="A" ? "overlayIcoA" : "overlayIcoB");
@@ -576,7 +537,7 @@ function funnyWrong(){
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
-/* -------- speech -------- */
+/* ========= speech ========= */
 function makeRec(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR) return null;
@@ -602,15 +563,17 @@ function teacherSpeak(text){
   });
 }
 
-/* -------- game state -------- */
+/* ========= game ========= */
 let stageWords = Array.from({length:20}, ()=> pickUniqueWord());
-let wordIndex = 0;
+let wordIndex=0;
 
-let turn = "A";     // who serves now
-let busy = false;
+let turn="A"; // serve holder
+let busy=false;
 
-let correctA = 0, correctB = 0;
-let setA = 0, setB = 0;
+let correctA=0, correctB=0;
+let setA=0, setB=0;
+
+let attemptsOnWord = 0; // counts attempts for current word (max 2)
 
 function updateBars(){
   document.getElementById("fillA").style.width = `${(correctA/20)*100}%`;
@@ -642,9 +605,9 @@ function renderWord(){
   document.getElementById("meaningB").textContent = w.tr;
 }
 
-async function teacherPhase(labelAfter){
+async function teacherPhase(labelAfter, isRepeat=false){
   setButtonsEnabled(false);
-  setWaveLabel("Teacher is reading…");
+  setWaveLabel(isRepeat ? "Teacher repeats…" : "Teacher is reading…");
   setWaveMode("teaching");
   await teacherSpeak(stageWords[wordIndex].t);
   setWaveMode(null);
@@ -653,17 +616,11 @@ async function teacherPhase(labelAfter){
 }
 
 async function endGame(){
-  if(correctA > correctB){ setA=1; setB=0; }
-  else if(correctB > correctA){ setA=0; setB=1; }
-  else { setA=0; setB=0; }
-
-  // ✅ winner serves next stage
-  if(setA===1) turn="A";
-  else if(setB===1) turn="B";
-  else turn="A";
+  if(correctA > correctB){ setA=1; setB=0; turn="A"; }
+  else if(correctB > correctA){ setA=0; setB=1; turn="B"; }
+  else { setA=0; setB=0; turn="A"; }
 
   updateBars();
-
   document.getElementById("finalA").textContent = `Set: ${setA}`;
   document.getElementById("finalB").textContent = `Set: ${setB}`;
   document.getElementById("finalModal").classList.add("show");
@@ -671,58 +628,61 @@ async function endGame(){
 
 async function nextWord(){
   wordIndex++;
+  attemptsOnWord = 0;
   if(wordIndex >= 20){
     await endGame();
     return;
   }
-  // ✅ turn does NOT reset; serve stays with current turn
   updateBars();
   setHints();
   renderWord();
-  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn");
+  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn", false);
 }
 
-async function handleResult(player, ok){
+async function handleAttempt(player, ok){
   setButtonsEnabled(false);
   busy=true;
+
+  attemptsOnWord++;
 
   if(ok){
     await sfxOK();
     showOverlay(player,true,"Correct ✅");
     if(player==="A") correctA++; else correctB++;
-  }else{
-    await sfxBAD();
-    showOverlay(player,false, funnyWrong());
-  }
 
-  updateBars();
-  await new Promise(r=>setTimeout(r,2000));
-
-  if(ok){
-    // ✅ correct keeps serve (turn stays player)
+    // correct keeps serve
     turn = player;
+    updateBars();
+
+    await new Promise(r=>setTimeout(r,2000));
     busy=false;
     await nextWord();
     return;
   }
 
-  // wrong => switch turn for the SAME word attempt
-  const other = (player==="A") ? "B" : "A";
-  turn = other;
+  // wrong
+  await sfxBAD();
+  showOverlay(player,false, funnyWrong());
+
+  await new Promise(r=>setTimeout(r,2000));
+
+  // if this was second wrong (both failed) => NEW WORD (NO extra teacher repeat for old word)
+  if(attemptsOnWord >= 2){
+    // wrong loses serve -> switch to other for next word
+    turn = (player==="A") ? "B" : "A";
+    updateBars();
+    busy=false;
+    await nextWord();
+    return;
+  }
+
+  // first wrong only => switch turn and teacher repeats ONCE for the other player
+  turn = (player==="A") ? "B" : "A";
   updateBars();
   setHints();
-
   busy=false;
 
-  // teacher repeats once before other tries SAME word
-  await teacherPhase(other==="A" ? "Teacher repeats → Student A" : "Teacher repeats → Student B");
-}
-
-function cleanupListening(){
-  setWaveMode(null);
-  setWaveLabel(turn==="A" ? "Student A turn" : "Student B turn");
-  setButtonsEnabled(true);
-  busy=false;
+  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn", true);
 }
 
 function listenFor(player){
@@ -739,11 +699,13 @@ function listenFor(player){
 
   const expected = stageWords[wordIndex].t;
 
-  // watchdog
   const watchdog = setTimeout(async ()=>{
     try{ rec.abort && rec.abort(); }catch{}
-    cleanupListening();
-    await afterAttempt(player, false);
+    setWaveMode(null);
+    setWaveLabel("—");
+    setButtonsEnabled(true);
+    busy=false;
+    await handleAttempt(player,false);
   }, 6000);
 
   let handled=false;
@@ -757,58 +719,49 @@ function listenFor(player){
     const ok = similarity(expected, said) >= 0.92;
 
     setWaveMode(null);
+    setWaveLabel("—");
     try{ rec.stop && rec.stop(); }catch{}
 
-    await afterAttempt(player, ok);
+    setButtonsEnabled(true);
+    busy=false;
+
+    await handleAttempt(player, ok);
   };
 
   rec.onerror = async ()=>{
     if(handled) return;
     handled=true;
     clearTimeout(watchdog);
-    cleanupListening();
-    await afterAttempt(player,false);
+
+    setWaveMode(null);
+    setWaveLabel("—");
+    setButtonsEnabled(true);
+    busy=false;
+
+    await handleAttempt(player,false);
   };
 
   rec.onend = async ()=>{
     if(handled) return;
     handled=true;
     clearTimeout(watchdog);
-    cleanupListening();
-    await afterAttempt(player,false);
+
+    setWaveMode(null);
+    setWaveLabel("—");
+    setButtonsEnabled(true);
+    busy=false;
+
+    await handleAttempt(player,false);
   };
 
   try{ rec.start(); }
   catch{
     clearTimeout(watchdog);
-    cleanupListening();
-    afterAttempt(player,false);
-  }
-}
-
-// ✅ NEW RULE: if both fail -> go next word
-let attemptsOnThisWord = 0; // 0,1 (max 2)
-async function afterAttempt(player, ok){
-  setWaveMode(null);
-  setButtonsEnabled(true);
-  busy=false;
-
-  attemptsOnThisWord++;
-
-  if(ok){
-    attemptsOnThisWord = 0; // reset for next word
-    await handleResult(player,true);
-    return;
-  }
-
-  await handleResult(player,false);
-
-  // if after switching turn we already had 2 attempts on same word -> next word
-  // attemptsOnThisWord counts attempts across A+B
-  if(attemptsOnThisWord >= 2){
-    attemptsOnThisWord = 0; // reset
-    // both failed, move on
-    await nextWord();
+    setWaveMode(null);
+    setWaveLabel("—");
+    setButtonsEnabled(true);
+    busy=false;
+    handleAttempt(player,false);
   }
 }
 
@@ -819,12 +772,12 @@ document.getElementById("yesBtn").addEventListener("click", async ()=>{
   stageWords = Array.from({length:20}, ()=> pickUniqueWord());
   wordIndex=0;
   correctA=0; correctB=0;
-  attemptsOnThisWord = 0;
+  attemptsOnWord=0;
 
   updateBars();
   setHints();
   renderWord();
-  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn");
+  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn", false);
 });
 
 document.getElementById("noBtn").addEventListener("click", ()=>{
@@ -837,14 +790,13 @@ document.getElementById("backBtn").addEventListener("click", ()=>{
   if(history.length>1) history.back();
   else location.href="/pages/chat.html";
 });
-
 document.getElementById("micA").addEventListener("click", ()=> listenFor("A"));
 document.getElementById("micB").addEventListener("click", ()=> listenFor("B"));
 
 updateBars();
 setHints();
 renderWord();
-teacherPhase("Student A turn");
+teacherPhase("Student A turn", false);
 </script>
 
 </body>
